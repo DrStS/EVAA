@@ -39,6 +39,9 @@ systemMono=BEsolver(h,tend,M,D,K,[u_init; 0; 0],[du_init; 0; 0]);
 % Time loop
 j=2;
 tic
+
+K\[1; 1; 1]
+
 for i = h:h:tend
    [phi, dphi, ddphi]=systemMono.doSolve([0;0;0]); 
    % Get solution, dsolution and ddsolution at rPull level

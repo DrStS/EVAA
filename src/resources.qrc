@@ -1,6 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
    <qresource prefix="/">
       <file>resources/EVAAMainWindow.qml</file>
-      <file>resources/STACCATO.ico</file>
+      <file>resources/EVAA.ico</file>
    </qresource>
 </RCC>

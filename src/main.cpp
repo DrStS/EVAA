@@ -55,6 +55,7 @@
    #include <string>
    #include <vector>
    #include "AuxiliaryParameters.h"
+   #include "EVAAComputeEngine.h"
 #endif // EVAA_COMMANDLINE_ON
 
 #ifndef EVAA_COMMANDLINE_ON
@@ -69,16 +70,16 @@ int main(int argc, char **argv) {
 	std::cout << "Hello EVAA is fired up!" << std::endl;
 	std::cout << "GIT: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
 	std::vector<std::string> allArgs(argv, argv + argc);
-	//for (std::vector<std::string>::iterator it = allArgs.begin(); it != allArgs.end(); ++it) {
-	//	 std::cout << *it << std::endl;
-	//}
+	for (std::vector<std::string>::iterator it = allArgs.begin(); it != allArgs.end(); ++it) {
+		 std::cout << *it << std::endl;
+	}
 	//allArgs[0] = "EVAA.exe"
-	if (allArgs.size()>1) {
+	//if (allArgs.size()>1) {
 		EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine(allArgs[1]);
 		myComputeEngine->prepare();
 		myComputeEngine->compute();
 		myComputeEngine->clean();
-	}
+	//}
 	std::cout << "We did a great job! Awesome!" << std::endl;
 #endif // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON

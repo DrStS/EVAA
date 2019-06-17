@@ -58,7 +58,7 @@ MESSAGE("Current source dir is" ${EVAA_SOURCE_DIR})
 option(USE_INTEL_MKL           "Use Intel MKL"  ON )
 option(USE_XSD                 "Use XSD with XERCES"  ON )
 option(USE_HDF5                "Use HDF5"  ON )
-option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  OFF)
+option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 ######################################################################################
 #2. Macros
 ######################################################################################
@@ -76,14 +76,14 @@ include(CheckCXXCompilerFlag)
 IF (${EVAA_COMMANDLINE})
    MESSAGE("Build EVAA commandline only!")
    add_definitions(-DEVAA_COMMANDLINE_ON)
-   option(USE_OCCT                "Use Opencascade"  OFF )
-   option(USE_VTK                 "Use VTK"  OFF )
-   option(USE_QT5                 "Use QT5"  OFF )
+   SET(USE_OCCT  false)
+   SET(USE_VTK   false)
+   SET(USE_QT5   false)
 ELSE ()
    MESSAGE("Build EVAA with GUI QT Quick!")
-   option(USE_OCCT                "Use Opencascade"  OFF )
-   option(USE_VTK                 "Use VTK"  ON )
-   option(USE_QT5                 "Use QT5"  ON )
+   SET(USE_OCCT  false)
+   SET(USE_VTK   true)
+   SET(USE_QT5   true)
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Avoid in source builds
@@ -115,6 +115,8 @@ IF (${USE_OCCT})
    IF (${USE_GCC_COMPILER})
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -lglut -lGL -lGLU -lX11")
    ENDIF()
+   include_directories(${OCCT_INCLUDE_DIR})
+   SET(EVAA_3rd_LIBS ${EVAA_3rd_LIBS}  ${OCCT_LIBRARIES})
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find VTK
@@ -136,6 +138,8 @@ IF (${USE_VTK})
   LIST(REMOVE_ITEM VTK_INCLUDE_DIRS ${VTK_BASE_DIR}/ThirdParty/hdf5/vtkhdf5/hl/src)
   LIST(REMOVE_ITEM VTK_INCLUDE_DIRS ${VTK_BASE_DIR}/ThirdParty/hdf5/vtkhdf5/src)
   MESSAGE("VTK status: ${VTK_FOUND} ")#${VTK_INCLUDE_DIRS}
+  include_directories(${VTK_INCLUDE_DIR})
+  SET(EVAA_3rd_LIBS ${EVAA_3rd_LIBS}  ${VTK_LIBRARIES})
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find Intel MKL 
@@ -155,19 +159,21 @@ MESSAGE("MKL status: ${MKL_FOUND}")
          SET(CMAKE_EXE_LINKER_FLAGS "/nodefaultlib:vcomp ${MKL_OMP_LIBRARY}")
       ENDIF()
    ENDIF()
-      IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
-         SET(CMAKE_C_FLAGS    "-fopenmp")
-         SET(CMAKE_CXX_FLAGS  "-fopenmp")
-         SET(CMAKE_EXE_LINKER_FLAGS "-L${MKL_OMP_LIBRARY}")
-      ENDIF()
+   IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+      SET(CMAKE_C_FLAGS    "-fopenmp")
+      SET(CMAKE_CXX_FLAGS  "-fopenmp")
+      SET(CMAKE_EXE_LINKER_FLAGS "-L${MKL_OMP_LIBRARY}")
+   ENDIF()
+   include_directories(${MKL_INCLUDE_DIR})
+   SET(EVAA_3rd_LIBS ${EVAA_3rd_LIBS} ${MKL_LIBRARIES})
 ENDIF()
+#------------------------------------------------------------------------------------#
 IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
    SET(CMAKE_PREFIX_PATH "C:/software/libs/QT/Qt5123/5.12.3/msvc2017_64/lib/cmake")
 ENDIF()
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
    SET(CMAKE_PREFIX_PATH "/opt/software/libs/Qt/5.12.3/gcc_64/lib/cmake")
 ENDIF()
-#------------------------------------------------------------------------------------#
 # Try to find QT5 Quick
 IF (${USE_QT5}) 
    add_definitions(-DUSE_QT5)
@@ -189,6 +195,9 @@ IF (${USE_XSD})
    IF (${USE_GCC_COMPILERS_LINUX})
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
    ENDIF()
+   include_directories(${XSD_INCLUDE_DIR})
+   include_directories(${XERCES_INCLUDE_DIR})
+   SET(EVAA_3rd_LIBS ${EVAA_3rd_LIBS} ${XERCES_LIBRARIES})
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find HDF5
@@ -202,6 +211,7 @@ IF (${USE_HDF5})
    IF (${USE_GCC_COMPILERS_LINUX})
       SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
    ENDIF()
+   include_directories(${HDF5_INCLUDE_DIR})
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Global compiler flags
@@ -229,6 +239,6 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in
 ######################################################################################
 #5. Subdirectories THE ORDER IS IMPORTANT, BECAUSE THEY ARE COMPILED IN THAT ORDER
 ######################################################################################
-#add_subdirectory(testUnit)
 add_subdirectory(src)
+add_subdirectory(testUnit)
 #add_subdirectory(srcPerformanceTest)

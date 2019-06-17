@@ -30,7 +30,6 @@
 
 #include <QObject>
 #include <QColor>
-
 #include <vtkActor.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkSmartPointer.h>

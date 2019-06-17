@@ -37,7 +37,7 @@ EVAAMainWindow::EVAAMainWindow(int argc, char **argv)
 	QQmlApplicationEngine engine;
 
 	app.setApplicationName("EVAA: Efficient Vehicle dynAmics simulAtor");
-	app.setWindowIcon(QIcon(":/resources/STACCATO.ico"));
+	app.setWindowIcon(QIcon(":/resources/EVAA.png"));
 
 	// Register QML types
 	qmlRegisterType<QVTKFramebufferObjectItem>("QtVTK", 1, 0, "VtkFboItem");
