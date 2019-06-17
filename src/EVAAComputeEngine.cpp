@@ -98,7 +98,7 @@ void EVAAComputeEngine::compute(void) {
 	u_n_m_1[2] = 0.;
 
 
-	int nRefinement = 20;
+	int nRefinement = 23;
 	int numTimeSteps=pow(2, nRefinement);
 	//time step size 
 	double h = 1.0 / (numTimeSteps);
