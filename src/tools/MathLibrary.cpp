@@ -17,32 +17,10 @@
 *  You should have received a copy of the GNU General Public License
 *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
 */
-#ifdef USE_INTEL_MKL
-#define USE_INTEL_MKL_BLAS
-#endif
 
 #include "MathLibrary.h"
 
 namespace MathLibrary {
-
-double computeDenseDotProduct(const double *vec1, const double *vec2, const int elements) {
-#ifdef USE_INTEL_MKL
-	mkl_set_num_threads(EVAA::AuxiliaryParameters::denseVectorMatrixThreads);
-	return cblas_ddot(elements, vec1, 1, vec2, 1);
-#endif
-#ifndef USE_INTEL_MKL
-	return 0;
-#endif
-}
-
-double computeDenseDotProduct(const std::vector<double> &vec1, const std::vector<double> &vec2) {
-#ifdef USE_INTEL_MKL
-	return cblas_ddot(vec1.size(), vec1.data(), 1, vec2.data(), 1);
-#endif
-#ifndef USE_INTEL_MKL
-	return 0;
-#endif
-}
 
 void computeDenseSymLUFactorisation(const int nElements, std::vector<double> &A, std::vector<int> &pivots){
 #ifdef USE_INTEL_MKL 
@@ -52,6 +30,7 @@ void computeDenseSymLUFactorisation(const int nElements, std::vector<double> &A,
 
 void computeDenseSymSolution(const int nElements, std::vector<double> &A, std::vector<int> &pivots, std::vector<double> &rhs){
 #ifdef USE_INTEL_MKL 
+	mkl_set_num_threads(EVAA::AuxiliaryParameters::denseVectorMatrixThreads);
 	LAPACKE_dgetrs(LAPACK_COL_MAJOR, 'N', nElements, 1, A.data(), nElements, pivots.data(), rhs.data(), nElements);
 #endif
 }

@@ -28,7 +28,6 @@
 #include <vector>
 
 #ifdef USE_INTEL_MKL
-#define MKL_DIRECT_CALL 1
 #include <mkl.h>
 #endif
 

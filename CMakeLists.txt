@@ -147,6 +147,7 @@ IF (${USE_INTEL_MKL})
   find_package(MKL REQUIRED)
    #add_definitions(-DMKL_ILP64)
    add_definitions(-DUSE_INTEL_MKL)
+   add_definitions(-DMKL_DIRECT_CALL)
 MESSAGE("MKL status: ${MKL_FOUND}")
    # Get OpenMP activated and use Intel link library
    IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
