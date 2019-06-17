@@ -56,6 +56,7 @@
    #include <vector>
    #include "AuxiliaryParameters.h"
    #include "EVAAComputeEngine.h"
+	#include "Timer.h"
 #endif // EVAA_COMMANDLINE_ON
 
 #ifndef EVAA_COMMANDLINE_ON
@@ -74,12 +75,17 @@ int main(int argc, char **argv) {
 		 std::cout << *it << std::endl;
 	}
 	//allArgs[0] = "EVAA.exe"
-	//if (allArgs.size()>1) {
+	if (allArgs.size()>1) {
 		EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine(allArgs[1]);
+	}
+	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("default");
 		myComputeEngine->prepare();
+		anaysisTimer01.start();
 		myComputeEngine->compute();
+		anaysisTimer01.stop();
+		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver." << std::endl;
 		myComputeEngine->clean();
-	//}
+	
 	std::cout << "We did a great job! Awesome!" << std::endl;
 #endif // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON

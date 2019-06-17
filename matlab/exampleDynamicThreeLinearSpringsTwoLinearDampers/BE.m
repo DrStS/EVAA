@@ -40,7 +40,6 @@ systemMono=BEsolver(h,tend,M,D,K,[u_init; 0; 0],[du_init; 0; 0]);
 j=2;
 tic
 
-K\[1; 1; 1]
 
 for i = h:h:tend
    [phi, dphi, ddphi]=systemMono.doSolve([0;0;0]); 
@@ -69,7 +68,7 @@ save('solutionBEW.dat', 'xy','-ascii');
 figure();
 plot(t,u);
 hold on;
-plot(t,v);
-hold on;
-plot(t,w);
-legend('u','v','w');
+    plot(t,v);
+    hold on;
+    plot(t,w);
+    legend('u','v','w');

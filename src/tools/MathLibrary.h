@@ -35,36 +35,46 @@
 namespace MathLibrary {
 	/***********************************************************************************************
 	* \brief Compute the dot product of two dense vectors
-	* \param[in] vec1 the 1st vector
-	* \param[in] vec2 the 2nd vector
+	* \param[in] _vec1 the 1st vector
+	* \param[in] _vec2 the 2nd vector
 	* \return dot product
 	* \author Stefan Sicklinger
 	***********/
-	double computeDenseDotProduct(const std::vector<double> &vec1, const std::vector<double> &vec2);
+	double computeDenseDotProduct(const std::vector<double> &_vec1, const std::vector<double> &_vec2);
 	/***********************************************************************************************
 	* \brief Compute the dot product of two dense vectors
-	* \param[in] vec1 the 1st vector
-	* \param[in] vec2 the 2nd vector
-	* \param[in] elements number of elements in vec1 (vec2)
+	* \param[in] _vec1 the 1st vector
+	* \param[in] _vec2 the 2nd vector
+	* \param[in] _nElements number of elements in vec1 (vec2)
 	* \return dot product
 	* \author Stefan Sicklinger
 	***********/
-	double computeDenseDotProduct(const double *vec1, const double *vec2, const int elements);
+	double computeDenseDotProduct(const double *_vec1, const double *_vec2, const int _nElements);
    /***********************************************************************************************
 	* \brief Compute dense symmetrix matrix LU factorisation
-	* \param[in] nElements number of rows = number of columns
-	* \param[in] A matrix 
-	* \param[in] pivot elements
+	* \param[in] _nElements number of rows = number of columns
+	* \param[in] _A matrix 
+	* \param[in] _pivot elements
 	* \author Stefan Sicklinger
 	***********/
-	void computeDenseSymLUFactorisation(const int nElements, std::vector<double> &A, std::vector<int> &pivots);
+	void computeDenseSymLUFactorisation(const int _nElements, std::vector<double> &_A, std::vector<int> &_pivots);
 	/***********************************************************************************************
 	* \brief Compute backward/forward substitution 
-	* \param[in] nElements number of rows = number of columns
-	* \param[in] A matrix
-	 * \param[in] pivot elements
+	* \param[in] _nElements number of rows = number of columns
+	* \param[in] _A matrix
+	 * \param[in] _pivot elements
 	 * \author Stefan Sicklinger
 	 ***********/
-	void computeDenseSymSolution(const int nElements, std::vector<double> &A, std::vector<int> &pivots, std::vector<double> &rhs);
+	void computeDenseSymSolution(const int _nElements, std::vector<double> &_A, std::vector<int> &_pivots, std::vector<double> &_rhs);
+	/***********************************************************************************************
+	* \brief Computes a vector-scalar product and adds the result to a vector. vec2 <- a*vec1 + vec2
+	* \param[in] _vec1 the 1st vector
+	* \param[in] _vec2 the 2nd vector
+	* \param[in] _alpha   scalar
+	* \param[in] _nElements number of elements in vec1
+	* \author Stefan Sicklinger
+	***********/
+	void computeDenseVectorAddition(double *vec1, double *vec2, const double _alpha, const int _nElements);
+	
    
 } /* namespace Math */
