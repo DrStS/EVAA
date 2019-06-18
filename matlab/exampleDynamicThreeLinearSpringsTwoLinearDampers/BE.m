@@ -34,13 +34,11 @@ u=zeros(2^n+1,1);
 v=zeros(2^n+1,1);
 w=zeros(2^n+1,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-h=1/(2^n)
+h=1/(2^n);
 systemMono=BEsolver(h,tend,M,D,K,[u_init; 0; 0],[du_init; 0; 0]);
 % Time loop
 j=2;
 tic
-
-
 for i = h:h:tend
    [phi, dphi, ddphi]=systemMono.doSolve([0;0;0]); 
    % Get solution, dsolution and ddsolution at rPull level

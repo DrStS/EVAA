@@ -144,10 +144,16 @@ ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find Intel MKL 
 IF (${USE_INTEL_MKL})
+  SET(MKL_THREADING_LAYER "sequential")
+  IF(MKL_THREADING_LAYER MATCHES "sequential")
+   add_definitions(-DMKL_DIRECT_CALL_SEQ)
+  ENDIF()
+  IF (MKL_THREADING_LAYER MATCHES "thread")
+   add_definitions(-DMKL_DIRECT_CALL)
+  ENDIF()
   find_package(MKL REQUIRED)
    #add_definitions(-DMKL_ILP64)
    add_definitions(-DUSE_INTEL_MKL)
-   add_definitions(-DMKL_DIRECT_CALL)
 MESSAGE("MKL status: ${MKL_FOUND}")
    # Get OpenMP activated and use Intel link library
    IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
