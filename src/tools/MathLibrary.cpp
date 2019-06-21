@@ -22,6 +22,15 @@
 
 namespace MathLibrary {
 
+void printMKLInfo() {
+#ifdef USE_INTEL_MKL 
+	int len = 198;
+	char buf[198];
+	mkl_get_version_string(buf, len);
+	printf("%s\n", buf);
+#endif
+}
+
 void computeDenseSymLUFactorisation(const int nElements, std::vector<double> &A, std::vector<int> &pivots){
 #ifdef USE_INTEL_MKL 
    LAPACKE_dgetrf(LAPACK_COL_MAJOR, nElements, nElements, A.data(), nElements, pivots.data());

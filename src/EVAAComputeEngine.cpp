@@ -25,6 +25,8 @@
 #include <mkl.h>
 #endif
 
+#define USE_GEMM
+
 EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName){
 	// Intialize XML metadatabase singelton 
 }
@@ -34,42 +36,44 @@ EVAAComputeEngine::~EVAAComputeEngine(){
 }
 
 void EVAAComputeEngine::prepare(void) {
-   
+	MathLibrary::printMKLInfo();
 }
 
 void EVAAComputeEngine::compute(void) {
 
-	double k_1 = 1.;
-	double k_2 = 2.;
-	double k_3 = 3.;
-	double d_1 = 1. / 10.;
-	double d_2 = 1. / 2.;
-	double m_1 = 1e-1;
-	double m_2 = 2e-1;
-	double m_3 = 3e-1;
+	typedef double floatEVAA;
+
+	floatEVAA k_1 = 1.;
+	floatEVAA k_2 = 2.;
+	floatEVAA k_3 = 3.;
+	floatEVAA d_1 = 1. / 10.;
+	floatEVAA d_2 = 1. / 2.;
+	floatEVAA m_1 = 1e-1;
+	floatEVAA m_2 = 2e-1;
+	floatEVAA m_3 = 3e-1;
 
 	int alignment = 64;
 
-	double *B = (double*)mkl_malloc(sizeof(double) * 9, alignment);
-	double *M = (double*)mkl_malloc(sizeof(double) * 9, alignment);
-	double *D = (double*)mkl_malloc(sizeof(double) * 9, alignment);
-	double *K = (double*)mkl_malloc(sizeof(double) * 9, alignment);
+	floatEVAA *B = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
+	floatEVAA *M = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
+	floatEVAA *D = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
+	floatEVAA *K = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
 
-	//std::vector<double> B(9);
-	//std::vector<double> M(9);
-	//std::vector<double> D(9);
-	//std::vector<double> K(9);
+	//std::vector<floatEVAA> B(9);
+	//std::vector<floatEVAA> M(9);
+	//std::vector<floatEVAA> D(9);
+	//std::vector<floatEVAA> K(9);
 
-	double *u_n_p_1 = (double*)mkl_malloc(sizeof(double) * 3, alignment);
-	double *u_n = (double*)mkl_malloc(sizeof(double) * 3, alignment);
-	double *u_n_m_1 = (double*)mkl_malloc(sizeof(double) * 3, alignment);
-	double *tmp = (double*)mkl_malloc(sizeof(double) * 3, alignment);
+	floatEVAA *u_n_p_1 = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
+	floatEVAA *u_n = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
+	floatEVAA *u_n_m_1 = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
+	floatEVAA *tmp = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
 
-	//std::vector<double> f_n_p_1(3);
-	//std::vector<double> u_n_p_1(3);
-	//std::vector<double> u_n(3);
-	//std::vector<double> u_n_m_1(3);
-	//std::vector<double> tmp(3);
+	//std::vector<floatEVAA> f_n_p_1(3);
+	//std::vector<floatEVAA> u_n_p_1(3);
+	//std::vector<floatEVAA> u_n(3);
+	//std::vector<floatEVAA> u_n_m_1(3);
+	//std::vector<floatEVAA> tmp(3);
 	
 	M[0] = m_1;
 	M[1] = 0.0;
@@ -111,10 +115,10 @@ void EVAAComputeEngine::compute(void) {
 	u_n_m_1[2] = 0.;
 
 	mkl_set_num_threads(1);
-	int nRefinement = 1;
+	int nRefinement = 23;
 	int numTimeSteps=pow(2, nRefinement);
 	//time step size 
-	double h = 1.0 / (numTimeSteps);
+	floatEVAA h = 1.0 / (numTimeSteps);
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
 	/// Build dynamic stiffness matrix
 	// K' <- (1.0/(h*h))*M + K
@@ -143,18 +147,42 @@ void EVAAComputeEngine::compute(void) {
 	timeVec.resize(numTimeSteps);
 	///Time loop
 
+	double tmpScalar = (-1.0 / (h*h));
+	M[0] = M[0] * tmpScalar;
+	M[1] = M[1] * tmpScalar;
+	M[2] = M[2] * tmpScalar;
+	M[3] = M[3] * tmpScalar;
+	M[4] = M[4] * tmpScalar;
+	M[5] = M[5] * tmpScalar;
+	M[6] = M[6] * tmpScalar;
+	M[7] = M[7] * tmpScalar;
+	M[8] = M[8] * tmpScalar;
+
+	void* jitter;
+
+	std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, 3, 1, 3, 1.0, 3, 3, 0.0, 3)<< std::endl;
+	dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
+
 for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 	//timeVec[iTime] = iTime * h;
 		// y: = alpha * A*x + beta * y
 		// u_n_p_1 = B*u_n
+#ifndef USE_GEMM
 		cblas_dgemv(CblasColMajor, CblasNoTrans, 3, 3, 1.0, B, 3, u_n, 1, 0.0, u_n_p_1, 1);
-	//	cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 3, 1, 3, 1.0, B, 3, u_n, 1, 0.0, u_n_p_1, 3);
+#endif
+#ifdef USE_GEMM 
+		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 3, 1, 3, 1.0, B, 3, u_n, 3, 0.0, u_n_p_1, 3);
+		myDGEMMKernel(jitter, B, u_n, u_n_p_1);
+#endif
 		// y: = alpha*A*x + beta*y
 		// tmp = ((-1.0 / (h*h))*M) * u_n_m_1
-
+#ifndef USE_GEMM
 		cblas_dgemv(CblasColMajor, CblasNoTrans, 3, 3, (-1.0 / (h*h)), M, 3, u_n_m_1, 1, 0.0, tmp, 1);
-	//	cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 3, 1, 3, (-1.0 / (h*h)), M, 3, u_n_m_1, 1, 0.0, tmp, 3);
-
+#endif
+#ifdef USE_GEMM 
+		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 3, 1, 3, 1.0, M, 3, u_n_m_1, 3, 0.0, tmp, 3);
+		myDGEMMKernel(jitter, M, u_n_m_1, tmp);
+#endif
 		// u_n_p_1 <- 1.0 tmp + u_n_p_1
 //		MathLibrary::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.0, 3);
 		cblas_daxpy(3, 1.0, tmp, 1, u_n_p_1, 1);
@@ -171,7 +199,7 @@ for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 		u_n[2] = u_n_p_1[2];
 }
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
-	std::cout << u_n_p_1[0] << " " << u_n_p_1[1] << " " << u_n_p_1[2] << std::endl;
+	std::cout << u_n_p_1[0] << " " << u_n_p_1[1] << " " << (double)u_n_p_1[2] << std::scientific << std::endl;
 
 }
 

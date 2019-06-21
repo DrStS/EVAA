@@ -32,23 +32,6 @@
 #endif
 
 namespace MathLibrary {
-	/***********************************************************************************************
-	* \brief Compute the dot product of two dense vectors
-	* \param[in] _vec1 the 1st vector
-	* \param[in] _vec2 the 2nd vector
-	* \return dot product
-	* \author Stefan Sicklinger
-	***********/
-	double computeDenseDotProduct(const std::vector<double> &_vec1, const std::vector<double> &_vec2);
-	/***********************************************************************************************
-	* \brief Compute the dot product of two dense vectors
-	* \param[in] _vec1 the 1st vector
-	* \param[in] _vec2 the 2nd vector
-	* \param[in] _nElements number of elements in vec1 (vec2)
-	* \return dot product
-	* \author Stefan Sicklinger
-	***********/
-	double computeDenseDotProduct(const double *_vec1, const double *_vec2, const int _nElements);
    /***********************************************************************************************
 	* \brief Compute dense symmetrix matrix LU factorisation
 	* \param[in] _nElements number of rows = number of columns
@@ -74,6 +57,11 @@ namespace MathLibrary {
 	* \author Stefan Sicklinger
 	***********/
 	void computeDenseVectorAddition(double *vec1, double *vec2, const double _alpha, const int _nElements);
+	/***********************************************************************************************
+	* \brief Print info of the Intel MKL 
+	* \author Stefan Sicklinger
+	***********/
+	void printMKLInfo(void);
 	
    
 } /* namespace Math */

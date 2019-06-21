@@ -15,7 +15,7 @@ m_3=3e-1;
 tend=1;
 u_init=1;
 du_init=0;
-n=23; % refinement 
+n=20; % refinement 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % System Mono
 M=[m_1 0 0;
