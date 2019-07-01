@@ -42,7 +42,6 @@ void EVAAComputeEngine::prepare(void) {
 void EVAAComputeEngine::compute(void) {
 
 	typedef double floatEVAA;
-
 	floatEVAA k_1 = 1.;
 	floatEVAA k_2 = 2.;
 	floatEVAA k_3 = 3.;
@@ -159,7 +158,6 @@ void EVAAComputeEngine::compute(void) {
 	M[8] = M[8] * tmpScalar;
 
 	void* jitter;
-
 	std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, 3, 1, 3, 1.0, 3, 3, 0.0, 3)<< std::endl;
 	dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
 

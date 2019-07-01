@@ -56,14 +56,12 @@
    #include <vector>
    #include "AuxiliaryParameters.h"
    #include "EVAAComputeEngine.h"
-	#include "Timer.h"
+   #include "Timer.h"
 #endif // EVAA_COMMANDLINE_ON
 
 #ifndef EVAA_COMMANDLINE_ON
 #include "EVAAMainWindow.h"
 #endif // EVAA_COMMANDLINE_ON
-
-
 
 
 int main(int argc, char **argv) {

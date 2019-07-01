@@ -39,17 +39,16 @@ add_dependencies(EVAA EVAAlib)
 #------------------------------------------------------------------------------------#
 #
 #------------------------------------------------------------------------------------#
+MESSAGE("Executable")
 MESSAGE("C Compiler Flags are: ${CMAKE_C_FLAGS}")
 MESSAGE("C++ Compiler Flags are: ${CMAKE_CXX_FLAGS} ")
 MESSAGE("Linker Flags are: ${CMAKE_EXE_LINKER_FLAGS}")
-MESSAGE("EVAA_LIB: ${EVAA_LIB}")
 MESSAGE("EVAA_3rd_LIBS: ${EVAA_3rd_LIBS}")
 MESSAGE("EVAA_INCLUDES: ${EVAA_INCLUDES}")
 MESSAGE("EVAA_SOURCES: ${EVAA_SOURCES}")
 MESSAGE("MKL_LIBRARIES: ${MKL_LIBRARIES}")
 #------------------------------------------------------------------------------------#
-# Where to put EXECUTABLE
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin64)
+SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 #------------------------------------------------------------------------------------#
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})

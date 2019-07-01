@@ -29,6 +29,7 @@ add_executable(testEVAA ${EVAA_UnitTest_SOURCES})
 target_link_libraries(testEVAA EVAAlib gtest gtest_main ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES_DEBUG} optimized ${HDF5_LIBRARIES})
 add_test(AllTests testEVAA)
 #------------------------------------------------------------------------------------#
+MESSAGE("Unit Test")
 MESSAGE("C Compiler Flags are: ${CMAKE_C_FLAGS}")
 MESSAGE("C++ Compiler Flags are: ${CMAKE_CXX_FLAGS} ")
 MESSAGE("Linker Flags are: ${CMAKE_EXE_LINKER_FLAGS}")

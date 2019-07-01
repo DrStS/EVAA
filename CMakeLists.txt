@@ -58,6 +58,7 @@ MESSAGE("Current source dir is" ${EVAA_SOURCE_DIR})
 option(USE_INTEL_MKL           "Use Intel MKL"  ON )
 option(USE_XSD                 "Use XSD with XERCES"  ON )
 option(USE_HDF5                "Use HDF5"  ON )
+option(USE_MATLAB              "Build Matlab API"  ON)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 ######################################################################################
 #2. Macros
@@ -149,7 +150,7 @@ IF (${USE_INTEL_MKL})
    add_definitions(-DMKL_DIRECT_CALL_SEQ_JIT)
   ENDIF()
   IF (MKL_THREADING_LAYER MATCHES "thread")
-   add_definitions(-DMKL_DIRECT_CALL)
+   add_definitions(-DMKL_DIRECT_CALL_JIT)
   ENDIF()
   find_package(MKL REQUIRED)
    #add_definitions(-DMKL_ILP64)
@@ -221,6 +222,19 @@ IF (${USE_HDF5})
    include_directories(${HDF5_INCLUDE_DIR})
 ENDIF()
 #------------------------------------------------------------------------------------#
+# Try to find Matlab
+IF (${USE_MATLAB})
+   add_definitions(-DUSE_MATLAB)
+   find_package(Matlab REQUIRED)
+   MESSAGE("Matlab status: ${MATLAB_FOUND}")
+   IF (${USE_MICROSOFT_COMPILERS_WINDOWS})
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+   ENDIF()
+   IF (${USE_GCC_COMPILERS_LINUX})
+      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+   ENDIF()
+ENDIF()
+#------------------------------------------------------------------------------------#
 # Global compiler flags
 IF (${USE_GCC_COMPILERS_LINUX})
    set(CMAKE_C_STANDARD 99) 
@@ -246,6 +260,12 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in
 ######################################################################################
 #5. Subdirectories THE ORDER IS IMPORTANT, BECAUSE THEY ARE COMPILED IN THAT ORDER
 ######################################################################################
+#------------------------------------------------------------------------------------#
+# Where to put EXECUTABLE
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin64 )
+SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin64 )
+#------------------------------------------------------------------------------------#
+# INCLUDE dirs
 add_subdirectory(src)
 add_subdirectory(testUnit)
-#add_subdirectory(srcPerformanceTest)
+add_subdirectory(interfaces)
