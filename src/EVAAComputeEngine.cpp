@@ -20,7 +20,7 @@
 #include <iostream>
 #include <vector>
 #include "EVAAComputeEngine.h"
-#include "Mathlibrary.h"
+#include "MathLibrary.h"
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
 #endif
@@ -128,7 +128,7 @@ void EVAAComputeEngine::compute(void) {
 	u_n_m_1[2] = 0.;
 
 	mkl_set_num_threads(1);
-	int nRefinement = 26;
+	int nRefinement = 23;
 	int numTimeSteps=pow(2, nRefinement);
 	//time step size 
 	floatEVAA h = 1.0 / (numTimeSteps);
@@ -140,7 +140,7 @@ void EVAAComputeEngine::compute(void) {
 	// K <- (1.0/h)*D + K'
 //	MathLibrary::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 9);
 	cblas_daxpy(9, (1.0 / h), D, 1, K, 1);
-	/// K holds now dynamic stiffness matrix for BE integrator
+	/// K holds now dynamic stiffness matrix  for BE integrator
 
 	///Build rhs for BE integrator
 	//B' <-(2.0 / (h*h))*M + B
@@ -212,6 +212,7 @@ for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 }
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	std::cout << u_n_p_1[0] << " " << u_n_p_1[1] << " " << (double)u_n_p_1[2] << std::scientific << std::endl;
+
 }
 
 

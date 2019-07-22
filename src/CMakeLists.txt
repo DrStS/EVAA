@@ -34,7 +34,11 @@ ENDIF()
 IF (${USE_QT5})
    qt5_use_modules(EVAAlib Core Gui Widgets Qml Quick QuickControls2)
 ENDIF()
+IF (${USE_HDF5})
 target_link_libraries(EVAA EVAAlib ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES_DEBUG} optimized ${HDF5_LIBRARIES})
+ELSE()
+target_link_libraries(EVAA EVAAlib ${EVAA_3rd_LIBS})
+ENDIF()
 add_dependencies(EVAA EVAAlib) 
 #------------------------------------------------------------------------------------#
 #

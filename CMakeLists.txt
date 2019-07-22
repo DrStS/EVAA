@@ -55,11 +55,12 @@ MESSAGE("Current source dir is" ${EVAA_SOURCE_DIR})
 ######################################################################################
 #1. Option
 ######################################################################################
-option(USE_INTEL_MKL           "Use Intel MKL"  ON )
-option(USE_XSD                 "Use XSD with XERCES"  ON )
-option(USE_HDF5                "Use HDF5"  ON )
-option(USE_MATLAB              "Build Matlab API"  ON)
+option(USE_INTEL_MKL           "Use Intel MKL"  ON)
+option(USE_XSD                 "Use XSD with XERCES"  OFF)
+option(USE_HDF5                "Use HDF5"  OFF)
+option(USE_MATLAB              "Build Matlab API"  OFF)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
+option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
 ######################################################################################
 #2. Macros
 ######################################################################################
@@ -237,7 +238,7 @@ ENDIF()
 IF (${USE_MICROSOFT_COMPILER})
    set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -DEBUG")
    set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}")
-ENDIF()
+ENDIF(
 ######################################################################################
 #4. Configure
 ######################################################################################
@@ -255,5 +256,9 @@ SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin64 )
 #------------------------------------------------------------------------------------#
 # INCLUDE dirs
 add_subdirectory(src)
+IF(${BUILD_UNITTEST})
 add_subdirectory(testUnit)
+ENDIF()
+IF(${USE_MATLAB})
 add_subdirectory(interfaces)
+ENDIF()
