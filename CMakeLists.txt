@@ -20,7 +20,7 @@
 #  along with EVAA. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------------#
 cmake_minimum_required (VERSION 3.14)
-set(CMAKE_VERBOSE_MAKEFILE off)
+SET(CMAKE_VERBOSE_MAKEFILE off)
 cmake_policy(SET CMP0048 NEW)
 #------------------------------------------------------------------------------------#
 project (EVAA VERSION 0.1 LANGUAGES CXX)
@@ -65,7 +65,7 @@ option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
 #2. Macros
 ######################################################################################
 # Add EVAA cmake modules
-set(CMAKE_MODULE_PATH ${EVAA_SOURCE_DIR}/cmake/modules)
+SET(CMAKE_MODULE_PATH ${EVAA_SOURCE_DIR}/cmake/modules)
 include(MacroOutOfSourceBuild)
 include(MacroAppendGlobalVariable)
 include(ExternalProject)
@@ -144,7 +144,8 @@ IF (${USE_VTK})
   SET(EVAA_3rd_LIBS ${EVAA_3rd_LIBS}  ${VTK_LIBRARIES})
 ENDIF()
 #------------------------------------------------------------------------------------#
-# Try to find Intel MKL 
+# Try to find Intel MKL
+SET(CMAKE_EXE_LINKER_FLAGS   "")
 IF (${USE_INTEL_MKL})
   SET(MKL_THREADING_LAYER "sequential")
   IF(MKL_THREADING_LAYER MATCHES "sequential")
@@ -188,10 +189,10 @@ IF (${USE_QT5})
    add_definitions(-DUSE_QT5)
    find_package(Qt5 REQUIRED Core Gui Widgets Qml Quick QuickControls2)
    MESSAGE("Qt5 status: ${Qt5_FOUND}")
-   set(CMAKE_AUTOMOC ON)
-   set(CMAKE_AUTOUIC ON)
-   set(CMAKE_AUTORCC ON)
-   set(CMAKE_INCLUDE_CURRENT_DIR ON)
+   SET(CMAKE_AUTOMOC ON)
+   SET(CMAKE_AUTOUIC ON)
+   SET(CMAKE_AUTORCC ON)
+   SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find XSD with XERCES
@@ -226,19 +227,19 @@ ENDIF()
 #------------------------------------------------------------------------------------#
 # Global compiler flags
 IF (${USE_INTEL_COMPILER})
-   set(CMAKE_C_STANDARD 99) 
-   set(CMAKE_C_STANDARD_REQUIRED ON)
-   set(CMAKE_C_EXTENSIONS OFF)
-   set(CMAKE_CXX_STANDARD 14) 
-   set(CMAKE_CXX_STANDARD_REQUIRED ON)
-   set(CMAKE_CXX_EXTENSIONS OFF)
-   #SET (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ")
-   #SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ")
+   SET(CMAKE_C_STANDARD 99) 
+   SET(CMAKE_C_STANDARD_REQUIRED ON)
+   SET(CMAKE_C_EXTENSIONS OFF)
+   SET(CMAKE_CXX_STANDARD 14) 
+   SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+   SET(CMAKE_CXX_EXTENSIONS OFF)
+   SET (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -O3 -fp-model fast -qopt-report=5 -xHost -D NOALIAS")
+   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fp-model fast -qopt-report=5 -xHost -D NOALIAS")
 ENDIF()
 IF (${USE_MICROSOFT_COMPILER})
-   set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -DEBUG")
-   set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}")
-ENDIF(
+   SET(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -DEBUG")
+   SET(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}")
+ENDIF()
 ######################################################################################
 #4. Configure
 ######################################################################################

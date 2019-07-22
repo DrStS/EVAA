@@ -21,7 +21,7 @@ IF (${EVAA_COMMANDLINE})
    LIST(REMOVE_ITEM EVAA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/EVAAMainWindow.h)
    LIST(REMOVE_ITEM EVAA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/EVAAMainWindow.cpp)
 ENDIF()
-add_library(EVAAlib STATIC ${EVAA_SOURCES})
+add_library(EVAALibStatic STATIC ${EVAA_SOURCES})
 #------------------------------------------------------------------------------------#
 IF (CMAKE_SYSTEM_NAME MATCHES "Windows") 
 # WIN32
@@ -32,18 +32,18 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
 ENDIF()
 #------------------------------------------------------------------------------------# 
 IF (${USE_QT5})
-   qt5_use_modules(EVAAlib Core Gui Widgets Qml Quick QuickControls2)
+   qt5_use_modules(EVAALibStatic Core Gui Widgets Qml Quick QuickControls2)
 ENDIF()
 IF (${USE_HDF5})
-target_link_libraries(EVAA EVAAlib ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES_DEBUG} optimized ${HDF5_LIBRARIES})
+target_link_libraries(EVAA EVAALibStatic ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES_DEBUG} optimized ${HDF5_LIBRARIES})
 ELSE()
-target_link_libraries(EVAA EVAAlib ${EVAA_3rd_LIBS})
+target_link_libraries(EVAA EVAALibStatic ${EVAA_3rd_LIBS})
 ENDIF()
-add_dependencies(EVAA EVAAlib) 
+add_dependencies(EVAA EVAALibStatic) 
 #------------------------------------------------------------------------------------#
 #
 #------------------------------------------------------------------------------------#
-MESSAGE("Executable")
+MESSAGE("==== Executable ====")
 MESSAGE("C Compiler Flags are: ${CMAKE_C_FLAGS}")
 MESSAGE("C++ Compiler Flags are: ${CMAKE_CXX_FLAGS} ")
 MESSAGE("Linker Flags are: ${CMAKE_EXE_LINKER_FLAGS}")
