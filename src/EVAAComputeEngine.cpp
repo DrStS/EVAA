@@ -104,7 +104,21 @@ void EVAAComputeEngine::compute(void) {
 	K[7] =  0.0;
 	K[8] =  k_3;
 
+	B[0] = 0.0;
+	B[1] = 0.0;
+	B[2] = 0.0;
+	B[3] = 0.0;
+	B[4] = 0.0;
+	B[5] = 0.0;
+	B[6] = 0.0;
+	B[7] = 0.0;
+	B[8] = 0.0;
+
 	//Initial conditions
+	u_n_p_1[0] = 0.;
+	u_n_p_1[1] = 0.;
+	u_n_p_1[2] = 0.;
+
 	u_n[0] = 1.;
 	u_n[1] = 0.;
 	u_n[2] = 0.;
@@ -114,7 +128,7 @@ void EVAAComputeEngine::compute(void) {
 	u_n_m_1[2] = 0.;
 
 	mkl_set_num_threads(1);
-	int nRefinement = 23;
+	int nRefinement = 26;
 	int numTimeSteps=pow(2, nRefinement);
 	//time step size 
 	floatEVAA h = 1.0 / (numTimeSteps);
@@ -126,7 +140,7 @@ void EVAAComputeEngine::compute(void) {
 	// K <- (1.0/h)*D + K'
 //	MathLibrary::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 9);
 	cblas_daxpy(9, (1.0 / h), D, 1, K, 1);
-	/// K holds now dynamic stiffness matrix  for BE integrator
+	/// K holds now dynamic stiffness matrix for BE integrator
 
 	///Build rhs for BE integrator
 	//B' <-(2.0 / (h*h))*M + B
@@ -160,7 +174,7 @@ void EVAAComputeEngine::compute(void) {
 	void* jitter;
 	std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, 3, 1, 3, 1.0, 3, 3, 0.0, 3)<< std::endl;
 	dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
-
+	LAPACKE_set_nancheck(0);
 for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 	//timeVec[iTime] = iTime * h;
 		// y: = alpha * A*x + beta * y
@@ -198,7 +212,6 @@ for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 }
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	std::cout << u_n_p_1[0] << " " << u_n_p_1[1] << " " << (double)u_n_p_1[2] << std::scientific << std::endl;
-
 }
 
 

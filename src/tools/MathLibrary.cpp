@@ -17,7 +17,7 @@
 *  You should have received a copy of the GNU General Public License
 *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
 */
-
+#include <iostream>
 #include "MathLibrary.h"
 
 namespace MathLibrary {
@@ -27,7 +27,7 @@ void printMKLInfo() {
 	int len = 198;
 	char buf[198];
 	mkl_get_version_string(buf, len);
-	printf("%s\n", buf);
+	std::cout << buf << std::endl;
 #endif
 }
 

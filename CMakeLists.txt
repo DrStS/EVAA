@@ -17,7 +17,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with EVAA.  If not, see http://www.gnu.org/licenses/.
+#  along with EVAA. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------------#
 cmake_minimum_required (VERSION 3.14)
 set(CMAKE_VERBOSE_MAKEFILE off)
@@ -213,12 +213,6 @@ IF (${USE_HDF5})
    add_definitions(-DUSE_HDF5)
    find_package(HDF5 REQUIRED)
    MESSAGE("HDF5 status: ${HDF5_FOUND}")
-   IF (${USE_MICROSOFT_COMPILERS_WINDOWS})
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-   ENDIF()
-   IF (${USE_GCC_COMPILERS_LINUX})
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-   ENDIF()
    include_directories(${HDF5_INCLUDE_DIR})
 ENDIF()
 #------------------------------------------------------------------------------------#
@@ -227,16 +221,10 @@ IF (${USE_MATLAB})
    add_definitions(-DUSE_MATLAB)
    find_package(Matlab REQUIRED)
    MESSAGE("Matlab status: ${MATLAB_FOUND}")
-   IF (${USE_MICROSOFT_COMPILERS_WINDOWS})
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-   ENDIF()
-   IF (${USE_GCC_COMPILERS_LINUX})
-      SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-   ENDIF()
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Global compiler flags
-IF (${USE_GCC_COMPILERS_LINUX})
+IF (${USE_INTEL_COMPILER})
    set(CMAKE_C_STANDARD 99) 
    set(CMAKE_C_STANDARD_REQUIRED ON)
    set(CMAKE_C_EXTENSIONS OFF)
@@ -246,9 +234,9 @@ IF (${USE_GCC_COMPILERS_LINUX})
    #SET (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ")
    #SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ")
 ENDIF()
-IF (${USE_MICROSOFT_COMPILERS_WINDOWS})
-   #SET (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Tp")
-   #SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Tp")
+IF (${USE_MICROSOFT_COMPILER})
+   set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -DEBUG")
+   set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}")
 ENDIF()
 ######################################################################################
 #4. Configure

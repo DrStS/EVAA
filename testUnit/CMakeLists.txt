@@ -24,10 +24,10 @@ include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${EVAA_INCLUDES})
 include_directories(${EVAA_UnitTest_INCLUDES})
 #------------------------------------------------------------------------------------#
-add_executable(testEVAA ${EVAA_UnitTest_SOURCES})
+add_executable(EVAATest ${EVAA_UnitTest_SOURCES})
 #------------------------------------------------------------------------------------#
-target_link_libraries(testEVAA EVAAlib gtest gtest_main ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES_DEBUG} optimized ${HDF5_LIBRARIES})
-add_test(AllTests testEVAA)
+target_link_libraries(EVAATest EVAAlib gtest gtest_main ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES_DEBUG} optimized ${HDF5_LIBRARIES})
+add_test(AllTests EVAATest)
 #------------------------------------------------------------------------------------#
 MESSAGE("Unit Test")
 MESSAGE("C Compiler Flags are: ${CMAKE_C_FLAGS}")
