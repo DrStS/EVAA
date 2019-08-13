@@ -128,7 +128,7 @@ void EVAAComputeEngine::compute(void) {
 	u_n_m_1[2] = 0.;
 
 	mkl_set_num_threads(1);
-	int nRefinement = 23;
+	int nRefinement = 27;
 	int numTimeSteps=pow(2, nRefinement);
 	//time step size 
 	floatEVAA h = 1.0 / (numTimeSteps);
@@ -177,8 +177,8 @@ void EVAAComputeEngine::compute(void) {
 	LAPACKE_set_nancheck(0);
 for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 	//timeVec[iTime] = iTime * h;
-		// y: = alpha * A*x + beta * y
-		// u_n_p_1 = B*u_n
+	// y: = alpha * A*x + beta * y
+	// u_n_p_1 = B*u_n
 #ifndef USE_GEMM
 		cblas_dgemv(CblasColMajor, CblasNoTrans, 3, 3, 1.0, B, 3, u_n, 1, 0.0, u_n_p_1, 1);
 #endif
