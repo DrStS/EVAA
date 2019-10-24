@@ -238,7 +238,7 @@ IF (${USE_INTEL_COMPILER})
 ENDIF()
 IF (${USE_MICROSOFT_COMPILER})
    SET(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -DEBUG")
-   SET(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}")
+   SET(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 ENDIF()
 ######################################################################################
 #4. Configure
