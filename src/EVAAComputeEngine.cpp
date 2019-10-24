@@ -23,9 +23,14 @@
 #include "MathLibrary.h"
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
+#define USE_GEMM
 #endif
 
-#define USE_GEMM
+#ifdef USE_EIGEN
+#include <Eigen/Dense>
+using Eigen::MatrixXd;
+#endif
+
 
 EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName){
 	// Intialize XML metadatabase singelton 
@@ -37,6 +42,15 @@ EVAAComputeEngine::~EVAAComputeEngine(){
 
 void EVAAComputeEngine::prepare(void) {
 	MathLibrary::printMKLInfo();
+}
+
+void EVAAComputeEngine::computeEigen(void) {
+	MatrixXd m(2, 2);
+	m(0, 0) = 3;
+	m(1, 0) = 2.5;
+	m(0, 1) = -1;
+	m(1, 1) = m(1, 0) + m(0, 1);
+	std::cout << m << std::endl;
 }
 
 void EVAAComputeEngine::compute(void) {
@@ -214,6 +228,7 @@ for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 	std::cout << u_n_p_1[0] << " " << u_n_p_1[1] << " " << (double)u_n_p_1[2] << std::scientific << std::endl;
 
 }
+
 
 
 void EVAAComputeEngine::clean(void) {
