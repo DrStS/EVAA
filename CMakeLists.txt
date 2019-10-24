@@ -22,8 +22,10 @@
 cmake_minimum_required (VERSION 3.14)
 SET(CMAKE_VERBOSE_MAKEFILE off)
 cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0091 NEW)#MSVC runtime library flags are selected by an abstraction
 #------------------------------------------------------------------------------------#
 project (EVAA VERSION 0.1 LANGUAGES CXX)
+set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo")
 #------------------------------------------------------------------------------------#)
 # Check OS and host system
 IF((${CMAKE_SYSTEM_NAME} MATCHES "Linux" AND ${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")) 
@@ -238,7 +240,7 @@ IF (${USE_INTEL_COMPILER})
 ENDIF()
 IF (${USE_MICROSOFT_COMPILER})
    SET(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -DEBUG")
-   SET(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+   SET(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} ")
 ENDIF()
 ######################################################################################
 #4. Configure

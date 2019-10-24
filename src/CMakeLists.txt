@@ -22,10 +22,14 @@ IF (${EVAA_COMMANDLINE})
    LIST(REMOVE_ITEM EVAA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/EVAAMainWindow.cpp)
 ENDIF()
 add_library(EVAALibStatic STATIC ${EVAA_SOURCES})
+IF (CMAKE_SYSTEM_NAME MATCHES "Windows") 
+set_property(TARGET EVAALibStatic PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+ENDIF()
 #------------------------------------------------------------------------------------#
 IF (CMAKE_SYSTEM_NAME MATCHES "Windows") 
 # WIN32
    add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp resources.qrc winResources.rc)
+   set_property(TARGET EVAA PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 ENDIF()
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
    add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp  resources.qrc)
@@ -39,7 +43,7 @@ target_link_libraries(EVAA EVAALibStatic ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES
 ELSE()
 target_link_libraries(EVAA EVAALibStatic ${EVAA_3rd_LIBS})
 ENDIF()
-add_dependencies(EVAA EVAALibStatic) 
+add_dependencies(EVAA EVAALibStatic)
 #------------------------------------------------------------------------------------#
 #
 #------------------------------------------------------------------------------------#
