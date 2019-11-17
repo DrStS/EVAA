@@ -55,6 +55,11 @@ public:
 	* \brief compute engine
 	* \author Stefan Sicklinger
 	***********/
+	void computeBlaze(void);
+	/***********************************************************************************************
+	* \brief compute engine
+	* \author Stefan Sicklinger
+	***********/
 	void compute(void);
 	/***********************************************************************************************
 	* \brief clean compute engine free memory

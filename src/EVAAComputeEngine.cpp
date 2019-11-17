@@ -31,6 +31,10 @@
 using Eigen::MatrixXd;
 #endif
 
+#ifdef USE_BLAZE
+#include <blaze/Math.h>
+#endif
+
 
 EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName){
 	// Intialize XML metadatabase singelton 
@@ -45,12 +49,28 @@ void EVAAComputeEngine::prepare(void) {
 }
 
 void EVAAComputeEngine::computeEigen(void) {
+#ifdef USE_EIGEN
 	MatrixXd m(2, 2);
 	m(0, 0) = 3;
 	m(1, 0) = 2.5;
 	m(0, 1) = -1;
 	m(1, 1) = m(1, 0) + m(0, 1);
 	std::cout << m << std::endl;
+#endif
+}
+
+void EVAAComputeEngine::computeBlaze(void) {
+#ifdef USE_BLAZE
+	using blaze::StaticVector;
+	using blaze::DynamicVector;
+	StaticVector<int, 3UL> a{ 4, -2, 5 };
+	DynamicVector<int> b(3UL);
+	b[0] = 2;
+	b[1] = 5;
+	b[2] = -3;
+	DynamicVector<int> c = a + b;
+	std::cout << "c =\n" << c << "\n";
+#endif
 }
 
 void EVAAComputeEngine::compute(void) {

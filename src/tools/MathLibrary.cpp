@@ -19,6 +19,7 @@
 */
 #include <iostream>
 #include "MathLibrary.h"
+#include  <mkl_cblas.h>
 
 namespace MathLibrary {
 
