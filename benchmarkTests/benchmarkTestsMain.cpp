@@ -27,7 +27,7 @@
  * the licensors of this Program grant you additional permission to convey the resulting work. 
  *
  * \section DESCRIPTION
- *  This is the main file of EVAA unit test
+ *  This is the main file of EVAA unit benchmark
  *
  *
  *
@@ -42,11 +42,21 @@
  *
  *
  **************************************************************************************************/
-#include <gtest/gtest.h>
+#include <benchmark/benchmark.h>
 
-int main(int argc, char **argv) {
-	::testing::InitGoogleTest(&argc, argv);
-	int i = 12;
-	i = 14;
-	return RUN_ALL_TESTS();
+static void BM_StringCreation(benchmark::State& state) {
+	for (auto _ : state)
+		std::string empty_string;
 }
+// Register the function as a benchmark
+BENCHMARK(BM_StringCreation);
+
+// Define another benchmark
+static void BM_StringCopy(benchmark::State& state) {
+	std::string x = "hello";
+	for (auto _ : state)
+		std::string copy(x);
+}
+BENCHMARK(BM_StringCopy);
+
+BENCHMARK_MAIN();
