@@ -35,7 +35,6 @@ using Eigen::MatrixXd;
 #include <blaze/Math.h>
 #endif
 
-
 EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName){
 	// Intialize XML metadatabase singelton 
 }
@@ -754,21 +753,57 @@ void EVAAComputeEngine::compute11DOF(void) {
 
 
 // BLAZE
-void EVAAComputeEngine::computeBlaze(void) {
+void EVAAComputeEngine::computeBlazetoy(void) {
 #ifdef USE_BLAZE
 	using blaze::StaticVector;
 	using blaze::DynamicVector;
-	StaticVector<int, 3UL> a{ 4, -2, 5 };
-	DynamicVector<int> b(3UL);
-	b[0] = 2;
-	b[1] = 5;
-	b[2] = -3;
-	DynamicVector<int> c = a + b;
-	std::cout << "c =\n" << c << "\n";
+	using blaze::DynamicMatrix;
+	using blaze::rowMajor;
+	using blaze::columnVector;
+	
+	DynamicMatrix<double, rowMajor> A(3, 3);  // The system matrix A
+	DynamicVector<double, columnVector> b(3);   // The right-hand side vector b
+	DynamicVector<int, columnVector> ipiv(3);   // Pivoting indices
+	DynamicMatrix<double, rowMajor> L(3, 3), U(3,3), P(3,3);  // The system matrix A
+	// ... Initialization
+	A(0, 0) = 5;
+	A(0, 1) = 2;
+	A(0, 2) = 1;
+	A(1, 0) = 10;
+	A(1, 1) = 9;
+	A(1, 2) = 5;
+	A(2, 0) = 15;
+	A(2, 1) = 26;
+	A(2, 2) = 21;
+
+	b[0] = 12;
+	b[1] = 43;
+	b[2] = 130;
+
+	DynamicMatrix<double, rowMajor>     D(A);  // Temporary matrix to be decomposed
+	DynamicVector<double, columnVector> x(b);  // Temporary vector for the solution
+
+	std::cout << "A: \n" << A << " \n";
+	std::cout << "b: \n" << b << " \n";
+	getrf(D, ipiv.data());
+	std::cout << "\tD before: D=LU: \n" << D << " \n"; // A^T=P*L*U
+	std::cout << "\tPivot: \n" << ipiv << " \n";
+	getrs(D, x, 'T', ipiv.data());
+	std::cout << "\tx: x=D^{-1}b: \n" << x << " \n";
+
+	assert(trans(A) * x == b);
+
+	//D = trans(A);
+	lu(A, L, U, P); // A = P*L*U
+	std::cout << " L = : \n" << L << "\n";
+	std::cout << " U = : \n" << U << "\n";
+	std::cout << " P = : \n" << P << "\n";
+
+	
 #endif
 }
 
-void EVAAComputeEngine::computeBlaze11DOF(void) {
+void EVAAComputeEngine::computeBlaze(void) {
 #ifdef USE_BLAZE
 	using blaze::CompressedMatrix;
 	using blaze::DynamicMatrix;
@@ -899,7 +934,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	DynamicVector<floatEVAA, columnVector> u_n_p_1(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
 	DynamicVector<floatEVAA, columnVector> u_n(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
 	DynamicVector<floatEVAA, columnVector> u_n_m_1(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
-	u_n[0] = 1;
+	
 	// Perform the iterations
 	int nRefinement = 10;
 	int numTimeSteps = pow(2, nRefinement);
@@ -907,6 +942,12 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	//time step size 
 	floatEVAA h = 1.0 / ((floatEVAA)numTimeSteps);
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
+
+	// Initial conditions
+	const floatEVAA u_init = 1;
+	const floatEVAA du_init = 0;
+	u_n[0] = u_init;
+	u_n_m_1[0] = u_init - h * du_init;
 
 	/// Build dynamic stiffness matrix
 	// A = (1.0/(h*h))*M + (1.0/h)*D + K
@@ -921,39 +962,16 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	// LU Decomposition
 	DynamicVector<int, columnVector> ipiv(11);   // Pivoting indices
 	DynamicMatrix<double, rowMajor>  A_LU(A);  // Temporary matrix to be decomposed
+	
 	getrf(A_LU, ipiv.data());
-	std::cout << "Pivot: \n" << ipiv;
-	std::cout << "\nA_LU: \n" << A_LU << "\n\n\n 4 Raffi\n";
 	M *= - 1. / (h * h);
 	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 
 		// Solve system: A*u_n_p_1 = B*u_n - M*u_n_m_1
-		// rhs = P^T * (B*u_n + (-1.0 / (h*h))*M)
+		// rhs = B*u_n + (-1.0 / (h*h))*M
 		u_n_p_1 = B * u_n + M * u_n_m_1; // rhs
-		//using blaze::DynamicMatrix;
-		//using blaze::DynamicVector;
-		//using blaze::rowMajor;
-		//using blaze::columnVector;
-
-		//DynamicMatrix<double, rowMajor> A(2UL, 2UL);  // The system matrix A
-		//DynamicVector<double, columnVector> b(2UL);   // The right-hand side vector b
-		//// ... Initialization
-
-		//DynamicMatrix<double, rowMajor>     D(A);  // Temporary matrix to be decomposed
-		//DynamicVector<double, columnVector> x(b);  // Temporary vector for the solution
-
-		//trsv(D, x, 'L', 'N', 'N');
-		// Solve triangular systems
-
 		
 		getrs(A_LU, u_n_p_1, 'T', ipiv.data());
-
-
-		//trsv(L, u_n_p_1, 'L', 'N', 'N'); // L * x1 = rhs; the result is stored in u_n_p_1
-		//trsv(U, u_n_p_1, 'U', 'N', 'U'); // U * x1 = x1
-
-		//u_n_p_1 = trans(P) * u_n_p_1;
-
 		u_n_m_1 = u_n;
 		u_n = u_n_p_1;
 	}

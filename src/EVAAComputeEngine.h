@@ -59,7 +59,7 @@ public:
 	***********/
 	// BLAZE
 	void computeBlaze(void);
-	void computeBlaze11DOF(void);
+	void computeBlazetoy(void);
 	/***********************************************************************************************
 	* \brief compute engine
 	* \author Stefan Sicklinger
