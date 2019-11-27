@@ -899,12 +899,10 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	DynamicVector<floatEVAA, columnVector> u_n_p_1(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
 	DynamicVector<floatEVAA, columnVector> u_n(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
 	DynamicVector<floatEVAA, columnVector> u_n_m_1(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
-	DynamicVector<floatEVAA, columnVector> tmp(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
 	u_n[0] = 1;
 	// Perform the iterations
 	int nRefinement = 10;
 	int numTimeSteps = pow(2, nRefinement);
-	// numTimeSteps = 1;
 
 	//time step size 
 	floatEVAA h = 1.0 / ((floatEVAA)numTimeSteps);
@@ -921,20 +919,17 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	B = 2. / (h * h) * M + 1. / h * D;
 	
 	// LU Decomposition
-	DynamicMatrix<floatEVAA, rowMajor> L;
-	DynamicMatrix<floatEVAA, rowMajor> U;
-	DynamicMatrix<floatEVAA, rowMajor> P;
-
-	lu(A, L, U, P);  // LU decomposition of A=P*L*U (U is unitridiagnoal, not L!)
-
-	assert(A == P * L * U);
-
+	DynamicVector<int, columnVector> ipiv(11);   // Pivoting indices
+	DynamicMatrix<double, rowMajor>  A_LU(A);  // Temporary matrix to be decomposed
+	getrf(A_LU, ipiv.data());
+	std::cout << "Pivot: \n" << ipiv;
+	std::cout << "\nA_LU: \n" << A_LU << "\n\n\n 4 Raffi\n";
 	M *= - 1. / (h * h);
-	for (int iTime = 0; iTime < 10; iTime++) {
+	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 
 		// Solve system: A*u_n_p_1 = B*u_n - M*u_n_m_1
 		// rhs = P^T * (B*u_n + (-1.0 / (h*h))*M)
-		u_n_p_1 = trans(P) * (B * u_n + M * u_n_m_1); // rhs
+		u_n_p_1 = B * u_n + M * u_n_m_1; // rhs
 		//using blaze::DynamicMatrix;
 		//using blaze::DynamicVector;
 		//using blaze::rowMajor;
@@ -949,8 +944,15 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 
 		//trsv(D, x, 'L', 'N', 'N');
 		// Solve triangular systems
-		trsv(L, tmp, 'L', 'N', 'N'); // L * x1 = rhs; the result is stored in u_n_p_1
-		trsv(U, tmp, 'U', 'N', 'U'); // U * x1 = x1
+
+		
+		getrs(A_LU, u_n_p_1, 'T', ipiv.data());
+
+
+		//trsv(L, u_n_p_1, 'L', 'N', 'N'); // L * x1 = rhs; the result is stored in u_n_p_1
+		//trsv(U, u_n_p_1, 'U', 'N', 'U'); // U * x1 = x1
+
+		//u_n_p_1 = trans(P) * u_n_p_1;
 
 		u_n_m_1 = u_n;
 		u_n = u_n_p_1;
