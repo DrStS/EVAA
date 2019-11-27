@@ -21,6 +21,7 @@
 #include <vector>
 #include "EVAAComputeEngine.h"
 #include "MathLibrary.h"
+#include <limits>
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
 #define USE_GEMM
@@ -34,6 +35,9 @@ using Eigen::MatrixXd;
 #ifdef USE_BLAZE
 #include <blaze/Math.h>
 #endif
+
+typedef std::numeric_limits< double > dbl;
+
 
 EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName){
 	// Intialize XML metadatabase singelton 
@@ -365,7 +369,7 @@ void EVAAComputeEngine::compute(void) {
 	u_n_m_1[2] = 0.;
 
 	mkl_set_num_threads(1);
-	int nRefinement = 27;
+	int nRefinement = 10;
 	int numTimeSteps=pow(2, nRefinement);
 	//time step size 
 	floatEVAA h = 1.0 / (numTimeSteps);
@@ -530,13 +534,13 @@ void EVAAComputeEngine::compute11DOF(void) {
 	M[108] = m_10;
 	M[120] = m_11;
 
-	std::cout << "\nM:\n";
+	/*std::cout << "\nM:\n";
 	for (int i = 0; i < 11; ++i) {
 		for (int j = 0; j < 11; ++j) {
 			std::cout << M[i * 11 + j] << "\t";
 		}
 		std::cout << std::endl;
-	}
+	}*/
 
 	// Stiffness matrix
 	K[0] = k_11 + k_21 + k_31 + k_41;
@@ -575,13 +579,13 @@ void EVAAComputeEngine::compute11DOF(void) {
 		for (int j = 0; j < i; ++j)
 			K[i * 11 + j] = K[j * 11 + i];
 
-	std::cout << "\nK:\n";
+	/*std::cout << "\nK:\n";
 	for (int i = 0; i < 11; ++i) {
 		for (int j = 0; j < 11; ++j) {
 			std::cout << K[i * 11 + j] << "\t";
 		}
 		std::cout << std::endl;
-	}
+	}*/
 
 	// Damping matrix
 	D[0] = d_11 + d_21 + d_31 + d_41;
@@ -620,17 +624,22 @@ void EVAAComputeEngine::compute11DOF(void) {
 		for (int j = 0; j < i; ++j)
 			D[i * 11 + j] = D[j * 11 + i];
 
-	std::cout << "\nD:\n";
+	/*std::cout << "\nD:\n";
 	for (int i = 0; i < 11; ++i) {
 		for (int j = 0; j < 11; ++j) {
 			std::cout << D[i * 11 + j] << "\t";
 		}
 		std::cout << std::endl;
-	}
+	}*/
 
 	//Initial conditions
 	u_n[0] = 1.;
 	u_n_m_1[0] = 1.;
+	/*std::cout << "u_n:\n";
+	for (int i = 0; i < 11; ++i) {
+		std::cout << u_n[i] << ", ";
+	}*/
+	
 
 	mkl_set_num_threads(8);
 	int nRefinement = 10;
@@ -643,20 +652,13 @@ void EVAAComputeEngine::compute11DOF(void) {
 	// K' <- (1.0/(h*h))*M + K
 //	MathLibrary::computeDenseVectorAddition(M.data(), K.data(), (1.0 / (h*h)), 9);
 	cblas_daxpy(121, (1.0 / (h * h)), M, 1, K, 1);
-	// Print K
-	std::cout << "\nK <- 1/h^2*M + K:\n";
-	for (int i = 0; i < 11; ++i) {
-		for (int j = 0; j < 11; ++j) {
-			std::cout << K[i * 11 + j] << "\t";
-		}
-		std::cout << std::endl;
-	}
 	// K <- (1.0/h)*D + K'
 //	MathLibrary::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 121);
 	cblas_daxpy(121, (1.0 / h), D, 1, K, 1);
 	/// K holds now dynamic stiffness matrix  for BE integrator
-	// Print K
-	std::cout << "\nK <- 1/h^2*M + 1/h*D + K:\n";
+	// Print K (A matrix)
+	std::cout.precision(dbl::max_digits10);
+	std::cout << "\nK <- 1/h^2*M + 1/h*D + K (A matrix):\n";
 	for (int i = 0; i < 11; ++i) {
 		for (int j = 0; j < 11; ++j) {
 			std::cout << K[i * 11 + j] << "\t";
@@ -667,18 +669,11 @@ void EVAAComputeEngine::compute11DOF(void) {
 	//B' <-(2.0 / (h*h))*M + B
 //	MathLibrary::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
 	cblas_daxpy(121, (2.0 / (h * h)), M, 1, B, 1);
-	// Print B
-	std::cout << "\nB=2/h^2 * M:\n";
-	for (int i = 0; i < 11; ++i) {
-		for (int j = 0; j < 11; ++j) {
-			std::cout << B[i * 11 + j] << "\t";
-		}
-		std::cout << std::endl;
-	}
+	
 	//B <-(1.0 / (h))*D + B'
 //	MathLibrary::computeDenseVectorAddition(D.data(), B.data(), (1.0 / h), 121);
 	cblas_daxpy(121, (1.0 / h), D, 1, B, 1);
-	// Print B
+	// Print final B
 	std::cout << "\nB=2/h^2*M+1/h*D:\n";
 	for (int i = 0; i < 11; ++i) {
 		for (int j = 0; j < 11; ++j) {
@@ -692,6 +687,17 @@ void EVAAComputeEngine::compute11DOF(void) {
 	// LU Decomposition
 //	MathLibrary::computeDenseSymLUFactorisation(11, K, pivot);
 	LAPACKE_dgetrf(LAPACK_COL_MAJOR, 11, 11, K, 11, pivot.data());
+	std::cout << "\n\tK with LU decomposition:\n";
+	for (int i = 0; i < 11; ++i) {
+		for (int j = 0; j < 11; ++j) {
+			std::cout << K[i * 11 + j] << "\t";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << "\n\tPivot:\n";
+	for (int i = 0; i < 11; ++i) {
+		std::cout << pivot[i] << ", ";
+	}
 
 	// Time loop
 	double tmpScalar = (-1.0 / (h * h));

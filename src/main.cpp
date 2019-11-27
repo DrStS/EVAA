@@ -77,19 +77,19 @@ int main(int argc, char **argv) {
 	}
 	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("default");
 		myComputeEngine->prepare();
-		/*anaysisTimer01.start();
+		anaysisTimer01.start();
 		myComputeEngine->compute();
 		anaysisTimer01.stop();
 		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(MKL)." << std::endl;
-		myComputeEngine->clean();*/
+		myComputeEngine->clean();
 		/*anaysisTimer01.start();
 		myComputeEngine->computeEigen();
 		anaysisTimer01.stop();
 		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Eigen)." << std::endl;*/
-		anaysisTimer01.start();
+		/*anaysisTimer01.start();
 		myComputeEngine->computeBlaze();
 		anaysisTimer01.stop();
-		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze)." << std::endl;
+		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze)." << std::endl;*/
 	std::cout << "We did a great job! Awesome!" << std::endl;
 #endif // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON
