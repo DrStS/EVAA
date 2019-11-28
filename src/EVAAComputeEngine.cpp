@@ -42,12 +42,12 @@ using Eigen::IOFormat;
 typedef std::numeric_limits< double > dbl;
 
 
-EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName){
+EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName) {
 	// Intialize XML metadatabase singelton 
 }
 
 
-EVAAComputeEngine::~EVAAComputeEngine(){
+EVAAComputeEngine::~EVAAComputeEngine() {
 }
 
 void EVAAComputeEngine::prepare(void) {
@@ -56,6 +56,8 @@ void EVAAComputeEngine::prepare(void) {
 
 // EIGEN
 void EVAAComputeEngine::computeEigen(void) {
+
+	int DOF = 3;
 
 	typedef double floatEVAA;
 	floatEVAA k_1 = 1.;
@@ -67,14 +69,14 @@ void EVAAComputeEngine::computeEigen(void) {
 	floatEVAA m_2 = 2e-1;
 	floatEVAA m_3 = 3e-1;
 
-	MatrixXd B(3, 3);
-	MatrixXd M(3, 3);
-	MatrixXd D(3, 3);
-	MatrixXd K(3, 3);
+	MatrixXd B(DOF, DOF);
+	MatrixXd M(DOF, DOF);
+	MatrixXd D(DOF, DOF);
+	MatrixXd K(DOF, DOF);
 
-	VectorXd u_n_p_1(3);
-	VectorXd u_n(3);
-	VectorXd u_n_m_1(3);
+	VectorXd u_n_p_1(DOF);
+	VectorXd u_n(DOF);
+	VectorXd u_n_m_1(DOF);
 
 	M << m_1, 0.0, 0.0,
 		0.0, m_2, 0.0,
@@ -126,6 +128,8 @@ void EVAAComputeEngine::computeEigen(void) {
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
 
+	int DOF = 11;
+
 	typedef double floatEVAA;
 	// K stiffness
 	floatEVAA k = 10.;
@@ -173,20 +177,20 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 	floatEVAA m_10 = 10e-1;
 	floatEVAA m_11 = 11e-1;
 
-	MatrixXd A(11, 11);
-	MatrixXd B(11, 11);
-	MatrixXd M(11, 11);
-	MatrixXd D(11, 11);
-	MatrixXd K(11, 11);
-	MatrixXd K_aux(11, 11);
-	MatrixXd D_aux(11, 11);
+	MatrixXd A(DOF, DOF);
+	MatrixXd B(DOF, DOF);
+	MatrixXd M(DOF, DOF);
+	MatrixXd D(DOF, DOF);
+	MatrixXd K(DOF, DOF);
+	MatrixXd K_aux(DOF, DOF);
+	MatrixXd D_aux(DOF, DOF);
 
-	VectorXd u_n_p_1(11);
-	VectorXd u_n(11);
-	VectorXd u_n_m_1(11);
+	VectorXd u_n_p_1(DOF);
+	VectorXd u_n(DOF);
+	VectorXd u_n_m_1(DOF);
 
 	// Define the mass matrix
-	M = MatrixXd::Zero(11, 11);
+	M = MatrixXd::Zero(DOF, DOF);
 	M(0, 0) = m_1;
 	M(1, 1) = m_2;
 	M(2, 2) = m_3;
@@ -211,8 +215,8 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_32, 0.0, 0.0,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_41 + k_42, -k_42,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_42;
-	MatrixXd K_diag(11, 11);
-	/*K_diag = MatrixXd::Zero(11, 11);
+	MatrixXd K_diag(DOF, DOF);
+	/*K_diag = MatrixXd::Zero(DOF, DOF);
 	K_diag.diagonal = K.diagonal();*/
 	//std::cout << "K is: " << K_diag << std::endl;
 	K_aux = K + K.transpose();
@@ -231,17 +235,17 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_32, 0.0, 0.0,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_41 + d_42, -d_42,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_42;
-	MatrixXd D_diag(11, 11);
-	/*D_diag = MatrixXd::Zero(11, 11);
+	MatrixXd D_diag(DOF, DOF);
+	/*D_diag = MatrixXd::Zero(DOF, DOF);
 	D_diag.diagonal = D.diagonal();*/
 	D_aux = D + D.transpose();
 	D_aux.diagonal() -= D.diagonal();
 	D = D_aux;
-	A = MatrixXd::Zero(11, 11);
-	B = MatrixXd::Zero(11, 11);
+	A = MatrixXd::Zero(DOF, DOF);
+	B = MatrixXd::Zero(DOF, DOF);
 
-	u_n_p_1 = VectorXd::Zero(11);
-	u_n = VectorXd::Zero(11);
+	u_n_p_1 = VectorXd::Zero(DOF);
+	u_n = VectorXd::Zero(DOF);
 	u_n(0) = 1;
 	u_n_m_1 = u_n;
 
@@ -296,28 +300,30 @@ void EVAAComputeEngine::computeMKL(void) {
 	floatEVAA m_3 = 3e-1;
 
 	int alignment = 64;
+	int DOF = 3;
+	int matrixElements = DOF * DOF;
 
-	floatEVAA *B = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
-	floatEVAA *M = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
-	floatEVAA *D = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
-	floatEVAA *K = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
+	floatEVAA* B = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * matrixElements, alignment);
+	floatEVAA* M = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * matrixElements, alignment);
+	floatEVAA* D = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * matrixElements, alignment);
+	floatEVAA* K = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * matrixElements, alignment);
 
 	//std::vector<floatEVAA> B(9);
 	//std::vector<floatEVAA> M(9);
 	//std::vector<floatEVAA> D(9);
 	//std::vector<floatEVAA> K(9);
 
-	floatEVAA *u_n_p_1 = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
-	floatEVAA *u_n = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
-	floatEVAA *u_n_m_1 = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
-	floatEVAA *tmp = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
+	floatEVAA* u_n_p_1 = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * DOF, alignment);
+	floatEVAA* u_n = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * DOF, alignment);
+	floatEVAA* u_n_m_1 = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * DOF, alignment);
+	floatEVAA* tmp = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * DOF, alignment);
 
-	//std::vector<floatEVAA> f_n_p_1(3);
-	//std::vector<floatEVAA> u_n_p_1(3);
-	//std::vector<floatEVAA> u_n(3);
-	//std::vector<floatEVAA> u_n_m_1(3);
+	//std::vector<floatEVAA> f_n_p_1(DOF);
+	//std::vector<floatEVAA> u_n_p_1(DOF);
+	//std::vector<floatEVAA> u_n(DOF);
+	//std::vector<floatEVAA> u_n_m_1(DOF);
 	//std::vector<floatEVAA> tmp(3);
-	
+
 	M[0] = m_1;
 	M[1] = 0.0;
 	M[2] = 0.0;
@@ -328,25 +334,25 @@ void EVAAComputeEngine::computeMKL(void) {
 	M[7] = 0.0;
 	M[8] = m_3;
 
-	D[0] =  d_1;
-	D[1] =  0.0;
-	D[2] =  0.0;
-	D[3] =  0.0;
-	D[4] =  d_2;
+	D[0] = d_1;
+	D[1] = 0.0;
+	D[2] = 0.0;
+	D[3] = 0.0;
+	D[4] = d_2;
 	D[5] = -d_2;
-	D[6] =  0.0;
+	D[6] = 0.0;
 	D[7] = -d_2;
-	D[8] =  d_2;
+	D[8] = d_2;
 
-	K[0] =  k_1 + k_2;
+	K[0] = k_1 + k_2;
 	K[1] = -k_2;
-	K[2] =  0.0;
+	K[2] = 0.0;
 	K[3] = -k_2;
-	K[4] =  k_2;
-	K[5] =  0.0;
-	K[6] =  0.0;
-	K[7] =  0.0;
-	K[8] =  k_3;
+	K[4] = k_2;
+	K[5] = 0.0;
+	K[6] = 0.0;
+	K[7] = 0.0;
+	K[8] = k_3;
 
 	B[0] = 0.0;
 	B[1] = 0.0;
@@ -373,38 +379,38 @@ void EVAAComputeEngine::computeMKL(void) {
 
 	mkl_set_num_threads(1);
 	int nRefinement = 10;
-	int numTimeSteps=pow(2, nRefinement);
+	int numTimeSteps = pow(2, nRefinement);
 	//time step size 
 	floatEVAA h = 1.0 / (numTimeSteps);
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
 	/// Build dynamic stiffness matrix
 	// K' <- (1.0/(h*h))*M + K
 //	MathLibrary::computeDenseVectorAddition(M.data(), K.data(), (1.0 / (h*h)), 9);
-	cblas_daxpy(9, (1.0 / (h*h)), M, 1, K, 1);
+	cblas_daxpy(matrixElements, (1.0 / (h * h)), M, 1, K, 1);
 	// K <- (1.0/h)*D + K'
 //	MathLibrary::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 9);
-	cblas_daxpy(9, (1.0 / h), D, 1, K, 1);
+	cblas_daxpy(matrixElements, (1.0 / h), D, 1, K, 1);
 	/// K holds now dynamic stiffness matrix  for BE integrator
 
 	///Build rhs for BE integrator
 	//B' <-(2.0 / (h*h))*M + B
 //	MathLibrary::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 9);
-	cblas_daxpy(9, (2.0 / (h*h)), M, 1, B, 1);
+	cblas_daxpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
 	//B <-(1.0 / (h))*D + B'
 //	MathLibrary::computeDenseVectorAddition(D.data(), B.data(), (1.0 / h), 9);
-	cblas_daxpy(9, (1.0 / h), D, 1, B, 1);
+	cblas_daxpy(matrixElements, (1.0 / h), D, 1, B, 1);
 	//A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE
-    
+
 	std::vector<int> pivot(3);
 	// LU Decomposition
-//	MathLibrary::computeDenseSymLUFactorisation(3, K, pivot);
-	LAPACKE_dgetrf(LAPACK_COL_MAJOR, 3, 3, K, 3, pivot.data());
+//	MathLibrary::computeDenseSymLUFactorisation(DOF, K, pivot);
+	LAPACKE_dgetrf(LAPACK_COL_MAJOR, DOF, DOF, K, DOF, pivot.data());
 
 	std::vector<double> timeVec;
 	timeVec.resize(numTimeSteps);
 	///Time loop
 
-	double tmpScalar = (-1.0 / (h*h));
+	double tmpScalar = (-1.0 / (h * h));
 	M[0] = M[0] * tmpScalar;
 	M[1] = M[1] * tmpScalar;
 	M[2] = M[2] * tmpScalar;
@@ -416,35 +422,35 @@ void EVAAComputeEngine::computeMKL(void) {
 	M[8] = M[8] * tmpScalar;
 
 	void* jitter;
-	std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, 3, 1, 3, 1.0, 3, 3, 0.0, 3)<< std::endl;
+	std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, DOF, 1, DOF, 1.0, DOF, DOF, 0.0, DOF) << std::endl;
 	dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
 	LAPACKE_set_nancheck(0);
-for (int iTime = 0; iTime < numTimeSteps; iTime++) {
-	//timeVec[iTime] = iTime * h;
-	// y: = alpha * A*x + beta * y
-	// u_n_p_1 = B*u_n
+	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
+		//timeVec[iTime] = iTime * h;
+		// y: = alpha * A*x + beta * y
+		// u_n_p_1 = B*u_n
 #ifndef USE_GEMM
-		cblas_dgemv(CblasColMajor, CblasNoTrans, 3, 3, 1.0, B, 3, u_n, 1, 0.0, u_n_p_1, 1);
+		cblas_dgemv(CblasColMajor, CblasNoTrans, DOF, DOF, 1.0, B, DOF, u_n, 1, 0.0, u_n_p_1, 1);
 #endif
 #ifdef USE_GEMM 
-		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 3, 1, 3, 1.0, B, 3, u_n, 3, 0.0, u_n_p_1, 3);
+		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DOF, 1, DOF, 1.0, B, DOF, u_n, DOF, 0.0, u_n_p_1, DOF);
 		myDGEMMKernel(jitter, B, u_n, u_n_p_1);
 #endif
 		// y: = alpha*A*x + beta*y
 		// tmp = ((-1.0 / (h*h))*M) * u_n_m_1
 #ifndef USE_GEMM
-		cblas_dgemv(CblasColMajor, CblasNoTrans, 3, 3, (-1.0 / (h*h)), M, 3, u_n_m_1, 1, 0.0, tmp, 1);
+		cblas_dgemv(CblasColMajor, CblasNoTrans, DOF, DOF, (-1.0 / (h * h)), M, DOF, u_n_m_1, 1, 0.0, tmp, 1);
 #endif
 #ifdef USE_GEMM 
-		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 3, 1, 3, 1.0, M, 3, u_n_m_1, 3, 0.0, tmp, 3);
+		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DOF, 1, DOF, 1.0, M, DOF, u_n_m_1, DOF, 0.0, tmp, DOF);
 		myDGEMMKernel(jitter, M, u_n_m_1, tmp);
 #endif
 		// u_n_p_1 <- 1.0 tmp + u_n_p_1
-//		MathLibrary::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.0, 3);
-		cblas_daxpy(3, 1.0, tmp, 1, u_n_p_1, 1);
+//		MathLibrary::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.0, DOF);
+		cblas_daxpy(DOF, 1.0, tmp, 1, u_n_p_1, 1);
 		// Solve system
-//		MathLibrary::computeDenseSymSolution(3, K, pivot, u_n_p_1);
-		LAPACKE_dgetrs(LAPACK_COL_MAJOR, 'N', 3, 1, K, 3, pivot.data(), u_n_p_1, 3);
+//		MathLibrary::computeDenseSymSolution(DOF, K, pivot, u_n_p_1);
+		LAPACKE_dgetrs(LAPACK_COL_MAJOR, 'N', DOF, 1, K, DOF, pivot.data(), u_n_p_1, DOF);
 
 		u_n_m_1[0] = u_n[0];
 		u_n_m_1[1] = u_n[1];
@@ -453,9 +459,9 @@ for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 		u_n[0] = u_n_p_1[0];
 		u_n[1] = u_n_p_1[1];
 		u_n[2] = u_n_p_1[2];
-}
+	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
-	std::cout << u_n_p_1[0] << " " << u_n_p_1[1] << " " << (double)u_n_p_1[2] << std::scientific << std::endl;
+	std::cout << u_n_p_1[0] << "\n" << u_n_p_1[1] << "\n" << (double)u_n_p_1[2] << std::scientific << std::endl;
 
 }
 
@@ -502,7 +508,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 	int alignment = 64;
 	int DOF = 11;
-	int matrixElements = DOF* DOF;
+	int matrixElements = DOF * DOF;
 
 	// allocate matrices of zeros
 	floatEVAA* B = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
@@ -644,7 +650,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	for (int i = 0; i < 11; ++i) {
 		std::cout << u_n[i] << ", ";
 	}*/
-	
+
 
 	mkl_set_num_threads(8);
 	int nRefinement = 10;
@@ -665,7 +671,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	//B' <-(2.0 / (h*h))*M + B
 //	MathLibrary::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
 	cblas_daxpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
-	
+
 	//B <-(1.0 / (h))*D + B'
 //	MathLibrary::computeDenseVectorAddition(D.data(), B.data(), (1.0 / h), 121);
 	cblas_daxpy(matrixElements, (1.0 / h), D, 1, B, 1);
@@ -679,7 +685,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	// Time loop
 	double tmpScalar = (-1.0 / (h * h));
 	for (int i = 0; i < DOF; ++i)
-		M[i*DOF + i] *= tmpScalar;
+		M[(DOF + 1) * i] *= tmpScalar;
 
 	void* jitter;
 	// adds matrix matrix product to scalar matrix product
@@ -742,11 +748,13 @@ void EVAAComputeEngine::computeBlazetoy(void) {
 	using blaze::DynamicMatrix;
 	using blaze::rowMajor;
 	using blaze::columnVector;
-	
-	DynamicMatrix<double, rowMajor> A(3, 3);  // The system matrix A
-	DynamicVector<double, columnVector> b(3);   // The right-hand side vector b
-	DynamicVector<int, columnVector> ipiv(3);   // Pivoting indices
-	DynamicMatrix<double, rowMajor> L(3, 3), U(3,3), P(3,3);  // The system matrix A
+
+	int DOF = 3;
+
+	DynamicMatrix<double, rowMajor> A(DOF, DOF);  // The system matrix A
+	DynamicVector<double, columnVector> b(DOF);   // The right-hand side vector b
+	DynamicVector<int, columnVector> ipiv(DOF);   // Pivoting indices
+	DynamicMatrix<double, rowMajor> L(DOF, DOF), U(DOF, DOF), P(DOF, DOF);  // The system matrix A
 	// ... Initialization
 	A(0, 0) = 5;
 	A(0, 1) = 2;
@@ -781,7 +789,7 @@ void EVAAComputeEngine::computeBlazetoy(void) {
 	std::cout << " U = : \n" << U << "\n";
 	std::cout << " P = : \n" << P << "\n";
 
-	
+
 #endif
 }
 
@@ -794,14 +802,16 @@ void EVAAComputeEngine::computeBlaze(void) {
 	using blaze::columnVector;
 	using blaze::rowMajor;
 
+	int DOF = 3;
+
 	typedef double floatEVAA;
 	// K stiffness
 	floatEVAA k_1 = 1.;
 	floatEVAA k_2 = 2.;
 	floatEVAA k_3 = 3.;
-	
+
 	// Using symmetric matrix enforce the symmetry and is safer
-	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> K(3);
+	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> K(DOF);
 	K(0, 0) = k_1 + k_2;
 	K(0, 1) = -k_2;
 	K(1, 0) = -k_2;
@@ -812,7 +822,7 @@ void EVAAComputeEngine::computeBlaze(void) {
 	floatEVAA d_1 = 0.1;
 	floatEVAA d_2 = 0.5;
 
-	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> D(3);
+	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> D(DOF);
 	D(0, 0) = d_1;
 	D(1, 1) = d_2;
 	D(1, 2) = -d_2;
@@ -824,15 +834,15 @@ void EVAAComputeEngine::computeBlaze(void) {
 	floatEVAA m_2 = 0.2;
 	floatEVAA m_3 = 0.3;
 
-	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> M(3);
+	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> M(DOF);
 	M(0, 0) = m_1;
 	M(1, 1) = m_2;
 	M(2, 2) = m_3;
 
 	// Define the solution vectors
-	DynamicVector<floatEVAA, columnVector> u_n_p_1(3, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
-	DynamicVector<floatEVAA, columnVector> u_n(3, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
-	DynamicVector<floatEVAA, columnVector> u_n_m_1(3, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<floatEVAA, columnVector> u_n_p_1(DOF, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<floatEVAA, columnVector> u_n(DOF, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<floatEVAA, columnVector> u_n_m_1(DOF, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
 
 	// Perform the iterations
 	int nRefinement = 10;
@@ -850,16 +860,16 @@ void EVAAComputeEngine::computeBlaze(void) {
 
 	/// Build dynamic stiffness matrix
 	// A = (1.0/(h*h))*M + (1.0/h)*D + K
-	DynamicMatrix<floatEVAA, rowMajor> A(11, 11);
+	DynamicMatrix<floatEVAA, rowMajor> A(DOF, DOF);
 	A = 1. / (h * h) * M + 1. / h * D + K;
 
 	///Build rhs for BE integrator
 	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
-	DynamicMatrix<floatEVAA, rowMajor> B(11, 11);
+	DynamicMatrix<floatEVAA, rowMajor> B(DOF, DOF);
 	B = 2. / (h * h) * M + 1. / h * D;
 
 	// LU Decomposition
-	DynamicVector<int, columnVector> ipiv(11);   // Pivoting indices
+	DynamicVector<int, columnVector> ipiv(DOF);   // Pivoting indices
 	DynamicMatrix<double, rowMajor>  A_LU(A);  // Temporary matrix to be decomposed
 
 	getrf(A_LU, ipiv.data());
@@ -890,6 +900,9 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	using blaze::rowMajor;
 
 	typedef double floatEVAA;
+
+	int DOF = 11;
+
 	// K stiffness
 	floatEVAA k = 10.;
 	floatEVAA k_11 = 1.1;
@@ -906,38 +919,38 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	floatEVAA l_4 = 1.25;
 
 	// Using symmetric matrix enforce the symmetry and is safer
-	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> K(11);
+	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> K(DOF);
 
-	K(0,0) = k_11 + k_21 + k_31 + k_41;
-	K(0,1) = -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2;
-	K(0,2) = -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4;
-	K(0,3) = -k_11;
-	K(0,5) = -k_21;
-	K(0,7) = -k_31;
-	K(0,9) = -k_41;
-	K(1,1) = l_1 * l_1 * k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41;
-	K(1,2) = l_1 * l_3 * k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41;
-	K(1,3) = l_1 * k_11;
-	K(1,5) = -l_2 * k_21;
-	K(1,7) = -l_2 * k_31;
-	K(1,9) = l_1 * k_41;
-	K(2,2) = l_3 * l_3 * k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41;
-	K(2,3) = l_3 * k_11;
-	K(2,5) = l_3 * k_21;
-	K(2,7) = -l_4 * k_31;
-	K(2,9) = -l_4 * k_41;
-	K(3,3) = k_11 + k_12;
-	K(3,4) = -k_12;
-	K(4,4) = k_12;
-	K(5,5) = k_21 + k_22;
-	K(5,6) = -k_22;
-	K(6,6) = k_22;
-	K(7,7) = k_31 + k_32;
-	K(7,8) = -k_32;
-	K(8,8) = k_32;
-	K(9,9) = k_41 + k_42;
-	K(9,10) = -k_42;
-	K(10,10) = k_42;
+	K(0, 0) = k_11 + k_21 + k_31 + k_41;
+	K(0, 1) = -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2;
+	K(0, 2) = -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4;
+	K(0, 3) = -k_11;
+	K(0, 5) = -k_21;
+	K(0, 7) = -k_31;
+	K(0, 9) = -k_41;
+	K(1, 1) = l_1 * l_1 * k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41;
+	K(1, 2) = l_1 * l_3 * k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41;
+	K(1, 3) = l_1 * k_11;
+	K(1, 5) = -l_2 * k_21;
+	K(1, 7) = -l_2 * k_31;
+	K(1, 9) = l_1 * k_41;
+	K(2, 2) = l_3 * l_3 * k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41;
+	K(2, 3) = l_3 * k_11;
+	K(2, 5) = l_3 * k_21;
+	K(2, 7) = -l_4 * k_31;
+	K(2, 9) = -l_4 * k_41;
+	K(3, 3) = k_11 + k_12;
+	K(3, 4) = -k_12;
+	K(4, 4) = k_12;
+	K(5, 5) = k_21 + k_22;
+	K(5, 6) = -k_22;
+	K(6, 6) = k_22;
+	K(7, 7) = k_31 + k_32;
+	K(7, 8) = -k_32;
+	K(8, 8) = k_32;
+	K(9, 9) = k_41 + k_42;
+	K(9, 10) = -k_42;
+	K(10, 10) = k_42;
 
 	// D - damping matrix
 	floatEVAA d_11 = 1.1 * 0.1;
@@ -949,37 +962,37 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	floatEVAA d_41 = 1.4 * 0.1;
 	floatEVAA d_42 = k * 0.1;
 
-	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> D(11);
-	D(0,0) = d_11 + d_21 + d_31 + d_41;
-	D(0,1) = -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2;
-	D(0,2) = -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4;
-	D(0,3) = -d_11;
-	D(0,5) = -d_21;
-	D(0,7) = -d_31;
-	D(0,9) = -d_41;
-	D(1,1) = l_1 * l_1 * d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41;
-	D(1,2) = l_1 * l_3 * d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41;
-	D(1,3) = l_1 * d_11;
-	D(1,5) = -l_2 * d_21;
-	D(1,7) = -l_2 * d_31;
-	D(1,9) = l_1 * d_41;
-	D(2,2) = l_3 * l_3 * d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41;
-	D(2,3) = l_3 * d_11;
-	D(2,5) = l_3 * d_21;
-	D(2,7) = -l_4 * d_31;
-	D(2,9) = -l_4 * d_41;
-	D(3,3) = d_11 + d_12;
-	D(3,4) = -d_12;
-	D(4,4) = d_12;
-	D(5,5) = d_21 + d_22;
-	D(5,6) = -d_22;
-	D(6,6) = d_22;
-	D(7,7) = d_31 + d_32;
-	D(7,8) = -d_32;
-	D(8,8) = d_32;
-	D(9,9) = d_41 + d_42;
-	D(9,10) = -d_42;
-	D(10,10) = d_42;
+	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> D(DOF);
+	D(0, 0) = d_11 + d_21 + d_31 + d_41;
+	D(0, 1) = -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2;
+	D(0, 2) = -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4;
+	D(0, 3) = -d_11;
+	D(0, 5) = -d_21;
+	D(0, 7) = -d_31;
+	D(0, 9) = -d_41;
+	D(1, 1) = l_1 * l_1 * d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41;
+	D(1, 2) = l_1 * l_3 * d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41;
+	D(1, 3) = l_1 * d_11;
+	D(1, 5) = -l_2 * d_21;
+	D(1, 7) = -l_2 * d_31;
+	D(1, 9) = l_1 * d_41;
+	D(2, 2) = l_3 * l_3 * d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41;
+	D(2, 3) = l_3 * d_11;
+	D(2, 5) = l_3 * d_21;
+	D(2, 7) = -l_4 * d_31;
+	D(2, 9) = -l_4 * d_41;
+	D(3, 3) = d_11 + d_12;
+	D(3, 4) = -d_12;
+	D(4, 4) = d_12;
+	D(5, 5) = d_21 + d_22;
+	D(5, 6) = -d_22;
+	D(6, 6) = d_22;
+	D(7, 7) = d_31 + d_32;
+	D(7, 8) = -d_32;
+	D(8, 8) = d_32;
+	D(9, 9) = d_41 + d_42;
+	D(9, 10) = -d_42;
+	D(10, 10) = d_42;
 
 	// M - mass matrix
 	floatEVAA m_1 = 1e-1;
@@ -994,7 +1007,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	floatEVAA m_10 = 10e-1;
 	floatEVAA m_11 = 11e-1;
 
-	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> M(11);
+	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> M(DOF);
 	M(0, 0) = m_1;
 	M(1, 1) = m_2;
 	M(2, 2) = m_3;
@@ -1008,10 +1021,10 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	M(10, 10) = m_11;
 
 	// Define the solution vectors
-	DynamicVector<floatEVAA, columnVector> u_n_p_1(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
-	DynamicVector<floatEVAA, columnVector> u_n(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
-	DynamicVector<floatEVAA, columnVector> u_n_m_1(11, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
-	
+	DynamicVector<floatEVAA, columnVector> u_n_p_1(DOF, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<floatEVAA, columnVector> u_n(DOF, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<floatEVAA, columnVector> u_n_m_1(DOF, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+
 	// Perform the iterations
 	int nRefinement = 10;
 	int numTimeSteps = pow(2, nRefinement);
@@ -1028,26 +1041,26 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 
 	/// Build dynamic stiffness matrix
 	// A = (1.0/(h*h))*M + (1.0/h)*D + K
-	DynamicMatrix<floatEVAA, rowMajor> A(11, 11);
+	DynamicMatrix<floatEVAA, rowMajor> A(DOF, DOF);
 	A = 1. / (h * h) * M + 1. / h * D + K;
 
 	///Build rhs for BE integrator
 	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
-	DynamicMatrix<floatEVAA, rowMajor> B(11, 11);
+	DynamicMatrix<floatEVAA, rowMajor> B(DOF, DOF);
 	B = 2. / (h * h) * M + 1. / h * D;
-	
+
 	// LU Decomposition
-	DynamicVector<int, columnVector> ipiv(11);   // Pivoting indices
+	DynamicVector<int, columnVector> ipiv(DOF);   // Pivoting indices
 	DynamicMatrix<double, rowMajor>  A_LU(A);  // Temporary matrix to be decomposed
-	
+
 	getrf(A_LU, ipiv.data());
-	M *= - 1. / (h * h);
+	M *= -1. / (h * h);
 	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 
 		// Solve system: A*u_n_p_1 = B*u_n - M*u_n_m_1
 		// rhs = B*u_n + (-1.0 / (h*h))*M
 		u_n_p_1 = B * u_n + M * u_n_m_1; // rhs
-		
+
 		getrs(A_LU, u_n_p_1, 'T', ipiv.data());
 		u_n_m_1 = u_n;
 		u_n = u_n_p_1;
