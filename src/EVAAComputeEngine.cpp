@@ -501,22 +501,24 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	floatEVAA m_11 = 11e-1;
 
 	int alignment = 64;
+	int DOF = 11;
+	int matrixElements = DOF* DOF;
 
 	// allocate matrices of zeros
-	floatEVAA* B = (floatEVAA*)mkl_calloc(121, sizeof(floatEVAA), alignment);
-	floatEVAA* M = (floatEVAA*)mkl_calloc(121, sizeof(floatEVAA), alignment);
-	floatEVAA* D = (floatEVAA*)mkl_calloc(121, sizeof(floatEVAA), alignment);
-	floatEVAA* K = (floatEVAA*)mkl_calloc(121, sizeof(floatEVAA), alignment);
+	floatEVAA* B = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
+	floatEVAA* M = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
+	floatEVAA* D = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
+	floatEVAA* K = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
 
 	//std::vector<floatEVAA> B(121);
 	//std::vector<floatEVAA> M(121);
 	//std::vector<floatEVAA> D(121);
 	//std::vector<floatEVAA> K(121);
 
-	floatEVAA* u_n_p_1 = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
-	floatEVAA* u_n = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
-	floatEVAA* u_n_m_1 = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
-	floatEVAA* tmp = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
+	floatEVAA* u_n_p_1 = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
+	floatEVAA* u_n = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
+	floatEVAA* u_n_m_1 = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
+	floatEVAA* tmp = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
 
 	//std::vector<floatEVAA> f_n_p_1(11);
 	//std::vector<floatEVAA> u_n_p_1(11);
@@ -578,9 +580,9 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	K[120] = k_42;
 
 	// Symmetry
-	for (int i = 1; i < 11; ++i)
+	for (int i = 1; i < DOF; ++i)
 		for (int j = 0; j < i; ++j)
-			K[i * 11 + j] = K[j * 11 + i];
+			K[i * DOF + j] = K[j * DOF + i];
 
 	/*std::cout << "\nK:\n";
 	for (int i = 0; i < 11; ++i) {
@@ -623,9 +625,9 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	D[120] = d_42;
 
 	// Symmetry
-	for (int i = 1; i < 11; ++i)
+	for (int i = 1; i < DOF; ++i)
 		for (int j = 0; j < i; ++j)
-			D[i * 11 + j] = D[j * 11 + i];
+			D[i * DOF + j] = D[j * DOF + i];
 
 	/*std::cout << "\nD:\n";
 	for (int i = 0; i < 11; ++i) {
@@ -659,57 +661,29 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 //	MathLibrary::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 121);
 	cblas_daxpy(121, (1.0 / h), D, 1, K, 1);
 	/// K holds now dynamic stiffness matrix  for BE integrator
-	// Print K (A matrix)
-	std::cout.precision(dbl::max_digits10);
-	std::cout << "\nK <- 1/h^2*M + 1/h*D + K (A matrix):\n";
-	for (int i = 0; i < 11; ++i) {
-		for (int j = 0; j < 11; ++j) {
-			std::cout << K[i * 11 + j] << "\t";
-		}
-		std::cout << std::endl;
-	}
 	///Build rhs for BE integrator
 	//B' <-(2.0 / (h*h))*M + B
 //	MathLibrary::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
-	cblas_daxpy(121, (2.0 / (h * h)), M, 1, B, 1);
+	cblas_daxpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
 	
 	//B <-(1.0 / (h))*D + B'
 //	MathLibrary::computeDenseVectorAddition(D.data(), B.data(), (1.0 / h), 121);
-	cblas_daxpy(121, (1.0 / h), D, 1, B, 1);
-	// Print final B
-	std::cout << "\nB=2/h^2*M+1/h*D:\n";
-	for (int i = 0; i < 11; ++i) {
-		for (int j = 0; j < 11; ++j) {
-			std::cout << B[i * 11 + j] << "\t";
-		}
-		std::cout << std::endl;
-	}
+	cblas_daxpy(matrixElements, (1.0 / h), D, 1, B, 1);
 	//A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE	
 
-	std::vector<int> pivot(11);
+	std::vector<int> pivot(DOF);
 	// LU Decomposition
 //	MathLibrary::computeDenseSymLUFactorisation(11, K, pivot);
-	LAPACKE_dgetrf(LAPACK_COL_MAJOR, 11, 11, K, 11, pivot.data());
-	std::cout << "\n\tK with LU decomposition:\n";
-	for (int i = 0; i < 11; ++i) {
-		for (int j = 0; j < 11; ++j) {
-			std::cout << K[i * 11 + j] << "\t";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << "\n\tPivot:\n";
-	for (int i = 0; i < 11; ++i) {
-		std::cout << pivot[i] << ", ";
-	}
+	LAPACKE_dgetrf(LAPACK_COL_MAJOR, DOF, DOF, K, DOF, pivot.data());
 
 	// Time loop
 	double tmpScalar = (-1.0 / (h * h));
-	for (int i = 0; i < 120; ++i)
+	for (int i = 0; i < matrixElements; ++i)
 		M[i] *= tmpScalar;
 
 	void* jitter;
 	// adds matrix matrix product to scalar matrix product
-	std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, 11, 1, 11, 1.0, 11, 11, 0.0, 11) << std::endl;
+	std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, DOF, 1, DOF, 1.0, DOF, DOF, 0.0, DOF) << std::endl;
 	dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
 	LAPACKE_set_nancheck(0);
 
@@ -732,7 +706,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		// y: = alpha*A*x + beta*y
 		// tmp = ((-1.0 / (h*h))*M) * u_n_m_1
 #ifndef USE_GEMM
-		cblas_dgemv(CblasColMajor, CblasNoTrans, 11, 11, (-1.0 / (h * h)), M, 11, u_n_m_1, 1, 0.0, tmp, 1);
+		cblas_dgemv(CblasColMajor, CblasNoTrans, DOF, DOF, (-1.0 / (h * h)), M, DOF, u_n_m_1, 1, 0.0, tmp, 1);
 #endif
 #ifdef USE_GEMM 
 		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1.0, M, 11, u_n_m_1, 11, 0.0, tmp, 11);
@@ -741,22 +715,21 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		// u_n_p_1 <- 1.0 tmp + u_n_p_1
 //		MathLibrary::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.0, 11);
 		//void cblas_daxpy (const MKL_INT n, const double a, const double *x, const MKL_INT incx, double *y, const MKL_INT incy);
-		cblas_daxpy(11, 1.0, tmp, 1, u_n_p_1, 1);
+		cblas_daxpy(DOF, 1.0, tmp, 1, u_n_p_1, 1);
 		// Solve system
 //		MathLibrary::computeDenseSymSolution(11, K, pivot, u_n_p_1);
 // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans , lapack_int n , lapack_int nrhs , const double * a , lapack_int lda , const lapack_int * ipiv , double * b , lapack_int ldb );
-		LAPACKE_dgetrs(LAPACK_COL_MAJOR, 'N', 11, 1, K, 11, pivot.data(), u_n_p_1, 11);
+		LAPACKE_dgetrs(LAPACK_COL_MAJOR, 'N', DOF, 1, K, DOF, pivot.data(), u_n_p_1, DOF);
 
-		for (int i = 0; i < 11; ++i) {
+		for (int i = 0; i < DOF; ++i) {
 			u_n_m_1[i] = u_n[i];
 			u_n[i] = u_n_p_1[i];
 		}
 	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
-	for (int i = 0; i < 11; ++i) {
-		std::cout << u_n_p_1[i] << " ";
+	for (int i = 0; i < DOF; ++i) {
+		std::cout << u_n_p_1[i] << std::scientific << std::endl;
 	}
-	std::cout << std::scientific << std::endl;
 
 }
 
@@ -1048,10 +1021,10 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
 	// Initial conditions
-	const floatEVAA u_init = 1;
-	const floatEVAA du_init = 0;
-	u_n[0] = u_init;
-	u_n_m_1[0] = u_init - h * du_init;
+	//const floatEVAA u_init = 1;
+	//const floatEVAA du_init = 0;
+	u_n[0] = 1;
+	u_n_m_1[0] = 1;
 
 	/// Build dynamic stiffness matrix
 	// A = (1.0/(h*h))*M + (1.0/h)*D + K
