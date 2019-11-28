@@ -30,6 +30,9 @@
 #ifdef USE_EIGEN
 #include <Eigen/Dense>
 using Eigen::MatrixXd;
+using Eigen::VectorXd;
+using Eigen::Matrix3d;
+using Eigen::IOFormat;
 #endif
 
 #ifdef USE_BLAZE
@@ -52,235 +55,235 @@ void EVAAComputeEngine::prepare(void) {
 }
 
 // EIGEN
-//void EVAAComputeEngine::computeEigen(void) {
-//
-//	typedef double floatEVAA;
-//	floatEVAA k_1 = 1.;
-//	floatEVAA k_2 = 2.;
-//	floatEVAA k_3 = 3.;
-//	floatEVAA d_1 = 1. / 10.;
-//	floatEVAA d_2 = 1. / 2.;
-//	floatEVAA m_1 = 1e-1;
-//	floatEVAA m_2 = 2e-1;
-//	floatEVAA m_3 = 3e-1;
-//
-//	MatrixXd B(3, 3);
-//	MatrixXd M(3, 3);
-//	MatrixXd D(3, 3);
-//	MatrixXd K(3, 3);
-//
-//	VectorXd u_n_p_1(3);
-//	VectorXd u_n(3);
-//	VectorXd u_n_m_1(3);
-//
-//	M << m_1, 0.0, 0.0,
-//		0.0, m_2, 0.0,
-//		0.0, 0.0, m_3;
-//	D << d_1, 0.0, 0.0,
-//		0.0, d_2, -d_2,
-//		0.0, -d_2, d_2;
-//	K << k_1 + k_2, -k_2, 0.0,
-//		-k_2, k_2, 0.0,
-//		0.0, 0.0, k_3;
-//	B << 0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0;
-//
-//	u_n_p_1 << 0.0, 0.0, 0.0;
-//	u_n << 1.0, 0.0, 0.0;
-//	u_n_m_1 << 1.0, 0.0, 0.0;
-//
-//	int nRefinement = 27;
-//	int numTimeSteps = pow(2, nRefinement);
-//	//time step size 
-//	floatEVAA h = 1.0 / (numTimeSteps);
-//	std::cout << "Time step h is: " << h << std::scientific << std::endl;
-//
-//	/// Build dynamic stiffness matrix
-//	// K = (1.0/(h*h))*M + (1.0/h)*D + K
-//	K += (1.0 / (h * h)) * M + 1.0 / h * D;
-//
-//	///Build rhs for BE integrator
-//	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
-//	B += 2.0 / (h * h) * M + 1.0 / h * D;
-//
-//
-//	// LU Decomposition
-//	Eigen::PartialPivLU<Matrix3d> lu(K);
-//
-//	M *= (-1.0 / (h * h));
-//	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
-//		// B*u_n + (-1.0 / (h*h))*M
-//		// Solve system
-//		u_n_p_1 = lu.solve(B * u_n + M * u_n_m_1);
-//
-//		u_n_m_1 = u_n;
-//		u_n = u_n_p_1;
-//	}
-//	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
-//	std::cout << u_n_p_1 << std::scientific << std::endl;
-//}
-//
-//void EVAAComputeEngine::computeEigen11DOF(void) {
-//
-//	typedef double floatEVAA;
-//	// K stiffness
-//	floatEVAA k = 10.;
-//	floatEVAA k_11 = 1.1;
-//	floatEVAA k_12 = k;
-//	floatEVAA k_21 = 1.2;
-//	floatEVAA k_22 = k;
-//	floatEVAA k_31 = 1.3;
-//	floatEVAA k_32 = k;
-//	floatEVAA k_41 = 1.4;
-//	floatEVAA k_42 = k;
-//	floatEVAA k_l1 = 2.;
-//	floatEVAA k_l2 = 1.;
-//	floatEVAA k_l3 = 0.8;
-//	floatEVAA k_l4 = 1.25;
-//	floatEVAA l_1 = 2;
-//	floatEVAA l_2 = 1;
-//	floatEVAA l_3 = 0.8;
-//	floatEVAA l_4 = 1.25;
-//
-//	// D - damping matrix
-//	floatEVAA d_11 = 1.1 * 0.1;
-//	floatEVAA d_12 = k * 0.1;
-//	floatEVAA d_21 = 1.2 * 0.1;
-//	floatEVAA d_22 = k * 0.1;
-//	floatEVAA d_31 = 1.3 * 0.1;
-//	floatEVAA d_32 = k * 0.1;
-//	floatEVAA d_41 = 1.4 * 0.1;
-//	floatEVAA d_42 = k * 0.1;
-//	floatEVAA d_l1 = 2. * 0.1;
-//	floatEVAA d_l2 = 1. * 0.1;
-//	floatEVAA d_l3 = 0.8 * 0.1;
-//	floatEVAA d_l4 = 1.25 * 0.1;
-//
-//	// M - mass matrix
-//	floatEVAA m_1 = 1e-1;
-//	floatEVAA m_2 = 2e-1;
-//	floatEVAA m_3 = 3e-1;
-//	floatEVAA m_4 = 4e-1;
-//	floatEVAA m_5 = 5e-1;
-//	floatEVAA m_6 = 6e-1;
-//	floatEVAA m_7 = 7e-1;
-//	floatEVAA m_8 = 8e-1;
-//	floatEVAA m_9 = 9e-1;
-//	floatEVAA m_10 = 10e-1;
-//	floatEVAA m_11 = 11e-1;
-//
-//	MatrixXd A(11, 11);
-//	MatrixXd B(11, 11);
-//	MatrixXd M(11, 11);
-//	MatrixXd D(11, 11);
-//	MatrixXd K(11, 11);
-//	MatrixXd K_aux(11, 11);
-//	MatrixXd D_aux(11, 11);
-//
-//	VectorXd u_n_p_1(11);
-//	VectorXd u_n(11);
-//	VectorXd u_n_m_1(11);
-//
-//	// Define the mass matrix
-//	M = MatrixXd::Zero(11, 11);
-//	M(0, 0) = m_1;
-//	M(1, 1) = m_2;
-//	M(2, 2) = m_3;
-//	M(3, 3) = m_4;
-//	M(4, 4) = m_5;
-//	M(5, 5) = m_6;
-//	M(6, 6) = m_7;
-//	M(7, 7) = m_8;
-//	M(8, 8) = m_9;
-//	M(9, 9) = m_10;
-//	M(10, 10) = m_11;
-//
-//	// Define the stiffness matrix
-//	K << k_11 + k_21 + k_31 + k_41, -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2, -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4, -k_11, 0.0, -k_21, 0.0, -k_31, 0.0, -k_41, 0.0,
-//		0.0, l_1* l_1* k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41, l_1* l_3* k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41, l_1* k_11, 0.0, -l_2 * k_21, 0.0, -l_2 * k_31, 0.0, l_1* k_41, 0.0,
-//		0.0, 0.0, l_3* l_3* k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41, l_3* k_11, 0.0, l_3* k_21, 0.0, -l_4 * k_31, 0.0, -l_4 * k_41, 0.0,
-//		0.0, 0.0, 0.0, k_11 + k_12, -k_12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, k_12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, k_21 + k_22, -k_22, 0.0, 0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_22, 0.0, 0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_31 + k_32, -k_32, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_32, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_41 + k_42, -k_42,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_42;
-//	MatrixXd K_diag(11, 11);
-//	/*K_diag = MatrixXd::Zero(11, 11);
-//	K_diag.diagonal = K.diagonal();*/
-//	//std::cout << "K is: " << K_diag << std::endl;
-//	K_aux = K + K.transpose();
-//	K_aux.diagonal() -= K.diagonal();
-//	K = K_aux;
-//
-//	// Define the damping matrix
-//	D << d_11 + d_21 + d_31 + d_41, -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2, -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4, -d_11, 0.0, -d_21, 0.0, -d_31, 0.0, -d_41, 0.0,
-//		0.0, l_1* l_1* d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41, l_1* l_3* d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41, l_1* d_11, 0.0, -l_2 * d_21, 0.0, -l_2 * d_31, 0.0, l_1* d_41, 0.0,
-//		0.0, 0.0, l_3* l_3* d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41, l_3* d_11, 0.0, l_3* d_21, 0.0, -l_4 * d_31, 0.0, -l_4 * d_41, 0.0,
-//		0.0, 0.0, 0.0, d_11 + d_12, -d_12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, d_12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, d_21 + d_22, -d_22, 0.0, 0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_22, 0.0, 0.0, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_31 + d_32, -d_32, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_32, 0.0, 0.0,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_41 + d_42, -d_42,
-//		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_42;
-//	MatrixXd D_diag(11, 11);
-//	/*D_diag = MatrixXd::Zero(11, 11);
-//	D_diag.diagonal = D.diagonal();*/
-//	D_aux = D + D.transpose();
-//	D_aux.diagonal() -= D.diagonal();
-//	D = D_aux;
-//	A = MatrixXd::Zero(11, 11);
-//	B = MatrixXd::Zero(11, 11);
-//
-//	u_n_p_1 = VectorXd::Zero(11);
-//	u_n = VectorXd::Zero(11);
-//	u_n(0) = 1;
-//	u_n_m_1 = u_n;
-//
-//	int nRefinement = 23;
-//	int numTimeSteps = pow(2, nRefinement);
-//	//time step size 
-//	floatEVAA h = 1.0 / (numTimeSteps);
-//	std::cout << "Time step h is: " << h << std::scientific << std::endl;
-//
-//	IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
-//	std::cout << "M: \n\n" << M.format(CleanFmt) << std::endl << std::endl;
-//	std::cout << "D: \n\n" << D.format(CleanFmt) << std::endl << std::endl;
-//	std::cout << "K: \n\n" << K.format(CleanFmt) << std::endl << std::endl;
-//
-//	/// Build dynamic stiffness matrix
-//	// A = (1.0/(h*h))*M + (1.0/h)*D + K
-//	A = (1.0 / (h * h)) * M + 1.0 / h * D + K;
-//
-//	///Build rhs for BE integrator
-//	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
-//	B = 2.0 / (h * h) * M + 1.0 / h * D;
-//
-//	std::cout << "A: \n\n" << A.format(CleanFmt) << std::endl << std::endl;
-//	std::cout << "B: \n\n" << B.format(CleanFmt) << std::endl << std::endl;
-//	// LU Decomposition
-//	Eigen::PartialPivLU<MatrixXd> lu(A);
-//
-//	M *= (-1.0 / (h * h));
-//	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
-//		// B*u_n + (-1.0 / (h*h))*M
-//		// Solve system
-//		u_n_p_1 = lu.solve(B * u_n + M * u_n_m_1);
-//
-//		u_n_m_1 = u_n;
-//		u_n = u_n_p_1;
-//	}
-//	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
-//	std::cout << u_n_p_1 << std::scientific << std::endl;
-//}
+void EVAAComputeEngine::computeEigen(void) {
+
+	typedef double floatEVAA;
+	floatEVAA k_1 = 1.;
+	floatEVAA k_2 = 2.;
+	floatEVAA k_3 = 3.;
+	floatEVAA d_1 = 1. / 10.;
+	floatEVAA d_2 = 1. / 2.;
+	floatEVAA m_1 = 1e-1;
+	floatEVAA m_2 = 2e-1;
+	floatEVAA m_3 = 3e-1;
+
+	MatrixXd B(3, 3);
+	MatrixXd M(3, 3);
+	MatrixXd D(3, 3);
+	MatrixXd K(3, 3);
+
+	VectorXd u_n_p_1(3);
+	VectorXd u_n(3);
+	VectorXd u_n_m_1(3);
+
+	M << m_1, 0.0, 0.0,
+		0.0, m_2, 0.0,
+		0.0, 0.0, m_3;
+	D << d_1, 0.0, 0.0,
+		0.0, d_2, -d_2,
+		0.0, -d_2, d_2;
+	K << k_1 + k_2, -k_2, 0.0,
+		-k_2, k_2, 0.0,
+		0.0, 0.0, k_3;
+	B << 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0;
+
+	u_n_p_1 << 0.0, 0.0, 0.0;
+	u_n << 1.0, 0.0, 0.0;
+	u_n_m_1 << 1.0, 0.0, 0.0;
+
+	int nRefinement = 10;
+	int numTimeSteps = pow(2, nRefinement);
+	//time step size 
+	floatEVAA h = 1.0 / (numTimeSteps);
+	std::cout << "Time step h is: " << h << std::scientific << std::endl;
+
+	/// Build dynamic stiffness matrix
+	// K = (1.0/(h*h))*M + (1.0/h)*D + K
+	K += (1.0 / (h * h)) * M + 1.0 / h * D;
+
+	///Build rhs for BE integrator
+	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
+	B += 2.0 / (h * h) * M + 1.0 / h * D;
+
+
+	// LU Decomposition
+	Eigen::PartialPivLU<Matrix3d> lu(K);
+
+	M *= (-1.0 / (h * h));
+	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
+		// B*u_n + (-1.0 / (h*h))*M
+		// Solve system
+		u_n_p_1 = lu.solve(B * u_n + M * u_n_m_1);
+
+		u_n_m_1 = u_n;
+		u_n = u_n_p_1;
+	}
+	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
+	std::cout << u_n_p_1 << std::scientific << std::endl;
+}
+
+void EVAAComputeEngine::computeEigen11DOF(void) {
+
+	typedef double floatEVAA;
+	// K stiffness
+	floatEVAA k = 10.;
+	floatEVAA k_11 = 1.1;
+	floatEVAA k_12 = k;
+	floatEVAA k_21 = 1.2;
+	floatEVAA k_22 = k;
+	floatEVAA k_31 = 1.3;
+	floatEVAA k_32 = k;
+	floatEVAA k_41 = 1.4;
+	floatEVAA k_42 = k;
+	floatEVAA k_l1 = 2.;
+	floatEVAA k_l2 = 1.;
+	floatEVAA k_l3 = 0.8;
+	floatEVAA k_l4 = 1.25;
+	floatEVAA l_1 = 2;
+	floatEVAA l_2 = 1;
+	floatEVAA l_3 = 0.8;
+	floatEVAA l_4 = 1.25;
+
+	// D - damping matrix
+	floatEVAA d_11 = 1.1 * 0.1;
+	floatEVAA d_12 = k * 0.1;
+	floatEVAA d_21 = 1.2 * 0.1;
+	floatEVAA d_22 = k * 0.1;
+	floatEVAA d_31 = 1.3 * 0.1;
+	floatEVAA d_32 = k * 0.1;
+	floatEVAA d_41 = 1.4 * 0.1;
+	floatEVAA d_42 = k * 0.1;
+	floatEVAA d_l1 = 2. * 0.1;
+	floatEVAA d_l2 = 1. * 0.1;
+	floatEVAA d_l3 = 0.8 * 0.1;
+	floatEVAA d_l4 = 1.25 * 0.1;
+
+	// M - mass matrix
+	floatEVAA m_1 = 1e-1;
+	floatEVAA m_2 = 2e-1;
+	floatEVAA m_3 = 3e-1;
+	floatEVAA m_4 = 4e-1;
+	floatEVAA m_5 = 5e-1;
+	floatEVAA m_6 = 6e-1;
+	floatEVAA m_7 = 7e-1;
+	floatEVAA m_8 = 8e-1;
+	floatEVAA m_9 = 9e-1;
+	floatEVAA m_10 = 10e-1;
+	floatEVAA m_11 = 11e-1;
+
+	MatrixXd A(11, 11);
+	MatrixXd B(11, 11);
+	MatrixXd M(11, 11);
+	MatrixXd D(11, 11);
+	MatrixXd K(11, 11);
+	MatrixXd K_aux(11, 11);
+	MatrixXd D_aux(11, 11);
+
+	VectorXd u_n_p_1(11);
+	VectorXd u_n(11);
+	VectorXd u_n_m_1(11);
+
+	// Define the mass matrix
+	M = MatrixXd::Zero(11, 11);
+	M(0, 0) = m_1;
+	M(1, 1) = m_2;
+	M(2, 2) = m_3;
+	M(3, 3) = m_4;
+	M(4, 4) = m_5;
+	M(5, 5) = m_6;
+	M(6, 6) = m_7;
+	M(7, 7) = m_8;
+	M(8, 8) = m_9;
+	M(9, 9) = m_10;
+	M(10, 10) = m_11;
+
+	// Define the stiffness matrix
+	K << k_11 + k_21 + k_31 + k_41, -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2, -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4, -k_11, 0.0, -k_21, 0.0, -k_31, 0.0, -k_41, 0.0,
+		0.0, l_1* l_1* k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41, l_1* l_3* k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41, l_1* k_11, 0.0, -l_2 * k_21, 0.0, -l_2 * k_31, 0.0, l_1* k_41, 0.0,
+		0.0, 0.0, l_3* l_3* k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41, l_3* k_11, 0.0, l_3* k_21, 0.0, -l_4 * k_31, 0.0, -l_4 * k_41, 0.0,
+		0.0, 0.0, 0.0, k_11 + k_12, -k_12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, k_12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, k_21 + k_22, -k_22, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_22, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_31 + k_32, -k_32, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_32, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_41 + k_42, -k_42,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_42;
+	MatrixXd K_diag(11, 11);
+	/*K_diag = MatrixXd::Zero(11, 11);
+	K_diag.diagonal = K.diagonal();*/
+	//std::cout << "K is: " << K_diag << std::endl;
+	K_aux = K + K.transpose();
+	K_aux.diagonal() -= K.diagonal();
+	K = K_aux;
+
+	// Define the damping matrix
+	D << d_11 + d_21 + d_31 + d_41, -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2, -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4, -d_11, 0.0, -d_21, 0.0, -d_31, 0.0, -d_41, 0.0,
+		0.0, l_1* l_1* d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41, l_1* l_3* d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41, l_1* d_11, 0.0, -l_2 * d_21, 0.0, -l_2 * d_31, 0.0, l_1* d_41, 0.0,
+		0.0, 0.0, l_3* l_3* d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41, l_3* d_11, 0.0, l_3* d_21, 0.0, -l_4 * d_31, 0.0, -l_4 * d_41, 0.0,
+		0.0, 0.0, 0.0, d_11 + d_12, -d_12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, d_12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, d_21 + d_22, -d_22, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_22, 0.0, 0.0, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_31 + d_32, -d_32, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_32, 0.0, 0.0,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_41 + d_42, -d_42,
+		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_42;
+	MatrixXd D_diag(11, 11);
+	/*D_diag = MatrixXd::Zero(11, 11);
+	D_diag.diagonal = D.diagonal();*/
+	D_aux = D + D.transpose();
+	D_aux.diagonal() -= D.diagonal();
+	D = D_aux;
+	A = MatrixXd::Zero(11, 11);
+	B = MatrixXd::Zero(11, 11);
+
+	u_n_p_1 = VectorXd::Zero(11);
+	u_n = VectorXd::Zero(11);
+	u_n(0) = 1;
+	u_n_m_1 = u_n;
+
+	int nRefinement = 10;
+	int numTimeSteps = pow(2, nRefinement);
+	//time step size 
+	floatEVAA h = 1.0 / (numTimeSteps);
+	std::cout << "Time step h is: " << h << std::scientific << std::endl;
+
+	/*IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+	std::cout << "M: \n\n" << M.format(CleanFmt) << std::endl << std::endl;
+	std::cout << "D: \n\n" << D.format(CleanFmt) << std::endl << std::endl;
+	std::cout << "K: \n\n" << K.format(CleanFmt) << std::endl << std::endl;*/
+
+	/// Build dynamic stiffness matrix
+	// A = (1.0/(h*h))*M + (1.0/h)*D + K
+	A = (1.0 / (h * h)) * M + 1.0 / h * D + K;
+
+	///Build rhs for BE integrator
+	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
+	B = 2.0 / (h * h) * M + 1.0 / h * D;
+
+	/*std::cout << "A: \n\n" << A.format(CleanFmt) << std::endl << std::endl;
+	std::cout << "B: \n\n" << B.format(CleanFmt) << std::endl << std::endl;*/
+	// LU Decomposition
+	Eigen::PartialPivLU<MatrixXd> lu(A);
+
+	M *= (-1.0 / (h * h));
+	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
+		// B*u_n + (-1.0 / (h*h))*M
+		// Solve system
+		u_n_p_1 = lu.solve(B * u_n + M * u_n_m_1);
+
+		u_n_m_1 = u_n;
+		u_n = u_n_p_1;
+	}
+	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
+	std::cout << u_n_p_1 << std::scientific << std::endl;
+}
 
 // INTEL MKL
-void EVAAComputeEngine::compute(void) {
+void EVAAComputeEngine::computeMKL(void) {
 
 	typedef double floatEVAA;
 	floatEVAA k_1 = 1.;
@@ -456,7 +459,7 @@ for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 
 }
 
-void EVAAComputeEngine::compute11DOF(void) {
+void EVAAComputeEngine::computeMKL11DOF(void) {
 
 	typedef double floatEVAA;
 	// K stiffness
@@ -810,6 +813,101 @@ void EVAAComputeEngine::computeBlazetoy(void) {
 }
 
 void EVAAComputeEngine::computeBlaze(void) {
+#ifdef USE_BLAZE
+	using blaze::CompressedMatrix;
+	using blaze::DynamicMatrix;
+	using blaze::SymmetricMatrix;
+	using blaze::DynamicVector;
+	using blaze::columnVector;
+	using blaze::rowMajor;
+
+	typedef double floatEVAA;
+	// K stiffness
+	floatEVAA k_1 = 1.;
+	floatEVAA k_2 = 2.;
+	floatEVAA k_3 = 3.;
+	
+	// Using symmetric matrix enforce the symmetry and is safer
+	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> K(3);
+	K(0, 0) = k_1 + k_2;
+	K(0, 1) = -k_2;
+	K(1, 0) = -k_2;
+	K(1, 1) = k_2;
+	K(2, 2) = k_3;
+
+	// D - damping matrix
+	floatEVAA d_1 = 0.1;
+	floatEVAA d_2 = 0.5;
+
+	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> D(3);
+	D(0, 0) = d_1;
+	D(1, 1) = d_2;
+	D(1, 2) = -d_2;
+	D(2, 1) = -d_2;
+	D(2, 2) = d_2;
+
+	// M - mass matrix
+	floatEVAA m_1 = 0.1;
+	floatEVAA m_2 = 0.2;
+	floatEVAA m_3 = 0.3;
+
+	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> M(3);
+	M(0, 0) = m_1;
+	M(1, 1) = m_2;
+	M(2, 2) = m_3;
+
+	// Define the solution vectors
+	DynamicVector<floatEVAA, columnVector> u_n_p_1(3, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<floatEVAA, columnVector> u_n(3, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<floatEVAA, columnVector> u_n_m_1(3, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+
+	// Perform the iterations
+	int nRefinement = 10;
+	int numTimeSteps = pow(2, nRefinement);
+
+	//time step size 
+	floatEVAA h = 1.0 / ((floatEVAA)numTimeSteps);
+	std::cout << "Time step h is: " << h << std::scientific << std::endl;
+
+	// Initial conditions
+	const floatEVAA u_init = 1;
+	const floatEVAA du_init = 0;
+	u_n[0] = u_init;
+	u_n_m_1[0] = u_init - h * du_init;
+
+	/// Build dynamic stiffness matrix
+	// A = (1.0/(h*h))*M + (1.0/h)*D + K
+	DynamicMatrix<floatEVAA, rowMajor> A(11, 11);
+	A = 1. / (h * h) * M + 1. / h * D + K;
+
+	///Build rhs for BE integrator
+	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
+	DynamicMatrix<floatEVAA, rowMajor> B(11, 11);
+	B = 2. / (h * h) * M + 1. / h * D;
+
+	// LU Decomposition
+	DynamicVector<int, columnVector> ipiv(11);   // Pivoting indices
+	DynamicMatrix<double, rowMajor>  A_LU(A);  // Temporary matrix to be decomposed
+
+	getrf(A_LU, ipiv.data());
+	M *= -1. / (h * h);
+	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
+
+		// Solve system: A*u_n_p_1 = B*u_n - M*u_n_m_1
+		// rhs = B*u_n + (-1.0 / (h*h))*M
+		u_n_p_1 = B * u_n + M * u_n_m_1; // rhs
+
+		getrs(A_LU, u_n_p_1, 'T', ipiv.data());
+		u_n_m_1 = u_n;
+		u_n = u_n_p_1;
+	}
+	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
+	std::cout << u_n_p_1 << std::scientific << std::endl;
+
+#endif
+}
+
+void EVAAComputeEngine::computeBlaze11DOF(void) {
 #ifdef USE_BLAZE
 	using blaze::CompressedMatrix;
 	using blaze::DynamicMatrix;
