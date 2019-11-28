@@ -50,17 +50,24 @@ public:
 	* \brief compute engine
 	* \author Stefan Sicklinger
 	***********/
+	// EIGEN
 	void computeEigen(void);
+	void computeEigen11DOF(void);
 	/***********************************************************************************************
 	* \brief compute engine
 	* \author Stefan Sicklinger
 	***********/
+	// BLAZE
+	void computeBlazetoy(void);
 	void computeBlaze(void);
+	void computeBlaze11DOF(void);
 	/***********************************************************************************************
 	* \brief compute engine
 	* \author Stefan Sicklinger
 	***********/
-	void compute(void);
+	// MKL
+	void computeMKL(void);
+	void computeMKL11DOF(void);
 	/***********************************************************************************************
 	* \brief clean compute engine free memory
 	* \author Stefan Sicklinger
