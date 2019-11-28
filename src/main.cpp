@@ -77,15 +77,15 @@ int main(int argc, char **argv) {
 	}
 	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("default");
 		myComputeEngine->prepare();
-		/*anaysisTimer01.start();
+		anaysisTimer01.start();
 		myComputeEngine->compute();
 		anaysisTimer01.stop();
 		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(MKL)." << std::endl;
-		myComputeEngine->clean();*/
-		/*anaysisTimer01.start();
+		myComputeEngine->clean();
+		anaysisTimer01.start();
 		myComputeEngine->computeEigen();
 		anaysisTimer01.stop();
-		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Eigen)." << std::endl;*/
+		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Eigen)." << std::endl;
 		anaysisTimer01.start();
 		myComputeEngine->computeBlaze11DOF();
 		anaysisTimer01.stop();
