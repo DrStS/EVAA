@@ -678,8 +678,8 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 	// Time loop
 	double tmpScalar = (-1.0 / (h * h));
-	for (int i = 0; i < matrixElements; ++i)
-		M[i] *= tmpScalar;
+	for (int i = 0; i < DOF; ++i)
+		M[i*DOF + i] *= tmpScalar;
 
 	void* jitter;
 	// adds matrix matrix product to scalar matrix product
