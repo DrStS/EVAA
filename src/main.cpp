@@ -78,19 +78,19 @@ int main(int argc, char **argv) {
 	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("default");
 		myComputeEngine->prepare();
 		anaysisTimer01.start();
-		myComputeEngine->compute();
+		myComputeEngine->computeMKL11DOF();
 		anaysisTimer01.stop();
-		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(MKL)." << std::endl;
-		myComputeEngine->clean();
+		std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(MKL).\n\n\n" << std::endl;
 		anaysisTimer01.start();
-		myComputeEngine->computeEigen();
+		myComputeEngine->computeEigen11DOF();
 		anaysisTimer01.stop();
-		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Eigen)." << std::endl;
+		std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Eigen).\n\n\n" << std::endl;
 		anaysisTimer01.start();
 		myComputeEngine->computeBlaze11DOF();
 		anaysisTimer01.stop();
-		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze)." << std::endl;
-	std::cout << "We did a great job! Awesome!" << std::endl;
+		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze).\n\n\n" << std::endl;
+		myComputeEngine->clean();
+	std::cout << "\nWe did a great job! Awesome!" << std::endl;
 #endif // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON
 #ifdef __linux

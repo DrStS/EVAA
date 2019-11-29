@@ -58,6 +58,7 @@ public:
 	* \author Stefan Sicklinger
 	***********/
 	// BLAZE
+	void computeBlazetoy(void);
 	void computeBlaze(void);
 	void computeBlaze11DOF(void);
 	/***********************************************************************************************
@@ -65,8 +66,8 @@ public:
 	* \author Stefan Sicklinger
 	***********/
 	// MKL
-	void compute(void);
-	void compute11DOF(void);
+	void computeMKL(void);
+	void computeMKL11DOF(void);
 	/***********************************************************************************************
 	* \brief clean compute engine free memory
 	* \author Stefan Sicklinger

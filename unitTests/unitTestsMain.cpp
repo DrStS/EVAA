@@ -46,7 +46,5 @@
 
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
-	int i = 12;
-	i = 14;
 	return RUN_ALL_TESTS();
 }
