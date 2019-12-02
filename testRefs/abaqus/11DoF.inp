@@ -3,34 +3,35 @@ Stefan Sicklinger 11DoFs
 *Preprint, echo=NO, model=NO, history=NO, contact=NO
 ** ----------------------------------------------------------------
 *PARAMETER
-k_body_fl=1.1
+k_body_fl=1.2
 k_tyre_fl=10
-k_body_fr=1.2
+k_body_fr=1.1
 k_tyre_fr=10
 k_body_rl=1.3
 k_tyre_rl=10
 k_body_rr=1.4
 k_tyre_rr=10
 mass_Body=1e-1
-mass_wheel_fl=4e-1
-mass_tyre_fl=5e-1
-mass_wheel_fr=6e-1
-mass_tyre_fr=7e-1
+mass_wheel_fl=6e-1
+mass_tyre_fl=7e-1
+mass_wheel_fr=4e-1
+mass_tyre_fr=5e-1
 mass_wheel_rl=8e-1
 mass_tyre_rl=9e-1
 mass_wheel_rr=10e-1
 mass_tyre_rr=11e-1
-I_body_xx=3e-1
-I_body_yy=2e-1
+I_body_xx=2e-1
+I_body_yy=3e-1
 I_body_zz=0
 I_body_xy=0
 I_body_xz=0
 I_body_yz=0
 l_lat_fl=0.8
-l_lat_rl=0.8
-l_long_fl=1.3
-l_long_rl=1.5
-h_COG = 0.5
+l_lat_rl=1.25
+l_long_fl=1
+l_long_rl=2
+l_CoGspring_fl=0.25
+l_CoGspring_rl=0.25
 l_bodywheel_fl=0.3
 l_bodywheel_fr=0.3
 l_bodywheel_rl=0.3
@@ -42,9 +43,17 @@ r_Wheel_rr = r_Wheel_fl
 ** Dependant paramters---------------------------------------------
 l_lat_fr=-l_lat_fl
 l_lat_rr=-l_lat_rl
-l_long_fr=-l_long_fl
-l_long_rr=-l_long_rl
-h_COG_neg = -h_COG
+l_long_rl_neg=-l_long_rl
+l_long_rr_neg=l_long_rl_neg
+l_long_fr=l_long_fl
+l_long_rr=l_long_rl
+l_CoGspring_fl=0.25
+l_CoGspring_fr=l_CoGspring_fl
+l_CoGspring_rr=l_CoGspring_rl
+l_CoGspring_fl_neg=-l_CoGspring_fl
+l_CoGspring_fr_neg=-l_CoGspring_fr
+l_CoGspring_rl_neg=-l_CoGspring_rl
+l_CoGspring_rr_neg=-l_CoGspring_rr
 l_bodywheel_fl_neg=-l_bodywheel_fl
 l_bodywheel_fr_neg=-l_bodywheel_fr
 l_bodywheel_rl_neg=-l_bodywheel_rl
@@ -53,37 +62,41 @@ r_Wheel_fl_neg = -r_Wheel_fl
 r_Wheel_fr_neg = -r_Wheel_fr
 r_Wheel_rl_neg = -r_Wheel_rl
 r_Wheel_rr_neg = -r_Wheel_rr
-l_road_fl_neg = l_bodywheel_fl_neg+r_Wheel_fl_neg
-l_road_fr_neg = l_bodywheel_fr_neg+r_Wheel_fr_neg
-l_road_rl_neg = l_bodywheel_rl_neg+r_Wheel_rl_neg
-l_road_rr_neg = l_bodywheel_rr_neg+r_Wheel_rr_neg
+pos_wheel_fl = l_CoGspring_fl_neg+l_bodywheel_fl_neg
+pos_wheel_fr = l_CoGspring_fr_neg+l_bodywheel_fr_neg
+pos_wheel_rl = l_CoGspring_rl_neg+l_bodywheel_rl_neg
+pos_wheel_rr = l_CoGspring_rr_neg+l_bodywheel_rr_neg
+pos_road_fl = l_CoGspring_fl_neg+l_bodywheel_fl_neg+r_Wheel_fl_neg
+pos_road_fr = l_CoGspring_fr_neg+l_bodywheel_fr_neg+r_Wheel_fr_neg
+pos_road_rl = l_CoGspring_rl_neg+l_bodywheel_rl_neg+r_Wheel_rl_neg
+pos_road_rr = l_CoGspring_rr_neg+l_bodywheel_rr_neg+r_Wheel_rr_neg
 ** ----------------------------------------------------------------
 *Node
-      1,           		0.,           		0.,           				0.
+      1,           		0.,         	  			0.,           				0.
 *Node
-      2,          <l_long_fl>,  	<l_lat_fl>,    				<h_COG_neg>
+      2,          <l_long_fl>,  			<l_lat_fl>,    		<l_CoGspring_fl_neg>
 *Node
-      3,          <l_long_fr>,  	<l_lat_fr>,    				<h_COG_neg>
+      3,          <l_long_fr>,  			<l_lat_fr>,    		<l_CoGspring_fr_neg>
 *Node
-      4,          <l_long_rl>,  	<l_lat_rl>,    				<h_COG_neg>
+      4,          <l_long_rl_neg>,  		<l_lat_rl>,    		<l_CoGspring_rl_neg>
 *Node
-      5,          <l_long_rr>,  	<l_lat_rr>,    				<h_COG_neg>
+      5,          <l_long_rr_neg>,  		<l_lat_rr>,    		<l_CoGspring_rr_neg>
 *Node
-      6,          <l_long_fl>,  	<l_lat_fl>,    		<l_bodywheel_fl_neg>
+      6,          <l_long_fl>,  			<l_lat_fl>,    			<pos_wheel_fl>
 *Node
-      7,          <l_long_fr>,  	<l_lat_fr>,    		<l_bodywheel_fr_neg>
+      7,          <l_long_fr>,  			<l_lat_fr>,    			<pos_wheel_fr>
 *Node
-      8,          <l_long_rl>,  	<l_lat_rl>,    		<l_bodywheel_rl_neg>
+      8,          <l_long_rl_neg>,  		<l_lat_rl>,    			<pos_wheel_rl>
 *Node
-      9,          <l_long_rr>,  	<l_lat_rr>,    		<l_bodywheel_rr_neg>
+      9,          <l_long_rr_neg>,  		<l_lat_rr>,    			<pos_wheel_rr>
 *Node
-      10,         <l_long_fl>,  	<l_lat_fl>,    			<l_road_fl_neg>
+      10,         <l_long_fl>,  			<l_lat_fl>,    			<pos_road_fl>
 *Node
-      11,         <l_long_fr>,  	<l_lat_fr>,    			<l_road_fr_neg>
+      11,         <l_long_fr>,  			<l_lat_fr>,    			<pos_road_fr>
 *Node
-      12,         <l_long_rl>,  	<l_lat_rl>,    			<l_road_rl_neg>
+      12,         <l_long_rl_neg>,  		<l_lat_rl>,    			<pos_road_rl>
 *Node
-      13,         <l_long_rr>,  	<l_lat_rr>,    			<l_road_rr_neg>
+      13,         <l_long_rr_neg>,  		<l_lat_rr>,    			<pos_road_rr>
 *Nset, nset=CoG
  1,
 *Nset, nset=wheel_fl
@@ -149,28 +162,28 @@ slaveNodes, 1.
 *Coupling, constraint name=Constraint-1, ref node=CoG, surface=slaveSurface
 *Kinematic
 *Spring, elset=k_body_fl-spring
-2, 2
+3,3
 <k_body_fl>
 *Spring, elset=k_tyre_fl-spring
-2, 2
+3,3
 <k_tyre_fl>
 *Spring, elset=k_body_fr-spring
-2, 2
+3,3
 <k_body_fr>
 *Spring, elset=k_tyre_fr-spring
-2, 2
+3,3
 <k_tyre_fr>
 *Spring, elset=k_body_rl-spring
-2, 2
+3,3
 <k_body_rl>
 *Spring, elset=k_tyre_rl-spring
-2, 2
+3,3
 <k_tyre_rl>
 *Spring, elset=k_body_rr-spring
-2, 2
+3,3
 <k_body_rr>
 *Spring, elset=k_tyre_rr-spring
-2, 2
+3,3
 <k_tyre_rr>
 *Mass, elset=cog-mass
 <mass_Body>
@@ -238,4 +251,3 @@ U1, U2, U3, UR1, UR2, UR3
 *Node Print, nset=CoG, summary=no
 U1, U2, U3, UR1, UR2, UR3
 *End Step
-

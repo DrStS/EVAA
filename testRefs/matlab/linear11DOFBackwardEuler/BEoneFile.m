@@ -6,36 +6,51 @@ format long e;
 % Dynamic Backward Euler problem 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 k=10;
-k11=1.1;k12=k;k21=1.2;k22=k;k31=1.3;k32=k;k41=1.4;k42=k;
-l1=2;l2=1;l3=0.8;l4=1.25;
-m_1=1e-1;
-m_2=2e-1;
-m_3=3e-1;
-m_4=4e-1;
-m_5=5e-1;
-m_6=6e-1;
-m_7=7e-1;
-m_8=8e-1;
-m_9=9e-1;
-m_10=10e-1;
-m_11=11e-1;
+k_body_fl=1.2;
+k_tyre_fl=k;
+k_body_fr=1.1;
+k_tyre_fr=k;
+k_body_rl=1.3;
+k_tyre_rl=k;
+k_body_rr=1.4;
+k_tyre_rr=k;
+l_long_fl=0.8;
+l_long_rl=1.25;
+l_long_fr=0.8;
+l_long_rr=1.25;
+l_lat_fl=1;
+l_lat_rl=1;
+l_lat_fr=2;
+l_lat_rr=2;
+mass_Body=1e-1;
+I_body_xx=2e-1;
+I_body_yy=3e-1;
+mass_wheel_fl=6e-1;
+mass_tyre_fl=7e-1;
+mass_wheel_fr=4e-1;
+mass_tyre_fr=5e-1;
+mass_wheel_rl=8e-1;
+mass_tyre_rl=9e-1;
+mass_wheel_rr=10e-1;
+mass_tyre_rr=11e-1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tend=1;
 u_init=0;
 du_init=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % System Mono
-M=diag([m_1, m_2, m_3, m_4, m_5, m_6, m_7, m_8, m_9, m_10, m_11]);
-K=[k11+k21+k31+k41 -k11*l1-k41*l1+k21*l2+k31*l2 -k11*l3-k21*l3+k31*l4+k41*l4 -k11 0 -k21 0 -k31 0 -k41 0;
-   0 l1*l1*k11+l2*l2*k21+l2*l2*k31+l1*l1*k41 l1*l3*k11-l3*l2*k21+l2*l4*k31-l1*l4*k41 l1*k11 0 -l2*k21 0 -l2*k31 0 l1*k41 0;
-   0 0 l3*l3*k11+l3*l3*k21+l4*l4*k31+l4*l4*k41 l3*k11 0 l3*k21 0 -l4*k31 0 -l4*k41 0;
-   0 0 0 k11+k12 -k12 0 0 0 0 0 0;
-   0 0 0 0 k12 0 0 0 0 0 0;
-   0 0 0 0 0 k21+k22 -k22 0 0 0 0;
-   0 0 0 0 0 0 k22 0 0 0 0;
-   0 0 0 0 0 0 0 k31+k32 -k32 0 0;
-   0 0 0 0 0 0 0 0 k32 0 0;
-   0 0 0 0 0 0 0 0 0 k41+k42 -k42;
-   0 0 0 0 0 0 0 0 0 0 k42];
+M=diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
+K=[k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_fr+k_body_rl*l_lat_rl-k_body_rr*l_lat_rr, -k_body_fl*l_long_fl-k_body_fr*l_long_fr+k_body_rl*l_long_rl+k_body_rr*l_long_rr,  -k_body_fl, 0, -k_body_fr, 0, -k_body_rl, 0, -k_body_rr, 0;
+   0  l_lat_fl*l_lat_fl*k_body_fl+l_lat_fr*l_lat_fr*k_body_fr+l_lat_rl*l_lat_rl*k_body_rl+l_lat_rr*l_lat_rr*k_body_rr, -l_long_fl*l_lat_fl*k_body_fl+l_lat_fr*l_long_fr*k_body_fr+l_long_rl*l_lat_rl*k_body_rl-l_long_rr*l_lat_rr*k_body_rr, -l_lat_fl*k_body_fl, 0, l_lat_fr*k_body_fr, 0, -l_lat_rl*k_body_rl, 0, l_lat_rr*k_body_rr, 0;
+   0 0 l_long_fl*l_long_fl*k_body_fl+l_long_fr*l_long_fr*k_body_fr+l_long_rl*l_long_rl*k_body_rl+l_long_rr*l_long_rr*k_body_rr, l_long_fl*k_body_fl, 0 l_long_fr*k_body_fr 0 -l_long_rl*k_body_rl 0 -l_long_rr*k_body_rr 0; 
+   0 0 0 k_body_fl+k_tyre_fl -k_tyre_fl 0 0 0 0 0 0;
+   0 0 0 0 k_tyre_fl 0 0 0 0 0 0;
+   0 0 0 0 0 k_body_fr+k_tyre_fr -k_tyre_fr 0 0 0 0;
+   0 0 0 0 0 0 k_tyre_fr 0 0 0 0;
+   0 0 0 0 0 0 0 k_body_rl+k_tyre_rl -k_tyre_rl 0 0;
+   0 0 0 0 0 0 0 0 k_tyre_rl 0 0;
+   0 0 0 0 0 0 0 0 0 k_body_rr+k_tyre_rr -k_tyre_rr;
+   0 0 0 0 0 0 0 0 0 0 k_tyre_rr];
 K=K+K'-diag(diag(K));
 D = K *0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -71,6 +86,6 @@ figure();
 plot(t,u_sol(:,1)); grid on;
 legend;
 
-disp(u_sol(501,1))
-disp(u_sol(1001,1))
+%disp(u_sol(501,1))
+disp(u_sol(1001,1:3))
 
