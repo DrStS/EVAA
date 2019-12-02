@@ -26,10 +26,10 @@ I_body_zz=0
 I_body_xy=0
 I_body_xz=0
 I_body_yz=0
-l_lat_fl=0.8
-l_lat_rl=1.25
-l_long_fl=1
-l_long_rl=2
+l_lat_fl=1
+l_lat_fr=2
+l_long_fl=0.8
+l_long_rl=1.25
 l_CoGspring_fl=0.25
 l_CoGspring_rl=0.25
 l_bodywheel_fl=0.3
@@ -41,8 +41,9 @@ r_Wheel_fr = r_Wheel_fl
 r_Wheel_rl = r_Wheel_fl
 r_Wheel_rr = r_Wheel_fl
 ** Dependant paramters---------------------------------------------
-l_lat_fr=-l_lat_fl
-l_lat_rr=-l_lat_rl
+l_lat_rl=l_lat_fl
+l_lat_fr_neg=-l_lat_fr
+l_lat_rr_neg=l_lat_fr_neg
 l_long_rl_neg=-l_long_rl
 l_long_rr_neg=l_long_rl_neg
 l_long_fr=l_long_fl
@@ -76,27 +77,27 @@ pos_road_rr = l_CoGspring_rr_neg+l_bodywheel_rr_neg+r_Wheel_rr_neg
 *Node
       2,          <l_long_fl>,  			<l_lat_fl>,    		<l_CoGspring_fl_neg>
 *Node
-      3,          <l_long_fr>,  			<l_lat_fr>,    		<l_CoGspring_fr_neg>
+      3,          <l_long_fr>,  			<l_lat_fr_neg>,    		<l_CoGspring_fr_neg>
 *Node
       4,          <l_long_rl_neg>,  		<l_lat_rl>,    		<l_CoGspring_rl_neg>
 *Node
-      5,          <l_long_rr_neg>,  		<l_lat_rr>,    		<l_CoGspring_rr_neg>
+      5,          <l_long_rr_neg>,  		<l_lat_rr_neg>,    		<l_CoGspring_rr_neg>
 *Node
       6,          <l_long_fl>,  			<l_lat_fl>,    			<pos_wheel_fl>
 *Node
-      7,          <l_long_fr>,  			<l_lat_fr>,    			<pos_wheel_fr>
+      7,          <l_long_fr>,  			<l_lat_fr_neg>,    			<pos_wheel_fr>
 *Node
       8,          <l_long_rl_neg>,  		<l_lat_rl>,    			<pos_wheel_rl>
 *Node
-      9,          <l_long_rr_neg>,  		<l_lat_rr>,    			<pos_wheel_rr>
+      9,          <l_long_rr_neg>,  		<l_lat_rr_neg>,    			<pos_wheel_rr>
 *Node
       10,         <l_long_fl>,  			<l_lat_fl>,    			<pos_road_fl>
 *Node
-      11,         <l_long_fr>,  			<l_lat_fr>,    			<pos_road_fr>
+      11,         <l_long_fr>,  			<l_lat_fr_neg>,    			<pos_road_fr>
 *Node
       12,         <l_long_rl_neg>,  		<l_lat_rl>,    			<pos_road_rl>
 *Node
-      13,         <l_long_rr_neg>,  		<l_lat_rr>,    			<pos_road_rr>
+      13,         <l_long_rr_neg>,  		<l_lat_rr_neg>,    			<pos_road_rr>
 *Nset, nset=CoG
  1,
 *Nset, nset=wheel_fl
