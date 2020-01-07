@@ -338,7 +338,7 @@ static void BM_Blaze3x3BackwardEulerLinear(benchmark::State& state) {
 
 		//time step size 
 		double h = 1.0 / ((double)numTimeSteps);
-		std::cout << "Time step h is: " << h << std::scientific << std::endl;
+		//std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
 		// Initial conditions
 		const double u_init = 1;
@@ -372,10 +372,10 @@ static void BM_Blaze3x3BackwardEulerLinear(benchmark::State& state) {
 			u_n_m_1 = u_n;
 			u_n = u_n_p_1;
 		}
-		std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
-		std::cout << u_n_p_1 << std::scientific << std::endl;
+		//std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
+		//std::cout << u_n_p_1 << std::scientific << std::endl;
 	}
 }
-BENCHMARK(BM_Eigen3x3BackwardEulerLinear)->UseRealTime();
+BENCHMARK(BM_Blaze3x3BackwardEulerLinear)->UseRealTime();
 #endif
 
