@@ -123,7 +123,7 @@ static void BM_MKL3x3BackwardEulerLinear(benchmark::State& state) {
 		u_n_m_1[2] = 0.;
 
 		mkl_set_num_threads(1);
-		int nRefinement = 10;
+		int nRefinement = state.range(0);
 		int numTimeSteps = pow(2, nRefinement);
 		//time step size 
 		double h = 1.0 / (numTimeSteps);
@@ -208,7 +208,7 @@ static void BM_MKL3x3BackwardEulerLinear(benchmark::State& state) {
 		//std::cout << u_n_p_1[0] << " " << u_n_p_1[1] << " " << (double)u_n_p_1[2] << std::scientific << std::endl;
 	}
 }
-BENCHMARK(BM_MKL3x3BackwardEulerLinear)->UseRealTime();
+BENCHMARK(BM_MKL3x3BackwardEulerLinear)->UseRealTime()->Arg(10)->Arg(15)->Arg(20);
 #endif
 
 #ifdef USE_EIGEN
@@ -249,7 +249,7 @@ static void BM_Eigen3x3BackwardEulerLinear(benchmark::State& state) {
 		u_n << 1.0, 0.0, 0.0;
 		u_n_m_1 << 1.0, 0.0, 0.0;
 
-		int nRefinement = 10;
+		int nRefinement = state.range(0);
 		int numTimeSteps = pow(2, nRefinement);
 		//time step size 
 		double h = 1.0 / (numTimeSteps);
@@ -280,7 +280,7 @@ static void BM_Eigen3x3BackwardEulerLinear(benchmark::State& state) {
 		//std::cout << u_n_p_1 << std::scientific << std::endl;
 	}
 }
-BENCHMARK(BM_Eigen3x3BackwardEulerLinear)->UseRealTime();
+BENCHMARK(BM_Eigen3x3BackwardEulerLinear)->UseRealTime()->Arg(10)->Arg(15)->Arg(20);
 #endif
 
 #ifdef USE_BLAZE
@@ -333,7 +333,7 @@ static void BM_Blaze3x3BackwardEulerLinear(benchmark::State& state) {
 		DynamicVector<double, columnVector> u_n_m_1(3, (double)0.0); // initialize vector of dimension 11 and null elements
 
 		// Perform the iterations
-		int nRefinement = 10;
+		int nRefinement = state.range(0);
 		int numTimeSteps = pow(2, nRefinement);
 
 		//time step size 
@@ -376,6 +376,6 @@ static void BM_Blaze3x3BackwardEulerLinear(benchmark::State& state) {
 		//std::cout << u_n_p_1 << std::scientific << std::endl;
 	}
 }
-BENCHMARK(BM_Blaze3x3BackwardEulerLinear)->UseRealTime();
+BENCHMARK(BM_Blaze3x3BackwardEulerLinear)->UseRealTime()->Arg(10)->Arg(15)->Arg(20);
 #endif
 
