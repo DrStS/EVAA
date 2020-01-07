@@ -29,43 +29,45 @@
 #include <Eigen/Dense>
 using namespace Eigen;
 #endif
+#ifdef USE_BLAZE
+#include <blaze/Math.h>
+#endif
 
 
 #ifdef USE_INTEL_MKL
 static void BM_MKL3x3BackwardEulerLinear(benchmark::State& state) {
 	for (auto _ : state) {
-		typedef double floatEVAA;
-		floatEVAA k_1 = 1.;
-		floatEVAA k_2 = 2.;
-		floatEVAA k_3 = 3.;
-		floatEVAA d_1 = 1. / 10.;
-		floatEVAA d_2 = 1. / 2.;
-		floatEVAA m_1 = 1e-1;
-		floatEVAA m_2 = 2e-1;
-		floatEVAA m_3 = 3e-1;
+		double k_1 = 1.;
+		double k_2 = 2.;
+		double k_3 = 3.;
+		double d_1 = 1. / 10.;
+		double d_2 = 1. / 2.;
+		double m_1 = 1e-1;
+		double m_2 = 2e-1;
+		double m_3 = 3e-1;
 
 		int alignment = 64;
 
-		floatEVAA* B = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
-		floatEVAA* M = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
-		floatEVAA* D = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
-		floatEVAA* K = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 9, alignment);
+		double* B = (double*)mkl_malloc(sizeof(double) * 9, alignment);
+		double* M = (double*)mkl_malloc(sizeof(double) * 9, alignment);
+		double* D = (double*)mkl_malloc(sizeof(double) * 9, alignment);
+		double* K = (double*)mkl_malloc(sizeof(double) * 9, alignment);
 
-		//std::vector<floatEVAA> B(9);
-		//std::vector<floatEVAA> M(9);
-		//std::vector<floatEVAA> D(9);
-		//std::vector<floatEVAA> K(9);
+		//std::vector<double> B(9);
+		//std::vector<double> M(9);
+		//std::vector<double> D(9);
+		//std::vector<double> K(9);
 
-		floatEVAA* u_n_p_1 = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
-		floatEVAA* u_n = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
-		floatEVAA* u_n_m_1 = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
-		floatEVAA* tmp = (floatEVAA*)mkl_malloc(sizeof(floatEVAA) * 3, alignment);
+		double* u_n_p_1 = (double*)mkl_malloc(sizeof(double) * 3, alignment);
+		double* u_n = (double*)mkl_malloc(sizeof(double) * 3, alignment);
+		double* u_n_m_1 = (double*)mkl_malloc(sizeof(double) * 3, alignment);
+		double* tmp = (double*)mkl_malloc(sizeof(double) * 3, alignment);
 
-		//std::vector<floatEVAA> f_n_p_1(3);
-		//std::vector<floatEVAA> u_n_p_1(3);
-		//std::vector<floatEVAA> u_n(3);
-		//std::vector<floatEVAA> u_n_m_1(3);
-		//std::vector<floatEVAA> tmp(3);
+		//std::vector<double> f_n_p_1(3);
+		//std::vector<double> u_n_p_1(3);
+		//std::vector<double> u_n(3);
+		//std::vector<double> u_n_m_1(3);
+		//std::vector<double> tmp(3);
 
 		M[0] = m_1;
 		M[1] = 0.0;
@@ -124,7 +126,7 @@ static void BM_MKL3x3BackwardEulerLinear(benchmark::State& state) {
 		int nRefinement = 10;
 		int numTimeSteps = pow(2, nRefinement);
 		//time step size 
-		floatEVAA h = 1.0 / (numTimeSteps);
+		double h = 1.0 / (numTimeSteps);
 		/// Build dynamic stiffness matrix
 		// K' <- (1.0/(h*h))*M + K
 	//	MathLibrary::computeDenseVectorAddition(M.data(), K.data(), (1.0 / (h*h)), 9);
@@ -206,21 +208,20 @@ static void BM_MKL3x3BackwardEulerLinear(benchmark::State& state) {
 		//std::cout << u_n_p_1[0] << " " << u_n_p_1[1] << " " << (double)u_n_p_1[2] << std::scientific << std::endl;
 	}
 }
-BENCHMARK(BM_MKL3x3BackwardEulerLinear);
+BENCHMARK(BM_MKL3x3BackwardEulerLinear)->UseRealTime();
 #endif
 
 #ifdef USE_EIGEN
 static void BM_Eigen3x3BackwardEulerLinear(benchmark::State& state) {
 	for (auto _ : state) {
-		typedef double floatEVAA;
-		floatEVAA k_1 = 1.;
-		floatEVAA k_2 = 2.;
-		floatEVAA k_3 = 3.;
-		floatEVAA d_1 = 1. / 10.;
-		floatEVAA d_2 = 1. / 2.;
-		floatEVAA m_1 = 1e-1;
-		floatEVAA m_2 = 2e-1;
-		floatEVAA m_3 = 3e-1;
+		double k_1 = 1.;
+		double k_2 = 2.;
+		double k_3 = 3.;
+		double d_1 = 1. / 10.;
+		double d_2 = 1. / 2.;
+		double m_1 = 1e-1;
+		double m_2 = 2e-1;
+		double m_3 = 3e-1;
 
 		MatrixXd B(3, 3);
 		MatrixXd M(3, 3);
@@ -251,7 +252,7 @@ static void BM_Eigen3x3BackwardEulerLinear(benchmark::State& state) {
 		int nRefinement = 10;
 		int numTimeSteps = pow(2, nRefinement);
 		//time step size 
-		floatEVAA h = 1.0 / (numTimeSteps);
+		double h = 1.0 / (numTimeSteps);
 		//std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
 		/// Build dynamic stiffness matrix
@@ -279,6 +280,102 @@ static void BM_Eigen3x3BackwardEulerLinear(benchmark::State& state) {
 		//std::cout << u_n_p_1 << std::scientific << std::endl;
 	}
 }
-BENCHMARK(BM_Eigen3x3BackwardEulerLinear);
+BENCHMARK(BM_Eigen3x3BackwardEulerLinear)->UseRealTime();
+#endif
+
+#ifdef USE_BLAZE
+static void BM_Blaze3x3BackwardEulerLinear(benchmark::State& state) {
+	for (auto _ : state) {
+		using blaze::CompressedMatrix;
+		using blaze::DynamicMatrix;
+		using blaze::SymmetricMatrix;
+		using blaze::DynamicVector;
+		using blaze::columnVector;
+		using blaze::rowMajor;
+
+		// K stiffness
+		double k_1 = 1.;
+		double k_2 = 2.;
+		double k_3 = 3.;
+
+		// Using symmetric matrix enforce the symmetry and is safer
+		SymmetricMatrix <DynamicMatrix<double>, rowMajor> K(3);
+		K(0, 0) = k_1 + k_2;
+		K(0, 1) = -k_2;
+		K(1, 0) = -k_2;
+		K(1, 1) = k_2;
+		K(2, 2) = k_3;
+
+		// D - damping matrix
+		double d_1 = 0.1;
+		double d_2 = 0.5;
+
+		SymmetricMatrix <DynamicMatrix<double>, rowMajor> D(3);
+		D(0, 0) = d_1;
+		D(1, 1) = d_2;
+		D(1, 2) = -d_2;
+		D(2, 1) = -d_2;
+		D(2, 2) = d_2;
+
+		// M - mass matrix
+		double m_1 = 0.1;
+		double m_2 = 0.2;
+		double m_3 = 0.3;
+
+		SymmetricMatrix <DynamicMatrix<double>, rowMajor> M(3);
+		M(0, 0) = m_1;
+		M(1, 1) = m_2;
+		M(2, 2) = m_3;
+
+		// Define the solution vectors
+		DynamicVector<double, columnVector> u_n_p_1(3, (double)0.0); // initialize vector of dimension 11 and null elements
+		DynamicVector<double, columnVector> u_n(3, (double)0.0); // initialize vector of dimension 11 and null elements
+		DynamicVector<double, columnVector> u_n_m_1(3, (double)0.0); // initialize vector of dimension 11 and null elements
+
+		// Perform the iterations
+		int nRefinement = 10;
+		int numTimeSteps = pow(2, nRefinement);
+
+		//time step size 
+		double h = 1.0 / ((double)numTimeSteps);
+		std::cout << "Time step h is: " << h << std::scientific << std::endl;
+
+		// Initial conditions
+		const double u_init = 1;
+		const double du_init = 0;
+		u_n[0] = u_init;
+		u_n_m_1[0] = u_init - h * du_init;
+
+		/// Build dynamic stiffness matrix
+		// A = (1.0/(h*h))*M + (1.0/h)*D + K
+		DynamicMatrix<double, rowMajor> A(3, 3);
+		A = 1. / (h * h) * M + 1. / h * D + K;
+
+		///Build rhs for BE integrator
+		//B = (2.0 / (h*h))*M + 1.0 / h * D + B
+		DynamicMatrix<double, rowMajor> B(3, 3);
+		B = 2. / (h * h) * M + 1. / h * D;
+
+		// LU Decomposition
+		DynamicVector<int, columnVector> ipiv(3);   // Pivoting indices
+		DynamicMatrix<double, rowMajor>  A_LU(A);  // Temporary matrix to be decomposed
+
+		getrf(A_LU, ipiv.data());
+		M *= -1. / (h * h);
+		for (int iTime = 0; iTime < numTimeSteps; iTime++) {
+
+			// Solve system: A*u_n_p_1 = B*u_n - M*u_n_m_1
+			// rhs = B*u_n + (-1.0 / (h*h))*M
+			u_n_p_1 = B * u_n + M * u_n_m_1; // rhs
+
+			getrs(A_LU, u_n_p_1, 'T', ipiv.data());
+			u_n_m_1 = u_n;
+			u_n = u_n_p_1;
+		}
+		std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
+		std::cout << u_n_p_1 << std::scientific << std::endl;
+	}
+}
+BENCHMARK(BM_Eigen3x3BackwardEulerLinear)->UseRealTime();
 #endif
 

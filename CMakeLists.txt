@@ -65,6 +65,7 @@ option(USE_HDF5                "Use HDF5"  OFF)
 option(USE_MATLAB              "Build Matlab API"  OFF)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
+option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  ON)
 ######################################################################################
 #2. Macros
 ######################################################################################
@@ -270,8 +271,10 @@ SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin64 )
 #------------------------------------------------------------------------------------#
 # INCLUDE dirs
 add_subdirectory(src)
-IF(${BUILD_UNITTEST})
+IF(${BUILD_BENCHMARK})
 add_subdirectory(benchmarkTests)
+ENDIF()
+IF(${BUILD_UNITTEST})
 add_subdirectory(unitTests)
 ENDIF()
 IF(${USE_MATLAB})
