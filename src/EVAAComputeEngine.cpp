@@ -58,52 +58,51 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
 	int DOF = 11;
 
-	typedef double floatEVAA;
 	// K stiffness
-	floatEVAA k = 10.;
-	floatEVAA k_11 = 1.1;
-	floatEVAA k_12 = k;
-	floatEVAA k_21 = 1.2;
-	floatEVAA k_22 = k;
-	floatEVAA k_31 = 1.3;
-	floatEVAA k_32 = k;
-	floatEVAA k_41 = 1.4;
-	floatEVAA k_42 = k;
-	floatEVAA k_l1 = 2.;
-	floatEVAA k_l2 = 1.;
-	floatEVAA k_l3 = 0.8;
-	floatEVAA k_l4 = 1.25;
-	floatEVAA l_1 = 2;
-	floatEVAA l_2 = 1;
-	floatEVAA l_3 = 0.8;
-	floatEVAA l_4 = 1.25;
+	double k = 10.;
+	double k_11 = 1.1;
+	double k_12 = k;
+	double k_21 = 1.2;
+	double k_22 = k;
+	double k_31 = 1.3;
+	double k_32 = k;
+	double k_41 = 1.4;
+	double k_42 = k;
+	double k_l1 = 2.;
+	double k_l2 = 1.;
+	double k_l3 = 0.8;
+	double k_l4 = 1.25;
+	double l_1 = 2;
+	double l_2 = 1;
+	double l_3 = 0.8;
+	double l_4 = 1.25;
 
 	// D - damping matrix
-	floatEVAA d_11 = 1.1 * 0.1;
-	floatEVAA d_12 = k * 0.1;
-	floatEVAA d_21 = 1.2 * 0.1;
-	floatEVAA d_22 = k * 0.1;
-	floatEVAA d_31 = 1.3 * 0.1;
-	floatEVAA d_32 = k * 0.1;
-	floatEVAA d_41 = 1.4 * 0.1;
-	floatEVAA d_42 = k * 0.1;
-	floatEVAA d_l1 = 2. * 0.1;
-	floatEVAA d_l2 = 1. * 0.1;
-	floatEVAA d_l3 = 0.8 * 0.1;
-	floatEVAA d_l4 = 1.25 * 0.1;
+	double d_11 = 1.1 * 0.1;
+	double d_12 = k * 0.1;
+	double d_21 = 1.2 * 0.1;
+	double d_22 = k * 0.1;
+	double d_31 = 1.3 * 0.1;
+	double d_32 = k * 0.1;
+	double d_41 = 1.4 * 0.1;
+	double d_42 = k * 0.1;
+	double d_l1 = 2. * 0.1;
+	double d_l2 = 1. * 0.1;
+	double d_l3 = 0.8 * 0.1;
+	double d_l4 = 1.25 * 0.1;
 
 	// M - mass matrix
-	floatEVAA m_1 = 1e-1;
-	floatEVAA m_2 = 2e-1;
-	floatEVAA m_3 = 3e-1;
-	floatEVAA m_4 = 4e-1;
-	floatEVAA m_5 = 5e-1;
-	floatEVAA m_6 = 6e-1;
-	floatEVAA m_7 = 7e-1;
-	floatEVAA m_8 = 8e-1;
-	floatEVAA m_9 = 9e-1;
-	floatEVAA m_10 = 10e-1;
-	floatEVAA m_11 = 11e-1;
+	double m_1 = 1e-1;
+	double m_2 = 2e-1;
+	double m_3 = 3e-1;
+	double m_4 = 4e-1;
+	double m_5 = 5e-1;
+	double m_6 = 6e-1;
+	double m_7 = 7e-1;
+	double m_8 = 8e-1;
+	double m_9 = 9e-1;
+	double m_10 = 10e-1;
+	double m_11 = 11e-1;
 
 	MatrixXd A(DOF, DOF);
 	MatrixXd B(DOF, DOF);
@@ -180,7 +179,7 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 	int nRefinement = 10;
 	int numTimeSteps = pow(2, nRefinement);
 	//time step size 
-	floatEVAA h = 1.0 / (numTimeSteps);
+	double h = 1.0 / (numTimeSteps);
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
 	/*IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
@@ -216,70 +215,69 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
 void EVAAComputeEngine::computeMKL11DOF(void) {
 
-	typedef double floatEVAA;
 	// K stiffness
-	floatEVAA k = 10.;
-	floatEVAA k_11 = 1.1;
-	floatEVAA k_12 = k;
-	floatEVAA k_21 = 1.2;
-	floatEVAA k_22 = k;
-	floatEVAA k_31 = 1.3;
-	floatEVAA k_32 = k;
-	floatEVAA k_41 = 1.4;
-	floatEVAA k_42 = k;
-	floatEVAA l_1 = 2;
-	floatEVAA l_2 = 1;
-	floatEVAA l_3 = 0.8;
-	floatEVAA l_4 = 1.25;
+	double k = 10.;
+	double k_11 = 1.1;
+	double k_12 = k;
+	double k_21 = 1.2;
+	double k_22 = k;
+	double k_31 = 1.3;
+	double k_32 = k;
+	double k_41 = 1.4;
+	double k_42 = k;
+	double l_1 = 2;
+	double l_2 = 1;
+	double l_3 = 0.8;
+	double l_4 = 1.25;
 
 	// D - damping matrix
-	floatEVAA d_11 = 1.1 * 0.1;
-	floatEVAA d_12 = k * 0.1;
-	floatEVAA d_21 = 1.2 * 0.1;
-	floatEVAA d_22 = k * 0.1;
-	floatEVAA d_31 = 1.3 * 0.1;
-	floatEVAA d_32 = k * 0.1;
-	floatEVAA d_41 = 1.4 * 0.1;
-	floatEVAA d_42 = k * 0.1;
+	double d_11 = 1.1 * 0.1;
+	double d_12 = k * 0.1;
+	double d_21 = 1.2 * 0.1;
+	double d_22 = k * 0.1;
+	double d_31 = 1.3 * 0.1;
+	double d_32 = k * 0.1;
+	double d_41 = 1.4 * 0.1;
+	double d_42 = k * 0.1;
 
 	// M - mass matrix
-	floatEVAA m_1 = 1e-1;
-	floatEVAA m_2 = 2e-1;
-	floatEVAA m_3 = 3e-1;
-	floatEVAA m_4 = 4e-1;
-	floatEVAA m_5 = 5e-1;
-	floatEVAA m_6 = 6e-1;
-	floatEVAA m_7 = 7e-1;
-	floatEVAA m_8 = 8e-1;
-	floatEVAA m_9 = 9e-1;
-	floatEVAA m_10 = 10e-1;
-	floatEVAA m_11 = 11e-1;
+	double m_1 = 1e-1;
+	double m_2 = 2e-1;
+	double m_3 = 3e-1;
+	double m_4 = 4e-1;
+	double m_5 = 5e-1;
+	double m_6 = 6e-1;
+	double m_7 = 7e-1;
+	double m_8 = 8e-1;
+	double m_9 = 9e-1;
+	double m_10 = 10e-1;
+	double m_11 = 11e-1;
 
 	int alignment = 64;
 	int DOF = 11;
 	int matrixElements = DOF * DOF;
 
 	// allocate matrices of zeros
-	floatEVAA* B = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
-	floatEVAA* M = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
-	floatEVAA* D = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
-	floatEVAA* K = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
+	double* B = (double*)mkl_calloc(matrixElements, sizeof(double), alignment);
+	double* M = (double*)mkl_calloc(matrixElements, sizeof(double), alignment);
+	double* D = (double*)mkl_calloc(matrixElements, sizeof(double), alignment);
+	double* K = (double*)mkl_calloc(matrixElements, sizeof(double), alignment);
 
-	//std::vector<floatEVAA> B(121);
-	//std::vector<floatEVAA> M(121);
-	//std::vector<floatEVAA> D(121);
-	//std::vector<floatEVAA> K(121);
+	//std::vector<double> B(121);
+	//std::vector<double> M(121);
+	//std::vector<double> D(121);
+	//std::vector<double> K(121);
 
-	floatEVAA* u_n_p_1 = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-	floatEVAA* u_n = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-	floatEVAA* u_n_m_1 = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-	floatEVAA* tmp = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
+	double* u_n_p_1 = (double*)mkl_calloc(DOF, sizeof(double), alignment);
+	double* u_n = (double*)mkl_calloc(DOF, sizeof(double), alignment);
+	double* u_n_m_1 = (double*)mkl_calloc(DOF, sizeof(double), alignment);
+	double* tmp = (double*)mkl_calloc(DOF, sizeof(double), alignment);
 
-	//std::vector<floatEVAA> f_n_p_1(11);
-	//std::vector<floatEVAA> u_n_p_1(11);
-	//std::vector<floatEVAA> u_n(11);
-	//std::vector<floatEVAA> u_n_m_1(11);
-	//std::vector<floatEVAA> tmp(11);
+	//std::vector<double> f_n_p_1(11);
+	//std::vector<double> u_n_p_1(11);
+	//std::vector<double> u_n(11);
+	//std::vector<double> u_n_m_1(11);
+	//std::vector<double> tmp(11);
 
 	// Mass matrix initialization
 	M[0] = m_1;
@@ -405,7 +403,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	int nRefinement = 10;
 	int numTimeSteps = pow(2, nRefinement);
 	//time step size 
-	floatEVAA h = 1.0 / (numTimeSteps);
+	double h = 1.0 / (numTimeSteps);
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
 	/// Build dynamic stiffness matrix
 	// gets written in rear vector
@@ -440,9 +438,6 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	// adds matrix matrix product to scalar matrix product
 	std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, DOF, 1, DOF, 1.0, DOF, DOF, 0.0, DOF) << std::endl;
 	dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
-	LAPACKE_set_nancheck(0);
-
-
 
 	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
 		//timeVec[iTime] = iTime * h;
@@ -497,27 +492,25 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	using blaze::columnVector;
 	using blaze::rowMajor;
 
-	typedef double floatEVAA;
-
 	int DOF = 11;
 
 	// K stiffness
-	floatEVAA k = 10.;
-	floatEVAA k_11 = 1.1;
-	floatEVAA k_12 = k;
-	floatEVAA k_21 = 1.2;
-	floatEVAA k_22 = k;
-	floatEVAA k_31 = 1.3;
-	floatEVAA k_32 = k;
-	floatEVAA k_41 = 1.4;
-	floatEVAA k_42 = k;
-	floatEVAA l_1 = 2;
-	floatEVAA l_2 = 1;
-	floatEVAA l_3 = 0.8;
-	floatEVAA l_4 = 1.25;
+	double k = 10.;
+	double k_11 = 1.1;
+	double k_12 = k;
+	double k_21 = 1.2;
+	double k_22 = k;
+	double k_31 = 1.3;
+	double k_32 = k;
+	double k_41 = 1.4;
+	double k_42 = k;
+	double l_1 = 2;
+	double l_2 = 1;
+	double l_3 = 0.8;
+	double l_4 = 1.25;
 
 	// Using symmetric matrix enforce the symmetry and is safer
-	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> K(DOF);
+	SymmetricMatrix <DynamicMatrix<double>, rowMajor> K(DOF);
 
 	K(0, 0) = k_11 + k_21 + k_31 + k_41;
 	K(0, 1) = -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2;
@@ -551,16 +544,16 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	K(10, 10) = k_42;
 
 	// D - damping matrix
-	floatEVAA d_11 = 1.1 * 0.1;
-	floatEVAA d_12 = k * 0.1;
-	floatEVAA d_21 = 1.2 * 0.1;
-	floatEVAA d_22 = k * 0.1;
-	floatEVAA d_31 = 1.3 * 0.1;
-	floatEVAA d_32 = k * 0.1;
-	floatEVAA d_41 = 1.4 * 0.1;
-	floatEVAA d_42 = k * 0.1;
+	double d_11 = 1.1 * 0.1;
+	double d_12 = k * 0.1;
+	double d_21 = 1.2 * 0.1;
+	double d_22 = k * 0.1;
+	double d_31 = 1.3 * 0.1;
+	double d_32 = k * 0.1;
+	double d_41 = 1.4 * 0.1;
+	double d_42 = k * 0.1;
 
-	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> D(DOF);
+	SymmetricMatrix <DynamicMatrix<double>, rowMajor> D(DOF);
 	D(0, 0) = d_11 + d_21 + d_31 + d_41;
 	D(0, 1) = -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2;
 	D(0, 2) = -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4;
@@ -593,19 +586,19 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	D(10, 10) = d_42;
 
 	// M - mass matrix
-	floatEVAA m_1 = 1e-1;
-	floatEVAA m_2 = 2e-1;
-	floatEVAA m_3 = 3e-1;
-	floatEVAA m_4 = 4e-1;
-	floatEVAA m_5 = 5e-1;
-	floatEVAA m_6 = 6e-1;
-	floatEVAA m_7 = 7e-1;
-	floatEVAA m_8 = 8e-1;
-	floatEVAA m_9 = 9e-1;
-	floatEVAA m_10 = 10e-1;
-	floatEVAA m_11 = 11e-1;
+	double m_1 = 1e-1;
+	double m_2 = 2e-1;
+	double m_3 = 3e-1;
+	double m_4 = 4e-1;
+	double m_5 = 5e-1;
+	double m_6 = 6e-1;
+	double m_7 = 7e-1;
+	double m_8 = 8e-1;
+	double m_9 = 9e-1;
+	double m_10 = 10e-1;
+	double m_11 = 11e-1;
 
-	SymmetricMatrix <DynamicMatrix<floatEVAA>, rowMajor> M(DOF);
+	SymmetricMatrix <DynamicMatrix<double>, rowMajor> M(DOF);
 	M(0, 0) = m_1;
 	M(1, 1) = m_2;
 	M(2, 2) = m_3;
@@ -619,32 +612,32 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	M(10, 10) = m_11;
 
 	// Define the solution vectors
-	DynamicVector<floatEVAA, columnVector> u_n_p_1(DOF, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
-	DynamicVector<floatEVAA, columnVector> u_n(DOF, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
-	DynamicVector<floatEVAA, columnVector> u_n_m_1(DOF, (floatEVAA)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<double, columnVector> u_n_p_1(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<double, columnVector> u_n(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<double, columnVector> u_n_m_1(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
 
 	// Perform the iterations
 	int nRefinement = 10;
 	int numTimeSteps = pow(2, nRefinement);
 
 	//time step size 
-	floatEVAA h = 1.0 / ((floatEVAA)numTimeSteps);
+	double h = 1.0 / ((double)numTimeSteps);
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
 	// Initial conditions
-	//const floatEVAA u_init = 1;
-	//const floatEVAA du_init = 0;
+	//const double u_init = 1;
+	//const double du_init = 0;
 	u_n[0] = 1;
 	u_n_m_1[0] = 1;
 
 	/// Build dynamic stiffness matrix
 	// A = (1.0/(h*h))*M + (1.0/h)*D + K
-	DynamicMatrix<floatEVAA, rowMajor> A(DOF, DOF);
+	DynamicMatrix<double, rowMajor> A(DOF, DOF);
 	A = 1. / (h * h) * M + 1. / h * D + K;
 
 	///Build rhs for BE integrator
 	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
-	DynamicMatrix<floatEVAA, rowMajor> B(DOF, DOF);
+	DynamicMatrix<double, rowMajor> B(DOF, DOF);
 	B = 2. / (h * h) * M + 1. / h * D;
 
 	// LU Decomposition
