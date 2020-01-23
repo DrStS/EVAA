@@ -65,12 +65,6 @@ public:
 	// MKL
 	void computeMKL11DOF(void);
 	/***********************************************************************************************
-	* \brief compute engine
-	* \author Stefan Sicklinger
-	***********/
-	// MKL
-	void computeMKLNasa(void);
-	/***********************************************************************************************
 	* \brief clean compute engine free memory
 	* \author Stefan Sicklinger
 	***********/
