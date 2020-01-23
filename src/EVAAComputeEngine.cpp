@@ -40,7 +40,7 @@ using Eigen::IOFormat;
 #endif
 
 typedef std::numeric_limits< double > dbl;
-
+typedef double floatEVAA;
 
 EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName) {
 	// Intialize XML metadatabase singelton 
@@ -483,8 +483,50 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 }
 
+
+void create_basis_car(floatEVAA* basis_c, floatEVAA* qc) {
+	const MKL_INT n = 4, incx = 1;
+	floatEVAA q_norm_inv = 2 / (floatEVAA)cblas_ddot(n, qc, incx, qc, incx); // 2 / (||q||_2)^2
+	basis_c[0] = 1 - q_norm_inv * (qc[1] * qc[1] + qc[2] * qc[2]);
+	basis_c[1] = q_norm_inv * (qc[0] * qc[1] + qc[2] * qc[3]);
+	basis_c[2] = q_norm_inv * (qc[0] * qc[2] - qc[1] * qc[3]);
+	basis_c[3] = q_norm_inv * (qc[0] * qc[1] - qc[2] * qc[3]);
+	basis_c[4] = 1 - q_norm_inv * (qc[0] * qc[0] + qc[2] * qc[2]);
+	basis_c[5] = q_norm_inv * (qc[1] * qc[2] + qc[0] * qc[3]);
+	basis_c[6] = q_norm_inv * (qc[0] * qc[2] + qc[1] * qc[3]);
+	basis_c[7] = q_norm_inv * (qc[1] * qc[2] - qc[0] * qc[3]);
+	basis_c[8] = 1 - q_norm_inv * (qc[0] * qc[0] + qc[1] * qc[1]);
+}
+
+void get_tilda(floatEVAA* x, floatEVAA* x_tilda) {
+	// x - vector 3 elems (floatEVAA* x); x - tilda matrix 3x3 (floatEVAA* x_tilda)
+	// given y: x_tilda*y=cross(x,y) (Stoneking, page 3 bottom)
+	x_tilda[0] = 0;
+	x_tilda[1] = -x[2];
+	x_tilda[2] = x[1];
+	x_tilda[3] = x[2];
+	x_tilda[4] = 0;
+	x_tilda[5] = -x[0];
+	x_tilda[6] = -x[1];
+	x_tilda[7] = x[0];
+	x_tilda[8] = 0;
+}
+
+void C_cos_transf(floatEVAA* Y, floatEVAA* C_transf) {
+	// This function defines the cosine transformation matrix, used in changing coordinates from a frame to another. The X and Y matrices represent basis in the X and, respectively, Y frame. x = C * y
+	// Cosinus transformation to N base (eye(3)). X basis is the identity implicitly; Y basis is the basis_car
+	// C = [ Y_1 /||Y_1||, Y_2 /||Y_2||, Y_3 /||Y_3||]; Y_i - columns of Y
+	floatEVAA Y_norms_on_columns;
+	for (auto i = 0; i < 3; ++i) {
+		Y_norms_on_columns = 1. / (floatEVAA)(cblas_dnrm2(3, Y + i, 3));
+		Y[i] /= Y_norms_on_columns;
+		Y[i+3] /= Y_norms_on_columns;
+		Y[i+6] /= Y_norms_on_columns;
+	}
+
+}
+
 void EVAAComputeEngine::computeMKLNasa(void) {
-	typedef double floatEVAA;
 	// simulation specifications
 	floatEVAA num_iter = 1e3;
 	floatEVAA delta_t = 1e-3;
@@ -523,31 +565,30 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 	floatEVAA mass_wheel_rr = 135 / 2;
 	floatEVAA mass_tyre_rr = 0;
 
-	int alignment = 64;
-	int DOF = 11;
+	const int alignment = 64;
+	const int DOF = 11;
 	//int matrixElements = DOF * DOF;
-	int dim = 3;
+	const int dim = 3;
+	const int num_wheels = 4;
 	int matrixElements = dim * dim;
 
 	// Dimensions of the main car body (the center of rotation is at the origin)
-	floatEVAA* r1 = (floatEVAA*)mkl_calloc(dim, sizeof(floatEVAA), alignment);
-	floatEVAA* r2 = (floatEVAA*)mkl_calloc(dim, sizeof(floatEVAA), alignment);
-	floatEVAA* r3 = (floatEVAA*)mkl_calloc(dim, sizeof(floatEVAA), alignment);
-	floatEVAA* r4 = (floatEVAA*)mkl_calloc(dim, sizeof(floatEVAA), alignment);
+	floatEVAA* r = (floatEVAA*)mkl_calloc(num_wheels * dim, sizeof(floatEVAA), alignment);
 
-	r1[0] = -l_long_rr;
-	r1[2] = l_lat_rr;
-	r2[0] = -l_long_rl;
-	r2[2] = l_lat_rl;
-	r3[0] = -l_long_fl;
-	r3[2] = l_lat_fl;
-	r4[0] = -l_long_fr;
-	r4[2] = l_lat_fr;
+	r[0] = -l_long_rr; // r1
+	r[2] = l_lat_rr; // r1
+	r[3] = -l_long_rl; // r2
+	r[5] = l_lat_rl; // r2
+	r[6] = -l_long_fl; // r3
+	r[8] = l_lat_fl; // r3
+	r[9] = -l_long_fr; // r4
+	r[11] = l_lat_fr; // r4
 
-	// moment of intertia of the car
+	// moment of inertia of the car
 	floatEVAA* Ic = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
 
 	Ic[0] = I_body_xx;
+	Ic[4] = 1;
 	Ic[8] = I_body_yy;
 
 	// initial orientation of the car body as quaternion
@@ -630,7 +671,39 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 		FW[i] = -mass_wheel[i] * g;
 	}
 
-	// the force from the road is still missing
+	floatEVAA* FR = (floatEVAA*)mkl_calloc(4, sizeof(floatEVAA), alignment);
+	floatEVAA* lower_force = (floatEVAA*)mkl_calloc(4, sizeof(floatEVAA), alignment);
+
+	// ======================== main nasa car.m ===============================
+	// quaternion & normalization
+	floatEVAA* qc = (floatEVAA*)mkl_calloc(4, sizeof(floatEVAA), alignment); // quaternions
+	qc[3] = 1; // initial orientation
+	floatEVAA* basis_car = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
+	create_basis_car(basis_car, qc);
+	floatEVAA* basis_N = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
+	basis_N[0] = 1;	basis_N[4] = 1; basis_N[8] = 1; // basis_N = eye(3)
+
+	// change of basis matrices
+	floatEVAA* C_Nc = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
+	C_cos_transf(basis_car, C_Nc);
+
+	// positions of the lower corners of the car body
+	floatEVAA* pc = (floatEVAA*)mkl_calloc(num_wheels * dim, sizeof(floatEVAA), alignment);
+
+
+	// the force from the road is still missing!!!
+	//if (reduce) {
+	//	for (int i = 0; i < 4; ++i) {
+	//		lower_force[i] = lower_spring_stiffness;
+
+	//	}
+	//}
+
+	//for (int i = 0; i < 4; ++i) {
+	//	FR[i] = -FT[i] - lower_force[i]; // updated at each time step
+	//}
+	//
+	
 
 
 }
