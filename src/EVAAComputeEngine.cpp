@@ -427,7 +427,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	std::vector<int> pivot(DOF);
 	// LU Decomposition
 //	MathLibrary::computeDenseSymLUFactorisation(11, K, pivot);
-	LAPACKE_dgetrf(LAPACK_COL_MAJOR, DOF, DOF, K, DOF, pivot.data());
+	LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF, DOF, K, DOF, pivot.data());
 
 	// Time loop
 	double tmpScalar = (-1.0 / (h * h));
@@ -469,7 +469,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		// Solve system
 //		MathLibrary::computeDenseSymSolution(11, K, pivot, u_n_p_1);
 // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans , lapack_int n , lapack_int nrhs , const double * a , lapack_int lda , const lapack_int * ipiv , double * b , lapack_int ldb );
-		LAPACKE_dgetrs(LAPACK_COL_MAJOR, 'N', DOF, 1, K, DOF, pivot.data(), u_n_p_1, DOF);
+		LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF, 1, K, DOF, pivot.data(), u_n_p_1, 1);
 
 		for (int i = 0; i < DOF; ++i) {
 			u_n_m_1[i] = u_n[i];
