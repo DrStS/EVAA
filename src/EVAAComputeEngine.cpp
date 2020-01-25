@@ -547,6 +547,7 @@ class ComputeNasa {
 	const int dim = 3;
 	const int alignment = 64;
 	const int num_wheels = 4;
+	const int num_wheels_x_dim = num_wheels * dim;
 	T* r, r_tilda, FW, FT, FR, lower_spring_length, upper_spring_length, lower_spring_stiffness, upper_spring_stiffness, A;
 	T FC;
 	T* basic_c = (T*)mkl_calloc(dim*dim, sizeof(T), alignment);
@@ -559,6 +560,8 @@ class ComputeNasa {
 	T* diff_vector = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
 	T* upper_force = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
 	T* lower_force = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+	T* upper_F = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+	T* C_Nc_extended = (T*)mkl_calloc(dim * dim * num_wheels, sizeof(T), alignment); // 4 * C_Nc
 public:
 	ComputeNasa(T* r, T* r_tilda, T* FW, T* FT, T* FR, T* lower_spring_length, T* upper_spring_length, T* lower_spring_stiffness, T* upper_spring_stiffness, T* A, T FC) :
 		r(r), r_tilda(r_tilda), FW(FW), FT(FT), FR(FR), lower_spring_length(lower_spring_length), upper_spring_length(upper_spring_length), lower_spring_stiffness(lower_spring_stiffness), upper_spring_stiffness(upper_spring_stiffness), A(A), FC(FC) {
@@ -604,6 +607,22 @@ public:
 		cblas_dcopy(num_wheels, lower_length, 1, diff_vector, 1);
 		daxpy(num_wheels, -1, lower_spring_length, 1, diff_vector, 1);
 		vdmul(&num_wheels, lower_spring_stiffness, diff_vector, lower_force);
+
+		//  % convert spring forces to local basis
+		// upper_F = C_Nc' * [0; -upper_force(1); 0; 0;-upper_force(2); 0; 0; -upper_force(3); 0; 0; -upper_force(4); 0];
+		// upper_F = [C_Nc(2,:) * upper_force(1); C_Nc(2,:) * upper_force(2); C_Nc(2,:) * upper_force(3); C_Nc(2,:) * upper_force(4)]
+		//					only the second line from C_Nc counts
+		for (auto i = 0; i < num_wheels; ++i) {
+			// upper_F = [upper_force[0], upper_force[0], upper_force[0], upper_force[1], upper_force[1], upper_force[1],
+			//			  upper_force[2], upper_force[2], upper_force[2], upper_force[3], upper_force[3], upper_force[3]]
+			// C_Nc_extended = [C_Nc, C_Nc, C_Nc, C_Nc]
+			upper_F[i + 2] = upper_F[i + 1] = upper_F[i] = upper_force[i];
+			cblas_dcopy(dim, C_Nc, 1, C_Nc_extended + dim*i, 1);
+		}
+		// perform element-wise vector multiplication: upper_F <- C_Nc_extended .* upper_F
+		vdmul(&num_wheels_x_dim, upper_F, C_Nc_extended, upper_F);
+
+		// 
 	}
 };
 
