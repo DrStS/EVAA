@@ -542,6 +542,71 @@ void C_cos_transf(floatEVAA* Y, floatEVAA* C_transf) {
 
 }
 
+template <typename T>
+class ComputeNasa {
+	const int dim = 3;
+	const int alignment = 64;
+	const int num_wheels = 4;
+	T* r, r_tilda, FW, FT, FR, lower_spring_length, upper_spring_length, lower_spring_stiffness, upper_spring_stiffness, A;
+	T FC;
+	T* basic_c = (T*)mkl_calloc(dim*dim, sizeof(T), alignment);
+	T* C_Nc = (T*)mkl_calloc(dim * dim, sizeof(T), alignment);
+	T* r_global = (T*)mkl_calloc(num_wheels * dim, sizeof(T), alignment);
+	T* car_corners = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+	T* ones4 = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+	T* upper_length = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+	T* lower_length = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+	T* diff_vector = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+	T* upper_force = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+	T* lower_force = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+public:
+	ComputeNasa(T* r, T* r_tilda, T* FW, T* FT, T* FR, T* lower_spring_length, T* upper_spring_length, T* lower_spring_stiffness, T* upper_spring_stiffness, T* A, T FC) :
+		r(r), r_tilda(r_tilda), FW(FW), FT(FT), FR(FR), lower_spring_length(lower_spring_length), upper_spring_length(upper_spring_length), lower_spring_stiffness(lower_spring_stiffness), upper_spring_stiffness(upper_spring_stiffness), A(A), FC(FC) {
+		memset(ones4, 1, num_wheels);
+	}
+	
+	void compute_f3D_reduced(T time, T* x, T* f) {
+		/*
+		extract data from x_vector
+		wc = x_vector(1:3);
+		vc = x_vector(4);
+		vw = x_vector(5:8);
+		vt = x_vector(9:12);
+		qc = x_vector(13:16);
+		pcc = x_vector(17);
+		*/
+		create_basis_car(basis_c, x + 12);
+
+		C_cos_transf(basic_c, C_Nc);
+
+		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, num_wheels, dim, 1., C_Nc, dim, r, num_wheels, 0., r_global, num_wheels);
+
+		// car_corners = pcc + [r1_global(2); r2_global(2); r3_global(2); r4_global(2)];
+		cblas_dcopy(num_wheels, r_global + 4, 1, car_corners, 1);
+		daxpy(num_wheels, x[16], ones4, 1, car_corners, 1);
+
+		// calculate the length of the springs
+		// upper_length = car_corners - x_vector(18:21);
+		cblas_dcopy(num_wheels, car_corners, 1, upper_length, 1);
+		daxpy(num_wheels, -1, x + 17, 1, upper_length, 1);
+
+		// lower_length = x_vector(18:21) - x_vector(22:25);
+		cblas_dcopy(num_wheels, x+17, 1, lower_length, 1);
+		daxpy(num_wheels, -1, x + 21, 1, lower_length, 1);
+
+		// calculate the spring forces (take opposite if top node is considered)
+		// upper_force = upper_spring_stiffness .* (upper_length - upper_spring_length);
+		cblas_dcopy(num_wheels, upper_length, 1, diff_vector, 1);
+		daxpy(num_wheels, -1, upper_spring_length, 1, diff_vector, 1);
+		vdmul(&num_wheels, upper_spring_stiffness, diff_vector, upper_force);
+		
+		// lower_force = lower_spring_stiffness .* (lower_length - lower_spring_length);
+		cblas_dcopy(num_wheels, lower_length, 1, diff_vector, 1);
+		daxpy(num_wheels, -1, lower_spring_length, 1, diff_vector, 1);
+		vdmul(&num_wheels, lower_spring_stiffness, diff_vector, lower_force);
+	}
+};
+
 void EVAAComputeEngine::computeMKLNasa(void) {
 	// simulation specifications
 	floatEVAA num_iter = 1e3;
@@ -550,8 +615,6 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 	int max_iter = 200;
 
 	mkl_set_num_threads(8);
-	// use reduced == true to run Stefans reduced 7DOF
-	bool reduce = true;
 	// initial conditions
 	floatEVAA k_body_fl = 28e3 * 0.69;
 	floatEVAA k_tyre_fl = 260e3;
@@ -586,7 +649,7 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 	//int matrixElements = DOF * DOF;
 	const int dim = 3;
 	const int num_wheels = 4;
-	int matrixElements = dim * dim;
+	const int matrixElements = dim * dim;
 
 	// Dimensions of the main car body (the center of rotation is at the origin)
 	floatEVAA* r = (floatEVAA*)mkl_calloc(num_wheels * dim, sizeof(floatEVAA), alignment);
@@ -725,23 +788,33 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 	get_tilda_r(r, r_tilda, dim, num_wheels);
 
 	floatEVAA* x = (floatEVAA*)mkl_calloc(25, sizeof(floatEVAA), alignment);
-	cblas_dcopy(dim, x, 1, wc, 1);
+	cblas_dcopy(dim, wc, 1, x, 1);
 	x[3] = vc;
-	cblas_dcopy(num_wheels, x + 4, 1, vw, 1);
-	cblas_dcopy(num_wheels, x + 8, 1, vt, 1);
-	cblas_dcopy(dim + 1, x + 12, 1, qc, 1);
+	cblas_dcopy(num_wheels, vw, 1, x + 4, 1);
+	cblas_dcopy(num_wheels, vt, 1, x + 8, 1);
+	cblas_dcopy(dim + 1, pt, 1, x + 12, 1);
 	x[16] = pcc;
-	cblas_dcopy(num_wheels, x + 17, 1, pw+ num_wheels, 1);
-	cblas_dcopy(num_wheels, x + 21, 1, pt+ num_wheels, 1);
+	cblas_dcopy(num_wheels, pw + num_wheels, 1, x + 17, 1);
+	cblas_dcopy(num_wheels, pt + num_wheels, 1, x + 21, 1);
 
-	floatEVAA* A = (floatEVAA*)mkl_calloc(12, sizeof(floatEVAA), alignment);
-	cblas_dcopy(dim, A, 1, Ic, dim + 1);
-	// store nondiagonal element seperately (just for now)
-	double Ixz= Ic[3];
-	A[4] = mass_Body;
+	// create A
+	floatEVAA* A = (floatEVAA*)mkl_calloc(13, sizeof(floatEVAA), alignment); // 0:2 - 2x2 upper-left symmetric block; 3:12 - diag elements (2:12).
+	// compute the explicit inverse of the symmetric 2x2 upper-left block from A
+	// A_upper_left = [Ixx, Ixz; Izx=Ixz, Izz] = [Ic[0], Ic[2]; Ic[2], Ic[8]]
+	// A_inverse_2x2 = 1/(Ic[0]*Ic[3]-Ic[1]*Ic[1])*[Ic[8], -Ic[2]; -Ic[2], Ic[0]]
+	const int det_2x2_block_inverse = 1. / (Ic[0] * Ic[3] - Ic[1] * Ic[1]);
+	A[0] = det_2x2_block_inverse * Ic[8]; // A_upper_left[0]
+	A[1] = -det_2x2_block_inverse * Ic[2]; // A_upper_left[1]=A_upper_left[2]
+	A[2] = det_2x2_block_inverse * Ic[0]; // A_upper_left[3]
+	// Store the inverse of the diagonal elements
+	// A[3:12] is diagonal: = diag([mass_Body, mass_wheel, mass_tyre])
+	// We store its inverse := diag([1./mass_Body, 1./mass_wheel, 1./mass_tyre])
+	A[3] = 1. / mass_Body;
+	// MathLibrary::elementwise_inversion(vec_1, size);
 	cblas_dcopy(dim, A + 4, 1, mass_wheel, 1);
+	MathLibrary::elementwise_inversion(A + 4, num_wheels);
 	cblas_dcopy(dim, A + 8, 1, mass_tyre, 1);
-	
+	MathLibrary::elementwise_inversion(A + 8, num_wheels);
 
 	// the force from the road is still missing!!!
 	//if (reduce) {
