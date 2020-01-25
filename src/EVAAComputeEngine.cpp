@@ -512,6 +512,22 @@ void get_tilda(floatEVAA* x, floatEVAA* x_tilda) {
 	x_tilda[8] = 0;
 }
 
+void get_tilda_r(floatEVAA* r, floatEVAA* r_tilda, const int dim, const int num_wheels) {
+	// r - matrix 3x4 elems (floatEVAA* r); r - tilda matrix 3x12 (floatEVAA* x_tilda)
+	// given y: x_tilda*y=cross(x,y) (Stoneking, page 3 bottom)
+	for (int i = 0; i < num_wheels; i++) {
+		r_tilda[0 + i * dim] = 0;
+		r_tilda[1 + i * dim] = -r[2*num_wheels + i];
+		r_tilda[2 + i * dim] = r[num_wheels + i];
+		r_tilda[dim*num_wheels + i * dim] = r[2*num_wheels + i];
+		r_tilda[dim * num_wheels+1 + i * dim] = 0;
+		r_tilda[dim * num_wheels +2 + i * dim] = -r[i];
+		r_tilda[2* dim * num_wheels + i * dim] = -r[num_wheels + i];
+		r_tilda[2 * dim * num_wheels + 1 + i * dim] = r[i];
+		r_tilda[2 * dim * num_wheels + 2 + i * dim] = 0;
+	}
+}
+
 void C_cos_transf(floatEVAA* Y, floatEVAA* C_transf) {
 	// This function defines the cosine transformation matrix, used in changing coordinates from a frame to another. The X and Y matrices represent basis in the X and, respectively, Y frame. x = C * y
 	// Cosinus transformation to N base (eye(3)). X basis is the identity implicitly; Y basis is the basis_car
@@ -576,12 +592,12 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 	floatEVAA* r = (floatEVAA*)mkl_calloc(num_wheels * dim, sizeof(floatEVAA), alignment);
 
 	r[0] = -l_long_rr; // r1
-	r[2] = l_lat_rr; // r1
-	r[3] = -l_long_rl; // r2
-	r[5] = l_lat_rl; // r2
-	r[6] = -l_long_fl; // r3
-	r[8] = l_lat_fl; // r3
-	r[9] = -l_long_fr; // r4
+	r[8] = l_lat_rr; // r1
+	r[1] = -l_long_rl; // r2
+	r[9] = l_lat_rl; // r2
+	r[2] = -l_long_fl; // r3
+	r[10] = l_lat_fl; // r3
+	r[3] = -l_long_fr; // r4
 	r[11] = l_lat_fr; // r4
 
 	// moment of inertia of the car
@@ -626,16 +642,17 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 	upper_spring_length[3] = 0.2;
 
 	floatEVAA* initial_lower_spring_length = (floatEVAA*)mkl_calloc(4, sizeof(floatEVAA), alignment);
-	initial_lower_spring_length[0] = 0.2;
-	initial_lower_spring_length[1] = 0.2;
-	initial_lower_spring_length[2] = 0.2;
-	initial_lower_spring_length[3] = 0.2;
+	initial_lower_spring_length[0] = -0.2;
+	initial_lower_spring_length[1] = -0.2;
+	initial_lower_spring_length[2] = -0.2;
+	initial_lower_spring_length[3] = -0.2;
 
+	// initial the spring lengths with a negative sign as we substract by adding negative numbers afterwards
 	floatEVAA* initial_upper_spring_length = (floatEVAA*)mkl_calloc(4, sizeof(floatEVAA), alignment);
-	initial_upper_spring_length[0] = 0.2;
-	initial_upper_spring_length[1] = 0.2;
-	initial_upper_spring_length[2] = 0.2;
-	initial_upper_spring_length[3] = 0.2;
+	initial_upper_spring_length[0] = -0.2;
+	initial_upper_spring_length[1] = -0.2;
+	initial_upper_spring_length[2] = -0.2;
+	initial_upper_spring_length[3] = -0.2;
 
 	floatEVAA* lower_spring_stiffness = (floatEVAA*)mkl_calloc(4, sizeof(floatEVAA), alignment);
 	lower_spring_stiffness[0] = k_body_rr;
@@ -687,9 +704,44 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 	floatEVAA* C_Nc = (floatEVAA*)mkl_calloc(matrixElements, sizeof(floatEVAA), alignment);
 	C_cos_transf(basis_car, C_Nc);
 
+	// initial position of the car if it is different from 0 it has to be added to pc_1!!!
+	double pcc = 0;
+
 	// positions of the lower corners of the car body
 	floatEVAA* pc = (floatEVAA*)mkl_calloc(num_wheels * dim, sizeof(floatEVAA), alignment);
 
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, num_wheels, dim, 1., C_Nc, dim, r, num_wheels, 0., pc, num_wheels);
+
+	// position of the wheels
+	floatEVAA* pw = (floatEVAA*)mkl_calloc(num_wheels * dim, sizeof(floatEVAA), alignment);
+	floatEVAA* pt = (floatEVAA*)mkl_calloc(num_wheels * dim, sizeof(floatEVAA), alignment);
+
+	cblas_dcopy(num_wheels * dim, pc, 1, pw, 1);
+	vdadd(&num_wheels, pw + 4, initial_upper_spring_length , pw + 4);
+	cblas_dcopy(num_wheels * dim, pw, 1, pt, 1);
+	vdadd(&num_wheels, pt + 4, initial_lower_spring_length, pt + 4);
+	
+	floatEVAA* r_tilda = (floatEVAA*)mkl_calloc(num_wheels * matrixElements, sizeof(floatEVAA), alignment);
+	get_tilda_r(r, r_tilda, dim, num_wheels);
+
+	floatEVAA* x = (floatEVAA*)mkl_calloc(25, sizeof(floatEVAA), alignment);
+	cblas_dcopy(dim, x, 1, wc, 1);
+	x[3] = vc;
+	cblas_dcopy(num_wheels, x + 4, 1, vw, 1);
+	cblas_dcopy(num_wheels, x + 8, 1, vt, 1);
+	cblas_dcopy(dim + 1, x + 12, 1, qc, 1);
+	x[16] = pcc;
+	cblas_dcopy(num_wheels, x + 17, 1, pw+ num_wheels, 1);
+	cblas_dcopy(num_wheels, x + 21, 1, pt+ num_wheels, 1);
+
+	floatEVAA* A = (floatEVAA*)mkl_calloc(12, sizeof(floatEVAA), alignment);
+	cblas_dcopy(dim, A, 1, Ic, dim + 1);
+	// store nondiagonal element seperately (just for now)
+	double Ixz= Ic[3];
+	A[4] = mass_Body;
+	cblas_dcopy(dim, A + 4, 1, mass_wheel, 1);
+	cblas_dcopy(dim, A + 8, 1, mass_tyre, 1);
+	
 
 	// the force from the road is still missing!!!
 	//if (reduce) {
@@ -703,9 +755,6 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 	//	FR[i] = -FT[i] - lower_force[i]; // updated at each time step
 	//}
 	//
-	
-
-
 }
 
 void EVAAComputeEngine::computeBlaze11DOF(void) {
