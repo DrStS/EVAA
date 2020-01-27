@@ -273,6 +273,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	double* u_n_m_1 = (double*)mkl_calloc(DOF, sizeof(double), alignment);
 	double* tmp = (double*)mkl_calloc(DOF, sizeof(double), alignment);
 
+
 	//std::vector<double> f_n_p_1(11);
 	//std::vector<double> u_n_p_1(11);
 	//std::vector<double> u_n(11);
@@ -481,6 +482,16 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		std::cout << u_n_p_1[i] << std::scientific << std::endl;
 	}
 
+	// free the memory
+	mkl_free(B);
+	mkl_free(M);
+	mkl_free(D);
+	mkl_free(K);
+
+	mkl_free(u_n_p_1);
+	mkl_free(u_n);
+	mkl_free(u_n_m_1);
+	mkl_free(tmp);
 }
 
 void EVAAComputeEngine::computeBlaze11DOF(void) {
