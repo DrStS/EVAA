@@ -569,8 +569,11 @@ class ComputeNasa {
 	const int num_wheels = 4;
 	const int num_wheels_x_dim = num_wheels * dim;
 	const int DOF_diag = 9; // the diagonal elements from A
-	T* r, r_tilda, FW, FT, FR, lower_spring_length, upper_spring_length, lower_spring_stiffness, upper_spring_stiffness, A;
+	T* r, r_tilda, FW, FT, FR, lower_spring_length, upper_spring_length, lower_spring_stiffness, upper_spring_stiffness;
+	T* A; // The system matrix A. 0:3 - 2x2 upper-left symmetric block; 4:12 . We will store its inverse on diagonal blocks
 	T FC;
+	// T* Tc = (T*)mkl_calloc(num_wheels, sizeof(T), alignment); // 4 * C_Nc; external torque on the car body (use later for rotational damping)
+	//
 	T* basic_c = (T*)mkl_calloc(dim*dim, sizeof(T), alignment);
 	T* C_Nc = (T*)mkl_calloc(dim * dim, sizeof(T), alignment);
 	T* r_global = (T*)mkl_calloc(num_wheels * dim, sizeof(T), alignment);
@@ -585,9 +588,7 @@ class ComputeNasa {
 	T* C_Nc_extended = (T*)mkl_calloc(dim * dim * num_wheels, sizeof(T), alignment); // 4 * C_Nc
 	T* sum_torque = (T*)mkl_calloc(dim, sizeof(T), alignment);
 	T* rhs = (T*)mkl_calloc(11, sizeof(T), alignment); // b vector, 11 DOF (from the 12 components we prohibit rotation along y-axis, b[2]=0 is ignored)
-	// T* Tc = (T*)mkl_calloc(num_wheels, sizeof(T), alignment); // 4 * C_Nc; external torque on the car body (use later for rotational damping)
 	T* w_tilda = (T*)mkl_calloc(dim * dim, sizeof(T), alignment); // 9 elements of \tilde{wc}
-	T* A = (T*)mkl_calloc(13, sizeof(T), alignment); // The system matrix A. 0:3 - 2x2 upper-left symmetric block; 4:12 . We will store its inverse on diagonal blocks
 	T* Qc = (T*)mkl_calloc(12, sizeof(T), alignment); // the derivative of the quaternion
 public:
 	ComputeNasa(T* r, T* r_tilda, T* FW, T* FT, T* FR, T* lower_spring_length, T* upper_spring_length, T* lower_spring_stiffness, T* upper_spring_stiffness, T* A, T FC) :
@@ -713,14 +714,16 @@ public:
 };
 
 void EVAAComputeEngine::computeMKLNasa(void) {
+	// initialization
+
 	// simulation specifications
 	floatEVAA num_iter = 1e3;
 	floatEVAA delta_t = 1e-3;
 	floatEVAA tol = 1e-10;
 	int max_iter = 200;
-
 	mkl_set_num_threads(8);
-	// initial conditions
+
+	// initial conditions - read XML data
 	floatEVAA k_body_fl = 28e3 * 0.69;
 	floatEVAA k_tyre_fl = 260e3;
 	floatEVAA k_body_fr = 28e3 * 0.69;
@@ -749,10 +752,10 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 	floatEVAA mass_wheel_rr = 135 / 2;
 	floatEVAA mass_tyre_rr = 0;
 
+	// define constants
 	const int alignment = 64;
-	const int DOF = 11;
-	
-	//int matrixElements = DOF * DOF;
+	const int DOF = 11;	
+	// const int matrixElements = DOF * DOF;
 	const int dim = 3;
 	const int num_wheels = 4;
 	const int matrixElements = dim * dim;
@@ -859,6 +862,8 @@ void EVAAComputeEngine::computeMKLNasa(void) {
 
 	floatEVAA* FR = (floatEVAA*)mkl_calloc(4, sizeof(floatEVAA), alignment);
 	floatEVAA* lower_force = (floatEVAA*)mkl_calloc(4, sizeof(floatEVAA), alignment);
+	// ===================================== FINISHED Data Initialization =========================================
+
 
 	// ======================== main nasa car.m ===============================
 	// quaternion & normalization
