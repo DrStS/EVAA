@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 		anaysisTimer01.stop();
 		std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze).\n\n\n" << std::endl;
 		myComputeEngine->clean();
-		myComputeEngine->computeMKLNasa();
+		myComputeEngine->computeMKLNasa_example();
 		myComputeEngine->clean();
 	std::cout << "\nWe did a great job! Awesome!" << std::endl;
 #endif // EVAA_COMMANDLINE_ON
