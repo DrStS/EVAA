@@ -199,7 +199,22 @@ namespace MathLibrary {
 			curr_time_start_pos = x_vector_new + i * x_len;
 			cblas_dcopy(x_len, x, 1, curr_time_start_pos, 1);
 		}
+
+		free(f_old);
+		free(f_new);
+		free(dx);
+		free(dx_inv);
+		free(df);
+		free(x);
+		free(F);
+		free(F_new);
+		free(dF);
+		free(J);
+		free(J_tmp);
+		free(piv);
+		free(x_new);
 	}
+
 } /* namespace Math */
 
 
