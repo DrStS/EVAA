@@ -60,12 +60,12 @@ MESSAGE("Current source dir is" ${EVAA_SOURCE_DIR})
 option(USE_INTEL_MKL           "Use Intel MKL"  ON)
 option(USE_EIGEN               "Use Eigen"  ON)
 option(USE_BLAZE               "Use Blaze"  ON)
-option(USE_XSD                 "Use XSD with XERCES"  OFF)
+option(USE_XSD                 "Use XSD with XERCES"  ON)
 option(USE_HDF5                "Use HDF5"  OFF)
 option(USE_MATLAB              "Build Matlab API"  OFF)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
-option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  ON)
+option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  OFF)
 ######################################################################################
 #2. Macros
 ######################################################################################
