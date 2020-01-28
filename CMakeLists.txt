@@ -65,7 +65,7 @@ option(USE_HDF5                "Use HDF5"  OFF)
 option(USE_MATLAB              "Build Matlab API"  OFF)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
-option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  ON)
+option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  OFF)
 ######################################################################################
 #2. Macros
 ######################################################################################

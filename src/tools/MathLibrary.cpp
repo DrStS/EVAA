@@ -84,11 +84,10 @@ namespace MathLibrary {
 #endif
 	}
 	template <typename T>
-	void Broyden_Euler(void(*f)(T, T*, T*), T* t, T* x_previous, T tol, size_t max_iter) {
+	void Broyden_Euler(void(*f)(T, T*, T*), T* t, T* x_previous, T tol, T* x_vector_new, size_t max_iter) {
 		int alignment = 64;
 		size_t t_len = sizeof(t) / sizeof(t[0]);
 		size_t x_len = sizeof(x_previous) / sizeof(x_previous[0]);
-		T* x_vector_new = (T*)mkl_malloc(sizeof(T) * t_len*x_len, alignment);
 		T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 		T* f_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 		T* dx = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
