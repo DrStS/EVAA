@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="EVAA_XML" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xs:complexType name="vector_legs_t">
+    <xs:sequence>    
+      <xs:element name="rr" type="xs:double"/>
+      <xs:element name="rl" type="xs:double"/>
+      <xs:element name="fl" type="xs:double"/>
+      <xs:element name="fr" type="xs:double"/>
+    </xs:sequence>    
+  </xs:complexType>
+
+  <xs:complexType name="car_settings_t">
+    <xs:sequence>
+      <xs:element name="car">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="k_tyre" type="vector_legs_t"/>
+            <xs:element name="k_body" type="vector_legs_t"/>
+            <xs:element name="l_lat" type="vector_legs_t"/>
+            <xs:element name="l_long" type="vector_legs_t"/>
+            <xs:element name="mass_wheel" type="vector_legs_t"/>
+            <xs:element name="mass_tyre" type="vector_legs_t"/>
+            <xs:element name="lower_spring_length"   type="vector_legs_t"/>
+            <xs:element name="upper_spring_length"   type="vector_legs_t"/>
+            <xs:element name="mass_body" type="xs:double" />
+            <xs:element name="I_body_xx" type="xs:double" />
+            <xs:element name="I_body_zz" type="xs:double" />
+            <xs:element name="I_body_xz" type="xs:double" />
+            <xs:element name="I_body_zx" type="xs:double" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+
+
+      <xs:element name="initial">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="lower_spring_length"  type="vector_legs_t"/>
+            <xs:element name="upper_spring_length"  type="vector_legs_t"/>
+            <xs:element name="vel_tyre"  type="vector_legs_t"/>
+            <xs:element name="vel_wheel"  type="vector_legs_t"/>
+            <xs:element name="qi" type="xs:double" />
+            <xs:element name="qj" type="xs:double" />
+            <xs:element name="qk" type="xs:double" />
+            <xs:element name="qr" type="xs:double" />
+            <xs:element name="vel_body" type="xs:double" />
+            <xs:element name="ang_vel_body_x" type="xs:double" />
+            <xs:element name="ang_vel_body_z" type="xs:double" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+
+
+      <xs:element name="external">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="boundary_conditions" type="xs:string"/>
+            <xs:element name="force_body" type="xs:double" />
+            <xs:element name="gravity" type="xs:double" />
+          </xs:sequence>       
+        </xs:complexType>
+      </xs:element>
+
+
+
+      <xs:element name="simulation">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="solver" type="xs:string"/>
+            <xs:element name="DOF" type="xs:int" />
+            <xs:element name="max_num_iter" type="xs:int" />
+            <xs:element name="tolerance" type="xs:double" />
+            <xs:element name="num_time_iter" type="xs:int" />
+          </xs:sequence>       
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="car_settings" type="car_settings_t"/>
+</xs:schema>

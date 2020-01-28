@@ -63,6 +63,7 @@
 #include "EVAAMainWindow.h"
 #endif // EVAA_COMMANDLINE_ON
 
+
 int main(int argc, char **argv) {
 #ifdef EVAA_COMMANDLINE_ON
 	std::cout << "Hello EVAA is fired up!" << std::endl;

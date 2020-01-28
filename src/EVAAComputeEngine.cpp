@@ -44,6 +44,8 @@ typedef std::numeric_limits< double > dbl;
 
 EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName) {
 	// Intialize XML metadatabase singelton 
+	ReadXML reader(_xmlFileName);
+	reader.ReadParameters(_parameters);
 }
 
 
@@ -57,7 +59,7 @@ void EVAAComputeEngine::prepare(void) {
 void EVAAComputeEngine::computeEigen11DOF(void) {
 
 	int DOF = 11;
-
+	
 	// K stiffness
 	double k = 10.;
 	double k_11 = 1.1;
@@ -76,6 +78,23 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 	double l_2 = 1;
 	double l_3 = 0.8;
 	double l_4 = 1.25;
+
+	DOF = _parameters.DOF;
+
+	// K stiffness
+	k_11 = _parameters.k_body[0];
+	k_12 = _parameters.k_tyre[0];
+	k_21 = _parameters.k_body[1];
+	k_22 = _parameters.k_tyre[1];
+	k_31 = _parameters.k_body[2];
+	k_32 = _parameters.k_tyre[2];
+	k_41 = _parameters.k_body[3];
+	k_42 = _parameters.k_tyre[3];
+	l_1 = _parameters.l_lat[0];
+	l_2 = _parameters.l_lat[2];
+	l_3 = _parameters.l_long[0];
+	l_4 = _parameters.l_long[2];
+
 
 	// D - damping matrix
 	double d_11 = 1.1 * 0.1;

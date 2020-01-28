@@ -24,6 +24,15 @@
 **************************************************************************************************/
 #pragma once
 #include <string>
+#include <ReadXML.h>
+
+
+#include "xsd/IP_EVAA_XML.hxx"
+
+
+
+
+
 /********//**
 * \brief Class ComputeEngine the core of STACCATO
 ***********/
@@ -70,4 +79,5 @@ public:
 	***********/
 	void clean(void);
 private:
+	Simulation_Parameters _parameters;
 };

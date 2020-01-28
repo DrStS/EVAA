@@ -1,0 +1,48 @@
+#ifndef _READXML_H_
+#define _READXML_H_
+
+#include <string>
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
+
+#include "xsd/IP_EVAA_XML.hxx"
+
+
+struct Simulation_Parameters {int DOF; 
+            double k_tyre[4]; double k_body[4]; 
+            double l_long[4]; double l_lat[4];
+            double mass_body; double I_body[4];
+            double mass_tyre[4]; double mass_wheel[4];
+            double lower_spring_length[4]; double upper_spring_length[4];
+            double initial_orientation[4];
+            double initial_lower_spring_length[4]; double initial_upper_spring_length[4];
+            double initial_vel_body; double initial_vel_wheel[4]; double initial_vel_tyre[4];
+            double initial_ang_vel_body[2]; double external_force_body;
+            double gravity; int boundary_condition_road;
+            int solver; 
+            int max_num_iter; double tolerance;
+            double timestep; int num_time_iter;
+            };
+
+enum boundary_condition_road{FIXED, NONFIXED};
+
+enum solver {EXPLICIT_EULER, RUNGE_KUTTA_4, BROYDEN_EULER, BROYDEN_CN, BROYDEN_BDF2}; 
+
+
+
+class ReadXML{
+    private:
+        std::string _filename;
+    	std::auto_ptr<car_settings_t> settings;
+        void readVectorLegs(double* storage, vector_legs_t vec);
+
+    public:
+        ReadXML();
+        ReadXML(const std::string & filename);
+        void setFileName (const std::string & filename);
+        void ReadParameters(Simulation_Parameters & parameters);
+};
+
+
+#endif
