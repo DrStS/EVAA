@@ -45,9 +45,8 @@ target_link_libraries(EVAA EVAALibStatic ${EVAA_3rd_LIBS})
 ENDIF()
 add_dependencies(EVAA EVAALibStatic)
 #------------------------------------------------------------------------------------#
-#
-#------------------------------------------------------------------------------------#
 MESSAGE("==== Executable ====")
+MESSAGE("${XSD_EXE}")
 MESSAGE("C Compiler Flags are: ${CMAKE_C_FLAGS}")
 MESSAGE("C++ Compiler Flags are: ${CMAKE_CXX_FLAGS} ")
 MESSAGE("Linker Flags are: ${CMAKE_EXE_LINKER_FLAGS}")

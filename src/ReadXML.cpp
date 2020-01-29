@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "ReadXML.h"
-#include "xsd/IP_EVAA_XML.hxx"
 
 
 void ReadXML::readVectorLegs(double* storage, vector_legs_t vec){

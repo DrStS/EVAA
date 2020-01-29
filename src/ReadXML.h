@@ -1,12 +1,11 @@
-#ifndef _READXML_H_
-#define _READXML_H_
 
+
+#pragma once
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-
-#include "xsd/IP_EVAA_XML.hxx"
+#include "IP_EVAA_XML.h"
 
 
 struct Simulation_Parameters {int DOF; 
@@ -44,5 +43,3 @@ class ReadXML{
         void ReadParameters(Simulation_Parameters & parameters);
 };
 
-
-#endif

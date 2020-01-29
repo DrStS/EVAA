@@ -24,12 +24,7 @@
 **************************************************************************************************/
 #pragma once
 #include <string>
-#include <ReadXML.h>
-
-
-#include "xsd/IP_EVAA_XML.hxx"
-
-
+#include "ReadXML.h"
 
 
 
