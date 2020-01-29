@@ -211,19 +211,19 @@ namespace MathLibrary {
 			cblas_dcopy(x_len, x, 1, curr_time_start_pos, 1);
 		}
 
-		free(f_old);
-		free(f_new);
-		free(dx);
-		free(dx_inv);
-		free(df);
-		free(x);
-		free(F);
-		free(F_new);
-		free(dF);
-		free(J);
-		free(J_tmp);
-		free(piv);
-		free(x_new);
+		MKL_free(f_old);
+		MKL_free(f_new);
+		MKL_free(dx);
+		MKL_free(dx_inv);
+		MKL_free(df);
+		MKL_free(x);
+		MKL_free(F);
+		MKL_free(F_new);
+		MKL_free(dF);
+		MKL_free(J);
+		MKL_free(J_tmp);
+		MKL_free(piv);
+		MKL_free(x_new);
 	}
 
 	template <typename T>
@@ -440,19 +440,19 @@ namespace MathLibrary {
 				cblas_dcopy(x_len, x, 1, curr_time_start_pos, 1);
 			}
 		}
-		free(f_old);
-		free(f_new);
-		free(dx);
-		free(dx_inv);
-		free(df);
-		free(x);
-		free(F);
-		free(F_new);
-		free(dF);
-		free(J);
-		free(J_tmp);
-		free(piv);
-		free(x_new);
+		MKL_free(f_old);
+		MKL_free(f_new);
+		MKL_free(dx);
+		MKL_free(dx_inv);
+		MKL_free(df);
+		MKL_free(x);
+		MKL_free(F);
+		MKL_free(F_new);
+		MKL_free(dF);
+		MKL_free(J);
+		MKL_free(J_tmp);
+		MKL_free(piv);
+		MKL_free(x_new);
 	}
 
 	template <typename T>
@@ -575,19 +575,47 @@ namespace MathLibrary {
 			cblas_dcopy(x_len, x, 1, curr_time_start_pos, 1);
 		}
 
-		free(f_old);
-		free(f_new);
-		free(dx);
-		free(dx_inv);
-		free(df);
-		free(x);
-		free(F);
-		free(F_new);
-		free(dF);
-		free(J);
-		free(J_tmp);
-		free(piv);
-		free(x_new);
+		MKL_free(f_old);
+		MKL_free(f_new);
+		MKL_free(dx);
+		MKL_free(dx_inv);
+		MKL_free(df);
+		MKL_free(x);
+		MKL_free(F);
+		MKL_free(F_new);
+		MKL_free(dF);
+		MKL_free(J);
+		MKL_free(J_tmp);
+		MKL_free(piv);
+		MKL_free(x_new);
+	}
+
+	template <typename T>
+	void RK4(void(*f)(T, T*, T*), T* t, T* x_previous, T* x_vector_new) {
+		int alignment = 64;
+		size_t t_len = sizeof(t) / sizeof(t[0]);
+		size_t x_len = sizeof(x_previous) / sizeof(x_previous[0]);
+		T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* f_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* dx = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* dx_inv = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* df = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* x = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* F = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* F_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* dF = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* J = (T*)mkl_calloc(x_len*x_len, sizeof(T), alignment);
+		T* J_tmp = (T*)mkl_calloc(x_len*x_len, sizeof(T), alignment);
+		lapack_int* piv = (lapack_int*)mkl_malloc(sizeof(lapack_int*) * x_len, alignment);
+
+		T dt;
+		T *it_start, *curr_time_start_pos;
+		T* x_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+		T* switcher;			// used for interchanging adresses between F and F_new
+		T eps = 0.001;
+		double nrm = 0.001;
+
+		cblas_dcopy(x_len, x_previous, 1, x_vector_new, 1);
 	}
    
 } /* namespace Math */

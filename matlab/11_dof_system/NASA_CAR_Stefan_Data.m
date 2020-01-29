@@ -106,12 +106,12 @@ max_iter = 200;
 % solver = @(f, t, x) explicit_solver(f, t, x);
 % solver = @(f, t, x) ode45(f, t, x);
 % solver = @(f, t, x) ode113(f, t, x);
-% solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+ solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
- solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
+% solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 
 %% solving
 [t,y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, reduced,... 
