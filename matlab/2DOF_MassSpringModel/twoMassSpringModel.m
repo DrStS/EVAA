@@ -60,7 +60,7 @@ t = 0:delta_t:num_iter*delta_t;
 
 %% equilibrium
 
-[y2,k2] = Copy_of_newton_equi(x_curr, aux_vals);
+[y2,k2] = newton_equi(x_curr, aux_vals);
 d1 = (l1-y2(1));
 d2 = (l2-y2(2)+y2(1));
 disp('Equilibrium solution');
@@ -69,7 +69,7 @@ abs(d2*k2(2) - m2*g) < tol
 
 %% simulation
 
-[t,y] = Copy_of_BW_2DOF_scheme(t, x_prev, x_curr, aux_vals);
+[t,y] = BW_2DOF_scheme(t, x_prev, x_curr, aux_vals);
 
 %% plots
 figure;
