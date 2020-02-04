@@ -9,9 +9,6 @@ dK1 = aux_vals.dK_dk1; % matrix
 dK2 = aux_vals.dK_dk2; % matrix
 rhs = aux_vals.rhs; % matrix
 
-% tensor vector multiplication (2,2,2)x(2,1) -> (2,2)
-f_tens_vec = aux_vals.f_tens_vec;
-
 y = zeros(2, length(t));
 err = zeros(length(t));
 y(:,1) = x_curr;
@@ -23,7 +20,7 @@ f_K = aux_vals.f_K; % function
 f_dk_dx = aux_vals.f_dk_dx; % function
 
 %% fuction for newton loop
-f_newton = @(y,i,K)((M_div_h2 + K) * y(:, i+1)- 2*M_div_h2*y(:,i)+ M_div_h2*y(:,i-1)-rhs);
+f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
 
 % init vars
 k = f_k(x_curr);
@@ -37,17 +34,19 @@ for i = 2 : length(t)-1
         %dk/dx
         dk_dx = f_dk_dx(y(:,i+1));
         % J = M/h^2 + K + (dK/dk1 * dk1/ddx, dK/dk2 * dk2/ddx) * x
-        J = M_div_h2 + K + f_tens_vec(dK1*dk_dx,dK2*dk_dx,y(:,i+1));
+        J = M_div_h2 + K + dK1*dk_dx * y(1,i+1) + dK2*dk_dx * y(2,i+1);
         %newton step
-        y(:,i+1) = J\(J*y(:,i+1)-f_newton(y,i,K));
+        dy = - J \ f_newton(y(:,i+1), y(:,i), y(:,i-1),K);
+        y(:,i+1) = y(:,i+1)+ dy;
         
         %update values to check error
         k = f_k(y(:,i+1));
         K = f_K(k);
         
         % if error < tol => break
-        err(i) = norm(f_newton(y,i,K));
-        if (err(i) < tol | j == 15)
+        error = norm(f_newton(y(:,i+1), y(:,i), y(:,i-1),K),1);
+        err(i) = error;
+        if (err(i) < tol || j == 10)
             break;
         end
     end  

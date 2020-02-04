@@ -7,17 +7,17 @@ g = 9.81;
 l1 = 1;
 l2 = 1;
 
-tol = 1e-8;
+tol = 1e-12;
 
 
 %% generate model (k1,k2)=f(x1,x2)
 quadratic_part = [2, 1; 1, 5];
- lin_part = [-2 -3; -1, -5];
+lin_part = [-2 -3; -1, -5];
 %lin_part = [0, 0; 0, 0];
 
 interpolate_k = @(dx)(quadratic_part*[dx(1)^2; dx(2)^2]+lin_part*[dx(1);dx(2)]+[k1_init; k2_init]);
 % interpolate_k = @(dx)([2, 1; 1, 5]*[(l1-x(1))^2; (l2-x(2)+x(1))^2]+[k1_init; k2_init]);
-dk_d_dx = @(dx)(2*quadratic_part*diag(dx) + lin_part);
+f_dk_ddx = @(dx)(2*quadratic_part*diag(dx) + lin_part);
 
 f_rhs = @(k)([-m1*g + k(1)*l1 - k(2)*l2; ...
               -m2*g + k(2)*l2]);
@@ -44,7 +44,7 @@ aux_vals = struct('m1', m1, ...
                   'f_rhs', f_rhs, ...
                   'dK_dk1', dK_dk1, ...
                   'dK_dk2', dK_dk2, ...
-                  'dk_d_dx', dk_d_dx, ...
+                  'f_dk_ddx', f_dk_ddx, ...
                   'ddx_dx', ddx_dx, ...
                   'get_dx', get_dx, ...
                   'df_rhs_dk', df_rhs_dk, ...
@@ -60,7 +60,14 @@ t = 0:delta_t:num_iter*delta_t;
 
 %% equilibrium
 
-[y2,k2] = newton_equi(x_curr, aux_vals);
+[y2,k2,err] = newton_equi(x_curr, aux_vals);
+relErr = err([1 1:end-1]) ./ err;
+order = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))))
+
+figure;
+plot(relErr);
+grid on;
+
 d1 = (l1-y2(1));
 d2 = (l2-y2(2)+y2(1));
 disp('Equilibrium solution');
@@ -69,15 +76,15 @@ abs(d2*k2(2) - m2*g) < tol
 
 %% simulation
 
-[t,y] = BW_2DOF_scheme(t, x_prev, x_curr, aux_vals);
+%[t,y] = BW_2DOF_scheme(t, x_prev, x_curr, aux_vals);
 
 %% plots
-figure;
-plot(t,y);
-hold on;
-y_equi = y2 * ones(1, length(y(1,:)));
-plot(t,y_equi);
-grid on;
-legend('x1','x2','x1 equi', 'x2 equi');
+%figure;
+%plot(t,y);
+%hold on;
+%y_equi = y2 * ones(1, length(y(1,:)));
+%plot(t,y_equi);
+%grid on;
+%legend('x1','x2','x1 equi', 'x2 equi');
 
 

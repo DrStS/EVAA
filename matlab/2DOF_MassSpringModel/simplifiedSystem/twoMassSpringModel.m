@@ -5,13 +5,13 @@ m1 = .1; m2 = .2;
 k1_init = 10; k2_init = 5;
 g = 9.81;
 
-tol = 1e-10;
+tol = 1e-12;
 
 x1 = 0;
 x2 = 0;
 x_init = [0; 0];
               
-num_iter = 1000;
+num_iter = 3000;
 delta_t = 5e-4; 
 t = 0:delta_t:num_iter*delta_t;
 
@@ -34,7 +34,7 @@ rhs = [-m1*g; ...
      
 quadratic_part = [2, 1; 1, 5];
 lin_part = [-2 -3; -1, -5];
-lin_part = [0, 0; 0, 0];
+%lin_part = [0, 0; 0, 0];
 %quadratic_part = [0, 0; 0, 0];
 
 f_k = @(x)(quadratic_part*[x(1)^2; x(2)^2]+lin_part*[x(1);x(2)]+[k1_init; k2_init]);
@@ -44,10 +44,6 @@ f_K = @(k)([k(1), -k(2);
            0, k(2)]);
 dK_dk1 = [1, 0; 0, 0];
 dK_dk2 = [0, -1; 0, 1];
-
-f_tens_vec = @(A1,A2,v)([A1(1,1)*v(1)+A2(1,1)*v(2), A1(1,2)*v(1)+A2(1,2)*v(2);...
-    A1(2,1)*v(1)+A2(2,1)*v(2), A1(2,2)*v(1)+A2(2,2)*v(2)]);
-
 
 M_div_h2 = diag([m1,m2])/delta_t^2;
            
@@ -60,7 +56,6 @@ aux_vals = struct('M_div_h2', M_div_h2, ...
                   'dK_dk1', dK_dk1, ...
                   'dK_dk2', dK_dk2, ...
                   'f_dk_dx', f_dk_dx, ...
-                  'f_tens_vec', f_tens_vec, ...
                   'tol', tol);
 
 
@@ -71,8 +66,8 @@ relErr = err([1 1:end-1]) ./ err;
 order = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))))
 
 figure;
-plot(relErr);
-title('Relative Error');
+semilogy(relErr);
+title('Relative Error [err(i)/err(i+1)]');
 grid on;
 
 disp('Equilibrium solution');
@@ -95,6 +90,6 @@ legend('x1','x2','x1 equi', 'x2 equi');
 
 figure;
 plot(t,err1);
-title('Absolute Error');
+title('Absolute Error of Newton Iterations');
 
 

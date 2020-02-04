@@ -50,8 +50,8 @@ for i = 2 : length(t)-1
         dx = get_dx(y(:,i+1));
         %dk/dx
         dk = dk_d_dx(dx);
-        % J = M/h^2 + K + dK/dk1 * (dk1/dx * x) + dK/dk2 * (dk2/dx * x) - drhs/dk * dk/dx
-        J = M_div_h2 + K + dK1*(dk(1,:)*ddx_dx*y(:,i+1))+dK2*(dk(2,:)*ddx_dx*y(:,i+1))-drhs*dk;
+        % J = M/h^2 + K + dK/dk1 * (dk1/ddx * ddx/dx * x) + dK/dk2 * (dk2/ddx * ddx/dx * x) - drhs/dk * dk/ddx * ddx/dx
+        J = M_div_h2 + K + dK1*(dk(1,:)*ddx_dx*y(:,i+1))+dK2*(dk(2,:)*ddx_dx*y(:,i+1))-drhs*dk*ddx_dx;
         
         %newton step
         y(:,i+1) = J\(-f_newton(y,i,K,rhs)+J*y(:,i+1));

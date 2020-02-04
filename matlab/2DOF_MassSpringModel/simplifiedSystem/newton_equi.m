@@ -11,9 +11,6 @@ f_k = aux_vals.f_k; % function
 f_K = aux_vals.f_K; % function
 f_dk_dx = aux_vals.f_dk_dx; % function
 
-% tensor vector multiplication (2,2,2)x(2,1) -> (2,2)
-f_tens_vec = aux_vals.f_tens_vec;
-
 % fuction for newton loop
 f_newton = @(x,K)(K*x - rhs);
 
@@ -29,12 +26,13 @@ while 1
     %dk/ddx
     dk_dx = f_dk_dx(x_curr);
     % J = K + (dK/dk1 * dk1/ddx, dK/dk2 * dk2/ddx) * x
-    J = K + f_tens_vec(dK1*dk_dx,dK2*dk_dx,x_curr);
+    J = K + dK1*dk_dx*x_curr(1) + dK2*dk_dx*x_curr(2);
 
     
     err = [err, norm(f_newton(x_curr,K))];
     %newton step
-    x_curr = J\(J*x_curr-f_newton(x_curr,K));
+    dx = - J\f_newton(x_curr,K);
+    x_curr = x_curr + dx;
     
     %update k, K and rhs to check the error;
     k = f_k(x_curr);
