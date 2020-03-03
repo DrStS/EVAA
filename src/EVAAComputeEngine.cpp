@@ -561,7 +561,7 @@ void get_quaternion_derivative(floatEVAA* qc, floatEVAA* Qc){
 	Qc[10] = -0.5 * qc[1];
 	Qc[11] = -0.5 * qc[2];
 }
-
+/*
 template <typename T>
 class ComputeNasa {
 public:
@@ -898,15 +898,15 @@ public:
 	}
 
 	void compute_f3D_reduced(T time, T* x, T* f) {
-		/*
-		extract data from x_vector
-		wc = x_vector(1:3);
-		vc = x_vector(4);
-		vw = x_vector(5:8);
-		vt = x_vector(9:12);
-		qc = x_vector(13:16);
-		pcc = x_vector(17);
-		*/
+		
+		// extract data from x_vector
+		// wc = x_vector(1:3);
+		// vc = x_vector(4);
+		// vw = x_vector(5:8);
+		// vt = x_vector(9:12);
+		// qc = x_vector(13:16);
+		// pcc = x_vector(17);
+		
 
 		// =================================== UPDATE rhs vector ==============================================
 		// get the new local basis vectors using quaternion rotation
@@ -1029,7 +1029,8 @@ public:
 	}
 
 };
-
+*/
+/*
 void EVAAComputeEngine::computeMKLNasa_example(void) {
 	ComputeNasa<floatEVAA> obj_example;
 	obj_example.print_solution();
@@ -1040,6 +1041,27 @@ void EVAAComputeEngine::computeMKLNasa_example(void) {
 		std::cout << f[i] << "\n";
 	}
 	MKL_free(f);
+}
+*/
+void EVAAComputeEngine::computeMKLlinear11dof(void) {
+	floatEVAA tend = 1.0;
+	floatEVAA h = 1.0 / 1000.0;
+	floatEVAA u_init = 0.0;
+	floatEVAA du_init = 0.0;
+	const int alignment = 64;
+	floatEVAA* force = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
+	floatEVAA* soln = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
+	force[0] = 1.1e3;
+	linear11dof<floatEVAA> solver(tend, h, u_init, du_init);
+	solver.apply_boundary_condition("fixed_to_road", force);
+	solver.solve(soln);
+	std::cout << "Solution after 1000 timesteps, f ="<<std::endl;
+	for (auto i = 0; i < 11; ++i) {
+		std::cout << soln[i] <<std::endl;
+	}
+	std::cout << std::endl;
+	MKL_free(force);
+	MKL_free(soln);
 }
 
 void EVAAComputeEngine::computeBlaze11DOF(void) {
