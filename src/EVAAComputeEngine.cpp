@@ -562,14 +562,6 @@ void get_quaternion_derivative(floatEVAA* qc, floatEVAA* Qc){
 	Qc[11] = -0.5 * qc[2];
 }
 
-void elementwise_inversion(floatEVAA* vec, int size) {
-	// Inverse each element of a vector. Intel MKL Inv function (no documentation found)
-	// to optimize
-	for (auto i = 0; i < size; ++i) {
-		vec[i] = 1. / vec[i];
-	}
-}
-
 template <typename T>
 class ComputeNasa {
 public:
@@ -847,8 +839,7 @@ public:
 		cblas_dcopy(num_wheels, mass_wheel, 1, A + 5, 1);
 		cblas_dcopy(num_wheels, mass_tyre, 1,  A + 9, 1);
 		// We store the inverse of A[4:12]:= diag([1./mass_Body, 1./mass_wheel, 1./mass_tyre])
-			// MathLibrary::elementwise_inversion(vec_1, size);
-		elementwise_inversion(A + 4, 1 + num_wheels + num_wheels);
+		MathLibrary::elementwise_inversion<T>(A + 4, 1 + num_wheels + num_wheels);
 
 		// free the allocated elements; mostly 3 or 4 elements
 		MKL_free(pw);
