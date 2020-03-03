@@ -95,6 +95,13 @@ namespace MathLibrary {
 	}
 
 	template <typename T>
+	void allocate_to_diagonal(T* matrix, T* vector, size_t dim) {
+		for (int i = 0; i < dim; ++i) {
+			matrix[i*dim + i] = vector[i];
+		}
+	}
+
+	template <typename T>
 	void Broyden_Euler(void(*f)(T, T*, T*), T* t, T* x_previous, T tol, T* x_vector_new, size_t max_iter) {
 		int alignment = 64;
 		size_t t_len = sizeof(t) / sizeof(t[0]);
