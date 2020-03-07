@@ -92,7 +92,7 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     %%%%%%%%%%%           Forces  and Torques          %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% calculate the elongational spring forces (in global basis)
-    upper_force1 = upper_spring_stiffness(1) * (r_up1) * (1 - upper_spring_length(1) / norm(r_up1));
+    upper_force1 = upper_spring_stiffness(1) * (r_up1) * (1 - upper_spring_length(1) / norm(r_up1));    %norm(r) can be precomputed
     upper_force2 = upper_spring_stiffness(2) * (r_up2) * (1 - upper_spring_length(2) / norm(r_up2));
     upper_force3 = upper_spring_stiffness(3) * (r_up3) * (1 - upper_spring_length(3) / norm(r_up3));
     upper_force4 = upper_spring_stiffness(4) * (r_up4) * (1 - upper_spring_length(4) / norm(r_up4));
@@ -116,20 +116,21 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
 
 
     %% calculate the effect of the rotational springs (in global basis)
-    lower_rot_force1 = cross( lower_S1, r_up1) / (r_up1'*r_up1);
-    lower_rot_force2 = cross( lower_S2, r_up2) / (r_up2'*r_up2);
-    lower_rot_force3 = cross( lower_S3, r_up3) / (r_up3'*r_up3);
-    lower_rot_force4 = cross( lower_S4, r_up4) / (r_up4'*r_up4);
+    lower_rot_force1 = -cross( lower_S1, r_low1) / (r_low1'*r_low1);     
+    lower_rot_force2 = -cross( lower_S2, r_low2) / (r_low2'*r_low2);
+    lower_rot_force3 = -cross( lower_S3, r_low3) / (r_low3'*r_low3);
+    lower_rot_force4 = -cross( lower_S4, r_low4) / (r_low4'*r_low4);
 
-    upper_rot_force1 = cross( upper_S1, r_low1) / (r_low1'*r_low1);
-    upper_rot_force2 = cross( upper_S2, r_low2) / (r_low2'*r_low2);
-    upper_rot_force3 = cross( upper_S3, r_low3) / (r_low3'*r_low3);
-    upper_rot_force4 = cross( upper_S4, r_low4) / (r_low4'*r_low4);
+    upper_rot_force1 = -cross( upper_S1, r_up1) / (r_up1'*r_up1);
+    upper_rot_force2 = -cross( upper_S2, r_up2) / (r_up2'*r_up2);
+    upper_rot_force3 = -cross( upper_S3, r_up3) / (r_up3'*r_up3);
+    upper_rot_force4 = -cross( upper_S4, r_up4) / (r_up4'*r_up4);
 
-    car_rot_force1 = cross( lower_S1, r_up1) / (r_up1'*r_up1);
-    car_rot_force2 = cross( lower_S2, r_up2) / (r_up2'*r_up2);
-    car_rot_force3 = cross( lower_S3, r_up3) / (r_up3'*r_up3);
-    car_rot_force4 = cross( lower_S4, r_up4) / (r_up4'*r_up4);
+    car_rot_force1 = -cross( lower_S1, r_up1) / (r_up1'*r_up1);
+    car_rot_force2 = -cross( lower_S2, r_up2) / (r_up2'*r_up2);
+    car_rot_force3 = -cross( lower_S3, r_up3) / (r_up3'*r_up3);
+    car_rot_force4 = -cross( lower_S4, r_up4) / (r_up4'*r_up4);
+    
     car_rot_force = car_rot_force1 + car_rot_force2 + car_rot_force3 + car_rot_force4;
     
     %% get external forces    
@@ -145,10 +146,10 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     local_FT4 = [0; FT(4); 0];
 
     % road forces    
-    local_FR1 = [0;  aux_vals.FR1(t, pt1(2), vt1(2), A(19,19), lower_force1(2) + FT(1) - lower_rot_force1(2)); 0];      %in global basis
-    local_FR2 = [0;  aux_vals.FR2(t, pt2(2), vt2(2), A(22,22), lower_force2(2) + FT(2) - lower_rot_force2(2)); 0];   
-    local_FR3 = [0;  aux_vals.FR3(t, pt3(2), vt3(2), A(25,25), lower_force3(2) + FT(3) - lower_rot_force3(2)); 0]; 
-    local_FR4 = [0;  aux_vals.FR4(t, pt4(2), vt4(2), A(28,28), lower_force4(2) + FT(4) - lower_rot_force4(2)); 0]; 
+    local_FR1 = [0;  aux_vals.FR1(t, pt1(2), vt1(2), A(19,19), lower_force1(2) + FT(1) + lower_rot_force1(2)); 0];      %in global basis
+    local_FR2 = [0;  aux_vals.FR2(t, pt2(2), vt2(2), A(22,22), lower_force2(2) + FT(2) + lower_rot_force2(2)); 0];   
+    local_FR3 = [0;  aux_vals.FR3(t, pt3(2), vt3(2), A(25,25), lower_force3(2) + FT(3) + lower_rot_force3(2)); 0]; 
+    local_FR4 = [0;  aux_vals.FR4(t, pt4(2), vt4(2), A(28,28), lower_force4(2) + FT(4) + lower_rot_force4(2)); 0]; 
 
 
     %% get H=I*w
@@ -160,44 +161,44 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     
     %% sum of all torques induced by forces
     % for the car body
-    sum_torque_spring_car = -r1_tilda * (C_cN *  (upper_force1 + car_rot_force1)) + ...     % from the elongational springs
-                        -r2_tilda * (C_cN * (upper_force2 + car_rot_force2)) + ...
-                        -r3_tilda * (C_cN * (upper_force3 + car_rot_force3)) + ...
-                        -r4_tilda * (C_cN * (upper_force4 + car_rot_force4)) + ...
-                        -C_cN * upper_S1 - C_cN * upper_S2 - C_cN * upper_S3 - C_cN * upper_S4 + ...     % from the rotational spring
-                        -get_tilda(wc) * Hc + Tc;                       % from angular momentum and external torques
+    sum_torque_spring_car = r1_tilda * (C_cN * (-upper_force1 + car_rot_force1)) + ...     % from the elongational springs
+                            r2_tilda * (C_cN * (-upper_force2 + car_rot_force2)) + ...
+                            r3_tilda * (C_cN * (-upper_force3 + car_rot_force3)) + ...
+                            r4_tilda * (C_cN * (-upper_force4 + car_rot_force4)) + ...
+                           -C_cN * upper_S1 - C_cN * upper_S2 - C_cN * upper_S3 - C_cN * upper_S4 + ...     % ??from the rotational spring
+                            -get_tilda(wc) * Hc + Tc;                       % from angular momentum and external torques
+
+if norm(wc)>100
+    r1_tilda * (C_cN * (-upper_force1 - car_rot_force1)) + ...     % from the elongational springs
+                            r2_tilda * (C_cN * (-upper_force2 - car_rot_force2)) + ...
+                            r3_tilda * (C_cN * (-upper_force3 - car_rot_force3)) + ...
+                            r4_tilda * (C_cN * (-upper_force4 - car_rot_force4))
+%    +C_cN * upper_S1 + C_cN * upper_S2 + C_cN * upper_S3 + C_cN * upper_S4
+%    -get_tilda(wc) * Hc
+    upper_S1
+    lower_S1
+    car_rot_force1
+    upper_rot_force1
+    lower_rot_force1
+    eig(NaN)
+end
                     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%                 Solve                  %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% get the right hand side
     b =  [sum_torque_spring_car;...                                                         %w_dot_c
-         FC - upper_force1 - upper_force2 - upper_force3 - upper_force4 - car_rot_force; ...%vc_dot                                                         
-         upper_force1 - lower_force1 + local_FW1 - upper_rot_force1; ...                    %vw1_dot
-         upper_force2 - lower_force2 + local_FW2 - upper_rot_force2; ...                    %vw2_dot
-         upper_force3 - lower_force3 + local_FW3 - upper_rot_force3; ...                    %vw3_dot
-         upper_force4 - lower_force4 + local_FW4 - upper_rot_force4; ...                    %vw4_dot
-         lower_force1 + local_FT1 + local_FR1 - lower_rot_force1; ...                       %vt1_dot
-         lower_force2 + local_FT2 + local_FR2 - lower_rot_force2; ...                       %vt2_dot
-         lower_force3 + local_FT3 + local_FR3 - lower_rot_force3; ...                       %vt3_dot
-         lower_force4 + local_FT4 + local_FR4 - lower_rot_force4];                          %vt4_dot
-
-
+         FC - upper_force1 - upper_force2 - upper_force3 - upper_force4 + car_rot_force; ...%vc_dot                                                         
+         upper_force1 - lower_force1 + local_FW1 + upper_rot_force1; ...                    %vw1_dot
+         upper_force2 - lower_force2 + local_FW2 + upper_rot_force2; ...                    %vw2_dot
+         upper_force3 - lower_force3 + local_FW3 + upper_rot_force3; ...                    %vw3_dot
+         upper_force4 - lower_force4 + local_FW4 + upper_rot_force4; ...                    %vw4_dot
+         lower_force1 + local_FT1 + local_FR1 + lower_rot_force1; ...                       %vt1_dot
+         lower_force2 + local_FT2 + local_FR2 + lower_rot_force2; ...                       %vt2_dot
+         lower_force3 + local_FT3 + local_FR3 + lower_rot_force3; ...                       %vt3_dot
+         lower_force4 + local_FT4 + local_FR4 + lower_rot_force4];                          %vt4_dot
      
-%      angle = [upper_angle1 upper_angle2 upper_angle3 upper_angle4]
-%      upper = [pc1-pw1 pc2-pw2 pc3-pw3 pc4-pw4]
-% %     upper_rot_force1
-% 
-%      if (norm(b) > 1e7)
-%          angle = [upper_angle1 upper_angle2 upper_angle3 upper_angle4]
-%          upper = [pc1-pw1 pc2-pw2 pc3-pw3 pc4-pw4]
-%          lower = [pw1-pt1 pw2-pt2 pw3-pt3 pw4-pt4]
-%          car_rot_force
-%          b
-%          eig(NaN)
-%      end
-%      
-    % solve the system
+     % solve the system
     result_vector = A \ b;
         
     %% get the derivative of the attitude (expressed in quaternions) from

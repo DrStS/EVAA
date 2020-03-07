@@ -4,6 +4,7 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
         vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4,...
         num_iter, delta_t, solver)
  
+    %% INITIALLIZATION
     qc = qc / norm(qc);                 %normalize the initial orientation
             
     pcc = [0; 0; 0];                    % initial position of the center of the car at the origin
@@ -85,19 +86,22 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
                       'A', A);
 
                   
+    %% SOLVE PHASE              
     t = 0:delta_t:num_iter*delta_t;
 
     f = @(t,x) compute_f3D_reduced(x,t,aux_vals);
 
     [t,y] = solver(f, t, x_vector);
-   
-    y_return = zeros(size(y,1), 43);  %components: qc(1:4), pcc(5:7), 
+    
+    
+    %% ONLY FOR VISUALISATION (NO CPP)
+    y_return = zeros(size(y,1), 43);  % components: qc(1:4), pcc(5:7), 
                                       % pc1(8:10), pc2(11:13), pc3(14:16), pc4(17:19) 
                                       % pw1(20:22), pw2(23:25), pw3(26:28), pw4(29:31) 
                                       % pt1(32:34), pt2(35:37), pt3(38:40), pt4(41:43) 
 
     y_return(:,1:7) = y(:,31:37);
-    % retrieve positions from the angles
+    % retrieve positions from the angles 
     for i = 1:size(y,1)
         qc = y_return(i,1:4)';
         pcc = y_return(i,5:7)'; 

@@ -51,7 +51,7 @@ reduced = false;
 lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 upper_spring_length = [0.2; 0.2; 0.2; 0.2];
 
-initial_lower_spring_length = [0.2; 0.2; 0.2; 0.2];
+initial_lower_spring_length = [0.12; 0.18; 0.24; 0.19];
 initial_upper_spring_length = [0.2; 0.2; 0.2; 0.2];
 
 lower_spring_stiffness = [k_body_rr; k_body_rl; k_body_fl; k_body_fr];
@@ -71,8 +71,8 @@ wc = zeros(3,1);
 % force parameters
 g = 0;               % there is no gravity in outer space!
 
-%FC = -mass*g;    % external forces in y_direction
-FC = -1.1e3; 
+FC = -mass*g;    % external forces in y_direction
+%FC = -1.1e3; 
 
 FT1 = -mass_tyre(1)*g;
 FT2 = -mass_tyre(2)*g;

@@ -5,18 +5,22 @@ k_body_fl=28e3*0.69;
 k_tyre_fl=260e3;
 k_body_fr=28e3*0.69;
 k_tyre_fr=260e3;
-k_body_rl=16e3*0.82;
+k_body_rl=28e3*0.69;
 k_tyre_rl=260e3;
-k_body_rr=16e3*0.82;
+k_body_rr=28e3*0.69;
 k_tyre_rr=260e3;
-k_body_rot_fl = 1e5;
-k_body_rot_fr = 1e5;
-k_body_rot_rl = 1e5;
-k_body_rot_rr = 1e5;
-k_tyre_rot_fl = 1e5;
-k_tyre_rot_fr = 1e5;
-k_tyre_rot_rl = 1e5;
-k_tyre_rot_rr = 1e5;
+% k_body_rl=16e3*0.82;
+% k_tyre_rl=260e3;
+% k_body_rr=16e3*0.82;
+% k_tyre_rr=260e3;
+k_body_rot_fl = 1e4;
+k_body_rot_fr = 1e4;
+k_body_rot_rl = 1e4;
+k_body_rot_rr = 1e4;
+k_tyre_rot_fl = 1e4;
+k_tyre_rot_fr = 1e4;
+k_tyre_rot_rl = 1e4;
+k_tyre_rot_rr = 1e4;
 l_long_fl=1.395;
 l_long_fr=1.395;
 l_long_rl=1.596;
@@ -28,7 +32,7 @@ l_lat_rr=2*0.84;
 mass_Body=1936;
 I_body_xx=640;
 I_body_yy=4800;
-I_body_zz=1000;
+I_body_zz=10000;
 mass_wheel_fl=145/2;
 mass_tyre_fl=30;
 mass_wheel_fr=145/2;
@@ -57,15 +61,16 @@ mass_wheel = [mass_wheel_rr, mass_wheel_rl, mass_wheel_fl, mass_wheel_fr];
 mass_tyre = [mass_tyre_rr, mass_tyre_rl, mass_tyre_fl, mass_tyre_fr];                   % do not put to zero to avoid singularities, Dirichlet condition are enforced via a force vector
 
 
-lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 upper_spring_length = [0.2; 0.2; 0.2; 0.2];
+lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 
 %initial_lower_spring_length = [0.12; 0.18; 0.24; 0.19];
-initial_lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 initial_upper_spring_length = [0.2; 0.2; 0.2; 0.2];
+initial_lower_spring_length = [0.23; 0.23; 0.23; 0.23];
 
-lower_spring_stiffness = [k_body_rr; k_body_rl; k_body_fl; k_body_fr];
-upper_spring_stiffness = [k_tyre_rr; k_tyre_rl; k_tyre_fl; k_tyre_fr];
+upper_spring_stiffness = [k_body_rr; k_body_rl; k_body_fl; k_body_fr];
+lower_spring_stiffness = [k_tyre_rr; k_tyre_rl; k_tyre_fl; k_tyre_fr];
+
 upper_rotational_stiffness = [k_body_rot_rr; k_body_rot_fl; k_body_rot_fl; k_body_rot_fr];
 lower_rotational_stiffness = [k_tyre_rot_rr; k_tyre_rot_fl; k_tyre_rot_fl; k_tyre_rot_fr];
 
@@ -87,7 +92,7 @@ vt4 = [0; 0; 0];
 wc = zeros(3,1);
 
 % force parameters
-g = 0.002;               % there is no gravity in outer space!
+g = 0;               % there is no gravity in outer space!
 
 FC = -mass*g;    % external forces in y_direction
 %FC = [0; 1.1e3; 0]; 
@@ -103,7 +108,7 @@ FW3 = -mass_wheel(3)*g;
 FW4 = -mass_wheel(4)*g;
 
 % simulation specifications
-num_iter = 1e5;
+num_iter = 1e4;
 delta_t = 1e-3;
 tol = 1e-10;
 max_iter = 200;
@@ -119,8 +124,8 @@ FR4 = @(t, y, v, m, F) flying_car_road_forces(y, v, m, F, d, delta_t);
 
 %the car is flying away 
 FR1 = @(t, y, v, m, F) 0;        
-FR2 = @(t, y, v, m, F) (t<0.5)*300;
-FR3 = @(t, y, v, m, F) (t<0.5)*300;
+FR2 = @(t, y, v, m, F) (t<0)*300;
+FR3 = @(t, y, v, m, F) (t<0)*300;
 FR4 = @(t, y, v, m, F) 0;
 
 
@@ -130,8 +135,8 @@ FR4 = @(t, y, v, m, F) 0;
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
- solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
-% solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
+% solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+ solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 
 %% solving
 [t,y, y_sol] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation,... 
