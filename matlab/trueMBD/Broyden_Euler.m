@@ -3,7 +3,13 @@ function [t, x_vector_new] = Broyden_Euler(f, t, x_previous, tol, max_iter)
     % Initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
     
+    dt_inv = round(1/(t(2)-t(1)));
+    
     for n = 2 : length(t)
+        if (mod(n, dt_inv)==0)
+            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n))];
+            disp(timestr);
+        end
         delta_t = t(n) - t(n-1);
         % 0 ~= F(x_new) = x_new - x_n - delta_t * x_dot(x_new)
         

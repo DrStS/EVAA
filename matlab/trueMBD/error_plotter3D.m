@@ -100,13 +100,11 @@ function [] = error_plotter3D(  solver, t, num_iter, y, y_sol, mass, mass_wheel,
                                 0.5 * sum(lower_rotational_stiffness' .* lower_angle.^2);
                             
         %compute the total energy
-%        error(i) = potential_energy + kinetic_energy + rotational_energy + spring_potential + rot_spring_potential;
-        error(i) = rot_spring_potential;
+        error(i) = potential_energy + kinetic_energy + rotational_energy + spring_potential + rot_spring_potential;
 
         % compute the relative error
         if i > 1
-%            error(i) = (error(i) - error(1)) / error(1);
-            error(i) = (error(i) - error(1));
+            error(i) = (error(i) - error(1)) / error(1);
 
         end
     end

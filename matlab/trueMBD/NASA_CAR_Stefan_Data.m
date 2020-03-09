@@ -42,7 +42,7 @@ mass_tyre_rl=30;
 mass_wheel_rr=135/2;
 mass_tyre_rr=30;
 
-visualize = true;
+visualize = false;
 
 % Dimensions of the main car body (the center of rotation is at the origin)
 r1 = [-l_long_rr; 0  ;  l_lat_rr];
@@ -108,10 +108,10 @@ FW3 = -mass_wheel(3)*g;
 FW4 = -mass_wheel(4)*g;
 
 % simulation specifications
-num_iter = 1e4;
+num_iter = 1e5;
 delta_t = 1e-3;
-tol = 1e-10;
-max_iter = 200;
+tol = 1e-7;
+max_iter = 10000;
 
  
 % road forces in y direction (as functions of time)
@@ -134,9 +134,9 @@ FR4 = @(t, y, v, m, F) 0;
 % solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
-% solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
+ solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
- solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
+% solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 
 %% solving
 [t,y, y_sol] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation,... 
