@@ -126,6 +126,9 @@ Ared=((1/(h*h))*Mred+(1/h)*Dred+Kred);
 Bred=((2/(h*h))*Mred+(1/h)*Dred);
 f_n_p_1=[1.1e3; zeros(dim_system-1,1)];
 f_n_p_1_red=[1.1e3; zeros(6,1)];
+% gives only positive reaction in the force field on tire
+f_update = @(f, idx)( (f(idx)>0).*f(idx) );
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Static solution
 u_stat=Kred\f_n_p_1(1:7);
@@ -135,13 +138,18 @@ eigFreq=sqrt(eig(Kred,Mred))/2/pi;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Time loop
 j=2;
-idx = [1,2,3,4,6,8,10];
+idx = [5, 7, 9, 11];
 tic
 for i = h:h:tend
     u_n_p_1=A\(B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
     u_n_p_1_red=Ared\(Bred*u_n_red-((1/(h*h))*Mred)*u_n_m_1_red+f_n_p_1_red);
    % Get solution
-    t(j)=i;   
+    t(j)=i;
+    %% application of normal reaction from the road
+    f_n_p_1(idx) = -K(idx,idx)*u_n_p_1(idx);
+    f_n_p_1(idx) = f_update(f_n_p_1, idx);
+    u_n_p_1(idx) = f_update(u_n_p_1, idx);
+    %% regular solution
     u_sol(j,:)=u_n_p_1;
     u_n_m_1=u_n;
     u_n    =u_n_p_1;
@@ -153,9 +161,11 @@ end
 toc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Some plots
+vis_idx=1;
+sol_steps = floor(tend/h)+1;
 figure();
-plot(t,u_sol(:,1)); grid on;
+plot(t,u_sol(:,vis_idx)); grid on;
 %plot(t,u_sol_red(:,1)); grid on;
 legend;
-disp(u_sol(1001,1:11))
-disp(u_sol_red(1001,1:7))
+disp(u_sol(sol_steps,1:11))
+disp(u_sol_red(sol_steps,1:3))

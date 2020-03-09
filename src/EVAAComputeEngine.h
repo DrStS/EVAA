@@ -74,6 +74,7 @@ public:
 	***********/
 	// MKL Linear solver
 	void computeMKLlinear11dof(void);
+	void computeMKLlinear11dof_reduced(void);
 	/***********************************************************************************************
 	* \brief compute engine
 	* \author Stefan Sicklinger
@@ -131,14 +132,21 @@ private:
 	T mass_tyre_rl = 0.0;
 	T mass_wheel_rr = 135.0 / 2.0;
 	T mass_tyre_rr = 0.0;
+	
+	//// Solver type selection based on type of boundary condition
+	std::string condition_type;
+	std::string cond1 = "fixed_to_road";
+	std::string cond2 = "road_force";
 	////////////////////////////////////////////////////////////////////////////////////////////
 	T tend_;
 	T u_init_;
 	T du_init_;
 	T h_;
 	int i;
-	T* M, * temp, * K, * K_trans, * D, * M_red, * D_red, * Kred;
+	T* M, * temp, * K, * K_trans, * D, * M_red, * D_red, * K_red;
 	T* u_sol, * u_sol_red, * u_n_p_1, * u_n_p_1_red, * u_n_m_1, * u_n, * u_n_red, * u_n_m_1_red, * A, * Ared, * B, * Bred, * f_n_p_1, * f_n_p_1_red;
+	size_t* tyre_index_set;
+	size_t num_tyre = 4;
 	T* time; // this is not necessary
 
 	void check_status(lapack_int status) {
@@ -147,6 +155,28 @@ private:
 		}
 		else if (status == -1) {
 			throw "Matrix contain illegal value";
+		}
+	}
+	void write_vector(T* vect, int count) {
+		std::cout << "Debug mode print" << std::endl;
+		for (size_t i = 0; i < count; ++i) {
+			std::cout << vect[i] << std::endl;
+		}
+	}
+	void apply_normal_force(T* force, T* u, size_t* index, size_t n) {
+		#pragma loop( ivdep )
+		for (int i = 0; i < n; ++i) {
+			force[index[i]] = force[index[i]] > 0 ? force[index[i]] : 0;
+		}
+		#pragma loop( ivdep )
+		for (int i = 0; i < n; ++i) {
+			u[index[i]] = u[index[i]]>0 ? u[index[i]] : 0;
+		}
+	}
+	void compute_normal_force(T* K, T* u, T* force, size_t* index, size_t dim,size_t n) {
+		#pragma loop( ivdep )
+		for (int i = 0; i < n; ++i) {
+			force[index[i]] = -K[index[i]*dim + index[i]]*u[index[i]];
 		}
 	}
 
@@ -285,8 +315,8 @@ public:
 	}
 
 	void apply_boundary_condition(std::string s, T* force) {
-		std::string cond1 = "fixed_to_road";
-		std::string cond2 = "road_force";
+		
+		condition_type = s;
 
 		if (s == cond1) {
 			T* start_loc_k_trans, * start_loc_k, * start_loc_D_red, * start_loc_D;
@@ -294,21 +324,19 @@ public:
 			// cblas_dcopy(DOF*DOF, K, 1, K_trans, 1);
 			// change the DOF for further reference
 			DOF = DOF - 4; // DOF 7 now
-			Kred = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
+			K_red = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 			M_red = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 			D_red = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 			// memory allocation for the reduced force field
-			f_n_p_1 = (T*)mkl_calloc(DOF + 4, sizeof(T), alignment);
 			f_n_p_1_red = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 			if (*force != NULL) {
-				cblas_dcopy(DOF + 4, force, 1, f_n_p_1, 1);
-				cblas_dcopy(DOF - 3, f_n_p_1, 1, f_n_p_1_red, 1);
+				cblas_dcopy(DOF - 3, force, 1, f_n_p_1_red, 1);
 			}
 
 			// reassign the values of K in the new K for first 4 DOF 
 			for (int i = 0; i < DOF - 3; ++i) {
 				start_loc_k_trans = K + i * (DOF + 4);
-				start_loc_k = Kred + i * DOF;
+				start_loc_k = K_red + i * DOF;
 				start_loc_D_red = D_red + i * DOF;
 				start_loc_D = D + i * (DOF + 4);
 
@@ -330,7 +358,7 @@ public:
 			int j = 4;
 			for (int i = 5; i < (DOF + 4); i = i + 2) {
 				start_loc_k_trans = K + (i) * (DOF + 4);
-				start_loc_k = Kred + j * DOF;
+				start_loc_k = K_red + j * DOF;
 				start_loc_D_red = D_red + j * DOF;
 				start_loc_D = D + i * (DOF + 4);
 
@@ -347,14 +375,38 @@ public:
 				start_loc_D_red[DOF - 3 + 2] = start_loc_D[DOF - 3 + 5];
 
 				M_red[j * DOF + j] = M[i * (DOF + 4) + i];
-				f_n_p_1_red[j] = f_n_p_1[i];
+				f_n_p_1_red[j] = force[i];
 				j++;
 			}
 		}
-
+		else if (s == cond2) {
+			// memory allocation for the force field
+			f_n_p_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
+			if (*force != NULL) {
+				cblas_dcopy(DOF, force, 1, f_n_p_1, 1);
+			}
+			tyre_index_set = (size_t*)mkl_calloc(num_tyre, sizeof(size_t), alignment);
+			for (int i = 4, j=0; i < DOF && j<num_tyre; i = i + 2, j++) {
+				tyre_index_set[j] = i;
+			}
+		}
+		else {
+			throw "Incorrect boundary condition";
+		}
+	}
+	void solve(T* sol_vect) {
+		if (condition_type == cond1) {
+			solve_reduced(sol_vect);
+		}
+		else if (condition_type == cond2) {
+			solve_full(sol_vect);
+		}
+		else {
+			throw "Inappropriate boundary condition!";
+		}
 	}
 
-	void solve(T* sol_vect) {
+	void solve_full(T* sol_vect) {
 		///////////////////////////////////// For 7 DOF System //////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////// Memory Allocation for Intermediate Solution Vectors //////////////////
@@ -362,22 +414,16 @@ public:
 		int sol_size = (floor(tend_ / h_) + 1);
 		T factor_h2 = (1 / (h_ * h_));
 		T factor_h = (1 / (h_));
-		int mat_len = (DOF + 4) * (DOF + 4);
-		u_sol = (T*)mkl_calloc(sol_size * (DOF + 4), sizeof(T), alignment);
-		u_sol_red = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
-		u_n_p_1 = (T*)mkl_calloc((DOF + 4), sizeof(T), alignment);
-		u_n_p_1_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
-		u_n_m_1 = (T*)mkl_calloc((DOF + 4), sizeof(T), alignment);
-		u_n = (T*)mkl_calloc((DOF + 4), sizeof(T), alignment);
-		u_n_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
-		u_n_m_1_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);;
+		int mat_len = (DOF) * (DOF);
+		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
+		u_n_p_1 = (T*)mkl_calloc((DOF), sizeof(T), alignment);
+		u_n_m_1 = (T*)mkl_calloc((DOF), sizeof(T), alignment);
+		u_n = (T*)mkl_calloc((DOF), sizeof(T), alignment);
 		A = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
-		Ared = (T*)mkl_calloc((DOF) * (DOF), sizeof(T), alignment);;
 		B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
-		Bred = (T*)mkl_calloc((DOF) * (DOF), sizeof(T), alignment);
 		time = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
 		u_n[0] = u_init_;
-		cblas_dcopy(DOF + 4, u_n, 1, u_n_m_1, 1);
+		cblas_dcopy(DOF, u_n, 1, u_n_m_1, 1);
 		u_n_m_1[0] = u_init_ - h_ * du_init_;
 
 		// A=((1/(h*h))*M+(1/h)*D+K);
@@ -386,8 +432,10 @@ public:
 		cblas_daxpy(mat_len, 1, K, 1, A, 1);
 		// Cholesky factorization of A
 		lapack_int status;
+		//lapack_int* piv = (lapack_int*)mkl_calloc((DOF + 4), sizeof(lapack_int), alignment);
 		try {
-			status = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', DOF + 4, A, DOF + 4);
+			status = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', DOF, A, DOF);
+			//status = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF + 4, DOF + 4, A, DOF + 4, piv);
 			check_status(status);
 		}
 		catch (const char* msg) {
@@ -402,20 +450,38 @@ public:
 		while (t < tend_) {
 			// u_n_p_1=A\(B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
 			// u_n_p_1 = B*u_n
-			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF + 4, DOF + 4, 1, B, DOF + 4, u_n, 1, 1, u_n_p_1, 1);
+			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, 1, B, DOF, u_n, 1, 1, u_n_p_1, 1);
 			// u_n_p_1 = -((1/(h*h))*M)*u_n_m_1 + u_n_p_1
-			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF + 4, DOF + 4, -factor_h2, M, DOF + 4, u_n_m_1, 1, 1, u_n_p_1, 1);
+			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, -factor_h2, M, DOF, u_n_m_1, 1, 1, u_n_p_1, 1);
 			// u_n_p_1 = f_n_p_1 + u_n_p_1
-			cblas_daxpy(DOF + 4, 1, f_n_p_1, 1, u_n_p_1, 1);
+			cblas_daxpy(DOF, 1, f_n_p_1, 1, u_n_p_1, 1);
 			// u_n_p_1=A\u_n_p_1
-			LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', DOF + 4, 1, A, DOF + 4, u_n_p_1, 1);
+			LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', DOF, 1, A, DOF, u_n_p_1, 1);
+			//LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF + 4, 1, A, DOF + 4, piv, u_n_p_1, 1);
+			///////////////// Debug print statements ///////////////////////////////
+			/*if (iter==2){
+				write_vector(u_n_p_1, DOF + 4);
+			}*/
 			time[iter] = t;
+			/*
+			f_n_p_1(idx) = -K(idx,idx)*u_n_p_1(idx);
+			f_n_p_1(idx) = f_update(f_n_p_1, idx);
+			u_n_p_1(idx) = 0;
+			*/
+			compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
+			///////////////// Debug print statements ///////////////////////////////
+			/*if (iter==2){
+				write_vector(u_n_p_1, DOF);
+			}*/
+			apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);
+
+
 			// u_sol(j,:)=u_n_p_1;
-			cblas_dcopy(DOF + 4, u_n_p_1, 1, u_sol + iter * (DOF + 4), 1);
+			cblas_dcopy(DOF, u_n_p_1, 1, u_sol + iter * (DOF), 1);
 			// u_n_m_1=u_n;
-			cblas_dcopy(DOF + 4, u_n, 1, u_n_m_1, 1);
+			cblas_dcopy(DOF, u_n, 1, u_n_m_1, 1);
 			// u_n    =u_n_p_1;
-			cblas_dcopy(DOF + 4, u_n_p_1, 1, u_n, 1);
+			cblas_dcopy(DOF, u_n_p_1, 1, u_n, 1);
 			iter++;
 			t += h_;
 		}
@@ -423,9 +489,121 @@ public:
 		std::cout << "Elapsed time in nanoseconds : "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
 			<< " ms" << std::endl;*/
-		//std::cout << "iter = " << iter << " sol_size = "<< sol_size <<"\n\n" << std::endl;
-		cblas_dcopy(DOF + 4, u_sol + (iter - 1)*(DOF + 4), 1, sol_vect, 1);
+		std::cout << "iter = " << iter << " sol_size = "<< sol_size <<"\n\n" << std::endl;
+		cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
+		clean("full");
 
+	}
+	void solve_reduced(T* sol_vect) {
+		///////////////////////////////////// For 7 DOF System //////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////// Memory Allocation for Intermediate Solution Vectors //////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		int sol_size = (floor(tend_ / h_) + 1);
+		T factor_h2 = (1 / (h_ * h_));
+		T factor_h = (1 / (h_));
+		int mat_len = (DOF) * (DOF);
+		//u_sol = (T*)mkl_calloc(sol_size * (DOF + 4), sizeof(T), alignment);
+		u_sol_red = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
+		//u_n_p_1 = (T*)mkl_calloc((DOF + 4), sizeof(T), alignment);
+		u_n_p_1_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
+		//u_n_m_1 = (T*)mkl_calloc((DOF + 4), sizeof(T), alignment);
+		//u_n = (T*)mkl_calloc((DOF + 4), sizeof(T), alignment);
+		u_n_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
+		u_n_m_1_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
+		//A = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
+		Ared = (T*)mkl_calloc((DOF) * (DOF), sizeof(T), alignment);
+		//B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
+		Bred = (T*)mkl_calloc((DOF) * (DOF), sizeof(T), alignment);
+		time = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
+		
+		u_n_red[0] = u_init_;
+		cblas_dcopy(DOF, u_n_red, 1, u_n_m_1_red, 1);
+		u_n_m_1_red[0] = u_init_ - h_ * du_init_;
+
+		// A=((1/(h*h))*M+(1/h)*D+K);
+		cblas_daxpy(mat_len, factor_h2, M_red, 1, Ared, 1);
+		cblas_daxpy(mat_len, factor_h, D_red, 1, Ared, 1);
+		cblas_daxpy(mat_len, 1, K_red, 1, Ared, 1);
+		// Cholesky factorization of A
+		lapack_int status;
+		//lapack_int* piv = (lapack_int*)mkl_calloc((DOF + 4), sizeof(lapack_int), alignment);
+		try {
+			status = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', DOF, Ared, DOF);
+			//status = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF + 4, DOF + 4, A, DOF + 4, piv);
+			check_status(status);
+		}
+		catch (const char* msg) {
+			std::cerr << msg << std::endl;
+		}
+		// B=((2/(h*h))*M+(1/h)*D);
+		cblas_daxpy(mat_len, 2 * factor_h2, M_red, 1, Bred, 1);
+		cblas_daxpy(mat_len, factor_h, D_red, 1, Bred, 1);
+		int iter = 1;
+		T t = h_;
+		/*auto start = std::chrono::steady_clock::now();*/
+		while (t < tend_) {
+			// u_n_p_1=A\(B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
+			// u_n_p_1 = B*u_n
+			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, 1, Bred, DOF, u_n_red, 1, 1, u_n_p_1_red, 1);
+			// u_n_p_1 = -((1/(h*h))*M)*u_n_m_1 + u_n_p_1
+			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, -factor_h2, M_red, DOF, u_n_m_1_red, 1, 1, u_n_p_1_red, 1);
+			// u_n_p_1 = f_n_p_1 + u_n_p_1
+			cblas_daxpy(DOF, 1, f_n_p_1_red, 1, u_n_p_1_red, 1);
+			// u_n_p_1=A\u_n_p_1
+			LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', DOF, 1, Ared, DOF, u_n_p_1_red, 1);
+			//LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF + 4, 1, A, DOF + 4, piv, u_n_p_1, 1);
+			///////////////// Debug print statements ///////////////////////////////
+			/*if (iter==2){
+				write_vector(u_n_p_1_red, DOF);
+			}*/
+			time[iter] = t;
+			// u_sol(j,:)=u_n_p_1;
+			cblas_dcopy(DOF, u_n_p_1_red, 1, u_sol_red + iter * (DOF), 1);
+			// u_n_m_1=u_n;
+			cblas_dcopy(DOF, u_n_red, 1, u_n_m_1_red, 1);
+			// u_n    =u_n_p_1;
+			cblas_dcopy(DOF, u_n_p_1_red, 1, u_n_red, 1);
+			iter++;
+			t += h_;
+		}
+		/*auto end = std::chrono::steady_clock::now();
+		std::cout << "Elapsed time in nanoseconds : "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+			<< " ms" << std::endl;*/
+			//std::cout << "iter = " << iter << " sol_size = "<< sol_size <<"\n\n" << std::endl;
+		cblas_dcopy(DOF, u_sol_red + (iter - 1)*(DOF), 1, sol_vect, 1);
+		clean("reduced");
+
+	}
+
+	void clean(std::string s){
+		std::string full = "full";
+		std::string reduced = "reduced";
+		if (s == full) {
+			MKL_free(u_sol);
+			MKL_free(u_n_m_1);
+			MKL_free(u_n);
+			MKL_free(u_n_p_1);
+			MKL_free(f_n_p_1);
+			MKL_free(tyre_index_set);
+			MKL_free(A); 
+			MKL_free(B);
+			MKL_free(time);
+		}
+		else if (s == reduced) {
+			MKL_free(u_sol_red);
+			MKL_free(u_n_red);
+			MKL_free(u_n_m_1_red);
+			MKL_free(u_n_p_1_red);
+			MKL_free(f_n_p_1_red);
+			MKL_free(Ared);
+			MKL_free(Bred);
+			MKL_free(time);
+			MKL_free(K_red);
+			MKL_free(M_red);
+			MKL_free(D_red);
+		}
 	}
 
 	~linear11dof() {
@@ -434,27 +612,180 @@ public:
 		MKL_free(K);
 		MKL_free(K_trans);
 		MKL_free(D);
-		MKL_free(Kred);
-		MKL_free(M_red);
-		MKL_free(D_red);
-		// memory allocation for the reduced force field
-		MKL_free(f_n_p_1);
-		MKL_free(f_n_p_1_red);
-		MKL_free(u_sol);
-		MKL_free(u_sol_red);
-		MKL_free(u_n_p_1);
-		MKL_free(u_n_p_1_red);
-		MKL_free(u_n_m_1);
-		MKL_free(u_n);
-		MKL_free(u_n_red);
-		MKL_free(u_n_m_1_red);
-		MKL_free(A);
-		MKL_free(Ared);
-		MKL_free(B);
-		MKL_free(Bred);
-		MKL_free(time);
 	}
 };
+
+template <class T>
+class MBD_method
+{
+public:
+	MBD_method(T* initial_orientation, 
+		T* initial_upper_spring_length, 
+		T* initial_lower_spring_length,
+		T* vc,
+		T* vw1,
+		T* vw2,
+		T* vw3, 
+		T* vw4,
+		T* vt1, 
+		T* vt2,
+		T* vt3,
+		T* vt4,
+		T* wc) {
+		int i;
+		r1 = (T*)mkl_calloc(DIM, sizeof(T), alignment);
+		r2 = (T*)mkl_calloc(DIM, sizeof(T), alignment);
+		r3 = (T*)mkl_calloc(DIM, sizeof(T), alignment);
+		r4 = (T*)mkl_calloc(DIM, sizeof(T), alignment);
+		Ic = (T*)mkl_calloc(DIM * DIM, sizeof(T), alignment);
+		mass_wheel = (T*)mkl_calloc(NUM_LEGS, sizeof(T), alignment);
+		mass_tyre = (T*)mkl_calloc(NUM_LEGS, sizeof(T), alignment);
+		upper_spring_length = (T*)mkl_calloc(NUM_LEGS, sizeof(T), alignment);
+		lower_spring_length = (T*)mkl_calloc(NUM_LEGS, sizeof(T), alignment);
+		upper_spring_stiffness = (T*)mkl_calloc(NUM_LEGS, sizeof(T), alignment);
+		lower_spring_stiffness = (T*)mkl_calloc(NUM_LEGS, sizeof(T), alignment);
+		upper_rotational_stiffness = (T*)mkl_calloc(NUM_LEGS, sizeof(T), alignment);
+		lower_rotational_stiffness = (T*)mkl_calloc(NUM_LEGS, sizeof(T), alignment);
+
+		i = 0;
+		r1[i] = -l_long_rr; r2[i] = -l_long_rl; r3[i] = l_long_fl; r4[i] = l_long_fr;
+		Ic[i*DIM + i] = I_body_xx;
+		mass_wheel[i] = mass_wheel_rr;
+		mass_tyre[i] = mass_tyre_rr;
+		upper_spring_length[i] = upper_spring_length_rr;
+		lower_spring_length[i] = lower_spring_length_rr;
+		upper_spring_stiffness[i] = k_body_rr;
+		lower_spring_stiffness[i] = k_tyre_rr;
+		upper_rotational_stiffness[i] = k_body_rot_rr;
+		lower_rotational_stiffness[i] = k_tyre_rot_rr;
+		FT1 = -mass_tyre[i] * g;
+		FW1 = -mass_wheel[i] * g;
+
+		i = 1;
+		r1[i] = 0; r2[i] = 0; r3[i] = 0; r4[i] = 0;
+		Ic[i*DIM + i] = I_body_zz;
+		mass_wheel[i] = mass_wheel_rl;
+		mass_tyre[i] = mass_tyre_rl;
+		upper_spring_length[i] = upper_spring_length_rl;
+		lower_spring_length[i] = lower_spring_length_rl;
+		upper_spring_stiffness[i] = k_body_rl;
+		lower_spring_stiffness[i] = k_tyre_rl;
+		upper_rotational_stiffness[i] = k_body_rot_rl;
+		lower_rotational_stiffness[i] = k_tyre_rot_rl;
+		FT2 = -mass_tyre[i] * g;
+		FW2 = -mass_wheel[i] * g;
+
+		i = 2;
+		r1[i] = l_lat_rr; r2[i] = -l_lat_rl; r3[i] = -l_lat_fl; r4[i] = l_lat_fr;
+		Ic[i*DIM + i] = I_body_yy;
+		mass_wheel[i] = mass_wheel_fl;
+		mass_tyre[i] = mass_tyre_fl;
+		upper_spring_length[i] = upper_spring_length_fl;
+		lower_spring_length[i] = lower_spring_length_fl;
+		upper_spring_stiffness[i] = k_body_fl;
+		lower_spring_stiffness[i] = k_tyre_fl;
+		upper_rotational_stiffness[i] = k_body_rot_fl;
+		lower_rotational_stiffness[i] = k_tyre_rot_fl;
+		FT3 = -mass_tyre[i] * g;
+		FW3 = -mass_wheel[i] * g;
+
+		i = 3;
+		mass_wheel[i] = mass_wheel_fr;
+		mass_tyre[i] = mass_tyre_fr;
+		upper_spring_length[i] = upper_spring_length_fr;
+		lower_spring_length[i] = lower_spring_length_fr;
+		upper_spring_stiffness[i] = k_body_fr;
+		lower_spring_stiffness[i] = k_tyre_fr;
+		upper_rotational_stiffness[i] = k_body_rot_fr;
+		lower_rotational_stiffness[i] = k_tyre_rot_fr;
+		FT4 = -mass_tyre[i] * g;
+		FW4 = -mass_wheel[i] * g;
+
+	}
+	void apply_boundary_condition() {
+		// from line 119 in matlab
+	}
+	~MBD_method() {
+		MKL_free(r1);
+		MKL_free(r2);
+		MKL_free(r3);
+		MKL_free(r4);
+		MKL_free(Ic);
+		MKL_free(mass_wheel);
+		MKL_free(mass_tyre);
+		MKL_free(upper_spring_length);
+		MKL_free(lower_spring_length);
+		MKL_free(upper_spring_stiffness);
+		MKL_free(lower_spring_stiffness);
+		MKL_free(upper_rotational_stiffness);
+		MKL_free(lower_rotational_stiffness);
+		
+	}
+
+private:
+	const int DIM = 3;
+	const int NUM_LEGS = 4;
+	T k_body_fl = 28e3*0.69;
+	T k_tyre_fl = 260e3;
+	T k_body_fr = 28e3*0.69;
+	T k_tyre_fr = 260e3;
+	T k_body_rl = 28e3*0.69;
+	T k_tyre_rl = 260e3;
+	T k_body_rr = 28e3*0.69;
+	T k_tyre_rr = 260e3;
+	T k_body_rot_fl = 1e4;
+	T k_body_rot_fr = 1e4;
+	T k_body_rot_rl = 1e4;
+	T k_body_rot_rr = 1e4;
+	T k_tyre_rot_fl = 1e4;
+	T k_tyre_rot_fr = 1e4;
+	T k_tyre_rot_rl = 1e4;
+	T k_tyre_rot_rr = 1e4;
+	T l_long_fl = 1.395;
+	T l_long_fr = 1.395;
+	T l_long_rl = 1.596;
+	T l_long_rr = 1.596;
+	T l_lat_fl = 2 * 0.84;
+	T l_lat_fr = 2 * 0.84;
+	T l_lat_rl = 2 * 0.84;
+	T l_lat_rr = 2 * 0.84;
+	T mass = 1936;
+	T I_body_xx = 640;
+	T I_body_yy = 4800;
+	T I_body_zz = 10000;
+	T mass_wheel_fl = 145 / 2;
+	T mass_tyre_fl = 30;
+	T mass_wheel_fr = 145 / 2;
+	T mass_tyre_fr = 30;
+	T mass_wheel_rl = 135 / 2;
+	T mass_tyre_rl = 30;
+	T mass_wheel_rr = 135 / 2;
+	T mass_tyre_rr = 30;
+	T upper_spring_length_rr = 0.2;
+	T upper_spring_length_rl = 0.2;
+	T upper_spring_length_fl = 0.2;
+	T upper_spring_length_fr = 0.2;
+	T lower_spring_length_rr = 0.2;
+	T lower_spring_length_rl = 0.2;
+	T lower_spring_length_fl = 0.2;
+	T lower_spring_length_fr = 0.2;
+	T g = 0;
+	T FC = -mass * g;
+	T FT1, FT2, FT3, FT4;
+	T FW1, FW2, FW3, FW4;
+	T h = 1e-3;
+	T num_iter;
+	int max_iter;
+	T tol = 1e-10;
+	T *r1, *r2, *r3, *r4;
+	T *Ic;
+	T *mass_wheel;
+	T *upper_spring_length, *lower_spring_length;
+	T *upper_spring_stiffness, *lower_spring_stiffness;
+	T *upper_rotational_stiffness, *lower_rotational_stiffness;
+};
+
+
 //#ifndef ComputeNasa
 //#define ComputeNasa
 //template <typename T>

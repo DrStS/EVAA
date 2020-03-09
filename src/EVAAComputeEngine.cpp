@@ -1053,11 +1053,32 @@ void EVAAComputeEngine::computeMKLlinear11dof(void) {
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
 	force[0] = 1.1e3;
 	linear11dof<floatEVAA> solver(tend, h, u_init, du_init);
-	solver.apply_boundary_condition("fixed_to_road", force);
+	solver.apply_boundary_condition("road_force", force);
 	solver.solve(soln);
-	std::cout << "Solution after 1000 timesteps, f ="<<std::endl;
+	size_t steps = floor(tend / h);
+	std::cout << "Solution after "<<steps<<" timesteps, f ="<<std::endl;
 	for (auto i = 0; i < 11; ++i) {
 		std::cout << soln[i] <<std::endl;
+	}
+	MKL_free(force);
+	MKL_free(soln);
+}
+
+void EVAAComputeEngine::computeMKLlinear11dof_reduced(void) {
+	floatEVAA tend = 1.0;
+	floatEVAA h = 1.0 / 1000.0;
+	floatEVAA u_init = 0.0;
+	floatEVAA du_init = 0.0;
+	const int alignment = 64;
+	floatEVAA* force = (floatEVAA*)mkl_calloc(7, sizeof(floatEVAA), alignment);
+	floatEVAA* soln = (floatEVAA*)mkl_calloc(7, sizeof(floatEVAA), alignment);
+	force[0] = 1.1e3;
+	linear11dof<floatEVAA> solver(tend, h, u_init, du_init);
+	solver.apply_boundary_condition("fixed_to_road", force);
+	solver.solve(soln);
+	std::cout << "Solution after 1000 timesteps, f =" << std::endl;
+	for (auto i = 0; i < 7; ++i) {
+		std::cout << soln[i] << std::endl;
 	}
 	std::cout << std::endl;
 	MKL_free(force);

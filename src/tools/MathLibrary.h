@@ -81,9 +81,12 @@ namespace MathLibrary {
 
 	template <typename T>
 	void elementwise_inversion(T* vect, size_t dim) {
-		for (size_t i = 0; i < dim; ++i) {
-			vect[i] = 1.0 / vect[i];
-		}
+		T* temp[dim];
+		vdInv(dim, vect, temp);
+		cblas_dcopy(dim,temp,1, vect,1);
+		//for (size_t i = 0; i < dim; ++i) {
+		//	vect[i] = 1.0 / vect[i];
+		//}
 	}
 
 	template <typename T>

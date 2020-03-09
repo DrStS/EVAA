@@ -131,12 +131,12 @@ FR4 = @(t, y, v, m, F) 0;
 
 % Explicit solvers
 % solver = @(f, t, x) explicit_solver(f, t, x);
-% solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+ solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
- solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
+% solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 
 %% solving
 [t,y, y_sol] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation,... 
