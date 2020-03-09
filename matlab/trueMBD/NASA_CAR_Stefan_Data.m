@@ -103,7 +103,7 @@ FW3 = -mass_wheel(3)*g;
 FW4 = -mass_wheel(4)*g;
 
 % simulation specifications
-num_iter = 1e5;
+num_iter = 3e5;
 delta_t = 1e-3;
 tol = 1e-7;
 max_iter = 10000;
@@ -130,7 +130,7 @@ FR4 = @(t, y, v, m, F) 0;
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
- solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation,... 
@@ -142,7 +142,8 @@ FR4 = @(t, y, v, m, F) 0;
 %% visulalization
 figure()
 plot(t,y(:,6));
-disp(y(end,6));
+posstr=['Final y-position of the center of mass: ', num2str(y(end,6))];
+disp(posstr);
 title("Evolution of the y-coordinate of the center of mass of the car")
 if visualize
     visualizer3D(y, delta_t);

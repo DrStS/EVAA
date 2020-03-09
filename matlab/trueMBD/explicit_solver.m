@@ -5,6 +5,8 @@ function [t,x_vector_new] = explicit_solver(f, t, x_previous)
 
     %initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
+
+    dt_inv = round(1/(t(2)-t(1))); %only needed to print progress    
     
     for n = 2 : length(t)
         
@@ -12,6 +14,10 @@ function [t,x_vector_new] = explicit_solver(f, t, x_previous)
         x_previous = x_vector_new(n-1, :);
         f_n = f(t(n-1), x_previous')';
         x_vector_new(n,:) = x_previous + delta_t * f_n;
+        if (mod(n, dt_inv)==0)
+            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n))];
+            disp(timestr);
+        end
 
     end
     
