@@ -1,11 +1,11 @@
 function [t, x_vector_new] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
 % implementation of the previous difference formula (also called BDF in
 % older literature)
-    %  figure()
-
     % Initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
-   
+
+    dt_inv = round(1/(t(2)-t(1))); %only needed to print progress
+
     % fancy initial step with implicit Euler method 
     n=2;
     delta_t = t(n) - t(n-1);
@@ -61,21 +61,6 @@ function [t, x_vector_new] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
     
     % go for the following steps in the PDF2 method
     for n = 3 : length(t)
-%         if (mod(n, 10) == 0)
-%             delta_t = t(n) - t(n-1);
-%             plot(n, x_previous(36),'go')
-%             hold on
-%             plot(n, norm(x_previous(1:3)), 'yd')
-%             plot(n, x_previous(39),'ro')
-%             plot(n, x_previous(42),'rx')
-%             plot(n, x_previous(45),'rd')
-%             plot(n, x_previous(48),'rs')
-%             plot(n, x_previous(51),'bo')
-%             plot(n, x_previous(54),'bx')
-%             plot(n, x_previous(57),'bd')
-%             plot(n, x_previous(60),'bs')
-%             drawnow
-%        end    
         x_previous = x_vector_new(n-1, :);
         x_previous_previous = x_vector_new(n-2, :);
         
@@ -100,7 +85,6 @@ function [t, x_vector_new] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
         F = x - 4/3 * x_previous + 1/3 * x_previous_previous - 2/3 * delta_t * x_dot;
         
         % Broyden's Method
-        i=1;
         for i = 1 : max_iter
             if (norm(F) < tol)
                 break;
@@ -123,9 +107,14 @@ function [t, x_vector_new] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
             x = x_new;
         end
         if(i==max_iter)
-            norm(F)
+            dispstr = ['Maximum number of iteration ', num2str(max_iter),' reached! Current accuracy: ', num2str(norm(F))];
+            disp(dispstr)
         end
-		
+        if (mod(n, dt_inv)==0)
+            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n))];
+            disp(timestr);
+        end
+
         x_vector_new(n,:) = x;
     end
 end

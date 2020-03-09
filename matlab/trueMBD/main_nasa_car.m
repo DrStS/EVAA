@@ -3,9 +3,9 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
         lower_spring_stiffness, upper_spring_stiffness, lower_rotational_stiffness, upper_rotational_stiffness, ...
         vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4,...
         num_iter, delta_t, solver)
- 
+   
     %% INITIALLIZATION
-    qc = qc / norm(qc);                 %normalize the initial orientation
+    qc = qc / norm(qc);                 %normalize the initial orientation (not necessary, since there is no other possible choice for initial conditions than [0; 0; 0; 1])
             
     pcc = [0; 0; 0];                    % initial position of the center of the car at the origin
     
@@ -49,7 +49,9 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
                 pt3; ...    % 3 56:58
                 pt4];       % 3 59:61
     
-    % create the reduced system matrix
+    % create the reduced system matrix (probably best to store directly
+    % its inverse, maybe split it into one vector of the inverse diagonal
+    % elements and one matrix with the inverse of Ic)
     A = diag([1,1,1, mass, mass, mass, ...
         mass_wheel(1), mass_wheel(1), mass_wheel(1),...
         mass_wheel(2), mass_wheel(2), mass_wheel(2),...
@@ -87,12 +89,15 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
 
                   
     %% SOLVE PHASE              
-    t = 0:delta_t:num_iter*delta_t;
+    t = 0:delta_t:num_iter*delta_t;         
 
     f = @(t,x) compute_f3D_reduced(x,t,aux_vals);
 
+    tic;
     [t,y] = solver(f, t, x_vector);
-    
+    solvetime=toc;
+    timestr=['It took ', num2str(floor(solvetime)), 'sec ', num2str(round(mod(solvetime, 1)*1000)),'ms to solve the system!'];
+    disp(timestr)
     
     %% ONLY FOR VISUALISATION (NO CPP)
     y_return = zeros(size(y,1), 43);  % components: qc(1:4), pcc(5:7), 

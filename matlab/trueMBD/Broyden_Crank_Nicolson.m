@@ -2,7 +2,9 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
     
     % Initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
-    
+
+    dt_inv = round(1/(t(2)-t(1))); %only needed to print progress
+
     for n = 2 : length(t)
 		delta_t = t(n) - t(n-1);
 		% 0 ~= F(x_new) = x_new - x_n - delta_t * x_dot(x_new)
@@ -51,7 +53,16 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
 
 			F = F_new;
 			x = x_new;
-		end
+        end
+        if(i==max_iter)
+            dispstr = ['Maximum number of iteration ', num2str(max_iter),' reached! Current accuracy: ', num2str(norm(F))];
+            disp(dispstr)
+        end
+        if (mod(n, dt_inv)==0)
+            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n))];
+            disp(timestr);
+        end
+
 		x_vector_new(n,:) = x;
     end  
 end
