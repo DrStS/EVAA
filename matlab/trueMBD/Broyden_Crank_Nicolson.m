@@ -59,7 +59,7 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
             disp(dispstr)
         end
         if (mod(n, dt_inv)==0)
-            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n))];
+            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n+1))];
             disp(timestr);
         end
 

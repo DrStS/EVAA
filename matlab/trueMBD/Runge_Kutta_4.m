@@ -18,7 +18,7 @@ function [t,x_vector_new] = Runge_Kutta_4(f, t, x_previous)
         x_vector_new(n,:) = x_previous + 1/6 * (k1 + 2*k2 + 2*k3 + k4);
 
         if (mod(n, dt_inv)==0)
-            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n))];
+            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n+1))];
             disp(timestr);
         end
 

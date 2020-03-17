@@ -15,7 +15,7 @@ function [t,x_vector_new] = explicit_solver(f, t, x_previous)
         f_n = f(t(n-1), x_previous')';
         x_vector_new(n,:) = x_previous + delta_t * f_n;
         if (mod(n, dt_inv)==0)
-            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n))];
+            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n+1))];
             disp(timestr);
         end
 
