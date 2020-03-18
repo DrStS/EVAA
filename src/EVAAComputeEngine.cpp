@@ -43,7 +43,8 @@ typedef std::numeric_limits< double > dbl;
 
 
 EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName) {
-	// Intialize XML metadatabase singelton 
+	// Intialize XML metadatabase singelton
+	std::cout <<"Read XML file: "<< _xmlFileName << std::endl;
 	ReadXML reader(_xmlFileName);
 	reader.ReadParameters(_parameters);
 }

@@ -8,7 +8,7 @@
  *  This file is part of EVAA.
  *
  *  EVAA is free software: you can redistribute it and/or modify \n
- *  it under the terms of the GNU General Public License as published by \n
+ *  it under the terms of the GNU General Public  License as published by \n
  *  the Free Software Foundation, either version 3 of the License, or \n
  *  (at your option) any later version. \n
  *
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 	if (allArgs.size()>1) {
 		EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine(allArgs[1]);
 	}
-	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("default");
+	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml");
 		myComputeEngine->prepare();
 		anaysisTimer01.start();
 		myComputeEngine->computeMKL11DOF();
