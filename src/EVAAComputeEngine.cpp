@@ -42,8 +42,9 @@ using Eigen::IOFormat;
 typedef std::numeric_limits< double > dbl;
 
 
-EVAAComputeEngine::EVAAComputeEngine(std::string _xmlFileName) {
+EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName) {
 	// Intialize XML metadatabase singelton
+	_xmlFileName = xmlFileName;
 	std::cout <<"Read XML file: "<< _xmlFileName << std::endl;
 	ReadXML reader(_xmlFileName);
 	reader.ReadParameters(_parameters);
@@ -59,70 +60,51 @@ void EVAAComputeEngine::prepare(void) {
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
 
-	int DOF = 11;
-	
-	// K stiffness
-	double k = 10.;
-	double k_11 = 1.1;
-	double k_12 = k;
-	double k_21 = 1.2;
-	double k_22 = k;
-	double k_31 = 1.3;
-	double k_32 = k;
-	double k_41 = 1.4;
-	double k_42 = k;
-	double k_l1 = 2.;
-	double k_l2 = 1.;
-	double k_l3 = 0.8;
-	double k_l4 = 1.25;
-	double l_1 = 2;
-	double l_2 = 1;
-	double l_3 = 0.8;
-	double l_4 = 1.25;
+	ReadXML reader(_xmlFileName);
 
-	DOF = _parameters.DOF;
+	int DOF = _parameters.DOF;
 
 	// K stiffness
-	k_11 = _parameters.k_body[0];
-	k_12 = _parameters.k_tyre[0];
-	k_21 = _parameters.k_body[1];
-	k_22 = _parameters.k_tyre[1];
-	k_31 = _parameters.k_body[2];
-	k_32 = _parameters.k_tyre[2];
-	k_41 = _parameters.k_body[3];
-	k_42 = _parameters.k_tyre[3];
-	l_1 = _parameters.l_lat[0];
-	l_2 = _parameters.l_lat[2];
-	l_3 = _parameters.l_long[0];
-	l_4 = _parameters.l_long[2];
+	double k_11 = _parameters.k_body[0];
+	double k_12 = _parameters.k_tyre[0];
+	double k_21 = _parameters.k_body[1];
+	double k_22 = _parameters.k_tyre[1];
+	double k_31 = _parameters.k_body[2];
+	double k_32 = _parameters.k_tyre[2];
+	double k_41 = _parameters.k_body[3];
+	double k_42 = _parameters.k_tyre[3];
+	double l_1 = _parameters.l_lat[0];
+	double l_2 = _parameters.l_lat[2];
+	double l_3 = _parameters.l_long[0];
+	double l_4 = _parameters.l_long[2];
 
 
 	// D - damping matrix
-	double d_11 = 1.1 * 0.1;
-	double d_12 = k * 0.1;
-	double d_21 = 1.2 * 0.1;
-	double d_22 = k * 0.1;
-	double d_31 = 1.3 * 0.1;
-	double d_32 = k * 0.1;
-	double d_41 = 1.4 * 0.1;
-	double d_42 = k * 0.1;
-	double d_l1 = 2. * 0.1;
-	double d_l2 = 1. * 0.1;
-	double d_l3 = 0.8 * 0.1;
-	double d_l4 = 1.25 * 0.1;
+	double d_11 = _parameters.c_body[0];
+	double d_12 = _parameters.c_tyre[0];
+	double d_21 = _parameters.c_body[1];
+	double d_22 = _parameters.c_tyre[1];
+	double d_31 = _parameters.c_body[2];
+	double d_32 = _parameters.c_tyre[2];
+	double d_41 = _parameters.c_body[3];
+	double d_42 = _parameters.c_tyre[3];
+	double d_l1 = 0.1*_parameters.l_lat[0];
+	double d_l2 = 0.1*_parameters.l_lat[2];
+	double d_l3 = 0.1*_parameters.l_long[0];
+	double d_l4 = 0.1*_parameters.l_long[2];
 
 	// M - mass matrix
-	double m_1 = 1e-1;
-	double m_2 = 2e-1;
-	double m_3 = 3e-1;
-	double m_4 = 4e-1;
-	double m_5 = 5e-1;
-	double m_6 = 6e-1;
-	double m_7 = 7e-1;
-	double m_8 = 8e-1;
-	double m_9 = 9e-1;
-	double m_10 = 10e-1;
-	double m_11 = 11e-1;
+	double m_1 = _parameters.mass_body;
+	double m_2 = _parameters.I_body[0];
+	double m_3 = _parameters.I_body[2];
+	double m_4 = _parameters.mass_wheel[2];
+	double m_5 = _parameters.mass_tyre[2];
+	double m_6 = _parameters.mass_wheel[3];
+	double m_7 = _parameters.mass_tyre[3];
+	double m_8 = _parameters.mass_wheel[1];
+	double m_9 = _parameters.mass_tyre[1];
+	double m_10 = _parameters.mass_wheel[0];
+	double m_11 = _parameters.mass_tyre[0];
 
 	MatrixXd A(DOF, DOF);
 	MatrixXd B(DOF, DOF);
@@ -163,9 +145,6 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_41 + k_42, -k_42,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, k_42;
 	MatrixXd K_diag(DOF, DOF);
-	/*K_diag = MatrixXd::Zero(DOF, DOF);
-	K_diag.diagonal = K.diagonal();*/
-	//std::cout << "K is: " << K_diag << std::endl;
 	K_aux = K + K.transpose();
 	K_aux.diagonal() -= K.diagonal();
 	K = K_aux;
@@ -183,8 +162,6 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_41 + d_42, -d_42,
 		0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, d_42;
 	MatrixXd D_diag(DOF, DOF);
-	/*D_diag = MatrixXd::Zero(DOF, DOF);
-	D_diag.diagonal = D.diagonal();*/
 	D_aux = D + D.transpose();
 	D_aux.diagonal() -= D.diagonal();
 	D = D_aux;
@@ -196,10 +173,12 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 	u_n(0) = 1;
 	u_n_m_1 = u_n;
 
-	int nRefinement = 10;
-	int numTimeSteps = pow(2, nRefinement);
+//	int nRefinement = 10;
+//	int numTimeSteps = pow(2, nRefinement);
+	int numTimeSteps = _parameters.num_time_iter;
 	//time step size 
-	double h = 1.0 / (numTimeSteps);
+	//double h =  / (numTimeSteps);
+	double h = _parameters.timestep;
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
 	/*IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
@@ -228,6 +207,7 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
 		u_n_m_1 = u_n;
 		u_n = u_n_p_1;
+		reader.ReadVariableParameters(_parameters);
 	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	std::cout << u_n_p_1 << std::scientific << std::endl;
@@ -235,46 +215,53 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
 void EVAAComputeEngine::computeMKL11DOF(void) {
 
+	ReadXML reader(_xmlFileName);
+
+	int DOF = _parameters.DOF;
+
 	// K stiffness
-	double k = 10.;
-	double k_11 = 1.1;
-	double k_12 = k;
-	double k_21 = 1.2;
-	double k_22 = k;
-	double k_31 = 1.3;
-	double k_32 = k;
-	double k_41 = 1.4;
-	double k_42 = k;
-	double l_1 = 2;
-	double l_2 = 1;
-	double l_3 = 0.8;
-	double l_4 = 1.25;
+	double k_11 = _parameters.k_body[0];
+	double k_12 = _parameters.k_tyre[0];
+	double k_21 = _parameters.k_body[1];
+	double k_22 = _parameters.k_tyre[1];
+	double k_31 = _parameters.k_body[2];
+	double k_32 = _parameters.k_tyre[2];
+	double k_41 = _parameters.k_body[3];
+	double k_42 = _parameters.k_tyre[3];
+	double l_1 = _parameters.l_lat[0];
+	double l_2 = _parameters.l_lat[2];
+	double l_3 = _parameters.l_long[0];
+	double l_4 = _parameters.l_long[2];
+
 
 	// D - damping matrix
-	double d_11 = 1.1 * 0.1;
-	double d_12 = k * 0.1;
-	double d_21 = 1.2 * 0.1;
-	double d_22 = k * 0.1;
-	double d_31 = 1.3 * 0.1;
-	double d_32 = k * 0.1;
-	double d_41 = 1.4 * 0.1;
-	double d_42 = k * 0.1;
+	double d_11 = _parameters.c_body[0];
+	double d_12 = _parameters.c_tyre[0];
+	double d_21 = _parameters.c_body[1];
+	double d_22 = _parameters.c_tyre[1];
+	double d_31 = _parameters.c_body[2];
+	double d_32 = _parameters.c_tyre[2];
+	double d_41 = _parameters.c_body[3];
+	double d_42 = _parameters.c_tyre[3];
+	double d_l1 = 0.1 * _parameters.l_lat[0];
+	double d_l2 = 0.1 * _parameters.l_lat[2];
+	double d_l3 = 0.1 * _parameters.l_long[0];
+	double d_l4 = 0.1 * _parameters.l_long[2];
 
 	// M - mass matrix
-	double m_1 = 1e-1;
-	double m_2 = 2e-1;
-	double m_3 = 3e-1;
-	double m_4 = 4e-1;
-	double m_5 = 5e-1;
-	double m_6 = 6e-1;
-	double m_7 = 7e-1;
-	double m_8 = 8e-1;
-	double m_9 = 9e-1;
-	double m_10 = 10e-1;
-	double m_11 = 11e-1;
+	double m_1 = _parameters.mass_body;
+	double m_2 = _parameters.I_body[0];
+	double m_3 = _parameters.I_body[2];
+	double m_4 = _parameters.mass_wheel[2];
+	double m_5 = _parameters.mass_tyre[2];
+	double m_6 = _parameters.mass_wheel[3];
+	double m_7 = _parameters.mass_tyre[3];
+	double m_8 = _parameters.mass_wheel[1];
+	double m_9 = _parameters.mass_tyre[1];
+	double m_10 = _parameters.mass_wheel[0];
+	double m_11 = _parameters.mass_tyre[0];
 
 	int alignment = 64;
-	int DOF = 11;
 	int matrixElements = DOF * DOF;
 
 	// allocate matrices of zeros
@@ -421,10 +408,12 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 
 	mkl_set_num_threads(8);
-	int nRefinement = 10;
-	int numTimeSteps = pow(2, nRefinement);
+	//	int nRefinement = 10;
+	//	int numTimeSteps = pow(2, nRefinement);
+	int numTimeSteps = _parameters.num_time_iter;
 	//time step size 
-	double h = 1.0 / (numTimeSteps);
+	//double h =  / (numTimeSteps);
+	double h = _parameters.timestep;
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
 	/// Build dynamic stiffness matrix
 	// gets written in rear vector
@@ -496,6 +485,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 			u_n_m_1[i] = u_n[i];
 			u_n[i] = u_n_p_1[i];
 		}
+		reader.ReadVariableParameters(_parameters);
 	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	for (int i = 0; i < DOF; ++i) {
@@ -516,6 +506,9 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 void EVAAComputeEngine::computeBlaze11DOF(void) {
 #ifdef USE_BLAZE
+
+	ReadXML reader(_xmlFileName);
+
 	using blaze::CompressedMatrix;
 	using blaze::DynamicMatrix;
 	using blaze::SymmetricMatrix;
@@ -523,22 +516,49 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	using blaze::columnVector;
 	using blaze::rowMajor;
 
-	int DOF = 11;
+	int DOF = _parameters.DOF;
 
 	// K stiffness
-	double k = 10.;
-	double k_11 = 1.1;
-	double k_12 = k;
-	double k_21 = 1.2;
-	double k_22 = k;
-	double k_31 = 1.3;
-	double k_32 = k;
-	double k_41 = 1.4;
-	double k_42 = k;
-	double l_1 = 2;
-	double l_2 = 1;
-	double l_3 = 0.8;
-	double l_4 = 1.25;
+	double k_11 = _parameters.k_body[0];
+	double k_12 = _parameters.k_tyre[0];
+	double k_21 = _parameters.k_body[1];
+	double k_22 = _parameters.k_tyre[1];
+	double k_31 = _parameters.k_body[2];
+	double k_32 = _parameters.k_tyre[2];
+	double k_41 = _parameters.k_body[3];
+	double k_42 = _parameters.k_tyre[3];
+	double l_1 = _parameters.l_lat[0];
+	double l_2 = _parameters.l_lat[2];
+	double l_3 = _parameters.l_long[0];
+	double l_4 = _parameters.l_long[2];
+
+
+	// D - damping matrix
+	double d_11 = _parameters.c_body[0];
+	double d_12 = _parameters.c_tyre[0];
+	double d_21 = _parameters.c_body[1];
+	double d_22 = _parameters.c_tyre[1];
+	double d_31 = _parameters.c_body[2];
+	double d_32 = _parameters.c_tyre[2];
+	double d_41 = _parameters.c_body[3];
+	double d_42 = _parameters.c_tyre[3];
+	double d_l1 = 0.1 * _parameters.l_lat[0];
+	double d_l2 = 0.1 * _parameters.l_lat[2];
+	double d_l3 = 0.1 * _parameters.l_long[0];
+	double d_l4 = 0.1 * _parameters.l_long[2];
+
+	// M - mass matrix
+	double m_1 = _parameters.mass_body;
+	double m_2 = _parameters.I_body[0];
+	double m_3 = _parameters.I_body[2];
+	double m_4 = _parameters.mass_wheel[2];
+	double m_5 = _parameters.mass_tyre[2];
+	double m_6 = _parameters.mass_wheel[3];
+	double m_7 = _parameters.mass_tyre[3];
+	double m_8 = _parameters.mass_wheel[1];
+	double m_9 = _parameters.mass_tyre[1];
+	double m_10 = _parameters.mass_wheel[0];
+	double m_11 = _parameters.mass_tyre[0];
 
 	// Using symmetric matrix enforce the symmetry and is safer
 	SymmetricMatrix <DynamicMatrix<double>, rowMajor> K(DOF);
@@ -574,16 +594,6 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	K(9, 10) = -k_42;
 	K(10, 10) = k_42;
 
-	// D - damping matrix
-	double d_11 = 1.1 * 0.1;
-	double d_12 = k * 0.1;
-	double d_21 = 1.2 * 0.1;
-	double d_22 = k * 0.1;
-	double d_31 = 1.3 * 0.1;
-	double d_32 = k * 0.1;
-	double d_41 = 1.4 * 0.1;
-	double d_42 = k * 0.1;
-
 	SymmetricMatrix <DynamicMatrix<double>, rowMajor> D(DOF);
 	D(0, 0) = d_11 + d_21 + d_31 + d_41;
 	D(0, 1) = -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2;
@@ -616,19 +626,6 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	D(9, 10) = -d_42;
 	D(10, 10) = d_42;
 
-	// M - mass matrix
-	double m_1 = 1e-1;
-	double m_2 = 2e-1;
-	double m_3 = 3e-1;
-	double m_4 = 4e-1;
-	double m_5 = 5e-1;
-	double m_6 = 6e-1;
-	double m_7 = 7e-1;
-	double m_8 = 8e-1;
-	double m_9 = 9e-1;
-	double m_10 = 10e-1;
-	double m_11 = 11e-1;
-
 	SymmetricMatrix <DynamicMatrix<double>, rowMajor> M(DOF);
 	M(0, 0) = m_1;
 	M(1, 1) = m_2;
@@ -648,11 +645,13 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 	DynamicVector<double, columnVector> u_n_m_1(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
 
 	// Perform the iterations
-	int nRefinement = 10;
-	int numTimeSteps = pow(2, nRefinement);
+	//	int nRefinement = 10;
+	//	int numTimeSteps = pow(2, nRefinement);
+	int numTimeSteps = _parameters.num_time_iter;
 
 	//time step size 
-	double h = 1.0 / ((double)numTimeSteps);
+	//double h =  / (numTimeSteps);
+	double h = _parameters.timestep;
 	std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
 	// Initial conditions
@@ -686,6 +685,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 		getrs(A_LU, u_n_p_1, 'T', ipiv.data());
 		u_n_m_1 = u_n;
 		u_n = u_n_p_1;
+		reader.ReadVariableParameters(_parameters);
 	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	std::cout << u_n_p_1 << std::scientific << std::endl;

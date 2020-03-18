@@ -74,5 +74,6 @@ public:
 	***********/
 	void clean(void);
 private:
+	std::string _xmlFileName;
 	Simulation_Parameters _parameters;
 };

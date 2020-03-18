@@ -10,15 +10,15 @@
 
 struct Simulation_Parameters {int DOF; 
             double k_tyre[4]; double k_body[4]; 
+            double c_tyre[4]; double c_body[4];
             double l_long[4]; double l_lat[4];
-            double mass_body; double I_body[4];
+            double mass_body; double I_body[6];
             double mass_tyre[4]; double mass_wheel[4];
             double lower_spring_length[4]; double upper_spring_length[4];
-            double initial_orientation[4];
             double initial_lower_spring_length[4]; double initial_upper_spring_length[4];
-            double initial_vel_body; double initial_vel_wheel[4]; double initial_vel_tyre[4];
-            double initial_ang_vel_body[2]; double external_force_body;
-            double gravity; int boundary_condition_road;
+            double initial_vel_body[3]; double initial_vel_wheel[12]; double initial_vel_tyre[12];
+            double external_force_body[3]; double external_force_wheel[12]; double external_force_tyre[12];
+            double initial_ang_vel_body[3]; double gravity[3]; int boundary_condition_road;
             int solver; 
             int max_num_iter; double tolerance;
             double timestep; int num_time_iter;
@@ -34,12 +34,15 @@ class ReadXML{
     private:
         std::string _filename;
     	std::auto_ptr<car_settings_t> settings;
-        void readVectorLegs(double* storage, vector_legs_t vec);
+        void readVectorLegs(double* storage, legs_vector_t vec);
+        void readLegs(double* storage, legs_t vec);
+        void readVector(double* storage, vector_t vec);
 
     public:
         ReadXML();
         ReadXML(const std::string & filename);
         void setFileName (const std::string & filename);
-        void ReadParameters(Simulation_Parameters & parameters);
+        void ReadParameters(Simulation_Parameters& parameters);
+        void ReadVariableParameters(Simulation_Parameters & parameters);
 };
 
