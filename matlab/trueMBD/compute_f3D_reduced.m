@@ -59,8 +59,6 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% get cosine transforms (C_Nc means r_N = C_Nc * r_c)
     % compute local base vectors
-    basis_N = eye(3);
-
     basis_c = get_basis(qc);
     
     % apply C_Cos transform
@@ -110,7 +108,7 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     %%%%%%%%%%%           Forces  and Torques          %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% calculate the elongational spring forces (in global basis)
-    upper_force1 = upper_spring_stiffness(1) * (r_up1) * (1 - upper_spring_length(1) * inv_norm_r_up1);    
+    upper_force1 = upper_spring_stiffness(1) * (r_up1) * (1 - upper_spring_length(1) * inv_norm_r_up1);   
     upper_force2 = upper_spring_stiffness(2) * (r_up2) * (1 - upper_spring_length(2) * inv_norm_r_up2);
     upper_force3 = upper_spring_stiffness(3) * (r_up3) * (1 - upper_spring_length(3) * inv_norm_r_up3);
     upper_force4 = upper_spring_stiffness(4) * (r_up4) * (1 - upper_spring_length(4) * inv_norm_r_up4);
@@ -257,5 +255,4 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
          vt2; ...                   % pt2_dot
          vt3; ...                   % pt3_dot
          vt4];                      % pt4_dot
-
 end

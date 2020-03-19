@@ -17,14 +17,14 @@ k_tyre_rot_fl = 1e4;
 k_tyre_rot_fr = 1e4;
 k_tyre_rot_rl = 1e4;
 k_tyre_rot_rr = 1e4;
-c_body_fl=@(v)10*v;    %allow nonlinear damping
-c_tyre_fl=@(v)10*v;
-c_body_fr=@(v)10*v;
-c_tyre_fr=@(v)10*v;
-c_body_rl=@(v)10*v;
-c_tyre_rl=@(v)10*v;
-c_body_rr=@(v)10*v;
-c_tyre_rr=@(v)10*v;
+c_body_fl=@(v)0*v;    %allow nonlinear damping
+c_tyre_fl=@(v)0*v;
+c_body_fr=@(v)0*v;
+c_tyre_fr=@(v)0*v;
+c_body_rl=@(v)0*v;
+c_tyre_rl=@(v)0*v;
+c_body_rr=@(v)0*v;
+c_tyre_rr=@(v)0*v;
 l_long_fl=1.395;
 l_long_fr=1.395;
 l_long_rl=1.596;
@@ -69,7 +69,7 @@ upper_spring_length = [0.2; 0.2; 0.2; 0.2];
 lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 
 initial_upper_spring_length = [0.2; 0.2; 0.2; 0.2];
-initial_lower_spring_length = [0.16; 0.16; 0.16; 0.16];
+initial_lower_spring_length = [0.24; 0.24; 0.24; 0.24];
 
 upper_spring_stiffness = [k_body_rr; k_body_rl; k_body_fl; k_body_fr];
 lower_spring_stiffness = [k_tyre_rr; k_tyre_rl; k_tyre_fl; k_tyre_fr];
@@ -116,7 +116,7 @@ FW4 = -mass_wheel(4)*g;
 % simulation specifications
 num_iter = 1e5;
 delta_t = 1e-3;
-tol = 1e-10;
+tol = 1e-7;
 max_iter = 10000;
 
  
@@ -141,7 +141,7 @@ FR4 = @(t, y, v, m, F) 0;
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
- solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation,... 
