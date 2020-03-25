@@ -9,14 +9,14 @@ k_body_rl=16e3*0.82;
 k_tyre_rl=260e3;
 k_body_rr=16e3*0.82;
 k_tyre_rr=260e3;
-k_body_rot_fl = 1e4;
-k_body_rot_fr = 1e4;
-k_body_rot_rl = 1e4;
-k_body_rot_rr = 1e4;
-k_tyre_rot_fl = 1e4;
-k_tyre_rot_fr = 1e4;
-k_tyre_rot_rl = 1e4;
-k_tyre_rot_rr = 1e4;
+k_body_rot_fl = 1e6;
+k_body_rot_fr = 1e6;
+k_body_rot_rl = 1e6;
+k_body_rot_rr = 1e6;
+k_tyre_rot_fl = 1e6;
+k_tyre_rot_fr = 1e6;
+k_tyre_rot_rl = 1e6;
+k_tyre_rot_rr = 1e6;
 c_body_fl=@(v)0*v;    %allow nonlinear damping
 c_tyre_fl=@(v)0*v;
 c_body_fr=@(v)0*v;
@@ -46,7 +46,7 @@ mass_tyre_rl=30;
 mass_wheel_rr=135/2;
 mass_tyre_rr=30;
 
-visualize = false;
+visualize = true;
 
 % Dimensions of the main car body (the center of rotation is at the origin)
 r1 = [-l_long_rr; 0  ;  l_lat_rr];
@@ -56,7 +56,7 @@ r4 = [l_long_fr ; 0  ;  l_lat_fr];
 
 mass = mass_Body;
 Ic = diag([I_body_xx, I_body_zz, I_body_yy]);                           % moment of intertia of the car
-initial_orientation = [0; 0; 0; 1];                                     % DON'T CHANGE!! initial orientation of the car body as quaternion
+initial_orientation = [1; 2; 0; 1];                                     % initial orientation of the car body as quaternion
 
 % wheel parameters (provided as vectors [right-back, left-back, left-front, right_front])
 mass_wheel = [mass_wheel_rr, mass_wheel_rl, mass_wheel_fl, mass_wheel_fr];      
@@ -68,8 +68,8 @@ mass_tyre = [mass_tyre_rr, mass_tyre_rl, mass_tyre_fl, mass_tyre_fr];           
 upper_spring_length = [0.2; 0.2; 0.2; 0.2];
 lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 
-initial_upper_spring_length = [0.2; 0.2; 0.2; 0.2];
-initial_lower_spring_length = [0.24; 0.24; 0.24; 0.24];
+initial_upper_spring_length = [0.24; 0.18; 0.21; 0.14];
+initial_lower_spring_length = [0.24; 0.20; 0.16; 0.18];
 
 upper_spring_stiffness = [k_body_rr; k_body_rl; k_body_fl; k_body_fr];
 lower_spring_stiffness = [k_tyre_rr; k_tyre_rl; k_tyre_fl; k_tyre_fr];
@@ -114,7 +114,7 @@ FW3 = -mass_wheel(3)*g;
 FW4 = -mass_wheel(4)*g;
 
 % simulation specifications
-num_iter = 1e5;
+num_iter = 1e4;
 delta_t = 1e-3;
 tol = 1e-7;
 max_iter = 10000;
@@ -156,13 +156,15 @@ plot(t,y(:,6));
 posstr=['Final y-position of the center of mass: ', num2str(y(end,6))];
 disp(posstr);
 title("Evolution of the y-coordinate of the center of mass of the car")
-if visualize
-    visualizer3D(y, delta_t);
-end
 
 error_plotter3D(solver, t, num_iter, y, y_sol, mass, mass_wheel, mass_tyre, Ic, g,...
                 upper_spring_length, lower_spring_length, ...
                 upper_spring_stiffness, lower_spring_stiffness, ...
                 upper_rotational_stiffness, lower_rotational_stiffness);
+
+if visualize
+    visualizer3D(y, delta_t);
+end
+
 
 

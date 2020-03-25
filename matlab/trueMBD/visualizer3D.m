@@ -1,5 +1,5 @@
 function [] = visualizer3D(y, delta_t)
-figure
+figure()
 grid on
 
 num_iter = size(y,1) - 1;
