@@ -27,6 +27,8 @@
 #include <mkl.h>
 #include <chrono>
 #include "MathLibrary.h"
+#include "ReadXML.h"
+
 
 /********//**
 * \brief Class ComputeEngine the core of STACCATO
@@ -90,6 +92,8 @@ public:
 	***********/
 	void clean(void);
 private:
+	std::string _xmlFileName;
+	Simulation_Parameters _parameters;
 };
 
 template <class T>
@@ -103,36 +107,39 @@ private:
 	const int dim_x_dim = dim * dim;
 	const int num_wheels_x_dim = num_wheels * dim;
 	const int DOF_diag = 9; // the diagonal elements from A
-	int DOF = 11;
+	int DOF;
 
-	T k_body_fl = 28e3 * 0.69;
-	T k_tyre_fl = 260e3;
-	T k_body_fr = 28e3 * 0.69;
-	T k_tyre_fr = 260e3;
-	T k_body_rl = 16e3 * 0.82;
-	T k_tyre_rl = 260e3;
-	T k_body_rr = 16e3 * 0.82;
-	T k_tyre_rr = 260e3;
-	T l_long_fl = 1.395;
-	T l_long_fr = 1.395;
-	T l_long_rl = 1.596;
-	T l_long_rr = 1.596;
-	T l_lat_fl = 2 * 0.8458;
-	T l_lat_fr = 2 * 0.8458;
-	T l_lat_rl = 2 * 0.84;
-	T l_lat_rr = 2 * 0.84;
-	T mass_Body = 1936.0;
-	T I_body_xx = 640.0;
-	T I_body_yy = 4800.0;
-	T mass_wheel_fl = 145.0 / 2.0;
-	T mass_tyre_fl = 0.0;
-	T mass_wheel_fr = 145.0 / 2.0;
-	T mass_tyre_fr = 0.0;
-	T mass_wheel_rl = 135.0 / 2.0;
-	T mass_tyre_rl = 0.0;
-	T mass_wheel_rr = 135.0 / 2.0;
-	T mass_tyre_rr = 0.0;
-	
+	T k_body_fl;
+	T k_tyre_fl;
+	T k_body_fr;
+	T k_tyre_fr;
+	T k_body_rl;
+	T k_tyre_rl;
+	T k_body_rr;
+	T k_tyre_rr;
+	T l_long_fl;
+	T l_long_fr;
+	T l_long_rl;
+	T l_long_rr;
+	T l_lat_fl;
+	T l_lat_fr;
+	T l_lat_rl;
+	T l_lat_rr;
+	T mass_Body;
+	T I_body_xx;
+	T I_body_zz;
+	T mass_wheel_fl;
+	T mass_tyre_fl;
+	T mass_wheel_fr;
+	T mass_tyre_fr;
+	T mass_wheel_rl;
+	T mass_tyre_rl;
+	T mass_wheel_rr;
+	T mass_tyre_rr;
+	T u_init_body;
+	T theta_x_init_body;
+	T theta_z_init_body;
+
 	//// Solver type selection based on type of boundary condition
 	std::string condition_type;
 	std::string cond1 = "fixed_to_road";
@@ -143,6 +150,7 @@ private:
 	T du_init_;
 	T h_;
 	int i;
+	T *quad_angle_init, *euler_angle_init;
 	T* M, * temp, * K, * K_trans, * D, * M_red, * D_red, * K_red;
 	T* u_sol, * u_sol_red, * u_n_p_1, * u_n_p_1_red, * u_n_m_1, * u_n, * u_n_red, * u_n_m_1_red, * A, * Ared, * B, * Bred, * f_n_p_1, * f_n_p_1_red;
 	size_t* tyre_index_set;
@@ -160,9 +168,26 @@ private:
 	void write_vector(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
 		for (size_t i = 0; i < count; ++i) {
-			std::cout << vect[i] << std::endl;
+			//std::cout << vect[i] << std::endl;
+			std::cout.precision(15);
+			std::cout << std::scientific << vect[i] << std::endl;
+			//printf("%1.15f\n", vect[i]);
 		}
 	}
+
+	void write_matrix(T* vect, int count) {
+		std::cout << "Debug mode print" << std::endl;
+		for (size_t i = 0; i < count; ++i) {
+			//std::cout << vect[i] << std::endl;
+			std::cout.precision(5);
+			for (size_t j = 0; j < count; ++j) {
+				std::cout << std::scientific << vect[i*count+j] << "  ";
+			}
+			std::cout <<"\n"<< std::endl;
+			//printf("%1.15f\n", vect[i]);
+		}
+	}
+
 	void apply_normal_force(T* force, T* u, size_t* index, size_t n) {
 		#pragma loop( ivdep )
 		for (int i = 0; i < n; ++i) {
@@ -183,7 +208,53 @@ private:
 
 
 public:
-	linear11dof(T tend, T h, T u_init, T du_init) :tend_(tend), h_(h), u_init_(u_init), du_init_(du_init) {
+	linear11dof(const Simulation_Parameters &params){
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		DOF = params.DOF;
+		k_body_fl = params.k_body[2];
+		k_tyre_fl = params.k_tyre[2];
+		k_body_fr = params.k_body[3];
+		k_tyre_fr = params.k_tyre[3];
+		k_body_rl = params.k_body[1];
+		k_tyre_rl = params.k_tyre[1];
+		k_body_rr = params.k_body[0];
+		k_tyre_rr = params.k_tyre[0];
+		l_long_fl = params.l_long[2];
+		l_long_fr = params.l_long[3];
+		l_long_rl = params.l_long[1];
+		l_long_rr = params.l_long[0];
+		l_lat_fl = params.l_lat[2];
+		l_lat_fr = params.l_lat[3];
+		l_lat_rl = params.l_lat[1];
+		l_lat_rr = params.l_lat[0];
+		mass_Body = params.mass_body;
+		I_body_xx = params.I_body[0];
+		I_body_zz = params.I_body[2];
+		mass_wheel_fl = params.mass_wheel[2];
+		mass_tyre_fl = params.mass_tyre[2];
+		mass_wheel_fr = params.mass_wheel[3];
+		mass_tyre_fr = params.mass_tyre[3];
+		mass_wheel_rl = params.mass_wheel[1];
+		mass_tyre_rl = params.mass_tyre[1];
+		mass_wheel_rr = params.mass_wheel[0];
+		mass_tyre_rr = params.mass_tyre[0];
+
+		h_ = params.timestep;
+		tend_ = params.num_time_iter*h_;
+		quad_angle_init = (T*)mkl_calloc(4, sizeof(T), alignment);
+		euler_angle_init = (T*)mkl_calloc(3, sizeof(T), alignment);
+		quad_angle_init[0] = params.initial_angle[0];
+		quad_angle_init[1] = params.initial_angle[1];
+		quad_angle_init[2] = params.initial_angle[2];
+		quad_angle_init[3] = params.initial_angle[3];
+		MathLibrary::ToEulerAngles(quad_angle_init, euler_angle_init);
+		u_init_body = params.initial_pos_body[1];
+		theta_x_init_body = euler_angle_init[0];
+		theta_z_init_body = euler_angle_init[2];
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////// System Mono ///////////////////////////////////////////////////////
@@ -195,13 +266,59 @@ public:
 		K = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 		K_trans = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 		D = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
+		u_n_m_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
+		u_n = (T*)mkl_calloc(DOF, sizeof(T), alignment);
+		f_n_p_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////// Initial Iteration vector ////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		u_n[0] = u_init_body;
+		u_n[1] = theta_x_init_body;
+		u_n[2] = theta_z_init_body;
+		u_n[3] = params.initial_pos_wheel[2 * 3 + 1];
+		u_n[4] = params.initial_pos_tyre[2 * 3 + 1];
+		u_n[5] = params.initial_pos_wheel[3 * 3 + 1];
+		u_n[6] = params.initial_pos_tyre[3 * 3 + 1];
+		u_n[7] = params.initial_pos_wheel[1 * 3 + 1];
+		u_n[8] = params.initial_pos_tyre[1 * 3 + 1];
+		u_n[9] = params.initial_pos_wheel[0 * 3 + 1];
+		u_n[10] = params.initial_pos_tyre[0 * 3 + 1];
+
+		u_n_m_1[0] = params.initial_vel_body[1];
+		u_n_m_1[1] = params.initial_ang_vel_body[0];
+		u_n_m_1[2] = params.initial_ang_vel_body[2];
+		u_n_m_1[3] = params.initial_vel_wheel[2 * 3 + 1];
+		u_n_m_1[4] = params.initial_vel_tyre[2 * 3 + 1];
+		u_n_m_1[5] = params.initial_vel_wheel[3 * 3 + 1];
+		u_n_m_1[6] = params.initial_vel_tyre[3 * 3 + 1];
+		u_n_m_1[7] = params.initial_vel_wheel[1 * 3 + 1];
+		u_n_m_1[8] = params.initial_vel_tyre[1 * 3 + 1];
+		u_n_m_1[9] = params.initial_vel_wheel[0 * 3 + 1];
+		u_n_m_1[10] = params.initial_vel_tyre[0 * 3 + 1];
+
+		f_n_p_1[0] = params.external_force_body[1];
+		f_n_p_1[3] = params.external_force_wheel[2 * 3 + 1];
+		f_n_p_1[4] = params.external_force_tyre[2 * 3 + 1];
+		f_n_p_1[5] = params.external_force_wheel[3 * 3 + 1];
+		f_n_p_1[6] = params.external_force_tyre[3 * 3 + 1];
+		f_n_p_1[7] = params.external_force_wheel[1 * 3 + 1];
+		f_n_p_1[8] = params.external_force_tyre[1 * 3 + 1];
+		f_n_p_1[9] = params.external_force_wheel[0 * 3 + 1];
+		f_n_p_1[10] = params.external_force_tyre[0 * 3 + 1];
+
+		
+
+		cblas_dscal(DOF, -h_, u_n_m_1, 1);
+		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////// Mass ////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		temp[0] = mass_Body;
 		temp[1] = I_body_xx;
-		temp[2] = I_body_yy;
+		temp[2] = I_body_zz;
 		temp[3] = mass_wheel_fl;
 		temp[4] = mass_tyre_fl;
 		temp[5] = mass_wheel_fr;
@@ -314,7 +431,7 @@ public:
 		// default D value is 0
 	}
 
-	void apply_boundary_condition(std::string s, T* force) {
+	void apply_boundary_condition(std::string s) {
 		
 		condition_type = s;
 
@@ -327,11 +444,11 @@ public:
 			K_red = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 			M_red = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 			D_red = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
+			u_n_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
+			u_n_m_1_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
 			// memory allocation for the reduced force field
 			f_n_p_1_red = (T*)mkl_calloc(DOF, sizeof(T), alignment);
-			if (*force != NULL) {
-				cblas_dcopy(DOF - 3, force, 1, f_n_p_1_red, 1);
-			}
+			
 
 			// reassign the values of K in the new K for first 4 DOF 
 			for (int i = 0; i < DOF - 3; ++i) {
@@ -354,6 +471,9 @@ public:
 				start_loc_D_red[DOF - 3 + 2] = start_loc_D[DOF - 3 + 5];
 
 				M_red[i * DOF + i] = M[i * (DOF + 4) + i];
+				f_n_p_1_red[i] = f_n_p_1[i];
+				u_n_red[i] = u_n[i];
+				u_n_m_1_red[i] = u_n_m_1[i];
 			}
 			int j = 4;
 			for (int i = 5; i < (DOF + 4); i = i + 2) {
@@ -375,16 +495,14 @@ public:
 				start_loc_D_red[DOF - 3 + 2] = start_loc_D[DOF - 3 + 5];
 
 				M_red[j * DOF + j] = M[i * (DOF + 4) + i];
-				f_n_p_1_red[j] = force[i];
+				f_n_p_1_red[j] = f_n_p_1[i];
+				u_n_red[j] = u_n[i];
+				u_n_m_1_red[j] = u_n_m_1[i];
 				j++;
 			}
 		}
 		else if (s == cond2) {
 			// memory allocation for the force field
-			f_n_p_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
-			if (*force != NULL) {
-				cblas_dcopy(DOF, force, 1, f_n_p_1, 1);
-			}
 			tyre_index_set = (size_t*)mkl_calloc(num_tyre, sizeof(size_t), alignment);
 			for (int i = 4, j=0; i < DOF && j<num_tyre; i = i + 2, j++) {
 				tyre_index_set[j] = i;
@@ -417,14 +535,10 @@ public:
 		int mat_len = (DOF) * (DOF);
 		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
 		u_n_p_1 = (T*)mkl_calloc((DOF), sizeof(T), alignment);
-		u_n_m_1 = (T*)mkl_calloc((DOF), sizeof(T), alignment);
-		u_n = (T*)mkl_calloc((DOF), sizeof(T), alignment);
 		A = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
 		B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
 		time = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
-		u_n[0] = u_init_;
-		cblas_dcopy(DOF, u_n, 1, u_n_m_1, 1);
-		u_n_m_1[0] = u_init_ - h_ * du_init_;
+	
 
 		// A=((1/(h*h))*M+(1/h)*D+K);
 		cblas_daxpy(mat_len, factor_h2, M, 1, A, 1);
@@ -434,9 +548,11 @@ public:
 		lapack_int status;
 		//lapack_int* piv = (lapack_int*)mkl_calloc((DOF + 4), sizeof(lapack_int), alignment);
 		try {
+			//write_matrix(A, DOF);
 			status = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', DOF, A, DOF);
 			//status = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF + 4, DOF + 4, A, DOF + 4, piv);
 			check_status(status);
+			//write_matrix(A, DOF);
 		}
 		catch (const char* msg) {
 			std::cerr << msg << std::endl;
@@ -446,11 +562,13 @@ public:
 		cblas_daxpy(mat_len, factor_h, D, 1, B, 1);
 		int iter = 1;
 		T t = h_;
+		double eps = h_/100;
 		/*auto start = std::chrono::steady_clock::now();*/
-		while (t < tend_) {
+		while (std::abs(t-(tend_+h_)) > eps) {
 			// u_n_p_1=A\(B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
 			// u_n_p_1 = B*u_n
-			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, 1, B, DOF, u_n, 1, 1, u_n_p_1, 1);
+
+			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, 1, B, DOF, u_n, 1, 0, u_n_p_1, 1);
 			// u_n_p_1 = -((1/(h*h))*M)*u_n_m_1 + u_n_p_1
 			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, -factor_h2, M, DOF, u_n_m_1, 1, 1, u_n_p_1, 1);
 			// u_n_p_1 = f_n_p_1 + u_n_p_1
@@ -468,13 +586,25 @@ public:
 			f_n_p_1(idx) = f_update(f_n_p_1, idx);
 			u_n_p_1(idx) = 0;
 			*/
-			compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//////////////////////////////// Normal force computation here /////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
+			
+			
 			///////////////// Debug print statements ///////////////////////////////
-			/*if (iter==2){
+			/*if (iter==10){
 				write_vector(u_n_p_1, DOF);
 			}*/
-			apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);
-
+			
+			
+			
+			// apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);
+			
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			// u_sol(j,:)=u_n_p_1;
 			cblas_dcopy(DOF, u_n_p_1, 1, u_sol + iter * (DOF), 1);
@@ -490,7 +620,7 @@ public:
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
 			<< " ms" << std::endl;*/
 		std::cout << "iter = " << iter << " sol_size = "<< sol_size <<"\n\n" << std::endl;
-		cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
+		cblas_dcopy(DOF, u_sol + (iter-1)*(DOF), 1, sol_vect, 1);
 		clean("full");
 
 	}
@@ -509,17 +639,13 @@ public:
 		u_n_p_1_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
 		//u_n_m_1 = (T*)mkl_calloc((DOF + 4), sizeof(T), alignment);
 		//u_n = (T*)mkl_calloc((DOF + 4), sizeof(T), alignment);
-		u_n_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
-		u_n_m_1_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
+		
 		//A = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
 		Ared = (T*)mkl_calloc((DOF) * (DOF), sizeof(T), alignment);
 		//B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
 		Bred = (T*)mkl_calloc((DOF) * (DOF), sizeof(T), alignment);
 		time = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
 		
-		u_n_red[0] = u_init_;
-		cblas_dcopy(DOF, u_n_red, 1, u_n_m_1_red, 1);
-		u_n_m_1_red[0] = u_init_ - h_ * du_init_;
 
 		// A=((1/(h*h))*M+(1/h)*D+K);
 		cblas_daxpy(mat_len, factor_h2, M_red, 1, Ared, 1);
@@ -582,10 +708,7 @@ public:
 		std::string reduced = "reduced";
 		if (s == full) {
 			MKL_free(u_sol);
-			MKL_free(u_n_m_1);
-			MKL_free(u_n);
 			MKL_free(u_n_p_1);
-			MKL_free(f_n_p_1);
 			MKL_free(tyre_index_set);
 			MKL_free(A); 
 			MKL_free(B);
@@ -612,6 +735,11 @@ public:
 		MKL_free(K);
 		MKL_free(K_trans);
 		MKL_free(D);
+		MKL_free(u_n_m_1);
+		MKL_free(u_n);
+		MKL_free(quad_angle_init);
+		MKL_free(euler_angle_init);
+		MKL_free(f_n_p_1);
 	}
 };
 
@@ -823,3 +951,4 @@ private:
 //	void compute_f3D_reduced(T time, T* f);
 //};
 //#endif
+

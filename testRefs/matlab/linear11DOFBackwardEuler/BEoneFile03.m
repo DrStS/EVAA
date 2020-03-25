@@ -138,7 +138,8 @@ j=2;
 idx = [1,2,3,4,6,8,10];
 tic
 for i = h:h:tend
-    u_n_p_1=A\(B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
+    rhs = (B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
+    u_n_p_1 = A\rhs;
     u_n_p_1_red=Ared\(Bred*u_n_red-((1/(h*h))*Mred)*u_n_m_1_red+f_n_p_1_red);
    % Get solution
     t(j)=i;   
@@ -157,5 +158,4 @@ figure();
 plot(t,u_sol(:,1)); grid on;
 %plot(t,u_sol_red(:,1)); grid on;
 legend;
-disp(u_sol(1001,1:11))
-disp(u_sol_red(1001,1:7))
+disp(u_sol(1001,1:11)')

@@ -1,8 +1,5 @@
 # A cmake module to find XSD and XERCES
 #------------------------------------------------------------------------------------#
-# MKL includes and libraries are searched for in MKL_INCLUDE_DIR and MKL_LIB_DIR.
-# If MKL_INCLUDE_DIR and MKL_LIB_DIR are not set, the module searches under 
-# the environment variable XSDROOT_DIR and /opt/intel/mkl subdirectories.
 #------------------------------------------------------------------------------------#
 
 set(XSDROOT_DIR $ENV{XSDROOT})
@@ -101,8 +98,10 @@ if (XERCES_LIB_DIR)
     set (XERCES_LIBRARIES "")
   endif ()
 endif ()
-
-# set MKL_FOUND
+get_filename_component(XSDEXE_DIR ${XSDROOT_DIR} DIRECTORY)
+SET(XSDEXE_DIR "${XSDEXE_DIR}/bin")
+FIND_PROGRAM(XSD_EXE xsd PATHS ${XSDEXE_DIR})
+# set XSDXERCES_FOUND
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(XSDXERCES REQUIRED_VARS  XERCES_XERCES-C_LIBRARY)
 mark_as_advanced(XSD_INCLUDE_DIR XERCES_INCLUDE_DIR XERCES_LIB_DIR XERCES_LIBRARIES)

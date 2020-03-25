@@ -60,7 +60,7 @@ MESSAGE("Current source dir is" ${EVAA_SOURCE_DIR})
 option(USE_INTEL_MKL           "Use Intel MKL"  ON)
 option(USE_EIGEN               "Use Eigen"  ON)
 option(USE_BLAZE               "Use Blaze"  ON)
-option(USE_XSD                 "Use XSD with XERCES"  OFF)
+option(USE_XSD                 "Use XSD with XERCES"  ON)
 option(USE_HDF5                "Use HDF5"  OFF)
 option(USE_MATLAB              "Build Matlab API"  OFF)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
@@ -222,6 +222,10 @@ IF (${USE_XSD})
    include_directories(${XSD_INCLUDE_DIR})
    include_directories(${XERCES_INCLUDE_DIR})
    SET(EVAA_3rd_LIBS ${EVAA_3rd_LIBS} ${XERCES_LIBRARIES})
+   execute_process(  
+      COMMAND ${XSD_EXE} cxx-tree --type-naming knr --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/IP_EVAA_XML.xsd
+      WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
+   )
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find HDF5

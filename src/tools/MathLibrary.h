@@ -26,6 +26,7 @@
 
 #include "AuxiliaryParameters.h"
 #include <vector>
+#include <cmath>
 
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
@@ -102,6 +103,29 @@ namespace MathLibrary {
 		for (int i = 0; i < dim; ++i) {
 			matrix[i*dim + i] = vector[i];
 		}
+	}
+
+	template <typename T>
+	void ToEulerAngles(const T *q, T *E) {
+		//////////////////////////////////////////////////////////////////////////////////////////
+		///////////		Converts Quaternion of form w,x,y,z in euler angle ///////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////
+		// roll (x-axis rotation)
+		T sinr_cosp = 2 * (q[0] * q[1] + q[2] * q[3]);
+		T cosr_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
+		E[0] = std::atan2(sinr_cosp, cosr_cosp);
+		double M_PI = 3.14159265358979323846;
+		// pitch (y-axis rotation)
+		T sinp = 2 * (q[0] * q[2] - q[3] * q[1]);
+		if (std::abs(sinp) >= 1)
+			E[1] = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+		else
+			E[1] = std::asin(sinp);
+
+		// yaw (z-axis rotation)
+		T siny_cosp = 2 * (q[0] * q[3] + q[1] * q[2]);
+		T cosy_cosp = 1 - 2 * (q[2] * q[2] + q[3] * q[3]);
+		E[2] = std::atan2(siny_cosp, cosy_cosp);
 	}
 
 	template <typename T>
