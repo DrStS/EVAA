@@ -19,6 +19,7 @@ struct Simulation_Parameters {int DOF;
             double initial_vel_body[3]; double initial_vel_wheel[12]; double initial_vel_tyre[12];
             double external_force_body[3]; double external_force_wheel[12]; double external_force_tyre[12];
             double initial_ang_vel_body[3]; double gravity[3]; int boundary_condition_road;
+			double initial_pos_body[3]; double initial_pos_wheel[12]; double initial_pos_tyre[12]; double initial_angle[4];
             int solver; 
             int max_num_iter; double tolerance;
             double timestep; int num_time_iter;
@@ -37,6 +38,7 @@ class ReadXML{
         void readVectorLegs(double* storage, legs_vector_t vec);
         void readLegs(double* storage, legs_t vec);
         void readVector(double* storage, vector_t vec);
+		void readangles(double* storage, quad vec);
 
     public:
         ReadXML();

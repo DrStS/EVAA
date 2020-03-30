@@ -2,10 +2,19 @@
 <xs:schema id="EVAA_XML" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
   <xs:complexType name="legs_t">
     <xs:sequence>    
-      <xs:element name="rr" type="xs:double"/>
-      <xs:element name="rl" type="xs:double"/>
-      <xs:element name="fl" type="xs:double"/>
-      <xs:element name="fr" type="xs:double"/>
+      <xs:element name="ReerRight" type="xs:double"/>
+      <xs:element name="ReerLeft" type="xs:double"/>
+      <xs:element name="FrontLeft" type="xs:double"/>
+      <xs:element name="FrontRight" type="xs:double"/>
+    </xs:sequence>    
+  </xs:complexType>
+
+  <xs:complexType name="quad">
+    <xs:sequence>    
+      <xs:element name="w" type="xs:double"/>
+      <xs:element name="x" type="xs:double"/>
+      <xs:element name="y" type="xs:double"/>
+      <xs:element name="z" type="xs:double"/>
     </xs:sequence>    
   </xs:complexType>
 
@@ -19,58 +28,112 @@
 
   <xs:complexType name="legs_vector_t">
     <xs:sequence>
-      <xs:element name="rr" type="vector_t"/>
-      <xs:element name="rl" type="vector_t"/>
-      <xs:element name="fl" type="vector_t"/>
-      <xs:element name="fr" type="vector_t"/>
+      <xs:element name="ReerRight" type="vector_t"/>
+      <xs:element name="ReerLeft" type="vector_t"/>
+      <xs:element name="FrontLeft" type="vector_t"/>
+      <xs:element name="FrontRight" type="vector_t"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="car_settings_t">
     <xs:sequence>
-      <xs:element name="car">
+      <xs:element name="Vehicle">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="k_tyre" type="legs_t"/>
-            <xs:element name="k_body" type="legs_t"/>
-            <xs:element name="c_tyre" type="legs_t"/>
-            <xs:element name="c_body" type="legs_t"/>
-            <xs:element name="l_lat" type="legs_t"/>
-            <xs:element name="l_long" type="legs_t"/>
-            <xs:element name="mass_wheel" type="legs_t"/>
-            <xs:element name="mass_tyre" type="legs_t"/>
-            <xs:element name="lower_spring_length" type="legs_t"/>
-            <xs:element name="upper_spring_length" type="legs_t"/>
-            <xs:element name="mass_body" type="xs:double" />
-            <xs:element name="I_body_xx" type="xs:double" />
-            <xs:element name="I_body_yy" type="xs:double" /> 
-            <xs:element name="I_body_zz" type="xs:double" />
-            <xs:element name="I_body_xy" type="xs:double" />
-            <xs:element name="I_body_yz" type="xs:double" /> 
-            <xs:element name="I_body_xz" type="xs:double" />
+            <xs:element name="TwoTrackModel">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Geometry">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="LateralReferenceToWheel" type="legs_t"/>
+                        <xs:element name="LongitudinalReferenceToWheel" type="legs_t"/>
+                        <xs:element name="SuspensionSprings" type="legs_t"/>
+                        <xs:element name="TyreSprings" type="legs_t"/>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="Stiffness">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Tyre" type="legs_t"/>
+                        <xs:element name="Body" type="legs_t"/>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="DampingCoefficients">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Tyre" type="legs_t"/>
+                        <xs:element name="Body" type="legs_t"/>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="Mass">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Body" type="xs:double" />
+                        <xs:element name="UnsprungMass" type="legs_t"/>
+                        <xs:element name="Tyre" type="legs_t"/>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="Inertia">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="XX" type="xs:double" />
+                        <xs:element name="XY" type="xs:double" />
+                        <xs:element name="XZ" type="xs:double" />
+                        <xs:element name="YX" type="xs:double" />
+                        <xs:element name="YY" type="xs:double" />
+                        <xs:element name="YZ" type="xs:double" />
+                        <xs:element name="ZX" type="xs:double" />
+                        <xs:element name="ZY" type="xs:double" />
+                        <xs:element name="ZZ" type="xs:double" />
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
 
-      <xs:element name="initial">
+      <xs:element name="InitialConditions">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="lower_spring_length"  type="legs_t"/>
-            <xs:element name="upper_spring_length"  type="legs_t"/>
-            <xs:element name="vel_tyre"  type="legs_vector_t"/>
-            <xs:element name="vel_wheel"  type="legs_vector_t"/>
-            <xs:element name="vel_body" type="vector_t" />
-            <xs:element name="ang_vel_body" type="vector_t" />
+            <xs:element name="SpringElongation">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Tyre" type="legs_t"/>
+                  <xs:element name="Body" type="legs_t"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="Velocities">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Body" type="vector_t"/>
+                  <xs:element name="angularBody" type="vector_t"/>
+                  <xs:element name="UnsprungMass" type="legs_vector_t"/>
+                  <xs:element name="Tyre" type="legs_vector_t"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+  <!--			<xs:element name="pos_body" type="vector_t" />
+			      <xs:element name="pos_tyre" type="legs_vector_t" />
+			      <xs:element name="pos_wheel" type="legs_vector_t" /> -->
+      			<xs:element name="Orientation" type="quad" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
 
 
 
-      <xs:element name="external">
+<!--      <xs:element name="external">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="boundary_conditions" type="xs:string"/>
             <xs:element name="force_tyre"  type="legs_vector_t"/> 
             <xs:element name="force_wheel"  type="legs_vector_t"/> 
             <xs:element name="force_body" type="vector_t" /> 
@@ -78,24 +141,43 @@
           </xs:sequence>       
         </xs:complexType>
       </xs:element>
+-->
 
 
-
-      <xs:element name="simulation">
+      <xs:element name="SimulationParameters">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="solver" type="xs:string"/>
-            <xs:element name="DOF" type="xs:int" />
-            <xs:element name="max_num_iter" type="xs:int" />
-            <xs:element name="tolerance" type="xs:double" />
-            <xs:element name="timestep" type="xs:double" />
-            <xs:element name="num_time_iter" type="xs:int" />
+            <xs:element name="MultyBodyDynamics">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Solver" type="xs:string"/>
+                  <xs:element name="MaximalIterationNumber" type="xs:int" />
+                  <xs:element name="Tolerance" type="xs:double" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="LinearALE">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="DOF" type="xs:int" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="GeneralSettings">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="TimestepSize" type="xs:double" />
+                  <xs:element name="NumberOfIterations" type="xs:int" />
+                  <xs:element name="BoundaryConditions" type="xs:string"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
           </xs:sequence>       
         </xs:complexType>
       </xs:element>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:element name="car_settings" type="car_settings_t"/>
+  <xs:element name="EVAA_settings" type="car_settings_t"/>
 
 </xs:schema>
