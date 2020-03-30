@@ -1,90 +1,70 @@
-clear; clc; close all;
+%clear; clc; close all;
 
-%% parameters
-m1 = 1; m2 = 1*2;
-k1_init = 350; k2_init = 100;
-g = 9.81;
-l1 = 1;
-l2 = 1;
+%%
+a = 1;
+b = 2;
+c = 3;
+f1 = 1;
+f2 = 0;
+L1 = 1;
+L2 = 1;
 
+% parameters
 tol = 1e-12;
+x_init = [0; 0];
+iter = 0;
+err = [];
 
+%% init declare variables
 
-%% generate model (k1,k2)=f(x1,x2)
-quadratic_part = [2, 1; 1, 5];
-lin_part = [-2 -3; -1, -5];
-%lin_part = [0, 0; 0, 0];
+syms l1 u1 u2 l2 
+k = @(a,b,c,l)(c*l*l + b*l + a);
+l1 = u1 - u2 + L1;
+l2 = u2 + L2;
+k1 = k(a,b,c,l1);
+k2 = k(a,b,c,l2);
 
-interpolate_k = @(dx)(quadratic_part*[dx(1)^2; dx(2)^2]+lin_part*[dx(1);dx(2)]+[k1_init; k2_init]);
-% interpolate_k = @(dx)([2, 1; 1, 5]*[(l1-x(1))^2; (l2-x(2)+x(1))^2]+[k1_init; k2_init]);
-f_dk_ddx = @(dx)(2*quadratic_part*diag(dx) + lin_part);
+%% Internal forces
+syms p1 p2
+p1 = k1*u1 - k2*u2;
+p2 = -k1*u1+(k1+k2)*u2;
 
-f_rhs = @(k)([-m1*g + k(1)*l1 - k(2)*l2; ...
-              -m2*g + k(2)*l2]);
-df_rhs_dk = [l1, -l2; 0, l2];  
-        
-f_K = @(k)([k(1)+k(2), -k(2); 
-           -k(2), k(2)]);
-dK_dk1 = [1, 0; 0, 0];
-dK_dk2 = [1, -1; -1, 1];
-       
-get_dx = @(x)([l1-x(1); 
-               l2+x(1)-x(2)]);
-ddx_dx = [-1, 0; ...
-           1, -1];           
-           
-%% declare aux_vals
-aux_vals = struct('m1', m1, ...
-                  'm2', m2, ...
-                  'l1', l1, ...
-                  'l2', l2, ...
-                  'g',  g, ...
-                  'interpolate_k', interpolate_k, ...
-                  'f_K', f_K, ...
-                  'f_rhs', f_rhs, ...
-                  'dK_dk1', dK_dk1, ...
-                  'dK_dk2', dK_dk2, ...
-                  'f_dk_ddx', f_dk_ddx, ...
-                  'ddx_dx', ddx_dx, ...
-                  'get_dx', get_dx, ...
-                  'df_rhs_dk', df_rhs_dk, ...
-                  'tol', tol);
+%% Jacobian
+syms K k11 k12 k21 k22 K_symb
+k11 = diff(p1, u1);
+k12 = diff(p1, u2);
+k21 = diff(p2, u1);
+k22 = diff(p2, u2);
 
-x_prev = [l1; l1+l2]; 
-x_curr = x_prev;
-              
-num_iter = 1000;
-delta_t = 1e-3; 
-t = 0:delta_t:num_iter*delta_t;
+K_symb = [k11, k12; 
+    k21, k22];
 
+r_symb = [p1 - f1; 
+     p2 - f2];
+ 
+%% Newton iteration
+u1 = 0;
+u2 = 0;
+u = [u1; u2];
+Delta = [u1; u2];
 
-%% equilibrium
-
-[y2,k2,err] = newton_equi(x_curr, aux_vals);
-relErr = err([1 1:end-1]) ./ err;
-order = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))))
-
-figure;
-plot(relErr);
-grid on;
-
-d1 = (l1-y2(1));
-d2 = (l2-y2(2)+y2(1));
-disp('Equilibrium solution');
-abs(d1*k2(1) - (m1+m2)*g) < tol
-abs(d2*k2(2) - m2*g) < tol
-
-%% simulation
-
-%[t,y] = BW_2DOF_scheme(t, x_prev, x_curr, aux_vals);
-
-%% plots
-%figure;
-%plot(t,y);
-%hold on;
-%y_equi = y2 * ones(1, length(y(1,:)));
-%plot(t,y_equi);
-%grid on;
-%legend('x1','x2','x1 equi', 'x2 equi');
-
-
+while 1
+    iter = iter + 1;
+    
+   K = eval(K_symb);
+   r = eval(r_symb);
+   Delta = -K\r;
+   u = Delta + u;
+   u1 = u(1);
+   u2 = u(2);
+   
+   err = [err, norm(r)];
+   if (err(length(err)) < tol)
+        break;
+   end
+   
+end
+iter
+%order = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))))
+disp(u)
+disp(err(length(err)))

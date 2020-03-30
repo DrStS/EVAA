@@ -1,68 +1,52 @@
-function [t,y] = BW_2DOF_scheme(t, x_prev, x_curr, aux_vals)
+function [t,y,err] = BW_2DOF_scheme(t, x_curr, aux_vals)
 
 %% Extract data
 % get auxiliary variables
-y = zeros(2, length(t));
-y(:,1) = x_prev;
-y(:,2) = x_curr;
-h = t(2)-t(1);
-
-m1 = aux_vals.m1;
-m2 = aux_vals.m2;
+M_div_h2 = aux_vals.M_div_h2;
 g = aux_vals.g;
 tol = aux_vals.tol;
 dK1 = aux_vals.dK_dk1; % matrix
 dK2 = aux_vals.dK_dk2; % matrix
-drhs = aux_vals.df_rhs_dk; % matrix
+rhs = aux_vals.rhs; % matrix
+
+y = zeros(2, length(t));
+err = zeros(length(t));
+y(:,1) = x_curr;
+y(:,2) = x_curr;
 
 % define functions to update variables
-f_k = aux_vals.interpolate_k; % function
+f_k = aux_vals.f_k; % function
 f_K = aux_vals.f_K; % function
-f_rhs = aux_vals.f_rhs; % function
-dk_d_dx = aux_vals.dk_d_dx; % function
-ddx_dx = aux_vals.ddx_dx; % function
-get_dx = aux_vals.get_dx; % function
-
-% calc not changing matrices
-M = diag([m1, m2]);
-M_div_h2 = M / h^2;
+f_dk_dx = aux_vals.f_dk_dx; % function
 
 %% fuction for newton loop
-f_newton = @(y,i,K,rhs)((M_div_h2 + K) * y(:, i+1)- 2*M_div_h2*y(:,i)+ M_div_h2*y(:,i-1)-rhs);
+f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
 
 % init vars
-k = f_k(get_dx(y(:,2)));
+k = f_k(x_curr);
 K = f_K(k);
-rhs = f_rhs(k);
 
 for i = 2 : length(t)-1
-    
-    % Create the linear system - init step
-    y(:,i+1) = (M_div_h2 + K) \ ((2 * M_div_h2)*y(:,i) - M_div_h2*y(:,i-1)+rhs);
-    
-    %update values
-    k = f_k(get_dx(y(:,i+1)));
-    K = f_K(k);
-    rhs = f_rhs(k);
-    
     % newton loop
+    j = 0;
     while 1
-        dx = get_dx(y(:,i+1));
+        j = j + 1;
         %dk/dx
-        dk = dk_d_dx(dx);
-        % J = M/h^2 + K + dK/dk1 * (dk1/ddx * ddx/dx * x) + dK/dk2 * (dk2/ddx * ddx/dx * x) - drhs/dk * dk/ddx * ddx/dx
-        J = M_div_h2 + K + dK1*(dk(1,:)*ddx_dx*y(:,i+1))+dK2*(dk(2,:)*ddx_dx*y(:,i+1))-drhs*dk*ddx_dx;
-        
+        dk_dx = f_dk_dx(y(:,i+1));
+        % J = M/h^2 + K + (dK/dk1 * dk1/ddx, dK/dk2 * dk2/ddx) * x
+        J = M_div_h2 + K + dK1*dk_dx * y(1,i+1) + dK2*dk_dx * y(2,i+1);
         %newton step
-        y(:,i+1) = J\(-f_newton(y,i,K,rhs)+J*y(:,i+1));
+        dy = - J \ f_newton(y(:,i+1), y(:,i), y(:,i-1),K);
+        y(:,i+1) = y(:,i+1)+ dy;
         
         %update values to check error
-        k = f_k(dx);
+        k = f_k(y(:,i+1));
         K = f_K(k);
-        rhs = f_rhs(k);
         
         % if error < tol => break
-        if (norm(f_newton(y,i,K,rhs)) < tol)
+        error = norm(f_newton(y(:,i+1), y(:,i), y(:,i-1),K),1);
+        err(i) = error;
+        if (err(i) < tol || j == 10)
             break;
         end
     end  
