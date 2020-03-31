@@ -20,26 +20,19 @@ K = [k(1)+k(3)+k(5)+k(7), k(1)*l_lat_fl-k(3)*l_lat_fr+k(5)*l_lat_rl-k(7)*l_lat_r
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k(8)];
 
 K=simplify(K+K.'-diag(diag(K)));
-% dK1_dk = [diff(K(1,:), k(1)); diff(K(1,:), k(2)); diff(K(1,:), k(3)); diff(K(1,:), k(4)); diff(K(1,:), k(5)); diff(K(1,:), k(6)); diff(K(1,:), k(7)); diff(K(1,:), k(8))].';
-% dK2_dk = [diff(K(2,:), k(1)); diff(K(2,:), k(2)); diff(K(2,:), k(3)); diff(K(2,:), k(4)); diff(K(2,:), k(5)); diff(K(2,:), k(6)); diff(K(2,:), k(7)); diff(K(2,:), k(8))].';
-% dK3_dk = [diff(K(3,:), k(1)); diff(K(3,:), k(2)); diff(K(3,:), k(3)); diff(K(3,:), k(4)); diff(K(3,:), k(5)); diff(K(3,:), k(6)); diff(K(3,:), k(7)); diff(K(3,:), k(8))].';
-% dK4_dk = [diff(K(4,:), k(1)); diff(K(4,:), k(2)); diff(K(4,:), k(3)); diff(K(4,:), k(4)); diff(K(4,:), k(5)); diff(K(4,:), k(6)); diff(K(4,:), k(7)); diff(K(4,:), k(8))].';
-% dK5_dk = [diff(K(5,:), k(1)); diff(K(5,:), k(2)); diff(K(5,:), k(3)); diff(K(5,:), k(4)); diff(K(5,:), k(5)); diff(K(5,:), k(6)); diff(K(5,:), k(7)); diff(K(5,:), k(8))].';
-% dK6_dk = [diff(K(6,:), k(1)); diff(K(6,:), k(2)); diff(K(6,:), k(3)); diff(K(6,:), k(4)); diff(K(6,:), k(5)); diff(K(6,:), k(6)); diff(K(6,:), k(7)); diff(K(6,:), k(8))].';
-% dK7_dk = [diff(K(7,:), k(1)); diff(K(7,:), k(2)); diff(K(7,:), k(3)); diff(K(7,:), k(4)); diff(K(7,:), k(5)); diff(K(7,:), k(6)); diff(K(7,:), k(7)); diff(K(7,:), k(8))].';
-% dK8_dk = [diff(K(8,:), k(1)); diff(K(8,:), k(2)); diff(K(8,:), k(3)); diff(K(8,:), k(4)); diff(K(8,:), k(5)); diff(K(8,:), k(6)); diff(K(8,:), k(7)); diff(K(8,:), k(8))].';
-% dK9_dk = [diff(K(9,:), k(1)); diff(K(9,:), k(2)); diff(K(9,:), k(3)); diff(K(9,:), k(4)); diff(K(9,:), k(5)); diff(K(9,:), k(6)); diff(K(9,:), k(7)); diff(K(9,:), k(8))].';
-% dK10_dk = [diff(K(10,:), k(1)); diff(K(10,:), k(2)); diff(K(10,:), k(3)); diff(K(10,:), k(4)); diff(K(10,:), k(5)); diff(K(10,:), k(6)); diff(K(10,:), k(7)); diff(K(10,:), k(8))].';
-% dK11_dk = [diff(K(11,:), k(1)); diff(K(11,:), k(2)); diff(K(11,:), k(3)); diff(K(11,:), k(4)); diff(K(11,:), k(5)); diff(K(11,:), k(6)); diff(K(11,:), k(7)); diff(K(11,:), k(8))].';
-% dK = [dK1_dk; dK2_dk; dK3_dk; dK4_dk; dK5_dk; dK6_dk; dK7_dk; dK8_dk; dK9_dk; dK10_dk; dK11_dk];
-dK_dk1 = diff(K,k(1));
-dK_dk2 = diff(K,k(2));
-dK_dk3 = diff(K,k(3));
-dK_dk4 = diff(K,k(4));
-dK_dk5 = diff(K,k(5));
-dK_dk6 = diff(K,k(6));
-dK_dk7 = diff(K,k(7));
-dK_dk8 = diff(K,k(8));
+
+dK1_dk = [diff(K(:,1), k(1)), diff(K(:,1), k(2)), diff(K(:,1), k(3)), diff(K(:,1), k(4)), diff(K(:,1), k(5)), diff(K(:,1), k(6)), diff(K(:,1), k(7)), diff(K(:,1), k(8))];
+dK2_dk = [diff(K(:,2), k(1)), diff(K(:,2), k(2)), diff(K(:,2), k(3)), diff(K(:,2), k(4)), diff(K(:,2), k(5)), diff(K(:,2), k(6)), diff(K(:,2), k(7)), diff(K(:,2), k(8))];
+dK3_dk = [diff(K(:,3), k(1)), diff(K(:,3), k(2)), diff(K(:,3), k(3)), diff(K(:,3), k(4)), diff(K(:,3), k(5)), diff(K(:,3), k(6)), diff(K(:,3), k(7)), diff(K(:,3), k(8))];
+dK4_dk = [diff(K(:,4), k(1)), diff(K(:,4), k(2)), diff(K(:,4), k(3)), diff(K(:,4), k(4)), diff(K(:,4), k(5)), diff(K(:,4), k(6)), diff(K(:,4), k(7)), diff(K(:,4), k(8))];
+dK5_dk = [diff(K(:,5), k(1)), diff(K(:,5), k(2)), diff(K(:,5), k(3)), diff(K(:,5), k(4)), diff(K(:,5), k(5)), diff(K(:,5), k(6)), diff(K(:,5), k(7)), diff(K(:,5), k(8))];
+dK6_dk = [diff(K(:,6), k(1)), diff(K(:,6), k(2)), diff(K(:,6), k(3)), diff(K(:,6), k(4)), diff(K(:,6), k(5)), diff(K(:,6), k(6)), diff(K(:,6), k(7)), diff(K(:,6), k(8))];
+dK7_dk = [diff(K(:,7), k(1)), diff(K(:,7), k(2)), diff(K(:,7), k(3)), diff(K(:,7), k(4)), diff(K(:,7), k(5)), diff(K(:,7), k(6)), diff(K(:,7), k(7)), diff(K(:,7), k(8))];
+dK8_dk = [diff(K(:,8), k(1)), diff(K(:,8), k(2)), diff(K(:,8), k(3)), diff(K(:,8), k(4)), diff(K(:,8), k(5)), diff(K(:,8), k(6)), diff(K(:,8), k(7)), diff(K(:,8), k(8))];
+dK9_dk = [diff(K(:,9), k(1)), diff(K(:,9), k(2)), diff(K(:,9), k(3)), diff(K(:,9), k(4)), diff(K(:,9), k(5)), diff(K(:,9), k(6)), diff(K(:,9), k(7)), diff(K(:,9), k(8))];
+dK10_dk = [diff(K(:,10), k(1)), diff(K(:,10), k(2)), diff(K(:,10), k(3)), diff(K(:,10), k(4)), diff(K(:,10), k(5)), diff(K(:,10), k(6)), diff(K(:,10), k(7)), diff(K(:,10), k(8))];
+dK11_dk = [diff(K(:,11), k(1)), diff(K(:,11), k(2)), diff(K(:,11), k(3)), diff(K(:,11), k(4)), diff(K(:,11), k(5)), diff(K(:,11), k(6)), diff(K(:,11), k(7)), diff(K(:,11), k(8))];
+dKcols_dk = [dK1_dk, dK2_dk, dK3_dk, dK4_dk, dK5_dk, dK6_dk, dK7_dk, dK8_dk, dK9_dk, dK10_dk, dK11_dk];
 
 lookup_struct = load('lookup_table.mat');
 lookup_table = lookup_struct.big_lookup_table;
@@ -52,7 +45,7 @@ k_grid = lookup_table(:,2:9);
 %% parameters
 % time
 num_iter = 1000;
-delta_t = 0.1; 
+delta_t = 1e-3; 
 t = 0:delta_t:num_iter*delta_t;
 
 
@@ -94,6 +87,8 @@ M_div_h2 = M / (delta_t * delta_t);
 
 f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
 
+dKcols_dk = eval(dKcols_dk);
+
 d = 0;
 for i = 1: length(t)-1
     K = get_K(u_n);
@@ -103,16 +98,23 @@ for i = 1: length(t)-1
     err = [];
     while 1
         iter = iter + 1;
-        temp = getdk_dx(u_n_p_1) * u_n_p_1;
+        temp = [];
+        for ii = 1 : 11 % 11 columns in K
+            temp = [temp; getdk_dx(u_n_p_1) * u_n_p_1(ii)];
+        end
+%         temp = getdk_dx(u_n_p_1) * u_n_p_1;
+        
         %J = M_div_h2 + K + eval(dK) * temp;
         %J = M_div_h2 + K + eval(dK1_dk) * temp * u_n_p_1(1)+ eval(dK2_dk) * temp * u_n_p_1(2) + eval(dK3_dk) * temp * u_n_p_1(3)...
         %+ eval(dK4_dk) * temp * u_n_p_1(4) + eval(dK5_dk) * temp * u_n_p_1(5) + eval(dK6_dk) * temp * u_n_p_1(6)...
         %    + eval(dK7_dk) * temp * u_n_p_1(7) + eval(dK8_dk) * temp * u_n_p_1(8) + eval(dK9_dk) * temp * u_n_p_1(9)...
         %    + eval(dK10_dk) * temp * u_n_p_1(10) + eval(dK11_dk) * temp * u_n_p_1(11);
-        J = M_div_h2 + K + dK_dk1 * temp(1) + dK_dk2 * temp(2) + dK_dk3 * temp(3) + dK_dk4 * temp(4)...
-        + dK_dk5 * temp(5) + dK_dk6 * temp(6) + dK_dk7 * temp(7) + dK_dk8 * temp(8);
+%         J = M_div_h2 + K + dK_dk1 * temp(1) + dK_dk2 * temp(2) + dK_dk3 * temp(3) + dK_dk4 * temp(4)...
+%         + dK_dk5 * temp(5) + dK_dk6 * temp(6) + dK_dk7 * temp(7) + dK_dk8 * temp(8);
+        J = M_div_h2 + K + dKcols_dk * temp;
         Delta = -J\r;
-        u_n_p_1 = Delta + u_n_p_1;
+        norm(J)
+        u_n_p_1 = Delta + u_n_p_1; 
         % update values
         K = get_K(u_n_p_1);
         r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
@@ -193,6 +195,7 @@ function dk = getdk_dx(x) % 8x11
     dk6_dl = deriv_dk(x(9), 6);
     dk7_dl = deriv_dk(x(10)-x(11), 7);
     dk8_dl = deriv_dk(x(11), 8);
+    
     dk(1,4) = dk1_dl;
     dk(1,5) = -dk1_dl;
     dk(2,5) = dk2_dl;
