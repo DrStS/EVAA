@@ -1,5 +1,5 @@
 function [] = visualizer3D(y, delta_t)
-figure
+figure()
 grid on
 
 num_iter = size(y,1) - 1;
@@ -77,12 +77,9 @@ for i = 1 : vis_step : num_iter
     ylabel('Z')
     zlabel('Y')
     
-%    axis([min(y(:,5))-2.5, max(y(:,5))+2.5,...
-%        min(y(:,7))-2.5, max(y(:,7))+2.5,...
-%        min(y(:,6))-2.5, max(y(:,6))+2.5])
-     axis([-3, 4,...
-        -3, 4,...
-        -1, 6])
+   axis([min(y(:,5))-2.5, max(y(:,5))+2.5,...
+       min(y(:,7))-2.5, max(y(:,7))+2.5,...
+       min(y(:,6))-2.5, max(y(:,6))+2.5])
    
     drawnow;
         

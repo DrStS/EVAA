@@ -1080,7 +1080,7 @@ void EVAAComputeEngine::computeMKLlinear11dof(void) {
 	for (auto i = 0; i < DOF; ++i) {
 		std::cout << soln[i] <<std::endl;
 	}
-	MKL_free(soln);
+	mkl_free(soln);
 }
 
 void EVAAComputeEngine::computeMKLlinear11dof_reduced(void) {
@@ -1098,7 +1098,22 @@ void EVAAComputeEngine::computeMKLlinear11dof_reduced(void) {
 		std::cout << soln[i] << std::endl;
 	}
 	std::cout << std::endl;
-	MKL_free(soln);
+	mkl_free(soln);
+}
+
+void EVAAComputeEngine::computeMBD(void) {
+	size_t num_iter = 1e4;
+	const int alignment = 64;
+	size_t solution_dim = 61;
+	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
+	MBD_method<floatEVAA> solver;
+	solver.solve(soln);
+	std::cout << "Solution after" << num_iter << "timesteps, f =" << std::endl;
+	for (auto i = 0; i < solution_dim; ++i) {
+		std::cout << soln[i] << std::endl;
+	}
+	std::cout << std::endl;
+	mkl_free(soln);
 }
 
 void EVAAComputeEngine::computeBlaze11DOF(void) {

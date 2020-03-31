@@ -2,7 +2,9 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
     
     % Initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
-    
+
+    dt_inv = round(1/(t(2)-t(1))); %only needed to print progress
+
     for n = 2 : length(t)
 		delta_t = t(n) - t(n-1);
 		% 0 ~= F(x_new) = x_new - x_n - delta_t * x_dot(x_new)
@@ -12,7 +14,10 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
 		% 1. Initial guess using previous time step
 		f_old = f(t(n-1), x_previous');
 		% in case the velocity is 0 add nuggets to avoid singular matrices
-		f_old(abs(f_old) < 0.001) = 0.001;
+        nuggets = 1e-4;
+        f_old(abs(f_old) < nuggets) = nuggets;%*sign(f_old(abs(f_old) < nuggets));
+        %f_old(f_old==0) = (2*randi(2)-3)*nuggets;
+%        f_old(abs(f_old) < 0.001) = (2*randi(2)-3)*0.001;
 	   
 		% 2. Initial guess from Explicit Euler
 		x = x_previous + delta_t * f_old';
@@ -24,7 +29,6 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
 		
 		% Approximate J(x_0)         
 		J = eye(length(df)) - delta_t *0.5 * ((1./dx)' * df)'; 
-		
 		% Calculate initial F for stopping condition
 		x_dot = f_new';
 		x_dot_previous = f_old';
@@ -51,7 +55,16 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
 
 			F = F_new;
 			x = x_new;
-		end
+        end
+        if(i==max_iter)
+            dispstr = ['Maximum number of iteration ', num2str(max_iter),' reached! Current accuracy: ', num2str(norm(F))];
+            disp(dispstr)
+        end
+        if (mod(n, dt_inv)==0)
+            timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n+1))];
+            disp(timestr);
+        end
+
 		x_vector_new(n,:) = x;
     end  
 end

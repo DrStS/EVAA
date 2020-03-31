@@ -11,10 +11,10 @@
 
   <xs:complexType name="quad">
     <xs:sequence>    
-      <xs:element name="w" type="xs:double"/>
       <xs:element name="x" type="xs:double"/>
       <xs:element name="y" type="xs:double"/>
       <xs:element name="z" type="xs:double"/>
+	  <xs:element name="w" type="xs:double"/>
     </xs:sequence>    
   </xs:complexType>
 

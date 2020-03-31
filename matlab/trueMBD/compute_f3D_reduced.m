@@ -34,13 +34,21 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     r2_tilda = aux_vals.r2_tilda;
     r3_tilda = aux_vals.r3_tilda;
     r4_tilda = aux_vals.r4_tilda;
-    FC = [0; aux_vals.FC; 0];                                           %in global basis
     FW = aux_vals.FW;                                           %in global basis
     FT = aux_vals.FT;                                           %in global basis    
+    FC = aux_vals.FC;                                           %in global basis
     lower_spring_length = aux_vals.lower_spring_length;         %in local leg basis
     upper_spring_length = aux_vals.upper_spring_length;
     lower_spring_stiffness = aux_vals.lower_spring_stiffness;
     upper_spring_stiffness = aux_vals.upper_spring_stiffness;
+    lower_spring_damping1 = aux_vals.lower_spring_damping1;
+    lower_spring_damping2 = aux_vals.lower_spring_damping2;
+    lower_spring_damping3 = aux_vals.lower_spring_damping3;
+    lower_spring_damping4 = aux_vals.lower_spring_damping4;
+    upper_spring_damping1 = aux_vals.upper_spring_damping1;
+    upper_spring_damping2 = aux_vals.upper_spring_damping2;
+    upper_spring_damping3 = aux_vals.upper_spring_damping3;
+    upper_spring_damping4 = aux_vals.upper_spring_damping4;
     lower_rotational_stiffness = aux_vals.lower_rotational_stiffness;
     upper_rotational_stiffness = aux_vals.upper_rotational_stiffness;
     
@@ -51,13 +59,11 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% get cosine transforms (C_Nc means r_N = C_Nc * r_c)
     % compute local base vectors
-    basis_N = eye(3);
-
     basis_c = get_basis(qc);
     
     % apply C_Cos transform
-    C_cN = C_cos_transf(basis_c, basis_N);
-
+    C_cN = basis_c';      %no need to apply it, should be C_cN = basis_c'
+    
     % global positions of the tyre connections
     pc1 = C_cN' * r1 + pcc;
     pc2 = C_cN' * r2 + pcc;
@@ -74,6 +80,16 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     r_low2 = pw2 - pt2;
     r_low3 = pw3 - pt3;
     r_low4 = pw4 - pt4;
+
+    inv_norm_r_up1 = 1/norm(r_up1);
+    inv_norm_r_up2 = 1/norm(r_up2);
+    inv_norm_r_up3 = 1/norm(r_up3);
+    inv_norm_r_up4 = 1/norm(r_up4);
+
+    inv_norm_r_low1 = 1/norm(r_low1);
+    inv_norm_r_low2 = 1/norm(r_low2);
+    inv_norm_r_low3 = 1/norm(r_low3);
+    inv_norm_r_low4 = 1/norm(r_low4);
 
     %% get angle and normal vectors at the legs
 
@@ -92,17 +108,37 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     %%%%%%%%%%%           Forces  and Torques          %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% calculate the elongational spring forces (in global basis)
-    upper_force1 = upper_spring_stiffness(1) * (r_up1) * (1 - upper_spring_length(1) / norm(r_up1));    %norm(r) can be precomputed
-    upper_force2 = upper_spring_stiffness(2) * (r_up2) * (1 - upper_spring_length(2) / norm(r_up2));
-    upper_force3 = upper_spring_stiffness(3) * (r_up3) * (1 - upper_spring_length(3) / norm(r_up3));
-    upper_force4 = upper_spring_stiffness(4) * (r_up4) * (1 - upper_spring_length(4) / norm(r_up4));
+    upper_force1 = upper_spring_stiffness(1) * (r_up1) * (1 - upper_spring_length(1) * inv_norm_r_up1);   
+    upper_force2 = upper_spring_stiffness(2) * (r_up2) * (1 - upper_spring_length(2) * inv_norm_r_up2);
+    upper_force3 = upper_spring_stiffness(3) * (r_up3) * (1 - upper_spring_length(3) * inv_norm_r_up3);
+    upper_force4 = upper_spring_stiffness(4) * (r_up4) * (1 - upper_spring_length(4) * inv_norm_r_up4);
 
-    lower_force1 = lower_spring_stiffness(1) * (r_low1) * (1 - lower_spring_length(1) / norm(r_low1));
-    lower_force2 = lower_spring_stiffness(2) * (r_low2) * (1 - lower_spring_length(2) / norm(r_low2));
-    lower_force3 = lower_spring_stiffness(3) * (r_low3) * (1 - lower_spring_length(3) / norm(r_low3));
-    lower_force4 = lower_spring_stiffness(4) * (r_low4) * (1 - lower_spring_length(4) / norm(r_low4));
+    lower_force1 = lower_spring_stiffness(1) * (r_low1) * (1 - lower_spring_length(1) * inv_norm_r_low1);
+    lower_force2 = lower_spring_stiffness(2) * (r_low2) * (1 - lower_spring_length(2) * inv_norm_r_low2);
+    lower_force3 = lower_spring_stiffness(3) * (r_low3) * (1 - lower_spring_length(3) * inv_norm_r_low3);
+    lower_force4 = lower_spring_stiffness(4) * (r_low4) * (1 - lower_spring_length(4) * inv_norm_r_low4);
 
-    
+    %% calculate forces from damping effects
+    upper_vdiff1 = (dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1)) * r_up1 * inv_norm_r_up1 * inv_norm_r_up1;
+    upper_vdiff2 = (dot((vc - C_cN' * (r2_tilda * wc)), r_up2) - dot(vw2, r_up2)) * r_up2 * inv_norm_r_up2 * inv_norm_r_up2;
+    upper_vdiff3 = (dot((vc - C_cN' * (r3_tilda * wc)), r_up3) - dot(vw3, r_up3)) * r_up3 * inv_norm_r_up3 * inv_norm_r_up3;
+    upper_vdiff4 = (dot((vc - C_cN' * (r4_tilda * wc)), r_up4) - dot(vw4, r_up4)) * r_up4 * inv_norm_r_up4 * inv_norm_r_up4;
+
+    lower_vdiff1 = (dot(vw1, r_low1) - dot(vt1, r_low1)) * r_low1 * inv_norm_r_low1 * inv_norm_r_low1;
+    lower_vdiff2 = (dot(vw2, r_low2) - dot(vt2, r_low2)) * r_low2 * inv_norm_r_low2 * inv_norm_r_low2;
+    lower_vdiff3 = (dot(vw3, r_low3) - dot(vt3, r_low3)) * r_low3 * inv_norm_r_low3 * inv_norm_r_low3;
+    lower_vdiff4 = (dot(vw4, r_low4) - dot(vt4, r_low4)) * r_low4 * inv_norm_r_low4 * inv_norm_r_low4;
+
+    upper_dampf1 = upper_spring_damping1(upper_vdiff1);
+    upper_dampf2 = upper_spring_damping2(upper_vdiff2);
+    upper_dampf3 = upper_spring_damping3(upper_vdiff3);
+    upper_dampf4 = upper_spring_damping4(upper_vdiff4);
+
+    lower_dampf1 = lower_spring_damping1(lower_vdiff1);
+    lower_dampf2 = lower_spring_damping2(lower_vdiff2);
+    lower_dampf3 = lower_spring_damping3(lower_vdiff3);
+    lower_dampf4 = lower_spring_damping4(lower_vdiff4);
+
     %% torque from the rotational spring
     upper_S1 = upper_rotational_stiffness(1) * upper_angle1 * upper_normal1;        % in global basis
     upper_S2 = upper_rotational_stiffness(2) * upper_angle2 * upper_normal2;
@@ -131,7 +167,10 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     car_rot_force3 = -cross( lower_S3, r_up3) / (r_up3'*r_up3);
     car_rot_force4 = -cross( lower_S4, r_up4) / (r_up4'*r_up4);
     
-    car_rot_force = car_rot_force1 + car_rot_force2 + car_rot_force3 + car_rot_force4;
+    sum_car_force1 = car_rot_force1 - upper_force1 - upper_dampf1 - upper_rot_force1;
+    sum_car_force2 = car_rot_force2 - upper_force2 - upper_dampf2 - upper_rot_force2;
+    sum_car_force3 = car_rot_force3 - upper_force3 - upper_dampf3 - upper_rot_force3;
+    sum_car_force4 = car_rot_force4 - upper_force4 - upper_dampf4 - upper_rot_force4;
     
     %% get external forces    
     % for the legs
@@ -158,54 +197,43 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     %% external torque on the car body (use later for rotational damping) 
     Tc = zeros(3,1);     %in local car basis
 
-    
     %% sum of all torques induced by forces
     % for the car body
-    sum_torque_spring_car = r1_tilda * (C_cN * (-upper_force1 + car_rot_force1)) + ...     % from the elongational springs
-                            r2_tilda * (C_cN * (-upper_force2 + car_rot_force2)) + ...
-                            r3_tilda * (C_cN * (-upper_force3 + car_rot_force3)) + ...
-                            r4_tilda * (C_cN * (-upper_force4 + car_rot_force4)) + ...
+    sum_torque_spring_car = r1_tilda * (C_cN * sum_car_force1) + ...     % from the elongational springs
+                            r2_tilda * (C_cN * sum_car_force2) + ...
+                            r3_tilda * (C_cN * sum_car_force3) + ...
+                            r4_tilda * (C_cN * sum_car_force4) + ...
                            -C_cN * upper_S1 - C_cN * upper_S2 - C_cN * upper_S3 - C_cN * upper_S4 + ...     % ??from the rotational spring
-                            -get_tilda(wc) * Hc + Tc;                       % from angular momentum and external torques
-
-if norm(wc)>100
-    r1_tilda * (C_cN * (-upper_force1 - car_rot_force1)) + ...     % from the elongational springs
-                            r2_tilda * (C_cN * (-upper_force2 - car_rot_force2)) + ...
-                            r3_tilda * (C_cN * (-upper_force3 - car_rot_force3)) + ...
-                            r4_tilda * (C_cN * (-upper_force4 - car_rot_force4))
-%    +C_cN * upper_S1 + C_cN * upper_S2 + C_cN * upper_S3 + C_cN * upper_S4
-%    -get_tilda(wc) * Hc
-    upper_S1
-    lower_S1
-    car_rot_force1
-    upper_rot_force1
-    lower_rot_force1
-    eig(NaN)
-end
-                    
+                           -get_tilda(wc) * Hc + Tc;                       % from angular momentum and external torques
+                       
+                        
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%                 Solve                  %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% get the right hand side
-    b =  [sum_torque_spring_car;...                                                         %w_dot_c
-         FC - upper_force1 - upper_force2 - upper_force3 - upper_force4 + car_rot_force; ...%vc_dot                                                         
-         upper_force1 - lower_force1 + local_FW1 + upper_rot_force1; ...                    %vw1_dot
-         upper_force2 - lower_force2 + local_FW2 + upper_rot_force2; ...                    %vw2_dot
-         upper_force3 - lower_force3 + local_FW3 + upper_rot_force3; ...                    %vw3_dot
-         upper_force4 - lower_force4 + local_FW4 + upper_rot_force4; ...                    %vw4_dot
-         lower_force1 + local_FT1 + local_FR1 + lower_rot_force1; ...                       %vt1_dot
-         lower_force2 + local_FT2 + local_FR2 + lower_rot_force2; ...                       %vt2_dot
-         lower_force3 + local_FT3 + local_FR3 + lower_rot_force3; ...                       %vt3_dot
-         lower_force4 + local_FT4 + local_FR4 + lower_rot_force4];                          %vt4_dot
+    b =  [sum_torque_spring_car;...                                                           %w_dot_c
+         FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...          %vc_dot                                                         
+         upper_force1 - lower_force1 + upper_dampf1 - lower_dampf1 + local_FW1 + ...
+                upper_rot_force1 - car_rot_force1 - lower_rot_force1; ...                     %vw1_dot
+         upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + ...
+                upper_rot_force2 - car_rot_force2 - lower_rot_force2; ...                     %vw2_dot
+         upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + ...
+                upper_rot_force3 - car_rot_force3 - lower_rot_force3; ...                     %vw3_dot
+         upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + ...
+                upper_rot_force4 - car_rot_force4 - lower_rot_force4; ...                     %vw4_dot
+         lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...          %vt1_dot
+         lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...          %vt2_dot
+         lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...          %vt3_dot
+         lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];             %vt4_dot
      
      % solve the system
     result_vector = A \ b;
-        
-    %% get the derivative of the attitude (expressed in quaternions) from
-    % the angular velocities
+    
+    
+    %% get the derivative of the attitude (expressed in quaternions) from the angular velocities
     Qc = 0.5 * [qc(4) -qc(3) qc(2); qc(3) qc(4) -qc(1); -qc(2) qc(1) qc(4); -qc(1) -qc(2) -qc(3)];
     qc_dot = Qc * wc;
 
+    
     %% evaluate the function -> x_dot = f(x)
     f = [result_vector(1:3); ...    % wc_dot
          result_vector(4:6); ...    % vc_dot
@@ -227,5 +255,4 @@ end
          vt2; ...                   % pt2_dot
          vt3; ...                   % pt3_dot
          vt4];                      % pt4_dot
-
 end

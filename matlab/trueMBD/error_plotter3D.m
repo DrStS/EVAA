@@ -100,14 +100,10 @@ function [] = error_plotter3D(  solver, t, num_iter, y, y_sol, mass, mass_wheel,
                                 0.5 * sum(lower_rotational_stiffness' .* lower_angle.^2);
                             
         %compute the total energy
-%        error(i) = potential_energy + kinetic_energy + rotational_energy + spring_potential + rot_spring_potential;
-        error(i) = rot_spring_potential;
-
+        error(i) = potential_energy + kinetic_energy + rotational_energy + spring_potential + rot_spring_potential;
         % compute the relative error
         if i > 1
-%            error(i) = (error(i) - error(1)) / error(1);
-            error(i) = (error(i) - error(1));
-
+            error(i) = (error(i) - error(1)) / error(1);
         end
     end
         error(1) = 0;
@@ -115,10 +111,21 @@ function [] = error_plotter3D(  solver, t, num_iter, y, y_sol, mass, mass_wheel,
     %% plot characteristics    
     plot(t(2:end-1), error(2:end-1)); grid on;
     hold on;
-        
-    legend('energy variation in the 3D system');
-    title_array = ['Error graph - BDF2, ', num2str(t(end)), ' sec, dt=',num2str(t(2)-t(1))];
+    functionstr = 'unknown function';
+    if strcmp(func2str(solver), '@(f,t,x)Broyden_Crank_Nicolson(f,t,x,tol,max_iter)')
+        functionstr='Broyden CN';
+    elseif strcmp(func2str(solver), '@(f,t,x)Broyden_PDF2(f,t,x,tol,max_iter)')
+        functionstr='Broyden BDF2';
+    elseif strcmp(func2str(solver), '@(f,t,x)Broyden_Euler(f,t,x,tol,max_iter)')
+        functionstr='Broyden Implicit Euler';
+    elseif strcmp(func2str(solver), '@(f,t,x)Runge_Kutta_4(f,t,x)')
+        functionstr='RK4';
+    elseif strcmp(func2str(solver), '@(f,t,x)explicit_solver(f,t,x)')
+        functionstr='explicit Euler';
+    end
+    legend('Relative energy variation in the 3D system');
+    title_array = ['Error graph - ',functionstr,', ', num2str(t(end)), ' sec, dt=',num2str(t(2)-t(1))];
     title(title_array);
     xlabel('Time [sec]');
-    ylabel('Energy variation');
+    ylabel('Relative Energy Variation');
 end

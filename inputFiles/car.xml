@@ -72,10 +72,10 @@
 
     <initial>
 		<angle_body>
-          <w>0</w>
 		  <x>0</x>
           <y>0</y>
           <z>0</z>
+		  <w>0</w>
         </angle_body>
         <ang_vel_body>
           <x>0</x>
