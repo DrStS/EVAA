@@ -42,10 +42,11 @@ l_min = lookup_table(1,1);
 l_max = lookup_table(size_grid,1);
 dl = (l_max - l_min)/(size_grid-1);
 k_grid = lookup_table(:,2:9);
+
 %% parameters
 % time
 num_iter = 1000;
-delta_t = 1e-3; 
+delta_t = 1e-5; 
 t = 0:delta_t:num_iter*delta_t;
 
 
@@ -75,19 +76,20 @@ mass_wheel_rr=135/2;
 mass_tyre_rr=0;
 g = 1;
 u_n = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
+u_n = rand(11,1);
 
 y(:,1) = u_n;
 u_n_m_1=u_n;
 u_n_p_1=u_n;
 
-rhs = [mass_Body * g; 0; 0; mass_wheel_fl * g; mass_tyre_fl * g; mass_wheel_fr * g; mass_tyre_fr * g; mass_wheel_rl * g; mass_tyre_rl * g; mass_wheel_rr * g; mass_tyre_rr * g];
-M=diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
+rhs = [mass_Body; 0; 0; mass_wheel_fl; mass_tyre_fl; mass_wheel_fr; mass_tyre_fr; mass_wheel_rl; mass_tyre_rl; mass_wheel_rr; mass_tyre_rr]  * g;
+M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 %% time steps
 
 f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
 
-dKcols_dk = eval(dKcols_dk);
+dKcols_dk = eval(dKcols_dk); % evaluate it numerically
 
 d = 0;
 for i = 1: length(t)-1
@@ -99,22 +101,16 @@ for i = 1: length(t)-1
     while 1
         iter = iter + 1;
         temp = [];
+        dk_dx = getdk_dx(u_n_p_1);
         for ii = 1 : 11 % 11 columns in K
-            temp = [temp; getdk_dx(u_n_p_1) * u_n_p_1(ii)];
+            temp = [temp; dk_dx * u_n_p_1(ii)];
         end
-%         temp = getdk_dx(u_n_p_1) * u_n_p_1;
-        
-        %J = M_div_h2 + K + eval(dK) * temp;
-        %J = M_div_h2 + K + eval(dK1_dk) * temp * u_n_p_1(1)+ eval(dK2_dk) * temp * u_n_p_1(2) + eval(dK3_dk) * temp * u_n_p_1(3)...
-        %+ eval(dK4_dk) * temp * u_n_p_1(4) + eval(dK5_dk) * temp * u_n_p_1(5) + eval(dK6_dk) * temp * u_n_p_1(6)...
-        %    + eval(dK7_dk) * temp * u_n_p_1(7) + eval(dK8_dk) * temp * u_n_p_1(8) + eval(dK9_dk) * temp * u_n_p_1(9)...
-        %    + eval(dK10_dk) * temp * u_n_p_1(10) + eval(dK11_dk) * temp * u_n_p_1(11);
-%         J = M_div_h2 + K + dK_dk1 * temp(1) + dK_dk2 * temp(2) + dK_dk3 * temp(3) + dK_dk4 * temp(4)...
-%         + dK_dk5 * temp(5) + dK_dk6 * temp(6) + dK_dk7 * temp(7) + dK_dk8 * temp(8);
         J = M_div_h2 + K + dKcols_dk * temp;
+        
         Delta = -J\r;
-        norm(J)
+%         norm(J)
         u_n_p_1 = Delta + u_n_p_1; 
+        
         % update values
         K = get_K(u_n_p_1);
         r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
