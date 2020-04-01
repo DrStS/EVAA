@@ -82,7 +82,7 @@ y(:,1) = u_n;
 u_n_m_1=u_n;
 u_n_p_1=u_n;
 
-rhs = [mass_Body; 0; 0; mass_wheel_fl; mass_tyre_fl; mass_wheel_fr; mass_tyre_fr; mass_wheel_rl; mass_tyre_rl; mass_wheel_rr; mass_tyre_rr]  * g;
+rhs = -[mass_Body; 0; 0; mass_wheel_fl; mass_tyre_fl; mass_wheel_fr; mass_tyre_fr; mass_wheel_rl; mass_tyre_rl; mass_wheel_rr; mass_tyre_rr]  * g;
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 %% time steps
