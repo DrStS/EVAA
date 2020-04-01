@@ -5,22 +5,18 @@ k_body_fl=28e3*0.69;
 k_tyre_fl=260e3;
 k_body_fr=28e3*0.69;
 k_tyre_fr=260e3;
-k_body_rl=28e3*0.69;
+k_body_rl=16e3*0.82;
 k_tyre_rl=260e3;
-k_body_rr=28e3*0.69;
+k_body_rr=16e3*0.82;
 k_tyre_rr=260e3;
-% k_body_rl=16e3*0.82;
-% k_tyre_rl=260e3;
-% k_body_rr=16e3*0.82;
-% k_tyre_rr=260e3;
-k_body_rot_fl = 1e4;
-k_body_rot_fr = 1e4;
-k_body_rot_rl = 1e4;
-k_body_rot_rr = 1e4;
-k_tyre_rot_fl = 1e4;
-k_tyre_rot_fr = 1e4;
-k_tyre_rot_rl = 1e4;
-k_tyre_rot_rr = 1e4;
+k_body_rot_fl = 1e6;
+k_body_rot_fr = 1e6;
+k_body_rot_rl = 1e6;
+k_body_rot_rr = 1e6;
+k_tyre_rot_fl = 1e6;
+k_tyre_rot_fr = 1e6;
+k_tyre_rot_rl = 1e6;
+k_tyre_rot_rr = 1e6;
 c_body_fl=@(v)0*v;    %allow nonlinear damping
 c_tyre_fl=@(v)0*v;
 c_body_fr=@(v)0*v;
@@ -85,7 +81,7 @@ upper_rotational_stiffness = [k_body_rot_rr; k_body_rot_rl; k_body_rot_fl; k_bod
 lower_rotational_stiffness = [k_tyre_rot_rr; k_tyre_rot_rl; k_tyre_rot_fl; k_tyre_rot_fr];
 
 % initial velocities 
-vc = [0; 0; 1];       % car body
+vc = [0; 0; 5];       % car body
 
 vw1 = [0; 0; 0];    % wheel 
 vw2 = [0; 0; 0];    
@@ -99,7 +95,7 @@ vt4 = [0; 0; 1];
 
 
 % initial angular velocities
-wc = [0; -0; 0];
+wc = [0; 0; 0];
 
 % force parameters
 g = 0;               % there is no gravity in outer space!
@@ -118,13 +114,13 @@ FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
 % simulation specifications
-num_iter = 3e4;
+num_iter = 4e4;
 delta_t = 1e-3;
 tol = 1e-7;
 max_iter = 10000;
  
 % road forces in y direction (as functions of time)
-%fany road forces (do not work right now)
+%fancy road forces (do not work right now)
 d = -0.5;
 %FR1 = @(t, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(1), F, d, delta_t);        
 %FR2 = @(t, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(2), F, d, delta_t);
@@ -132,21 +128,21 @@ d = -0.5;
 %FR4 = @(t, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(4), F, d, delta_t);
 
 %the car is flying away 
-%FR1 = @(t, y, pcc, vt, vb, F) [0; 0; 0];        
-%FR2 = @(t, y, pcc, vt, vb, F) [0; 0; 0];
-%FR3 = @(t, y, pcc, vt, vb, F) [0; 0; 0];
-%FR4 = @(t, y, pcc, vt, vb, F) [0; 0; 0];
+% FR1 = @(t, y, pcc, vt, vb, F) F;        
+% FR2 = @(t, y, pcc, vt, vb, F) F;
+% FR3 = @(t, y, pcc, vt, vb, F) F;
+% FR4 = @(t, y, pcc, vt, vb, F) F;
 
 %fix the car on the ground
-% FR1 = @(t, y, pcc, vt, vb, F) [0; -F(2); 0];
-% FR2 = @(t, y, pcc, vt, vb, F) [0; -F(2); 0];
-% FR3 = @(t, y, pcc, vt, vb, F) [0; -F(2); 0];
-% FR4 = @(t, y, pcc, vt, vb, F) [0; -F(2); 0];
+% FR1 = @(t, y, pcc, vt, vb, F) zeros(3,1);
+% FR2 = @(t, y, pcc, vt, vb, F) zeros(3,1);
+% FR3 = @(t, y, pcc, vt, vb, F) zeros(3,1);
+% FR4 = @(t, y, pcc, vt, vb, F) zeros(3,1);
 
-FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, vc, 0.25*mass_Body, mass_wheel(1) + mass_tyre(1), F, y, pcc);
-FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, vc, 0.25*mass_Body, mass_wheel(2) + mass_tyre(2), F, y, pcc);
-FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, vc, 0.25*mass_Body, mass_wheel(3) + mass_tyre(3), F, y, pcc);
-FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, vc, 0.25*mass_Body, mass_wheel(4) + mass_tyre(4), F, y, pcc);
+FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y);
+FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
+FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
+FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
 
 % Explicit solvers
 % solver = @(f, t, x) explicit_solver(f, t, x);
@@ -154,7 +150,7 @@ FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, vc, 0.25*mass_Body, mass_wheel(4
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
-solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+ solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 

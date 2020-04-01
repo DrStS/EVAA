@@ -184,7 +184,7 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     local_FT3 = FT(:,3);
     local_FT4 = FT(:,4);
     
-    % road forces    
+    % road forces on the tyre
     local_FR1 = aux_vals.FR1(t, pt1, pcc, vt1, vc, lower_force1 + lower_dampf1 + local_FT1 + lower_rot_force1);      %in global basis
     local_FR2 = aux_vals.FR2(t, pt2, pcc, vt2, vc, lower_force2 + lower_dampf2 + local_FT2 + lower_rot_force2);   
     local_FR3 = aux_vals.FR3(t, pt3, pcc, vt3, vc, lower_force3 + lower_dampf3 + local_FT3 + lower_rot_force3); 
@@ -210,21 +210,22 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%                 Solve                  %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    b =  [sum_torque_spring_car;...                                                           %w_dot_c
-         FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...          %vc_dot                                                         
-         upper_force1 - lower_force1 + upper_dampf1 - lower_dampf1 + local_FW1 + ...
-                upper_rot_force1 - car_rot_force1 - lower_rot_force1; ...                     %vw1_dot
-         upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + ...
-                upper_rot_force2 - car_rot_force2 - lower_rot_force2; ...                     %vw2_dot
-         upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + ...
-                upper_rot_force3 - car_rot_force3 - lower_rot_force3; ...                     %vw3_dot
-         upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + ...
-                upper_rot_force4 - car_rot_force4 - lower_rot_force4; ...                     %vw4_dot
-         lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...          %vt1_dot
-         lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...          %vt2_dot
-         lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...          %vt3_dot
-         lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];             %vt4_dot
-     
+   b =  [sum_torque_spring_car;...                                                           %w_dot_c
+        FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...          %vc_dot                                                         
+        upper_force1 - lower_force1 + upper_dampf1 - lower_dampf1 + local_FW1 + ...
+               upper_rot_force1 - car_rot_force1 - lower_rot_force1; ...                     %vw1_dot
+        upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + ...
+               upper_rot_force2 - car_rot_force2 - lower_rot_force2; ...                     %vw2_dot
+        upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + ...
+               upper_rot_force3 - car_rot_force3 - lower_rot_force3; ...                     %vw3_dot
+        upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + ...
+               upper_rot_force4 - car_rot_force4 - lower_rot_force4; ...                     %vw4_dot
+        local_FR1; ...                                                                       %vt1_dot
+        local_FR2; ...                                                                       %vt2_dot
+        local_FR3; ...                                                                       %vt3_dot
+        local_FR4];                                                                          %vt4_dot
+
+
      % solve the system
     result_vector = A \ b;
     
