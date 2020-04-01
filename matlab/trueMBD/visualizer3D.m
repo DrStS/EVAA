@@ -80,7 +80,8 @@ for i = 1 : vis_step : num_iter
    axis([min(y(:,5))-2.5, max(y(:,5))+2.5,...
        min(y(:,7))-2.5, max(y(:,7))+2.5,...
        min(y(:,6))-2.5, max(y(:,6))+2.5])
-   
+
+    view(0,90)
     drawnow;
         
 end

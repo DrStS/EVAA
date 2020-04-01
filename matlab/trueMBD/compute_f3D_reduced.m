@@ -174,21 +174,21 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     
     %% get external forces    
     % for the legs
-    local_FW1 = [0; FW(1); 0];      %in global basis
-    local_FW2 = [0; FW(2); 0];
-    local_FW3 = [0; FW(3); 0];
-    local_FW4 = [0; FW(4); 0];
+    local_FW1 = FW(:,1);      %in global basis
+    local_FW2 = FW(:,2);
+    local_FW3 = FW(:,3);
+    local_FW4 = FW(:,4);
     
-    local_FT1 = [0; FT(1); 0];      %in global basis
-    local_FT2 = [0; FT(2); 0];
-    local_FT3 = [0; FT(3); 0];
-    local_FT4 = [0; FT(4); 0];
-
+    local_FT1 = FT(:,1);      %in global basis
+    local_FT2 = FT(:,2);
+    local_FT3 = FT(:,3);
+    local_FT4 = FT(:,4);
+    
     % road forces    
-    local_FR1 = [0;  aux_vals.FR1(t, pt1(2), vt1(2), A(19,19), lower_force1(2) + FT(1) + lower_rot_force1(2)); 0];      %in global basis
-    local_FR2 = [0;  aux_vals.FR2(t, pt2(2), vt2(2), A(22,22), lower_force2(2) + FT(2) + lower_rot_force2(2)); 0];   
-    local_FR3 = [0;  aux_vals.FR3(t, pt3(2), vt3(2), A(25,25), lower_force3(2) + FT(3) + lower_rot_force3(2)); 0]; 
-    local_FR4 = [0;  aux_vals.FR4(t, pt4(2), vt4(2), A(28,28), lower_force4(2) + FT(4) + lower_rot_force4(2)); 0]; 
+    local_FR1 = aux_vals.FR1(t, pt1, pcc, vt1, vc, lower_force1 + lower_dampf1 + local_FT1 + lower_rot_force1);      %in global basis
+    local_FR2 = aux_vals.FR2(t, pt2, pcc, vt2, vc, lower_force2 + lower_dampf2 + local_FT2 + lower_rot_force2);   
+    local_FR3 = aux_vals.FR3(t, pt3, pcc, vt3, vc, lower_force3 + lower_dampf3 + local_FT3 + lower_rot_force3); 
+    local_FR4 = aux_vals.FR4(t, pt4, pcc, vt4, vc, lower_force4 + lower_dampf4 + local_FT4 + lower_rot_force4); 
 
 
     %% get H=I*w
@@ -224,6 +224,8 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
          lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...          %vt2_dot
          lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...          %vt3_dot
          lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];             %vt4_dot
+
+     b(2) = 0;
      
      % solve the system
     result_vector = A \ b;
