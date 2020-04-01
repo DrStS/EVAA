@@ -1,4 +1,4 @@
-﻿/*  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+/*  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
 *
 *  All rights reserved.
 *
@@ -45,7 +45,7 @@ typedef double floatEVAA;
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName) {
 	// Intialize XML metadatabase singelton
 	_xmlFileName = xmlFileName;
-	std::cout <<"Read XML file: "<< _xmlFileName << std::endl;
+	std::cout << "Read XML file: " << _xmlFileName << std::endl;
 	ReadXML reader(_xmlFileName);
 	reader.ReadParameters(_parameters);
 }
@@ -173,8 +173,8 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 	u_n(0) = 1;
 	u_n_m_1 = u_n;
 
-//	int nRefinement = 10;
-//	int numTimeSteps = pow(2, nRefinement);
+	//	int nRefinement = 10;
+	//	int numTimeSteps = pow(2, nRefinement);
 	int numTimeSteps = _parameters.num_time_iter;
 	//time step size 
 	//double h =  / (numTimeSteps);
@@ -444,7 +444,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	for (int i = 0; i < DOF; ++i)
 		M[(DOF + 1) * i] *= tmpScalar;
 
-		void* jitter;
+	void* jitter;
 	// adds matrix matrix product to scalar matrix product
 	std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, DOF, 1, DOF, 1.0, DOF, DOF, 0.0, DOF) << std::endl;
 	dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
@@ -516,23 +516,21 @@ public:
 	const int num_wheels_x_dim = num_wheels * dim;
 	const int DOF_diag = 9; // the diagonal elements from A
 	const int DOF = 11;
-	
+
 	// simulation specifications
 	int num_iter;
 	T delta_t;
 	T tol;
 	int max_iter;
-
 	T FC;
-
 	T* r;
-	T* r_tilda; 
-	T* FW; 
-	T* FT; 
-	T* FR; 
-	T* lower_spring_length; 
-	T* upper_spring_length; 
-	T* lower_spring_stiffness; 
+	T* r_tilda;
+	T* FW;
+	T* FT;
+	T* FR;
+	T* lower_spring_length;
+	T* upper_spring_length;
+	T* lower_spring_stiffness;
 	T* upper_spring_stiffness;
 	T* A; // The system matrix A. 0:3 - 2x2 upper-left symmetric block; 4:12 . We will store its inverse on diagonal blocks
 	T* Ic;
@@ -556,7 +554,6 @@ public:
 	T* wc_tilda; // 9 elements of \tilde{wc}
 	T* Qc; // the derivative of the quaternion
 public:
-
 	ComputeNasa() { // constructor without parameters (default, testing reasons)
 	// initialization
 		Tc = (T*)mkl_calloc(num_wheels, sizeof(T), alignment); // 4 * C_Nc; external torque on the car body (use later for rotational damping)
@@ -576,17 +573,14 @@ public:
 		rhs = (T*)mkl_calloc(11, sizeof(T), alignment); // b vector, 11 DOF (from the 12 components we prohibit rotation along y-axis, b[2]=0 is ignored)
 		wc_tilda = (T*)mkl_calloc(dim_x_dim, sizeof(T), alignment); // 9 elements of \tilde{wc}
 		Qc = (T*)mkl_calloc(12, sizeof(T), alignment); // the derivative of the quaternion
-
 	// simulation specifications
 		num_iter = 1e3;
 		delta_t = 1e-3;
 		tol = 1e-10;
 		max_iter = 200;
 		mkl_set_num_threads(8);
-
 		// force parameters
 		const T g = 0; // actually 9.81
-
 		// initial conditions - read XML data
 		T k_body_fl = 28e3 * 0.69;
 		T k_tyre_fl = 260e3;
@@ -615,10 +609,8 @@ public:
 		T mass_tyre_rl = 0;
 		T mass_wheel_rr = 135 / 2;
 		T mass_tyre_rr = 0;
-
 		// Dimensions of the main car body (the center of rotation is at the origin)
 		r = (T*)mkl_calloc(num_wheels * dim, sizeof(T), alignment);
-
 		r[0] = -l_long_rr; // r1
 		r[8] = l_lat_rr; // r1
 		r[1] = -l_long_rl; // r2
@@ -627,27 +619,20 @@ public:
 		r[10] = l_lat_fl; // r3
 		r[3] = -l_long_fr; // r4
 		r[11] = l_lat_fr; // r4
-
 		// moment of inertia of the car
 		Ic = (T*)mkl_calloc(dim_x_dim, sizeof(T), alignment);
-
 		Ic[0] = I_body_xx;
 		Ic[4] = 1;
 		Ic[8] = I_body_yy;
-
 		// initial orientation of the car body as quaternion
 		T* initial_orientation = (T*)mkl_calloc(4, sizeof(T), alignment);
-
 		initial_orientation[3] = 1;
-
 		// wheel parameters (provided as vectors [right-back, left-back, left-front, right_front])
 		T* mass_wheel = (T*)mkl_calloc(4, sizeof(T), alignment);
-
 		mass_wheel[0] = mass_wheel_rr;
 		mass_wheel[1] = mass_wheel_rl;
 		mass_wheel[2] = mass_wheel_fl;
 		mass_wheel[3] = mass_wheel_fr;
-
 		// tyre parameters (provided as vectors [right-back, left-back, left-front, right_front])
 		T* mass_tyre = (T*)mkl_calloc(4, sizeof(T), alignment);
 		// do not put to zero to avoid singularities, Dirichlet condition are enforced via a force vector
@@ -655,46 +640,38 @@ public:
 		mass_tyre[1] = 3;
 		mass_tyre[2] = 3;
 		mass_tyre[3] = 3;
-
 		// lengths of the springs around the tyre
 		lower_spring_length = (T*)mkl_calloc(4, sizeof(T), alignment);
 		lower_spring_length[0] = 0.2;
 		lower_spring_length[1] = 0.2;
 		lower_spring_length[2] = 0.2;
 		lower_spring_length[3] = 0.2;
-
 		upper_spring_length = (T*)mkl_calloc(4, sizeof(T), alignment);
 		upper_spring_length[0] = 0.2;
 		upper_spring_length[1] = 0.2;
 		upper_spring_length[2] = 0.2;
 		upper_spring_length[3] = 0.2;
-
 		T* initial_lower_spring_length = (T*)mkl_calloc(4, sizeof(T), alignment);
 		initial_lower_spring_length[0] = -0.2;
 		initial_lower_spring_length[1] = -0.2;
 		initial_lower_spring_length[2] = -0.2;
 		initial_lower_spring_length[3] = -0.2;
-
 		// initially the spring lengths with a negative sign as we substract by adding negative numbers afterwards
 		T* initial_upper_spring_length = (T*)mkl_calloc(4, sizeof(T), alignment);
-
 		initial_upper_spring_length[0] = -0.2;
 		initial_upper_spring_length[1] = -0.2;
 		initial_upper_spring_length[2] = -0.2;
 		initial_upper_spring_length[3] = -0.2;
-
 		lower_spring_stiffness = (T*)mkl_calloc(4, sizeof(T), alignment);
 		lower_spring_stiffness[0] = k_body_rr;
 		lower_spring_stiffness[1] = k_body_rl;
 		lower_spring_stiffness[2] = k_body_fl;
 		lower_spring_stiffness[3] = k_body_fr;
-
 		upper_spring_stiffness = (T*)mkl_calloc(4, sizeof(T), alignment);
 		upper_spring_stiffness[0] = k_tyre_rr;
 		upper_spring_stiffness[1] = k_tyre_rl;
 		upper_spring_stiffness[2] = k_tyre_fl;
 		upper_spring_stiffness[3] = k_tyre_fr;
-
 		// initial velocities (only y-components)
 			// can be used only x such that we don't allocate and deallocate not used small matrices
 		T vc = 0;
@@ -702,58 +679,41 @@ public:
 		T* vw = (T*)mkl_calloc(4, sizeof(T), alignment);
 		// init ot 0
 		T* vt = (T*)mkl_calloc(4, sizeof(T), alignment);
-
 		// initial angular velocity
 		T* wc = (T*)mkl_calloc(dim, sizeof(T), alignment);
-
 		FC = -1.1e3; // actually - mass_Body * g
-
 		FT = (T*)mkl_calloc(4, sizeof(T), alignment);
 		FW = (T*)mkl_calloc(4, sizeof(T), alignment);
 		FR = (T*)mkl_calloc(4, sizeof(T), alignment);
-
 		for (int i = 0; i < 4; ++i) {
 			FT[i] = -mass_tyre[i] * g;
 			FW[i] = -mass_wheel[i] * g;
 		}
-
-
 		// ===================================== FINISHED Data Initialization =========================================
-
-
 		// ======================== main nasa car.m ===============================
 		// quaternion & normalization
 		T* qc = (T*)mkl_calloc(4, sizeof(T), alignment); // quaternions
 		qc[3] = 1; // initial orientation
 		create_basis_car(qc, basis_car);
-
 		//T* basis_N = (T*)mkl_calloc(dim_x_dim, sizeof(T), alignment);
 		//basis_N[0] = 1;	basis_N[4] = 1; basis_N[8] = 1; // basis_N = eye(3)
-
 		// change of basis matrices
 		C_cos_transf(basis_car, C_Nc);
-
 		// initial position of the car if it is different from 0 it has to be added to pc_1!!!
 		double pcc = 0.;
-
 		// positions of the lower corners of the car body
 		T* pc = (T*)mkl_calloc(num_wheels * dim, sizeof(T), alignment);
-
 		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, num_wheels, dim, 1., C_Nc, dim, r, num_wheels, 0., pc, num_wheels);
-
 		// position of the wheels
 		T* pw = (T*)mkl_calloc(num_wheels * dim, sizeof(T), alignment);
 		T* pt = (T*)mkl_calloc(num_wheels * dim, sizeof(T), alignment);
-
 		cblas_dcopy(num_wheels * dim, pc, 1, pw, 1);
 		vdAdd(num_wheels, pw + 4, initial_upper_spring_length, pw + 4);
 		cblas_dcopy(num_wheels * dim, pw, 1, pt, 1);
 		vdAdd(num_wheels, pt + 4, initial_lower_spring_length, pt + 4);
-
 		// get r_tilda for each component - r1, r2, r3, r4; r_tilda is a (3x3)x4 matrix, r_tilda=[r1_tilda, r2_tilda, r3_tilda, r4_tilda]
 		r_tilda = (T*)mkl_calloc(num_wheels * dim_x_dim, sizeof(T), alignment);
 		get_tilda_r(r, dim, num_wheels, r_tilda);
-
 		// initialize x vector (the solution vector)
 		x = (T*)mkl_calloc(25, sizeof(T), alignment);
 		// x = [wc (3x1), vc(1x1), vw(4x1), vt(4x1), pt(4x1), pcc(1x1), pw(4x1) (only y component), pt(4x1) (only y component)]
@@ -765,7 +725,6 @@ public:
 		x[16] = pcc;
 		cblas_dcopy(num_wheels, pw + num_wheels, 1, x + 17, 1);
 		cblas_dcopy(num_wheels, pt + num_wheels, 1, x + 21, 1);
-
 		// create A
 		printf("Ic[0]=%lf, Ic[2]=%lf, Ic[8]=%lf\n\n", Ic[0], Ic[2], Ic[8]);
 		A = (T*)mkl_calloc(13, sizeof(T), alignment); // 0:3 - 2x2 upper-left symmetric block; 4:12 - diag elements
@@ -783,7 +742,6 @@ public:
 		cblas_dcopy(num_wheels, mass_tyre, 1,  A + 9, 1);
 		// We store the inverse of A[4:12]:= diag([1./mass_Body, 1./mass_wheel, 1./mass_tyre])
 		MathLibrary::elementwise_inversion<T>(A + 4, 1 + num_wheels + num_wheels);
-
 		// free the allocated elements; mostly 3 or 4 elements
 		MKL_free(pw);
 		MKL_free(pt);
@@ -797,7 +755,6 @@ public:
 		MKL_free(initial_lower_spring_length);
 		MKL_free(initial_upper_spring_length);
 	}
-
 	ComputeNasa(T* r, T* r_tilda, T* FW, T* FT, T* FR, T* lower_spring_length, T* upper_spring_length, T* lower_spring_stiffness, T* upper_spring_stiffness, T* A, T FC, T* IC, T* x) :
 		r(r), r_tilda(r_tilda), FW(FW), FT(FT), FR(FR), lower_spring_length(lower_spring_length), upper_spring_length(upper_spring_length), lower_spring_stiffness(lower_spring_stiffness), upper_spring_stiffness(upper_spring_stiffness), A(A), FC(FC), IC(IC), x(x) {
 		// memset(ones4, 1, num_wheels);
@@ -806,7 +763,7 @@ public:
 		tol = 1e-10;
 		max_iter = 200;
 	}
-	
+
 	~ComputeNasa() {
 		MKL_free(r);
 		MKL_free(r_tilda);
@@ -839,9 +796,8 @@ public:
 		MKL_free(wc_tilda);
 		MKL_free(Qc);
 	}
-
 	void compute_f3D_reduced(T time, T* x, T* f) {
-		
+
 		// extract data from x_vector
 		// wc = x_vector(1:3);
 		// vc = x_vector(4);
@@ -849,49 +805,39 @@ public:
 		// vt = x_vector(9:12);
 		// qc = x_vector(13:16);
 		// pcc = x_vector(17);
-		
 
 		// =================================== UPDATE rhs vector ==============================================
 		// get the new local basis vectors using quaternion rotation
 		create_basis_car(x + 12, basis_car);
-
 		// compute the cosine transformation
 		C_cos_transf(basis_car, C_Nc);
-
 		// compute r_global = C_Nc * r; (matrix-vector multiplication)
 		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, num_wheels, dim, 1., C_Nc, dim, r, num_wheels, 0., r_global, num_wheels);
-
 		// get positions of the corners of the car body
 		// car_corners = pcc + [r1_global(2); r2_global(2); r3_global(2); r4_global(2)];
 		cblas_dcopy(num_wheels, r_global + 4, 1, car_corners, 1);
 		for (auto i = 0; i < num_wheels; ++i) {
 			car_corners[i] += x[16];
 		}
-
 		// calculate the length of the springs
 		// upper_length = car_corners - x_vector(18:21);
 		cblas_dcopy(num_wheels, car_corners, 1, upper_length, 1);
 		cblas_daxpy(num_wheels, -1, x + 17, 1, upper_length, 1);
-
 		// lower_length = x_vector(18:21) - x_vector(22:25);
 		cblas_dcopy(num_wheels, x + 17, 1, lower_length, 1);
 		cblas_daxpy(num_wheels, -1, x + 21, 1, lower_length, 1);
-
 		// calculate the spring forces (take opposite if top node is considered)
 		// upper_force = upper_spring_stiffness .* (upper_length - upper_spring_length);
 		cblas_dcopy(num_wheels, upper_length, 1, diff_vector, 1);
 		cblas_daxpy(num_wheels, -1, upper_spring_length, 1, diff_vector, 1);
 		vdmul(&num_wheels, upper_spring_stiffness, diff_vector, upper_force);
-		
+
 		// lower_force = lower_spring_stiffness .* (lower_length - lower_spring_length);
 		cblas_dcopy(num_wheels, lower_length, 1, diff_vector, 1);
 		cblas_daxpy(num_wheels, -1, lower_spring_length, 1, diff_vector, 1);
 		vdmul(&num_wheels, lower_spring_stiffness, diff_vector, lower_force);
-
 		// get road forces: FR := -(lower_force + FT); for the moment, we don't have the minus (-)
 		vdAdd(num_wheels, lower_force, FT, FR);
-
-
 		// convert spring forces to local basis
 			// upper_F = C_Nc' * [0; -upper_force(1); 0; 0;-upper_force(2); 0; 0; -upper_force(3); 0; 0; -upper_force(4); 0];
 			// upper_F = [C_Nc(2,:) * upper_force(1); C_Nc(2,:) * upper_force(2); C_Nc(2,:) * upper_force(3); C_Nc(2,:) * upper_force(4)]
@@ -906,13 +852,10 @@ public:
 		}
 		// perform element-wise vector multiplication: upper_F <- C_Nc_extended .* upper_F
 		vdmul(&num_wheels_x_dim, upper_F, C_Nc_extended, upper_F);
-
 		// perform matrix-vector multiplication: sum_torque = r_tilda * upper_F = ((3x3)x4) x (3x4)x1 = (3x1)
 		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, 1, dim*num_wheels, 1., r_tilda, dim, upper_F, dim*num_wheels, 0., sum_torque, dim);
-
 		// get Hc = Ic * wc; however, we store Hc directly in the first 3 components of rhs (b); wc = [x[0], x[1], x[2]]
 		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, 1, dim, 1., Ic, dim, x, dim, 0., rhs, dim);
-
 		// get first "3" (actually 2) components of rhs (b)
 			// rhs(1:3) = -get_tilda(wc)*Hc
 		get_tilda(x, wc_tilda);
@@ -921,27 +864,25 @@ public:
 		vdAdd(dim, rhs, sum_torque, rhs);
 			// rhs(1:3) =+ sum(Tc) not implemented!!!
 		rhs[1] = rhs[2]; // suppresing the y-component (b(2)=0)
-		
+
 		// rhs[2] = FC-sum(upper_force)
 			// may be optimized: see ippsSum_64f((Ipp64f *) upper_force, num_wheels, (Ipp64f *) (rhs +2));
 		rhs[2] = FC;
 		for (auto i = 0; i < num_wheels; ++i) {
 			rhs[2] -= upper_force[i];
 		}
-
 		// rhs[3:6] = upper_force - lower_force + FW = (upper_force + FW) - lower_force
 			// rhs[3:6] = upper_force + FW
 		vdAdd(num_wheels, upper_force, FW, rhs + 3);
 			// rhs[3:6] -= lower_force
 		cblas_daxpy(num_wheels, -1., lower_force, 1, rhs + 3, 1);
-		
+
 		// rhs[7:10] = lower_force + FR + FT = (lower_force + FT) - (FR) - we defined FR without the minus
 			// rhs[7:10] = lower_force + FT
 		vdAdd(num_wheels, lower_force, FT, rhs + 7);
 			// rhs[7:10] -= FR
 		cblas_daxpy(num_wheels, -1., FR, 1, rhs + 7, 1);
 		// ====================== FINISHED Computing rhs (b) ==================================================
-
 		// ===================== SOLVING The Linear System: x = A (inverse) * b ===============================
 		// f = A_inv * rhs -> A_inv is our A that contains the inverse on blocks
 			// solve the upper_left system with the 2x2 symmetric block from A
@@ -949,11 +890,10 @@ public:
 		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 2, 1, 2, 1., A, 2, rhs, 2, 0., f, 2);
 		// impose the 0 in the y element of wc_dot block from f -> just for the moment!
 		f[2] = f[1];
-		f[1] = 0; 
+		f[1] = 0;
 			// f[3;...;11] = A[4;5;...;12] * rhs[2;3;...;10]
 		vdMul(9, A + 4, rhs + 2, f + 3);
 		// ===================== FINISHED SOLVING The Linear System ===========================================
-
 		// ================== Prepair the second part of f - accelerations become velocities ==================
 		get_quaternion_derivative(x + 12, Qc);
 		// (f[12:15] =) qc_dot = Qc * wc; (wc=[x[0],x[1],x[2])
@@ -962,7 +902,6 @@ public:
 		cblas_dcopy(num_wheels + num_wheels + 1, x + 3, 1, f + 13, 1);
 		// ==================================== END OF FUNCTION ================================================
 	}
-
 	void print_solution() {
 		std::cout << "Print x: \n\n";
 		for (auto i = 0; i < 25; ++i) {
@@ -970,7 +909,6 @@ public:
 		}
 		std::cout << "\nEnd of printing!";
 	}
-
 };
 */
 /*
@@ -998,9 +936,9 @@ void EVAAComputeEngine::computeMKLlinear11dof(void) {
 	solver.apply_boundary_condition("road_force");
 	solver.solve(soln);
 	size_t steps = floor(tend / h);
-	std::cout << "Solution after "<<steps<<" timesteps, f ="<<std::endl;
+	std::cout << "Solution after " << steps << " timesteps, f =" << std::endl;
 	for (auto i = 0; i < DOF; ++i) {
-		std::cout << soln[i] <<std::endl;
+		std::cout << soln[i] << std::endl;
 	}
 	mkl_free(soln);
 }
@@ -1309,5 +1247,3 @@ void get_quaternion_derivative(floatEVAA* qc, floatEVAA* Qc) {
 void EVAAComputeEngine::clean(void) {
 
 }
-
-
