@@ -1,264 +1,290 @@
 <?xml version="1.0" encoding="utf-8"?>
-<car_settings>
-    <car>
-      <mass_body>1936</mass_body>
-      <I_body_xx>6400</I_body_xx>
-      <I_body_yy>4800</I_body_yy>
-      <I_body_zz>5000</I_body_zz>
-      <I_body_xy>0</I_body_xy>
-      <I_body_xz>0</I_body_xz>        
-      <I_body_yz>0</I_body_yz>
-      <k_tyre>
-        <rr>260e3</rr> 
-        <rl>260e3</rl> 
-        <fl>260e3</fl>
-        <fr>260e3</fr>
-      </k_tyre>
-      <k_body>
-          <rr>13.12e3</rr> 
-          <rl>13.12e3</rl> 
-          <fl>19.32e3</fl>
-          <fr>19.32e3</fr>
-      </k_body>
-      <c_tyre>
-        <rr>0</rr>
-        <rl>0</rl>
-        <fl>0</fl>
-        <fr>0</fr>
-      </c_tyre>
-      <c_body>
-        <rr>0</rr>
-        <rl>0</rl>
-        <fl>0</fl>
-        <fr>0</fr>
-      </c_body>
-      <l_lat>
-          <rr>1.68</rr> 
-          <rl>1.68</rl> 
-          <fl>1.68</fl>
-          <fr>1.68</fr>
-      </l_lat>
-      <l_long>
-          <rr>1.596</rr> 
-          <rl>1.596</rl> 
-          <fl>1.395</fl>
-          <fr>1.395</fr>
-      </l_long>
-      <mass_wheel>
-          <rr>67.5</rr> 
-          <rl>67.5</rl> 
-          <fl>72.5</fl>
-          <fr>72.5</fr>
-      </mass_wheel>
-      <mass_tyre>
-          <rr>30</rr> 
-          <rl>30</rl> 
-          <fl>30</fl>
-          <fr>30</fr>
-      </mass_tyre>
-      <upper_spring_length>
-          <rr>0.2</rr> 
-          <rl>0.2</rl> 
-          <fl>0.2</fl>
-          <fr>0.2</fr>
-      </upper_spring_length>
-      <lower_spring_length>
-          <rr>0.2</rr> 
-          <rl>0.2</rl> 
-          <fl>0.2</fl>
-          <fr>0.2</fr>
-      </lower_spring_length>
-    </car>
+<EVAA_settings>
+  <Vehicle>
+    <TwoTrackModel>
+      <Geometry>
+        <LateralReferenceToWheel>
+          <ReerRight>1.68</ReerRight>
+          <ReerLeft>1.68</ReerLeft>
+          <FrontLeft>1.6916</FrontLeft>
+          <FrontRight>1.6916</FrontRight>
+        </LateralReferenceToWheel>
+        <LongitudinalReferenceToWheel>
+          <ReerRight>1.596</ReerRight>
+          <ReerLeft>1.596</ReerLeft>
+          <FrontLeft>1.395</FrontLeft>
+          <FrontRight>1.395</FrontRight>
+        </LongitudinalReferenceToWheel>
+        <SuspensionSprings>
+          <ReerRight>0.2</ReerRight>
+          <ReerLeft>0.2</ReerLeft>
+          <FrontLeft>0.2</FrontLeft>
+          <FrontRight>0.2</FrontRight>
+        </SuspensionSprings>
+        <TyreSprings>
+          <ReerRight>0.2</ReerRight>
+          <ReerLeft>0.2</ReerLeft>
+          <FrontLeft>0.2</FrontLeft>
+          <FrontRight>0.2</FrontRight>
+        </TyreSprings>
+      </Geometry>
+      <Stiffness>
+        <Tyre>
+          <ReerRight>260e3</ReerRight>
+          <ReerLeft>260e3</ReerLeft>
+          <FrontLeft>260e3</FrontLeft>
+          <FrontRight>260e3</FrontRight>
+        </Tyre>
+        <Body>
+          <ReerRight>13.12e3</ReerRight>
+          <ReerLeft>13.12e3</ReerLeft>
+          <FrontLeft>19.32e3</FrontLeft>
+          <FrontRight>19.32e3</FrontRight>
+        </Body>
+      </Stiffness>
+      <DampingCoefficients>
+        <Tyre>
+          <ReerRight>0</ReerRight>
+          <ReerLeft>0</ReerLeft>
+          <FrontLeft>0</FrontLeft>
+          <FrontRight>0</FrontRight>
+        </Tyre>
+        <Body>
+          <ReerRight>0</ReerRight>
+          <ReerLeft>0</ReerLeft>
+          <FrontLeft>0</FrontLeft>
+          <FrontRight>0</FrontRight>
+        </Body>
+      </DampingCoefficients>
+      <Mass>
+        <Body>1936</Body>
+        <UnsprungMass>
+          <ReerRight>67.5</ReerRight>
+          <ReerLeft>67.5</ReerLeft>
+          <FrontLeft>72.5</FrontLeft>
+          <FrontRight>72.5</FrontRight>
+        </UnsprungMass>
+        <Tyre>
+          <ReerRight>30</ReerRight>
+          <ReerLeft>30</ReerLeft>
+          <FrontLeft>30</FrontLeft>
+          <FrontRight>30</FrontRight>
+        </Tyre>
+      </Mass>
+      <Inertia>
+        <XX>6400</XX>
+        <XY>0</XY>
+        <XZ>0</XZ>
+        <YX>0</YX>
+        <YY>4800</YY>
+        <YZ>0</YZ>
+        <ZX>0</ZX>
+        <ZY>0</ZY>
+        <ZZ>5000</ZZ>
+      </Inertia>
+    </TwoTrackModel>
+  </Vehicle>
 
-    <initial>
-		<angle_body>
-		  <x>1</x>
-          <y>1</y>
-          <z>1</z>
-		  <w>1</w>
-        </angle_body>
-        <ang_vel_body>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </ang_vel_body>
-        <upper_spring_length>
-            <rr>0.24</rr> 
-            <rl>0.18</rl> 
-            <fl>0.21</fl>
-            <fr>0.14</fr>
-        </upper_spring_length>
-        <lower_spring_length>
-            <rr>0.24</rr> 
-            <rl>0.20</rl> 
-            <fl>0.16</fl>
-            <fr>0.18</fr>
-        </lower_spring_length>
-      <vel_body>
+  <InitialConditions>
+    <SpringElongation>
+      <Body>
+        <ReerRight>0.24</ReerRight>
+        <ReerLeft>0.18</ReerLeft>
+        <FrontLeft>0.21</FrontLeft>
+        <FrontRight>0.14</FrontRight>
+      </Body>
+      <Tyre>
+        <ReerRight>0.24</ReerRight>
+        <ReerLeft>0.2</ReerLeft>
+        <FrontLeft>0.16</FrontLeft>
+        <FrontRight>0.18</FrontRight>
+      </Tyre>
+    </SpringElongation>
+    <Velocities>
+      <angularBody>
         <x>0</x>
         <y>0</y>
         <z>0</z>
-      </vel_body>
-      <vel_wheel>
-            <rr>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </rr> 
-            <rl>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </rl> 
-            <fl>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </fl>
-            <fr>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </fr>
-        </vel_wheel>
-        <vel_tyre>
-            <rr>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </rr> 
-            <rl>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </rl> 
-            <fl>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </fl>
-            <fr>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </fr>
-        </vel_tyre>
-		<pos_body>
+      </angularBody>
+      <Body>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </Body>
+      <UnsprungMass>
+        <ReerRight>
+          <x>0</x>
+          <y>0</y>
+          <z>0</z>
+        </ReerRight>
+        <ReerLeft>
+          <x>0</x>
+          <y>0</y>
+          <z>0</z>
+        </ReerLeft>
+        <FrontLeft>
+          <x>0</x>
+          <y>0</y>
+          <z>0</z>
+        </FrontLeft>
+        <FrontRight>
+          <x>0</x>
+          <y>0</y>
+          <z>0</z>
+        </FrontRight>
+      </UnsprungMass>
+      <Tyre>
+        <ReerRight>
+          <x>0</x>
+          <y>0</y>
+          <z>0</z>
+        </ReerRight>
+        <ReerLeft>
+          <x>0</x>
+          <y>0</y>
+          <z>0</z>
+        </ReerLeft>
+        <FrontLeft>
+          <x>0</x>
+          <y>0</y>
+          <z>0</z>
+        </FrontLeft>
+        <FrontRight>
+          <x>0</x>
+          <y>0</y>
+          <z>0</z>
+        </FrontRight>
+      </Tyre>
+    </Velocities>
+    <Orientation>
+      <w>1</w>
+    	<x>0</x>
+      <y>0</y>
+      <z>0</z>
+    </Orientation>
+´<!--		<pos_body>
 			<x>0</x>
 			<y>0</y>
 			<z>0</z>
 		</pos_body>
 		<pos_wheel>
-            <rr>
+            <ReerRight>
               <x>0</x>
               <y>0</y>
               <z>0</z>
-            </rr> 
-            <rl>
+            </ReerRight> 
+            <ReerLeft>
               <x>0</x>
               <y>0</y>
               <z>0</z>
-            </rl> 
-            <fl>
+            </ReerLeft> 
+            <FrontLeft>
               <x>0</x>
               <y>0</y>
               <z>0</z>
-            </fl>
-            <fr>
+            </FrontLeft>
+            <FrontRight>
               <x>0</x>
               <y>0</y>
               <z>0</z>
-            </fr>
+            </FrontRight>
         </pos_wheel>
         <pos_tyre>
-            <rr>
+            <ReerRight>
               <x>0</x>
               <y>0</y>
               <z>0</z>
-            </rr> 
-            <rl>
+            </ReerRight> 
+            <ReerLeft>
               <x>0</x>
               <y>0</y>
               <z>0</z>
-            </rl> 
-            <fl>
+            </ReerLeft> 
+            <FrontLeft>
               <x>0</x>
               <y>0</y>
               <z>0</z>
-            </fl>
-            <fr>
+            </FrontLeft>
+            <FrontRight>
               <x>0</x>
               <y>0</y>
               <z>0</z>
-            </fr>
-        </pos_tyre>
-    </initial>
+            </FrontRight>
+        </pos_tyre> -->
+  </InitialConditions>
 
-    <external>
+<!--  <external>
       <force_body>
         <x>0</x>
         <y>1.1e3</y>
         <z>0</z>
       </force_body>
       <force_wheel>
-        <rr>
+        <ReerRight>
           <x>0</x>
           <y>0</y>
           <z>0</z>
-        </rr>
-        <rl>
+        </ReerRight>
+        <ReerLeft>
           <x>0</x>
           <y>0</y>
           <z>0</z>
-        </rl>
-        <fl>
+        </ReerLeft>
+        <FrontLeft>
           <x>0</x>
           <y>0</y>
           <z>0</z>
-        </fl>
-        <fr>
+        </FrontLeft>
+        <FrontRight>
           <x>0</x>
           <y>0</y>
           <z>0</z>
-        </fr>
+        </FrontRight>
       </force_wheel>
       <force_tyre>
-        <rr>
+        <ReerRight>
           <x>0</x>
           <y>0</y>
           <z>0</z>
-        </rr>
-        <rl>
+        </ReerRight>
+        <ReerLeft>
           <x>0</x>
           <y>0</y>
           <z>0</z>
-        </rl>
-        <fl>
+        </ReerLeft>
+        <FrontLeft>
           <x>0</x>
           <y>0</y>
           <z>0</z>
-        </fl>
-        <fr>
+        </FrontLeft>
+        <FrontRight>
           <x>0</x>
           <y>0</y>
           <z>0</z>
-        </fr>
+        </FrontRight>
       </force_tyre>
-      <gravity>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </gravity>
-        <boundary_conditions>fixed</boundary_conditions>
     </external>
+-->
 
-    <simulation>
-    <DOF>11</DOF>
-    <max_num_iter>1e3</max_num_iter>
-    <tolerance>1e-7</tolerance>
-    <timestep>1e-3</timestep>
-    <num_time_iter>1e3</num_time_iter>
-	<solution_dimension>61</solution_dimension>
-    <solver>Broyden_CN</solver>
-    </simulation>
-</car_settings>
+  <SimulationParameters>
+    <GeneralSettings>
+      <TimestepSize>1e-3</TimestepSize>
+      <NumberOfIterations>1000</NumberOfIterations>
+      <BoundaryConditions>fixed</BoundaryConditions>
+      <Gravity>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </Gravity>
+    </GeneralSettings>
+    <MultyBodyDynamics>
+      <Solver>Broyden_CN</Solver>
+      <MaximalIterationNumber>10000</MaximalIterationNumber>
+      <Tolerance>1e-7</Tolerance>
+      <SolutionDimension>61</SolutionDimension>
+    </MultyBodyDynamics>
+    <LinearALE>
+      <DOF>11</DOF>
+    </LinearALE>
+  </SimulationParameters>>
+</EVAA_settings>
