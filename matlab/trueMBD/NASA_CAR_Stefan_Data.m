@@ -137,11 +137,11 @@ FR4 = @(t, y, v, m, F) 0;
 
 % Explicit solvers
 % solver = @(f, t, x) explicit_solver(f, t, x);
-% solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
-solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+% solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 tic
@@ -152,7 +152,6 @@ tic
                 num_iter, delta_t, solver);
 toc
 %% visulalization
-disp(y(end,:))
 figure()
 plot(t,y(:,6));
 posstr=['Final y-position of the center of mass: ', num2str(y(end,6))];

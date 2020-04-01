@@ -105,7 +105,7 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
     solvetime=toc;
     timestr=['It took ', num2str(floor(solvetime)), 'sec ', num2str(round(mod(solvetime, 1)*1000)),'ms to solve the system!'];
     disp(timestr)
-    
+    disp(y(end,:))
     %% ONLY FOR VISUALISATION (NO CPP)
     y_return = zeros(size(y,1), 43);  % components: qc(1:4), pcc(5:7), 
                                       % pc1(8:10), pc2(11:13), pc3(14:16), pc4(17:19) 

@@ -15,8 +15,8 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
 		f_old = f(t(n-1), x_previous');
 		% in case the velocity is 0 add nuggets to avoid singular matrices
         nuggets = 1e-4;
-        f_old(abs(f_old) < nuggets) = nuggets;%*sign(f_old(abs(f_old) < nuggets));
-        %f_old(f_old==0) = (2*randi(2)-3)*nuggets;
+        f_old(abs(f_old) < nuggets) = nuggets*sign(f_old(abs(f_old) < nuggets));
+        f_old(f_old==0) = (2*randi(2)-3)*nuggets;
 %        f_old(abs(f_old) < 0.001) = (2*randi(2)-3)*0.001;
 	   
 		% 2. Initial guess from Explicit Euler

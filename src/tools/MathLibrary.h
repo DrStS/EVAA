@@ -251,10 +251,10 @@ namespace MathLibrary {
 	template <typename T, class C>
 	class Solvers{
 	public:
-		static void Broyden_Euler(C* obj, T* t, T* x_previous, T tol, T* x_vector_new, size_t max_iter) {
-			int alignment = 64;
-			size_t t_len = sizeof(t) / sizeof(t[0]);
-			size_t x_len = sizeof(x_previous) / sizeof(x_previous[0]);
+		static void Broyden_Euler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+			
+			size_t alignment = obj->get_alignment();
+			size_t x_len = obj->get_solution_dimension();
 			T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 			T* f_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 			T* dx = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
@@ -268,33 +268,34 @@ namespace MathLibrary {
 			T* J_tmp = (T*)mkl_calloc(x_len*x_len, sizeof(T), alignment);
 			lapack_int* piv = (lapack_int*)mkl_malloc(sizeof(lapack_int*) * x_len, alignment);
 
-			T dt;
 			T *it_start, *curr_time_start_pos;
 			T* x_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 			T* switcher;			// used for interchanging adresses between F and F_new
-			T eps = 0.001;
+			T eps = 1e-4;
 			double nrm = 0.001;
-
+			T t = 0.0;
+			T val = 0.0;
 			cblas_dcopy(x_len, x_previous, 1, x_vector_new, 1);
-			for (size_t i = 1; i < t_len; ++i) {
-				dt = t[i] - t[i - 1];
+			for (size_t i = 1; i <= num_time_iter; ++i) {
 				// set the pointer to the start of previous timestep
 				it_start = x_vector_new + (i - 1)*x_len;
 
 				// 1. Initialize guess from previous time step
 				// f_old = f(t(n-1), x_previous');
-				f(t[i - 1], it_start, f_old);
+				obj->compute_f3D_reduced(it_start, t, f_old);
 
 				// in case the velocity is 0 add nuggets to avoid singular matrices (slow check for improvement)
 				// f_old(abs(f_old) < 0.001) = 0.001;
-				transmutate_elements(f_old, 0, x_len, eps, eps);
-
+				val = eps * (2 * (1 + rand() % 2) - 3);
+				transmutate_elements(f_old, 0, x_len, val, eps);
+			
 				// 2. Initial guess from Explicit Euler
 				// x = x_previous + dt * f_old';
 				// f_new = f(t(n), x');
+				t += dt;
 				cblas_dcopy(x_len, it_start, 1, x, 1);
 				cblas_daxpy(x_len, dt, f_old, 1, x, 1);
-				f(t[i], x, f_new);
+				obj->compute_f3D_reduced(x, t, f_new);
 
 				// Initial approximation of the Jacobian
 				// dx = x - x_previous;
@@ -306,10 +307,11 @@ namespace MathLibrary {
 
 				// approximate J(x_0)
 				// J = eye(length(df)) - delta_t*((1./dx)'*df)';
+				cblas_dscal(x_len*x_len, 0.0, J, 1);
 				diagonal_matrix(J, x_len, 1.0);
 				cblas_dcopy(x_len, dx, 1, dx_inv, 1);
 				elementwise_inversion(dx_inv, x_len);
-				cblas_dger(CblasRowMajor, x_len, x_len, -dt, dx_inv, 1, df, 1, J, x_len);
+				cblas_dger(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
 
 				// calculate initial F for stopping condition
 				// x_dot = f_new';
@@ -327,12 +329,12 @@ namespace MathLibrary {
 					cblas_dcopy(x_len*x_len, J, 1, J_tmp, 1);
 					LAPACKE_dgetrf(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
 					cblas_dcopy(x_len, F, 1, x_new, 1);
-					LAPACKE_dgetrs(LAPACK_ROW_MAJOR, "N", x_len, 1, J_tmp, x_len, piv, x_new, 1);
+					LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
 					cblas_daxpy(x_len, -1.0, x, 1, x_new, 1); // result here is -x_new
 					cblas_dscal(x_len, -1.0, x_new, 1);
 
 					// Calculate new derivative
-					f(t[i - 1], x_new, f_new);
+					obj->compute_f3D_reduced(x_new, t, f_new);
 
 					// F_new = x_new - x_previous - delta_t * x_dot
 					cblas_dcopy(x_len, x_new, 1, F_new, 1);
@@ -382,10 +384,9 @@ namespace MathLibrary {
 			MKL_free(x_new);
 		}
 
-		static void Broyden_PDF2(C* obj, T* t, T* x_previous, T tol, T* x_vector_new, size_t max_iter) {
-			int alignment = 64;
-			size_t t_len = sizeof(t) / sizeof(t[0]);
-			size_t x_len = sizeof(x_previous) / sizeof(x_previous[0]);
+		static void Broyden_PDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+			size_t alignment = obj->get_alignment();
+			size_t x_len = obj->get_solution_dimension();
 			T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 			T* f_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 			T* dx = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
@@ -399,34 +400,35 @@ namespace MathLibrary {
 			T* J_tmp = (T*)mkl_calloc(x_len*x_len, sizeof(T), alignment);
 			lapack_int* piv = (lapack_int*)mkl_malloc(sizeof(lapack_int*) * x_len, alignment);
 
-			T dt;
 			T *it_start, *curr_time_start_pos, *prev_prev_pos;
 			T* x_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 			T* switcher;			// used for interchanging adresses between F and F_new
-			T eps = 0.001;
+			T eps = 1e-4;
 			double nrm = 0.001;
-
-			// fancy initial step with implicit Euler method
+			T t = 0.0;
+			T val = 0.0;
 			cblas_dcopy(x_len, x_previous, 1, x_vector_new, 1);
-			int i = 1;
-			dt = t[i] - t[i - 1];
+			
+			size_t i = 1;
+			
 			// set the pointer to the start of previous timestep
 			it_start = x_vector_new + (i - 1)*x_len;
 
 			// 1. Initialize guess from previous time step
 			// f_old = f(t(n-1), x_previous');
-			f(t[i - 1], it_start, f_old);
-
+			obj->compute_f3D_reduced(it_start, t, f_old);
 			// in case the velocity is 0 add nuggets to avoid singular matrices (slow check for improvement)
 			// f_old(abs(f_old) < 0.001) = 0.001;
-			transmutate_elements(f_old, 0, x_len, eps, eps);
+			val = eps * (2 * (1 + rand() % 2) - 3);
+			transmutate_elements(f_old, 0, x_len, val, eps);
 
 			// 2. Initial guess from Explicit Euler
 			// x = x_previous + dt * f_old';
 			// f_new = f(t(n), x');
+			t += dt;
 			cblas_dcopy(x_len, it_start, 1, x, 1);
 			cblas_daxpy(x_len, dt, f_old, 1, x, 1);
-			f(t[i], x, f_new);
+			obj->compute_f3D_reduced(x, t, f_new);
 
 			// Initial approximation of the Jacobian
 			// dx = x - x_previous;
@@ -438,10 +440,11 @@ namespace MathLibrary {
 
 			// approximate J(x_0)
 			// J = eye(length(df)) - delta_t*((1./dx)'*df)';
+			cblas_dscal(x_len*x_len, 0.0, J, 1);
 			diagonal_matrix(J, x_len, 1.0);
 			cblas_dcopy(x_len, dx, 1, dx_inv, 1);
 			elementwise_inversion(dx_inv, x_len);
-			cblas_dger(CblasRowMajor, x_len, x_len, -dt, dx_inv, 1, df, 1, J, x_len);
+			cblas_dger(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
 
 			// calculate initial F for stopping condition
 			// x_dot = f_new';
@@ -459,12 +462,12 @@ namespace MathLibrary {
 				cblas_dcopy(x_len*x_len, J, 1, J_tmp, 1);
 				LAPACKE_dgetrf(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
 				cblas_dcopy(x_len, F, 1, x_new, 1);
-				LAPACKE_dgetrs(LAPACK_ROW_MAJOR, "N", x_len, 1, J_tmp, x_len, piv, x_new, 1);
+				LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
 				cblas_daxpy(x_len, -1.0, x, 1, x_new, 1); // result here is -x_new
 				cblas_dscal(x_len, -1.0, x_new, 1);
 
 				// Calculate new derivative
-				f(t[i - 1], x_new, f_new);
+				obj->compute_f3D_reduced(x_new, t, f_new);
 
 				// F_new = x_new - x_previous - delta_t * x_dot
 				cblas_dcopy(x_len, x_new, 1, F_new, 1);
@@ -498,28 +501,27 @@ namespace MathLibrary {
 			curr_time_start_pos = x_vector_new + i * x_len;
 			cblas_dcopy(x_len, x, 1, curr_time_start_pos, 1);
 
-			if (t_len >= 2) {
+			if (num_time_iter >= 2) {
 				// PDF 2 Method
-				for (size_t i = 2; i < t_len; ++i) {
-					dt = t[i] - t[i - 1];
-					// set the pointer to the start of previous timestep
+				for (size_t i = 2; i <= num_time_iter; ++i) {
 					it_start = x_vector_new + (i - 1)*x_len;
 					prev_prev_pos = x_vector_new + (i - 2)*x_len;
 
 					// 1. Initialize guess from previous time step
 					// f_old = f(t(n-1), x_previous');
-					f(t[i - 1], it_start, f_old);
-
+					obj->compute_f3D_reduced(it_start, t, f_old);
 					// in case the velocity is 0 add nuggets to avoid singular matrices (slow check for improvement)
 					// f_old(abs(f_old) < 0.001) = 0.001;
-					transmutate_elements(f_old, 0, x_len, eps, eps);
+					val = eps * (2 * (1 + rand() % 2) - 3);
+					transmutate_elements(f_old, 0, x_len, val, eps);
 
 					// 2. Initial guess from Explicit Euler
 					// x = x_previous + dt * f_old';
 					// f_new = f(t(n), x');
+					t += dt;
 					cblas_dcopy(x_len, it_start, 1, x, 1);
 					cblas_daxpy(x_len, dt, f_old, 1, x, 1);
-					f(t[i], x, f_new);
+					obj->compute_f3D_reduced(x, t, f_new);
 
 					// Initial approximation of the Jacobian
 					// dx = x - x_previous;
@@ -531,10 +533,11 @@ namespace MathLibrary {
 
 					// approximate J(x_0)
 					// J = eye(length(df)) - delta_t*((1./dx)'*df)';
+					cblas_dscal(x_len*x_len, 0.0, J, 1);
 					diagonal_matrix(J, x_len, 1.0);
 					cblas_dcopy(x_len, dx, 1, dx_inv, 1);
 					elementwise_inversion(dx_inv, x_len);
-					cblas_dger(CblasRowMajor, x_len, x_len, -dt, dx_inv, 1, df, 1, J, x_len);
+					cblas_dger(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
 
 					// calculate initial F for stopping condition
 					// x_dot = f_new';
@@ -554,13 +557,13 @@ namespace MathLibrary {
 						cblas_dcopy(x_len*x_len, J, 1, J_tmp, 1);
 						LAPACKE_dgetrf(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
 						cblas_dcopy(x_len, F, 1, x_new, 1);
-						LAPACKE_dgetrs(LAPACK_ROW_MAJOR, "N", x_len, 1, J_tmp, x_len, piv, x_new, 1);
+						LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
 						cblas_daxpy(x_len, -1.0, x, 1, x_new, 1); // result here is -x_new
 						cblas_dscal(x_len, -1.0, x_new, 1);
 
 						// Calculate new derivative
-						f(t[i - 1], x_new, f_new);
-
+						obj->compute_f3D_reduced(x_new, t-dt, f_new);
+						
 						// F_new = x_new - 4/3 * x_previous + 1/3 * x_previous_previous - 2/3 * delta_t * x_dot;
 						cblas_dcopy(x_len, x_new, 1, F_new, 1);
 						cblas_daxpy(x_len, -4.0 / 3.0, it_start, 1, F_new, 1);
@@ -616,7 +619,7 @@ namespace MathLibrary {
 			1. get_alignment()
 			2. get_solution_dimension()
 			*/
-			std::cout << "Broyden started!\n" << std::endl;
+			//std::cout << "Broyden started!\n" << std::endl;
 			size_t alignment = obj->get_alignment();
 			size_t x_len = obj->get_solution_dimension();
 			T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
@@ -642,16 +645,16 @@ namespace MathLibrary {
 			cblas_dcopy(x_len, x_previous, 1, x_vector_new, 1);
 			for (size_t i = 1; i <= num_time_iter; ++i) {
 				// set the pointer to the start of previous timestep
-				std::cout << "executing iter = " << i << std::endl;
+				//std::cout << "executing iter = " << i << std::endl;
 				it_start = x_vector_new + (i - 1)*x_len;
-
+				
 				// 1. Initialize guess from previous time step
 				// f_old = f(t(n-1), x_previous');
 				obj->compute_f3D_reduced(it_start, t, f_old);
-
+				
 				// in case the velocity is 0 add nuggets to avoid singular matrices (slow check for improvement)
 				// f_old(abs(f_old) < 0.0001) = 0.0001;
-				val = eps;// *(2 * (1 + rand() % 2) - 3);
+				val = eps *(2 * (1 + rand() % 2) - 3);
 				transmutate_elements(f_old, 0, x_len, val, eps);
 				
 				// 2. Initial guess from Explicit Euler
@@ -673,6 +676,7 @@ namespace MathLibrary {
 				
 				// approximate J(x_0)
 				// J = eye(length(df)) - delta_t*0.5 *((1./dx)'*df)';
+				cblas_dscal(x_len*x_len, 0.0, J, 1);
 				diagonal_matrix(J, x_len, 1.0);
 				cblas_dcopy(x_len, dx, 1, dx_inv, 1);
 				elementwise_inversion(dx_inv, x_len);
@@ -742,7 +746,7 @@ namespace MathLibrary {
 				curr_time_start_pos = x_vector_new + i * x_len;
 				cblas_dcopy(x_len, x, 1, curr_time_start_pos, 1);
 			}
-			std::cout << "Broyden cleaning!\n" << std::endl;
+			//std::cout << "Broyden cleaning!\n" << std::endl;
 			MKL_free(f_old);
 			MKL_free(f_new);
 			MKL_free(dx);
@@ -757,38 +761,74 @@ namespace MathLibrary {
 			MKL_free(piv);
 			MKL_free(x_new);
 
-			std::cout << "Exiting Broyden!\n" << std::endl;
+			//std::cout << "Exiting Broyden!\n" << std::endl;
 		}
 
-		static void RK4(C* obj, T* t, T* x_previous, T* x_vector_new){
-			/*
-			Not implemented
-			*/
+		static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter){
 
-			int alignment = 64;
-			size_t t_len = sizeof(t) / sizeof(t[0]);
-			size_t x_len = sizeof(x_previous) / sizeof(x_previous[0]);
+			size_t alignment = obj->get_alignment();
+			size_t x_len = obj->get_solution_dimension();
 			T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-			T* f_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-			T* dx = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-			T* dx_inv = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-			T* df = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+			T* k1 = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+			T* k2 = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+			T* k3 = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+			T* k4 = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 			T* x = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-			T* F = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-			T* F_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-			T* dF = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-			T* J = (T*)mkl_calloc(x_len*x_len, sizeof(T), alignment);
-			T* J_tmp = (T*)mkl_calloc(x_len*x_len, sizeof(T), alignment);
-			lapack_int* piv = (lapack_int*)mkl_malloc(sizeof(lapack_int*) * x_len, alignment);
-
-			T dt;
+			
 			T *it_start, *curr_time_start_pos;
-			T* x_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
 			T* switcher;			// used for interchanging adresses between F and F_new
-			T eps = 0.001;
-			double nrm = 0.001;
-
+			T t = 0.0;
+			T coeff1, coeff2, coeff3, coeff4;
+			coeff1 = 1.0 / 6.0;
+			coeff2 = 2.0 / 6.0;
+			coeff3 = 2.0 / 6.0;
+			coeff4 = 1.0 / 6.0;
 			cblas_dcopy(x_len, x_previous, 1, x_vector_new, 1);
+			for (size_t i = 1; i <= num_time_iter; ++i) {
+				it_start = x_vector_new + (i - 1)*x_len;
+				curr_time_start_pos = x_vector_new + (i)*x_len;
+				// k1 = delta_t * f(t_prev, x_previous')';
+				obj->compute_f3D_reduced(it_start, t, f_old);
+				cblas_dcopy(x_len, f_old, 1, k1, 1);
+				cblas_dscal(x_len, dt, k1, 1);
+
+				// k2 = delta_t * f(t_prev + delta_t/2, x_previous' + k1'/2)';
+				cblas_dcopy(x_len, k1, 1, x, 1);
+				cblas_dscal(x_len, 1.0 / 2.0, x, 1);
+				cblas_daxpy(x_len, 1.0, it_start, 1, x, 1);
+				obj->compute_f3D_reduced(x, t + dt/2.0, f_old);
+				cblas_dcopy(x_len, f_old, 1, k2, 1);
+				cblas_dscal(x_len, dt, k2, 1);
+
+				// k3 = delta_t * f(t_prev + delta_t/2, x_previous' + k2'/2)';
+				cblas_dcopy(x_len, k2, 1, x, 1);
+				cblas_dscal(x_len, 1.0 / 2.0, x, 1);
+				cblas_daxpy(x_len, 1.0, it_start, 1, x, 1);
+				obj->compute_f3D_reduced(x, t + dt / 2.0, f_old);
+				cblas_dcopy(x_len, f_old, 1, k3, 1);
+				cblas_dscal(x_len, dt, k3, 1);
+
+				// k4 = delta_t * f(t_prev + delta_t, x_previous' + k3')';
+				cblas_dcopy(x_len, k3, 1, x, 1);
+				cblas_daxpy(x_len, 1.0, it_start, 1, x, 1);
+				obj->compute_f3D_reduced(x, t + dt, f_old);
+				cblas_dcopy(x_len, f_old, 1, k4, 1);
+				cblas_dscal(x_len, dt, k4, 1);
+				
+				// x_vector_new(n,:) = x_previous + 1/6 * (k1 + 2*k2 + 2*k3 + k4);
+				cblas_dcopy(x_len, it_start, 1, curr_time_start_pos, 1);
+				cblas_daxpy(x_len, coeff1, k1, 1, curr_time_start_pos, 1);
+				cblas_daxpy(x_len, coeff2, k2, 1, curr_time_start_pos, 1);
+				cblas_daxpy(x_len, coeff3, k3, 1, curr_time_start_pos, 1);
+				cblas_daxpy(x_len, coeff4, k4, 1, curr_time_start_pos, 1);
+				t += dt;
+			}
+			mkl_free(f_old);
+			mkl_free(k1);
+			mkl_free(k2);
+			mkl_free(k3);
+			mkl_free(k4);
+			mkl_free(x);
 		}
    };
 } /* namespace Math */
