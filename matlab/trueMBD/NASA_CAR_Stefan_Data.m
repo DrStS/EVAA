@@ -13,14 +13,14 @@ k_tyre_rr=260e3;
 % k_tyre_rl=260e3;
 % k_body_rr=16e3*0.82;
 % k_tyre_rr=260e3;
-k_body_rot_fl = 1e5;
-k_body_rot_fr = 1e5;
-k_body_rot_rl = 1e5;
-k_body_rot_rr = 1e5;
-k_tyre_rot_fl = 1e5;
-k_tyre_rot_fr = 1e5;
-k_tyre_rot_rl = 1e5;
-k_tyre_rot_rr = 1e5;
+k_body_rot_fl = 1e4;
+k_body_rot_fr = 1e4;
+k_body_rot_rl = 1e4;
+k_body_rot_rr = 1e4;
+k_tyre_rot_fl = 1e4;
+k_tyre_rot_fr = 1e4;
+k_tyre_rot_rl = 1e4;
+k_tyre_rot_rr = 1e4;
 c_body_fl=@(v)0*v;    %allow nonlinear damping
 c_tyre_fl=@(v)0*v;
 c_body_fr=@(v)0*v;
@@ -87,10 +87,10 @@ lower_rotational_stiffness = [k_tyre_rot_rr; k_tyre_rot_rl; k_tyre_rot_fl; k_tyr
 % initial velocities 
 vc = [0; 0; 1];       % car body
 
-vw1 = [0; 0; 1];    % wheel 
-vw2 = [0; 0; 1];    
-vw3 = [0; 0; 1];    
-vw4 = [0; 0; 1];    
+vw1 = [0; 0; 0];    % wheel 
+vw2 = [0; 0; 0];    
+vw3 = [0; 0; 0];    
+vw4 = [0; 0; 0];    
 
 vt1 = [0; 0; 1];    % tyres 
 vt2 = [0; 0; 1];    
@@ -118,7 +118,7 @@ FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
 % simulation specifications
-num_iter = 1e4;
+num_iter = 3e4;
 delta_t = 1e-3;
 tol = 1e-7;
 max_iter = 10000;

@@ -224,8 +224,6 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
          lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...          %vt2_dot
          lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...          %vt3_dot
          lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];             %vt4_dot
-
-     b(2) = 0;
      
      % solve the system
     result_vector = A \ b;

@@ -5,20 +5,9 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
         num_iter, delta_t, solver)
    
     %% INITIALLIZATION
-    
-%     % positions of the wheels in global coordinates
-%     pw1 = [r1(1);  r1(2)-initial_upper_spring_length(1); r1(3)  ];
-%     pw2 = [r2(1);  r2(2)-initial_upper_spring_length(2); r2(3)  ];
-%     pw3 = [r3(1);  r3(2)-initial_upper_spring_length(3); r3(3)  ];
-%     pw4 = [r4(1);  r4(2)-initial_upper_spring_length(4); r4(3)  ];
-%     
-%     % position of the tyres in global coordinates
-%     pt1 = [r1(1);  pw1(2)-initial_lower_spring_length(1)    ; r1(3)  ];
-%     pt2 = [r2(1);  pw2(2)-initial_lower_spring_length(2)    ; r2(3)  ];
-%     pt3 = [r3(1);  pw3(2)-initial_lower_spring_length(3)    ; r3(3)  ];
-%     pt4 = [r4(1);  pw4(2)-initial_lower_spring_length(4)    ; r4(3)  ];
     [qc, pw1, pw2, pw3, pw4, pt1, pt2, pt3, pt4] = get_initial_positions(qc, r1, r2, r3, r4, pcc, initial_upper_spring_length, initial_lower_spring_length);
 
+    [vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc] = Circular_path_initialization(pcc, pt1, pt2, pt3, pt4, vc);
 
     % computation of ri_tilda, ro_tilda
     r1_tilda = get_tilda(r1);
@@ -155,3 +144,4 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
 
     end
 end
+ 

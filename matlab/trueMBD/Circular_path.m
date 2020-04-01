@@ -14,22 +14,21 @@ function [FR] = Circular_path(vt, vc, mc, mt, FT, pt, pcc)
     radius = norm(pt);        % curve radius
     radius_body = norm(pcc);  % curve radius
     
-    force_direction = -pt / radius;
+    force_direction_tyre = -pt / radius;
 
     force_direction_body = -pcc / radius_body;
 
-%    velocity_direction = cross(force_direction, [0;1;0]);
+    velocity_direction_tyre = cross(force_direction_tyre, [0;1;0]);
+    velocity_direction_body = cross(force_direction_body, [0;1;0]);
     
-%    velocity_magnitude = v'*velocity_direction;
-     velocity_magnitude_body = norm(vc);
-     velocity_magnitude = norm(vt);
+    velocity_magnitude_body = vc'*velocity_direction_body;
+
+    velocity_magnitude_tyre = vt'*velocity_direction_tyre;
     
-%    force_direction = cross([0;1;0], velocity_direction);
-    
-    force_magnitude = mt * velocity_magnitude^2 / radius;
+    force_magnitude = mt * velocity_magnitude_tyre^2 / radius;
     force_magnitude_body = mc * velocity_magnitude_body^2 / radius_body;
     
-    FR = force_magnitude*force_direction + force_magnitude_body*force_direction_body; 
+    FR = force_magnitude*force_direction_tyre + force_magnitude_body*force_direction_body; 
 
     FR(2) = -FT(2);
     
