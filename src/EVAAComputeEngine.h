@@ -751,6 +751,7 @@ private:
 	T tol;
 	size_t solution_dim; /// this is by the formulation
 	std::string solver_name;
+	int used_solver;
 	////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
 	T k_body_fl;
 	T k_tyre_fl;
@@ -1060,6 +1061,7 @@ public:
 		max_iter = params.max_num_iter;
 		tol = params.tolerance;
 		solution_dim = params.solution_dim; /// this is by the formulation
+		used_solver = params.solver;
 		////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
 		k_body_fl = params.k_body[2];
 		k_tyre_fl = params.k_tyre[2];
@@ -1280,8 +1282,7 @@ public:
 
 		// A_Ic has cholesky factorization of Ic
 		cblas_dcopy(this->DIM * this->DIM, Ic, 1, A_Ic, 1);
-		LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', this->DIM, A_Ic, this->DIM);
-		
+		LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', this->DIM, A_Ic, this->DIM);		
 	}
 	
 	void apply_boundary_condition() {
@@ -2207,7 +2208,6 @@ public:
 
 	void solve(T* solution_vector) {
 		// From the formulation we have 61 dimensions in the solution vector
-		//std::cout << "Solver Triggered!" << std::endl;
 		size_t solution_size = (this->num_iter+1) * this->solution_dim;
 		T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), this->alignment);
 		x_vector = (T*)mkl_calloc(solution_dim, sizeof(T), this->alignment);
@@ -2362,9 +2362,21 @@ public:
 			i++;
 			j++;
 		}
+
 		compute_f_mem_alloc();
-		MathLibrary::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+
+		if (used_solver == BROYDEN_CN) {
+			MathLibrary::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+		}
+		else if (used_solver == RUNGE_KUTTA_4) {
+			MathLibrary::Solvers<T, MBD_method>::RK4(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+		}
+		else {
+			std::cout << "sorry man, the solver you picked for MBD hasn't been implemented yet, only Broyden_CN and RK4 work so far" << std::endl;
+		}
+
 		compute_f_clean();
+		
 		T* start = complete_vector + (this->num_iter)*this->solution_dim;
 		cblas_dcopy(this->solution_dim, start, 1, solution_vector, 1);
 	//	std::cout << "Solution copied!\n" << std::endl;
