@@ -254,11 +254,11 @@
 
     <simulation>
     <DOF>11</DOF>
-    <max_num_iter>1e3</max_num_iter>
+    <max_num_iter>1000</max_num_iter>
     <tolerance>1e-7</tolerance>
     <timestep>1e-3</timestep>
-    <num_time_iter>1e3</num_time_iter>
 	<solution_dimension>61</solution_dimension>
+    <num_time_iter>10000</num_time_iter>
     <solver>Broyden_CN</solver>
     </simulation>
 </car_settings>

@@ -619,7 +619,7 @@ public:
 		std::cout << "Elapsed time in nanoseconds : "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
 			<< " ms" << std::endl;*/
-		std::cout << "iter = " << iter << " sol_size = "<< sol_size <<"\n\n" << std::endl;
+		//std::cout << "iter = " << iter << " sol_size = "<< sol_size <<"\n\n" << std::endl;
 		cblas_dcopy(DOF, u_sol + (iter-1)*(DOF), 1, sol_vect, 1);
 		clean("full");
 

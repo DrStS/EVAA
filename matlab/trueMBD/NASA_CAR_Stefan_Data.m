@@ -114,7 +114,7 @@ FW3 = -mass_wheel(3)*g;
 FW4 = -mass_wheel(4)*g;
 
 % simulation specifications
-num_iter = 1e3;
+num_iter = 1e4;
 delta_t = 1e-3;
 tol = 1e-7;
 max_iter = 1000;
