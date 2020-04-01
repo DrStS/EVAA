@@ -103,6 +103,7 @@
             <xs:element name="tolerance" type="xs:double" />
             <xs:element name="timestep" type="xs:double" />
             <xs:element name="num_time_iter" type="xs:int" />
+			<xs:element name="solution_dimension" type="xs:int" />
           </xs:sequence>       
         </xs:complexType>
       </xs:element>

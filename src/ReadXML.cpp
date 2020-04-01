@@ -115,6 +115,7 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     parameters.num_time_iter = settings->simulation().num_time_iter();
     parameters.timestep = settings->simulation().timestep();
     parameters.tolerance = settings->simulation().tolerance();
+	parameters.solution_dim = settings->simulation().solution_dimension();
     
     std::string solver= settings->simulation().solver();
     if (solver=="explicit_Euler"){

@@ -745,64 +745,65 @@ private:
 	int DIM = 3;
 	int NUM_LEGS = 4;
 	int alignment = 64;
-	T h = 1e-3;
-	size_t num_iter = 1e3;
-	int max_iter = 1e3;
-	T tol = 1e-7;
-	size_t solution_dim = 61; /// this is by the formulation
+	T h;
+	size_t num_iter;
+	int max_iter;
+	T tol;
+	size_t solution_dim; /// this is by the formulation
+	std::string solver_name;
 	////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
-	T k_body_fl = 28e3*0.69;
-	T k_tyre_fl = 260e3;
-	T k_body_fr = 28e3*0.69;
-	T k_tyre_fr = 260e3;
-	T k_body_rl = 16e3*0.82;
-	T k_tyre_rl = 260e3;
-	T k_body_rr = 16e3*0.82;
-	T k_tyre_rr = 260e3;
-	T k_body_rot_fl = 1e4;
-	T k_body_rot_fr = 1e4;
-	T k_body_rot_rl = 1e4;
-	T k_body_rot_rr = 1e4;
-	T k_tyre_rot_fl = 1e4;
-	T k_tyre_rot_fr = 1e4;
-	T k_tyre_rot_rl = 1e4;
-	T k_tyre_rot_rr = 1e4;
-	T c_body_fl = 0.0;    
-	T c_tyre_fl = 0.0;
-	T c_body_fr = 0.0;
-	T c_tyre_fr = 0.0;
-	T c_body_rl = 0.0;
-	T c_tyre_rl = 0.0;
-	T c_body_rr = 0.0;
-	T c_tyre_rr = 0.0;
-	T l_long_fl = 1.395;
-	T l_long_fr = 1.395;
-	T l_long_rl = 1.596;
-	T l_long_rr = 1.596;
-	T l_lat_fl = 2.0 * 0.84;
-	T l_lat_fr = 2.0 * 0.84;
-	T l_lat_rl = 2.0 * 0.84;
-	T l_lat_rr = 2.0 * 0.84;
-	T mass = 1936.0;
-	T I_body_xx = 6400.0;
-	T I_body_yy = 4800.0;
-	T I_body_zz = 5000.0;
-	T mass_wheel_fl = 145.0 / 2.0;
-	T mass_tyre_fl = 30.0;
-	T mass_wheel_fr = 145.0 / 2.0;
-	T mass_tyre_fr = 30.0;
-	T mass_wheel_rl = 135.0 / 2.0;
-	T mass_tyre_rl = 30.0;
-	T mass_wheel_rr = 135.0 / 2.0;
-	T mass_tyre_rr = 30.0;
-	T upper_spring_length_rr = 0.2;
-	T upper_spring_length_rl = 0.2;
-	T upper_spring_length_fl = 0.2;
-	T upper_spring_length_fr = 0.2;
-	T lower_spring_length_rr = 0.2;
-	T lower_spring_length_rl = 0.2;
-	T lower_spring_length_fl = 0.2;
-	T lower_spring_length_fr = 0.2;
+	T k_body_fl;
+	T k_tyre_fl;
+	T k_body_fr;
+	T k_tyre_fr;
+	T k_body_rl;
+	T k_tyre_rl;
+	T k_body_rr;
+	T k_tyre_rr;
+	T k_body_rot_fl;
+	T k_body_rot_fr;
+	T k_body_rot_rl;
+	T k_body_rot_rr;
+	T k_tyre_rot_fl;
+	T k_tyre_rot_fr;
+	T k_tyre_rot_rl;
+	T k_tyre_rot_rr;
+	T c_body_fl;    
+	T c_tyre_fl;
+	T c_body_fr;
+	T c_tyre_fr;
+	T c_body_rl;
+	T c_tyre_rl;
+	T c_body_rr;
+	T c_tyre_rr;
+	T l_long_fl;
+	T l_long_fr;
+	T l_long_rl;
+	T l_long_rr;
+	T l_lat_fl;
+	T l_lat_fr;
+	T l_lat_rl;
+	T l_lat_rr;
+	T mass;
+	T I_body_xx;
+	T I_body_yy;
+	T I_body_zz;
+	T mass_wheel_fl;
+	T mass_tyre_fl;
+	T mass_wheel_fr;
+	T mass_tyre_fr;
+	T mass_wheel_rl;
+	T mass_tyre_rl;
+	T mass_wheel_rr;
+	T mass_tyre_rr;
+	T upper_spring_length_rr;
+	T upper_spring_length_rl;
+	T upper_spring_length_fl;
+	T upper_spring_length_fr;
+	T lower_spring_length_rr;
+	T lower_spring_length_rl;
+	T lower_spring_length_fl;
+	T lower_spring_length_fr;
 	T *Ic;
 	T *mass_wheel, *mass_tyre;
 	T *upper_spring_length, *lower_spring_length;
@@ -810,7 +811,7 @@ private:
 	T *upper_rotational_stiffness, *lower_rotational_stiffness;
 	T *vc, *vw1, *vw2, *vw3, *vw4, *vt1, *vt2, *vt3, *vt4; // velocity of the center of mass, wheel and tyre.
 	//////////////////////////	External Forces terms //////////////////////////////////////////////////////
-	T g = 0;
+	T g;
 	T *FC;
 	T FT1, FT2, FT3, FT4;
 	T FW1, FW2, FW3, FW4;
@@ -1050,11 +1051,83 @@ private:
 
 
 public:
-	MBD_method() {
+	MBD_method(const Simulation_Parameters &params) {
+		
+		////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
+		h = params.timestep;
+		std::cout << "h = " << h << std::endl;
+		num_iter = params.num_time_iter;
+		max_iter = params.max_num_iter;
+		tol = params.tolerance;
+		solution_dim = params.solution_dim; /// this is by the formulation
+		////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
+		k_body_fl = params.k_body[2];
+		k_tyre_fl = params.k_tyre[2];
+		k_body_fr = params.k_body[3];
+		k_tyre_fr = params.k_tyre[3];
+		k_body_rl = params.k_body[1];
+		k_tyre_rl = params.k_tyre[1];
+		k_body_rr = params.k_body[0];
+		k_tyre_rr = params.k_tyre[0];
+		
+		k_body_rot_fl = 1e4;
+		k_body_rot_fr = 1e4;
+		k_body_rot_rl = 1e4;
+		k_body_rot_rr = 1e4;
+		k_tyre_rot_fl = 1e4;
+		k_tyre_rot_fr = 1e4;
+		k_tyre_rot_rl = 1e4;
+		k_tyre_rot_rr = 1e4;
+		
+		c_body_fl = params.c_body[2];
+		c_tyre_fl = params.c_tyre[2];
+		c_body_fr = params.c_body[3];
+		c_tyre_fr = params.c_tyre[3];
+		c_body_rl = params.c_body[1];
+		c_tyre_rl = params.c_tyre[1];
+		c_body_rr = params.c_body[0];
+		c_tyre_rr = params.c_tyre[0];
+		
+		l_long_fl = params.l_long[2];
+		l_long_fr = params.l_long[3];
+		l_long_rl = params.l_long[1];
+		l_long_rr = params.l_long[0];
+		
+		l_lat_fl = params.l_lat[2];
+		l_lat_fr = params.l_lat[3];
+		l_lat_rl = params.l_lat[1];
+		l_lat_rr = params.l_lat[0];
+		
+		mass = params.mass_body;;
+		
+		I_body_xx = params.I_body[0];
+		I_body_yy = params.I_body[1];
+		I_body_zz = params.I_body[2];
+		
+		mass_wheel_fl = params.mass_wheel[2];
+		mass_tyre_fl = params.mass_tyre[2];
+		mass_wheel_fr = params.mass_wheel[3];
+		mass_tyre_fr = params.mass_tyre[3];
+		mass_wheel_rl = params.mass_wheel[1];
+		mass_tyre_rl = params.mass_tyre[1];
+		mass_wheel_rr = params.mass_wheel[0];
+		mass_tyre_rr = params.mass_tyre[0];
+		
+		upper_spring_length_rr = params.upper_spring_length[0];
+		upper_spring_length_rl = params.upper_spring_length[1];
+		upper_spring_length_fl = params.upper_spring_length[2];
+		upper_spring_length_fr = params.upper_spring_length[3];
+
+		lower_spring_length_rr = params.lower_spring_length[0];
+		lower_spring_length_rl = params.lower_spring_length[1];
+		lower_spring_length_fl = params.lower_spring_length[2];
+		lower_spring_length_fr = params.lower_spring_length[3];
+				
+		g = params.gravity[1];
+		
 		
 		int i;
 		
-
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1113,10 +1186,10 @@ public:
 		FW1 = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_rr;
 		lower_spring_damping[i] = c_tyre_rr;
-		initial_upper_spring_length[i] = 0.24;
-		initial_lower_spring_length[i] = 0.24;
-		initial_orientation[i] = 1;
-		vc[i] = 0;
+		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
+		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
+		initial_orientation[i] = params.initial_angle[i];
+		vc[i] = params.initial_vel_body[i];
 		vw1[i] = 0;
 		vw2[i] = 0;
 		vw3[i] = 0;
@@ -1143,10 +1216,10 @@ public:
 		FW2 = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_rl;
 		lower_spring_damping[i] = c_tyre_rl;
-		initial_upper_spring_length[i] = 0.18;
-		initial_lower_spring_length[i] = 0.20;
-		initial_orientation[i] = 1;
-		vc[i] = 0;
+		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
+		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
+		initial_orientation[i] = params.initial_angle[i];
+		vc[i] = params.initial_vel_body[i];
 		vw1[i] = 0;
 		vw2[i] = 0;
 		vw3[i] = 0;
@@ -1173,10 +1246,10 @@ public:
 		FW3 = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_fl;
 		lower_spring_damping[i] = c_tyre_fl;
-		initial_upper_spring_length[i] = 0.21;
-		initial_lower_spring_length[i] = 0.16;
-		initial_orientation[i] = 1;
-		vc[i] = 0;
+		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
+		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
+		initial_orientation[i] = params.initial_angle[i];
+		vc[i] = params.initial_vel_body[i];
 		vw1[i] = 0;
 		vw2[i] = 0;
 		vw3[i] = 0;
@@ -1201,9 +1274,9 @@ public:
 		FW4 = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_fr;
 		lower_spring_damping[i] = c_tyre_fr;
-		initial_upper_spring_length[i] = 0.14;
-		initial_lower_spring_length[i] = 0.18;
-		initial_orientation[i] = 1;
+		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
+		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
+		initial_orientation[i] = params.initial_angle[i];
 
 		// A_Ic has cholesky factorization of Ic
 		cblas_dcopy(this->DIM * this->DIM, Ic, 1, A_Ic, 1);

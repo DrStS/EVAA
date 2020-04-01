@@ -23,6 +23,7 @@ struct Simulation_Parameters {int DOF;
             int solver; 
             int max_num_iter; double tolerance;
             double timestep; int num_time_iter;
+			int solution_dim;
             };
 
 enum boundary_condition_road{FIXED, NONFIXED};

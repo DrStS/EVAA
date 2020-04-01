@@ -1102,13 +1102,14 @@ void EVAAComputeEngine::computeMKLlinear11dof_reduced(void) {
 }
 
 void EVAAComputeEngine::computeMBD(void) {
-	size_t num_iter = 1e4;
+	size_t num_iter = _parameters.num_time_iter;
+	std::cout << "number of iter read = "<<_parameters.num_time_iter << std::endl;
 	const int alignment = 64;
-	size_t solution_dim = 61;
+	size_t solution_dim = _parameters.solution_dim;
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
-	MBD_method<floatEVAA> solver;
+	MBD_method<floatEVAA> solver(_parameters);
 	solver.solve(soln);
-	std::cout << "Solution after" << num_iter << "timesteps, f =" << std::endl;
+	std::cout << "Solution after" << num_iter << " timesteps, f =" << std::endl;
 	for (auto i = 0; i < solution_dim; ++i) {
 		std::cout << soln[i] << std::endl;
 	}
