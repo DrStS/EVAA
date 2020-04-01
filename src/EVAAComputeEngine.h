@@ -2290,7 +2290,7 @@ public:
 			j++;
 		}
 		compute_f_mem_alloc();
-		MathLibrary::Solvers<T, MBD_method>::RK4(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+		MathLibrary::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
 		compute_f_clean();
 		T* start = complete_vector + (this->num_iter)*this->solution_dim;
 		cblas_dcopy(this->solution_dim, start, 1, solution_vector, 1);
