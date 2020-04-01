@@ -137,7 +137,7 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     } else if (solver=="Broyden_BDF2"){
         parameters.solver = BROYDEN_BDF2;
     } else {
-        std::cerr<<"Wrong solver! Only Broyden-Crank_Nicolson (Broyden_CN) implemented so far"<<std::endl;
+        std::cerr<<"Wrong MBD-solver specified in the XML! Please type: \n   -explicit_Euler \n   -RK4\n   -Broyden_Euler\n   -Broyden_CN\n   -Broyden_BDF2"<<std::endl;
         exit(2);
     }
 }

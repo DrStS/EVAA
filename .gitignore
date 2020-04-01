@@ -2,3 +2,4 @@
 /src/database/IP_EVAA_XML.h
 /src/tools/AuxiliaryParameters.cpp
 /build*
+*.asv
