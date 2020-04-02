@@ -161,7 +161,7 @@ private:
 	T initial_upper_spring_length_fl;
 	T initial_upper_spring_length_fr;
 	T initial_upper_spring_length_rl;
-	T initial_upper_spring_length_rrl;
+	T initial_upper_spring_length_rr;
 	T initial_lower_spring_length_fl;
 	T initial_lower_spring_length_fr;
 	T initial_lower_spring_length_rl;
@@ -184,7 +184,7 @@ private:
 	int i;
 	T *quad_angle_init, *euler_angle_init;
 	T* M, * temp, * K, * K_trans, * D, * M_red, * D_red, * K_red;
-	T *spring_length, current_spring_length;
+	T *spring_length, *current_spring_length;
 	T* u_sol, * u_sol_red, * u_n_p_1, * u_n_p_1_red, * u_n_m_1, * u_n, * u_n_red, * u_n_m_1_red, * A, * Ared, * B, * Bred, * f_n_p_1, * f_n_p_1_red;
 	size_t* tyre_index_set;
 	T* k_vect, *l_lat, *l_long;
