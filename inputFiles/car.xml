@@ -42,7 +42,7 @@
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
           </Body>
-        </Constant>
+        </Constant> 
 <!--        <LookupTable>
           <FilePath>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePath>
         </LookupTable> -->
@@ -163,8 +163,8 @@
     </Velocities>
     <Orientation>
 	    <x>0</x>
-      <y>0</y>
-      <z>0</z>
+		<y>0</y>
+		<z>0</z>
 	    <w>1</w>
     </Orientation>
 	<Position>

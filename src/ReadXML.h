@@ -6,6 +6,10 @@
 #include "IP_EVAA_XML.h"
 #include "LOAD_EVAA_XML.h"
 #include "LOOKUP_EVAA_XML.h"
+#ifndef U_COMPSTIFF
+#define U_COMPSTIFF
+#include "EVAAComputeStiffness.h"
+#endif
 
 
 struct Simulation_Parameters {int DOF; 
@@ -64,6 +68,6 @@ class ReadXML{
 		void setloadFileName(const std::string & filename);
         void ReadParameters(Simulation_Parameters& parameters);
         void ReadLoadParameters(Load_Params & parameters);
-        void ReadLookupParameters();
+        void ReadLookupParameters(EVAAComputeStiffness* lookupStiffness);
 };
 

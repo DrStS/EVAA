@@ -57,7 +57,6 @@
 #include "AuxiliaryParameters.h"
 #include "EVAAComputeEngine.h"
 #include "Timer.h"
-#include "EVAAComputeStiffness.h"
 #endif // EVAA_COMMANDLINE_ON
 
 #ifndef EVAA_COMMANDLINE_ON
@@ -109,10 +108,6 @@ int main(int argc, char **argv) {
 		myComputeEngine->computeMKLNasa_example();
 		myComputeEngine->clean();
 		*/
-	//	double* a = (double*)malloc(sizeof(double));
-	//	double* b = (double*)malloc(sizeof(double));
-	//	EVAAComputeStiffness_Linear myStif(100, 1, 2, 3, -0.7, 0.1, 1);
-	//	myStif.getStiffness(a, b);
 	std::cout << "\nWe did a great job! Awesome!" << std::endl;
 #endif // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON

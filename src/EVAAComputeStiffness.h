@@ -39,11 +39,11 @@ public:
 	/*
 	* \brief for linear interpolation we need a linear grid
 	*/
-	static void buildLinearGrid(double* grid, double* axis, int size, double l_min, double l_max, double a, double b, double c, int k);
+	static void buildLinearGrid(double* grid, double* axis, int size, double l_min, double l_max, double* a, double b, double c, int k);
 	/*
 	* \brief for spline interpolation we need a Chebyshev grid
 	*/
-	static void buildChebyshevGrid(double* grid, double* axis, int size, double l_min, double l_max, double a, double b, double c, int k);
+	static void buildChebyshevGrid(double* grid, double* axis, int size, double l_min, double l_max, double* a, double b, double c, int k);
 };
 
 class EVAAComputeStiffness {
@@ -69,7 +69,7 @@ public:
 	/*
 	* \brief Constructor
 	*/
-	EVAAComputeStiffness(int size, double a, double b, double c, double l_min, double l_max, int k, int type, int order);
+	EVAAComputeStiffness(int size, double* a, double b, double c, double l_min, double l_max, int k, int type, int order);
 	/*
 	* \brief free all the allocated storage
 	*/
