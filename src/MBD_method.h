@@ -244,36 +244,38 @@ private:
 
 		// get local basis vectors using unit quaternion rotation
 		// s = 1 / norm(q) ^ 2;      %normalizer, only to remove numerical stuffy stuff
-		T nrm = cblas_dnrm2(this->NUM_LEGS, initial_orientation, 1);
+		size_t quad_dim = 4;
+		size_t dim = 3;
+		T nrm = cblas_dnrm2(quad_dim, initial_orientation, 1);
 		T s = 1.0 / (nrm * nrm);
-		cblas_dscal((this->DIM) * (this->DIM), 0.0, transfrormed_basis, 1);
+		cblas_dscal(dim*dim, 0.0, transfrormed_basis, 1);
 		size_t i, j;
 
 		T quad_sum = 0.0;
-		for (i = 0; i < this->DIM; ++i) {
+		for (i = 0; i < dim; ++i) {
 			quad_sum += initial_orientation[i] * initial_orientation[i];
 		}
 		i = 0;
 		j = 0;
-		transfrormed_basis[i * this->DIM + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
 		j = 1;
-		transfrormed_basis[i * this->DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
 		j = 2;
-		transfrormed_basis[i * this->DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
 		i = 1;
 		j = 0;
-		transfrormed_basis[i * this->DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
 		j = 1;
-		transfrormed_basis[i * this->DIM + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
 		j = 2;
-		transfrormed_basis[i * this->DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
 		i = 2;
 		j = 0;
-		transfrormed_basis[i * this->DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
 		j = 1;
-		transfrormed_basis[i * this->DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
 		j = 2;
-		transfrormed_basis[i * this->DIM + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
 
 	}
 
