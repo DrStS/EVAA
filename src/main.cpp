@@ -75,10 +75,10 @@ int main(int argc, char **argv) {
 		 std::cout << *it << std::endl;
 	}
 	//allArgs[0] = "EVAA.exe"
-	if (allArgs.size()>1) {
-		EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine(allArgs[1]);
+	if (allArgs.size()>2) {
+		EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine(allArgs[1], allArgs[2]);
 	}
-	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml","C:\\software\\repos\\EVAA\\inputFiles\\load.xml" );
+	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", "C:\\software\\repos\\EVAA\\inputFiles\\load.xml" );
 		myComputeEngine->prepare();
 		anaysisTimer01.start();
 		myComputeEngine->computeMKL11DOF();

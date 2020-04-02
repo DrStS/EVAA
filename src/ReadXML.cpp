@@ -6,25 +6,25 @@
 #include "ReadXML.h"
 
 
-void ReadXML::readVectorLegs(double* storage, car_properties::legs_vector_t vec){
+template<typename T> void ReadXML::readVectorLegs(double* storage, T vec){
        readVector(storage, vec.ReerRight());
        readVector(storage+3,vec.ReerLeft());
        readVector(storage+6,vec.FrontLeft());
        readVector(storage+9,vec.FrontRight());
  }
-void ReadXML::readVector(double* storage, car_properties::vector_t vec) {
+template<typename T> void ReadXML::readVector(double* storage, T vec) {
     storage[0] = vec.x();
     storage[1] = vec.y();
     storage[2] = vec.z();
 }
-void ReadXML::readLegs(double* storage, car_properties::legs_t vec) {
+void ReadXML::readLegs(double* storage, legs_t vec) {
     storage[0] = vec.ReerRight();
     storage[1] = vec.ReerLeft();
     storage[2] = vec.FrontLeft();
     storage[3] = vec.FrontRight();
 }
 
-void ReadXML::readangles(double* storage, car_properties::quad vec) {
+void ReadXML::readangles(double* storage, quad vec) {
 	storage[0] = vec.x();
 	storage[1] = vec.y();
 	storage[2] = vec.z();
@@ -37,13 +37,18 @@ ReadXML::ReadXML(){
 	_load_filename = "";
 }
 
-ReadXML::ReadXML(const std::string & filename):
-            _filename(filename), 
-            settings(car_properties::EVAA_settings(filename, xml_schema::flags::dont_validate)){}
+ReadXML::ReadXML(const std::string& load_filename) :
+    _load_filename(load_filename),
+    load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
+
+    std::cout << "ghour" << std::endl;
+}
 
 ReadXML::ReadXML(const std::string & filename, const std::string & load_filename) :
 	_filename(filename), _load_filename(load_filename),
-	settings(car_properties::EVAA_settings(filename, xml_schema::flags::dont_validate)), load_data(car_load::EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {}
+	settings(EVAA_settings(filename, xml_schema::flags::dont_validate)), load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
+    std::cout << "four" << std::endl;
+}
 
 void ReadXML::setFileName(const std::string & filename){
     _filename = filename;
@@ -92,13 +97,13 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     readLegs(parameters.initial_upper_spring_length, settings->InitialConditions().SpringElongation().Body());
 
 	readVector(parameters.initial_pos_body, settings->InitialConditions().Position().Body());
-/*	if (settings->InitialConditions().Position().UnsprungMass().present()) {
+	if (settings->InitialConditions().Position().UnsprungMass().present()) {
 		std::cout << "Legs condition is present" << std::endl;
 		parameters.initial_leg = 1;
 		readVectorLegs(parameters.initial_pos_wheel, settings->InitialConditions().Position().UnsprungMass().get());
 		readVectorLegs(parameters.initial_pos_tyre, settings->InitialConditions().Position().Tyre().get());
 	}
-*/
+
 	readangles(parameters.initial_angle, settings->InitialConditions().Orientation());
 
 
