@@ -187,7 +187,7 @@ private:
 	T *spring_length, *current_spring_length;
 	T* u_sol, * u_sol_red, * u_n_p_1, * u_n_p_1_red, * u_n_m_1, * u_n, * u_n_red, * u_n_m_1_red, * A, * Ared, * B, * Bred, * f_n_p_1, * f_n_p_1_red;
 	size_t* tyre_index_set;
-	T* k_vect, *l_lat, *l_long;
+	T* k_vect, *l_lat, *l_long, *length;
 	size_t num_tyre = 4;
 	T* time; // this is not necessary
 
@@ -357,22 +357,146 @@ private:
 		cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
 		MathLibrary::allocate_to_diagonal(K, temp, DOF); // K = K + K'+ diag(K)
 	}
-	void populate_K(T* k_vect, T k_body_fl, T k_tyre_fl, T k_body_fr,
-		T k_tyre_fr,
-		T k_body_rl,
-		T k_tyre_rl,
-		T k_body_rr,
-		T k_tyre_rr) {
-		k_vect[0] = k_body_fl;
-		k_vect[1] = k_tyre_fl;
-		k_vect[2] = k_body_fr;
-		k_vect[3] = k_tyre_fr;
-		k_vect[4] = k_body_rl;
-		k_vect[5] = k_tyre_rl;
-		k_vect[6] = k_body_rr;
-		k_vect[7] = k_tyre_rr;
+	void populate_K(T* k_vect, T* k_body_fl, T* k_tyre_fl, T* k_body_fr,
+		T* k_tyre_fr, T* k_body_rl, T* k_tyre_rl,T* k_body_rr, T* k_tyre_rr) {
+		k_body_fl = k_vect[0];
+		k_tyre_fl = k_vect[1];
+		k_body_fr = k_vect[2];
+		k_tyre_fr = k_vect[3];
+		k_body_rl = k_vect[4];
+		k_tyre_rl = k_vect[5];
+		k_body_rr = k_vect[6];
+		k_tyre_rr = k_vect[7];
 	}
+	void get_length(
+		T* initial_orientation_,
+		const T* r1_,
+		const T* r2_,
+		const T* r3_,
+		const T* r4_,
+		const T* pcc_,
+		const T* initial_upper_spring_length_,
+		const T* initial_lower_spring_length_,
+		T* wheel_coordinate1_,
+		T* wheel_coordinate2_,
+		T* wheel_coordinate3_,
+		T* wheel_coordinate4_,
+		T* tyre_coordinate1_,
+		T* tyre_coordinate2_,
+		T* tyre_coordinate3_,
+		T* tyre_coordinate4_)
 
+	{
+		/*
+		To reduce memory trace and better use cache this function is implemented in following fashion:
+		Original steps for computation of one component:
+														1.	qc = qc/norm(qc);
+														2.	C_Nc = get_basis(qc);
+														3.	global_y = C_Nc(:,2);
+														4.	global_y = -global_y / norm(global_y);
+														5.	global_r1 = pcc + C_Nc*r1;
+														6.	upper_global_spring_1 = upper_length(1)*global_y;
+														7.	lower_global_spring_1 = lower_length(1)*global_y;
+														8.	pw1 = global_r1 + upper_global_spring_1;
+														9.	pt1 = pw1 + lower_global_spring_1;
+		Modified steps for computation of one component:
+														1.	qc = qc/norm(qc);
+														2.	C_Nc = get_basis(qc);
+														3.	global_y = C_Nc(:,2);
+														4.	global_y = -global_y / norm(global_y);
+														5.	pw1 = pcc;
+														6.	pw1 = pw1 + C_Nc*r1;
+														7.	pw1 = pw1 + upper_length(1)*global_y;
+														8.	pt1 = pw1
+														8.	pt1	= pt1 + lower_length(1)*global_y;
+		*/
+
+		T* global_y = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
+		T* C_Nc = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
+
+		//	1. qc = qc/norm(qc); This is in quaternions 
+		T nrm = cblas_dnrm2(this->NUM_LEGS, initial_orientation_, 1);
+		cblas_dscal(this->NUM_LEGS, 1.0 / nrm, initial_orientation_, 1);
+
+		// 2.	C_Nc = get_basis(qc);
+		MathLibrary::get_basis<T>(initial_orientation_, C_Nc);
+		// 3.	global_y = C_Nc(:,2);
+		cblas_dcopy(this->DIM, C_Nc + 1, this->DIM, global_y, 1);
+
+		// 4.	global_y = -global_y / norm(global_y);
+		nrm = cblas_dnrm2(this->DIM, global_y, 1);
+		cblas_dscal(this->DIM, -1.0 / nrm, global_y, 1);
+
+		/////////////////////////////////////////// Leg 1 ////////////////////////////////////////////////////////
+		// 5.	pw1 = pcc;
+		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate1_, 1);
+
+		// 6.	pw1 = pw1 + C_Nc*r1;
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r1_, 1, 1, wheel_coordinate1_, 1);
+
+		// 7.	pw1 = pw1 + upper_length(1)*global_y;
+		cblas_daxpy(this->DIM, initial_upper_spring_length_[0], global_y, 1, wheel_coordinate1_, 1);
+
+		// 8.	pt1 = pw1
+		cblas_dcopy(this->DIM, wheel_coordinate1_, 1, tyre_coordinate1_, 1);
+
+		// 9.	pt1 = pw1 + lower_length(1)*global_y;
+		cblas_daxpy(this->DIM, initial_lower_spring_length_[0], global_y, 1, tyre_coordinate1_, 1);
+
+		/////////////////////////////////////////// Leg 2 ////////////////////////////////////////////////////////
+		// 5.	pw2 = pcc;
+		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate2_, 1);
+
+		// 6.	pw2 = pw2 + C_Nc*r2;
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r2_, 1, 1, wheel_coordinate2_, 1);
+
+		// 7.	pw2 = pw2 + upper_length(2)*global_y;
+		cblas_daxpy(this->DIM, initial_upper_spring_length_[1], global_y, 1, wheel_coordinate2_, 1);
+
+		// 8.	pt2 = pw2
+		cblas_dcopy(this->DIM, wheel_coordinate2_, 1, tyre_coordinate2_, 1);
+
+		// 9.	pt2 = pw2 + lower_length(2)*global_y;
+		cblas_daxpy(this->DIM, initial_lower_spring_length_[1], global_y, 1, tyre_coordinate2_, 1);
+
+		/////////////////////////////////////////// Leg 3 ////////////////////////////////////////////////////////
+		// 5.	pw3 = pcc;
+		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate3_, 1);
+
+		// 6.	pw3 = pw3 + C_Nc*r3;
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r3_, 1, 1, wheel_coordinate3_, 1);
+
+		// 7.	pw3 = pw3 + upper_length(3)*global_y;
+		cblas_daxpy(this->DIM, initial_upper_spring_length_[2], global_y, 1, wheel_coordinate3_, 1);
+
+		// 8.	pt3 = pw3
+		cblas_dcopy(this->DIM, wheel_coordinate3_, 1, tyre_coordinate3_, 1);
+
+		// 9.	pt3 = pw3 + lower_length(3)*global_y;
+		cblas_daxpy(this->DIM, initial_lower_spring_length_[2], global_y, 1, tyre_coordinate3_, 1);
+
+		/////////////////////////////////////////// Leg 4 ////////////////////////////////////////////////////////
+		// 5.	pw4 = pcc;
+		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate4_, 1);
+
+		// 6.	pw4 = pw4 + C_Nc*r4;
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r4_, 1, 1, wheel_coordinate4_, 1);
+
+		// 7.	pw4 = pw4 + upper_length(4)*global_y;
+		cblas_daxpy(this->DIM, initial_upper_spring_length_[3], global_y, 1, wheel_coordinate4_, 1);
+
+<<<<<<< HEAD
+		// 8.	pt4 = pw4
+		cblas_dcopy(this->DIM, wheel_coordinate4_, 1, tyre_coordinate4_, 1);
+
+		// 9.	pt4 = pw4 + lower_length(4)*global_y;
+		cblas_daxpy(this->DIM, initial_lower_spring_length_[3], global_y, 1, tyre_coordinate4_, 1);
+
+
+		mkl_free(global_y);
+		mkl_free(C_Nc);
+	}
+=======
 	inline void compute_dx(const T* current_length, T* dx) {
 		/*
 		the dx follows the order 
@@ -387,6 +511,7 @@ private:
 
 
 
+>>>>>>> b49291c93d1c0457f2e154ebd99a91ec49479dd9
 
 public:
 	linear11dof(const Simulation_Parameters &params, const Load_Params &load_param, EVAAComputeStiffness* interpolator){
@@ -471,11 +596,22 @@ public:
 		u_n_m_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		u_n = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		f_n_p_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
+<<<<<<< HEAD
+		k_vect = (T*)mkl_calloc(num_wheels*2, sizeof(T), alignment);
+		l_lat = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+		l_long = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+		lenght = (T*)mkl_calloc(num_wheels*2, sizeof(T), alignment);
+=======
 		k_vect = (T*)mkl_malloc(num_wheels*2 * sizeof(T), alignment);
 		l_lat = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
 		l_long = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
 		spring_length = (T*)mkl_malloc(2*num_tyre*sizeof(T), alignment);
+<<<<<<< HEAD
+>>>>>>> b49291c93d1c0457f2e154ebd99a91ec49479dd9
+
+=======
 		current_spring_length = (T*)mkl_malloc(2 * num_tyre * sizeof(T), alignment);
+>>>>>>> 4160b337536228cf02ed2d04c2b2e1fae5718291
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////// Initial Iteration vector ////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -553,7 +689,14 @@ public:
 
 		MathLibrary::allocate_to_diagonal(M, temp, DOF);
 		//M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
-		populate_K(k_vect, k_body_fl, k_tyre_fl, k_body_fr, k_tyre_fr, k_body_rl, k_tyre_rl, k_body_rr, k_tyre_rr);
+	
+		// crate length array
+		// get_length()
+		// lookup k values
+		lookupStiffness->getStiffness(length, k_vect);
+		// write back k values
+		populate_K(k_vect, &k_body_fl, &k_tyre_fl, &k_body_fr, &k_tyre_fr, &k_body_rl, &k_tyre_rl, &k_body_rr, &k_tyre_rr);
+
 		l_lat[0] = l_lat_fl;
 		l_lat[1] = l_lat_fr;
 		l_lat[2] = l_lat_rl;

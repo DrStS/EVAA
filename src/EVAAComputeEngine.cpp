@@ -22,6 +22,7 @@
 #include "EVAAComputeEngine.h"
 #include "MathLibrary.h"
 #include <limits>
+#include <fstream>
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
 #define USE_GEMM
@@ -45,7 +46,14 @@ typedef double floatEVAA;
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName) {
 	// Intialize XML metadatabase singelton
 	_xmlFileName = xmlFileName;
-	std::cout << "Read XML file: " << _xmlFileName << std::endl;
+	std::ifstream f(xmlFileName.c_str());
+	if (f.good()) {
+		std::cout << "Read general simulation parameters and car input data at " << _xmlFileName << std::endl;
+	}
+	else {
+		std::cout << "XML file at " << _xmlFileName << " does not exist!" << std::endl;
+		exit(2);
+	}
 	ReadXML reader(_xmlFileName);
 	reader.ReadParameters(_parameters);
 }
@@ -54,8 +62,25 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 	// Intialize XML metadatabase singelton
 	_xmlFileName = xmlFileName;
 	_xmlLoadFileName = loadxml;
-	std::cout << "Read general and car parameters in file: " << _xmlFileName << std::endl;
-	std::cout << "Read load parameters in file: " << _xmlLoadFileName << std::endl;
+
+	std::ifstream f(xmlFileName.c_str());
+	if (f.good()) {
+		std::cout << "Read general simulation parameters and car input data at " << _xmlFileName << std::endl;
+	}
+	else {
+		std::cout << "XML file at " << _xmlFileName << " for general and car settings does not exist!" << std::endl;
+		exit(2);
+	}
+
+	std::ifstream ff(loadxml.c_str());
+	if (ff.good()) {
+		std::cout << "Read load parameters in file: " << _xmlLoadFileName << std::endl;
+	}
+	else {
+		std::cout << "XML file at " << _xmlLoadFileName << " for load parameters does not exist!" << std::endl;
+		exit(2);
+	}
+
 	ReadXML reader(_xmlFileName, _xmlLoadFileName);
 	reader.ReadParameters(_parameters);
 	reader.ReadLoadParameters(_load_module_parameter);
