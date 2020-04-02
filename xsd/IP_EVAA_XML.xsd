@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xs:schema id="EVAA_XML" xmlns="car_properties" targetNamespace="car_properties" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-  <xs:complexType name="legs_t">
+<!--<xs:schema id="EVAA_XML" xmlns="car_properties" targetNamespace="car_properties" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+-->  <xs:schema id="EVAA_XML" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xs:complexType name="legs_t">
     <xs:sequence>    
       <xs:element name="ReerRight" type="xs:double"/>
       <xs:element name="ReerLeft" type="xs:double"/>
@@ -14,7 +15,7 @@
       <xs:element name="x" type="xs:double"/>
       <xs:element name="y" type="xs:double"/>
       <xs:element name="z" type="xs:double"/>
-	  <xs:element name="w" type="xs:double"/>
+	    <xs:element name="w" type="xs:double"/>
     </xs:sequence>    
   </xs:complexType>
 
@@ -121,16 +122,18 @@
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-  		    <xs:element name="Position">
-			  <xs:complexType>
-				<xs:sequence>
-					<xs:element name="Body" type="vector_t" />
-				</xs:sequence>
-			  </xs:complexType>
-		    </xs:element>
-		    <xs:element name="Orientation" type="quad" />
-          </xs:sequence>
-        </xs:complexType>
+  		        <xs:element name="Position">
+			          <xs:complexType>
+				          <xs:sequence>
+					          <xs:element name="Body" type="vector_t" />
+                    <xs:element name="UnsprungMass" type="legs_vector_t" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="Tyre" type="legs_vector_t" minOccurs="0" maxOccurs="1"/>
+                  </xs:sequence>
+                </xs:complexType>
+  		        </xs:element>
+  		        <xs:element name="Orientation" type="quad" />
+            </xs:sequence>
+          </xs:complexType>
       </xs:element>
 
       <xs:element name="SimulationParameters">

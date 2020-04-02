@@ -2,64 +2,64 @@
 <EVAA_load_module>
 	<boundary_description>
 		<BoundaryConditions>circle</BoundaryConditions>
-		<circular>
+    <!--<circular>
 			<radius>50</radius>
 			<center>
 				<x>0</x>
 				<y>0</y>
 				<z>0</z>
 			</center>
-		</circular>
+		</circular> -->
 	</boundary_description>
-	<forces>
-      <force_body>
+  <forces>
+    <force_body>
+      <x>0</x>
+      <y>1.1e3</y>
+      <z>0</z>
+    </force_body>
+    <force_wheel>
+      <ReerRight>
         <x>0</x>
-        <y>1.1e3</y>
+        <y>0</y>
         <z>0</z>
-      </force_body>
-      <force_wheel>
-        <ReerRight>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </ReerRight>
-        <ReerLeft>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </ReerLeft>
-        <FrontLeft>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </FrontLeft>
-        <FrontRight>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </FrontRight>
-      </force_wheel>
-      <force_tyre>
-        <ReerRight>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </ReerRight>
-        <ReerLeft>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </ReerLeft>
-        <FrontLeft>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </FrontLeft>
-        <FrontRight>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </FrontRight>
-      </force_tyre>
-    </external>
+      </ReerRight>
+      <ReerLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerLeft>
+      <FrontLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontLeft>
+      <FrontRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontRight>
+    </force_wheel>
+    <force_tyre>
+      <ReerRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerRight>
+      <ReerLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerLeft>
+      <FrontLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontLeft>
+      <FrontRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontRight>
+    </force_tyre>
+  </forces>
 </EVAA_load_module>

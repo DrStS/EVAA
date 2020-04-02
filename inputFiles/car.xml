@@ -157,25 +157,69 @@
       </Tyre>
     </Velocities>
     <Orientation>
-	  <x>0</x>
+	    <x>0</x>
       <y>0</y>
       <z>0</z>
-	  <w>1</w>
+	    <w>1</w>
     </Orientation>
 	<Position>
-	<!--	<Body>
+		<Body>
 			<x>0</x>
 			<y>0</y>
 			<z>0</z>
-		</Body>  -->
-	</Position>
+		</Body>
+    <!--<UnsprungMass>
+      <ReerRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerRight>
+      <ReerLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerLeft>
+      <FrontLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontLeft>
+      <FrontRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontRight>
+    </UnsprungMass>
+    <Tyre>
+      <ReerRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerRight>
+      <ReerLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerLeft>
+      <FrontLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontLeft>
+      <FrontRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontRight>
+    </Tyre>-->
+  </Position>
   </InitialConditions>
 
   <SimulationParameters>
     <GeneralSettings>
       <TimestepSize>1e-3</TimestepSize>
       <NumberOfIterations>1000</NumberOfIterations>
-      <BoundaryConditions>fixed</BoundaryConditions>
+<!--      <BoundaryConditions>fixed</BoundaryConditions> -->
       <Gravity>
         <x>0</x>
         <y>0</y>

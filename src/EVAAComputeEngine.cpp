@@ -54,7 +54,8 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 	// Intialize XML metadatabase singelton
 	_xmlFileName = xmlFileName;
 	_xmlLoadFileName = loadxml;
-	std::cout << "Read XML file: " << _xmlFileName << std::endl;
+	std::cout << "Read general and car parameters in file: " << _xmlFileName << std::endl;
+	std::cout << "Read load parameters in file: " << _xmlLoadFileName << std::endl;
 	ReadXML reader(_xmlFileName, _xmlLoadFileName);
 	reader.ReadParameters(_parameters);
 	reader.ReadLoadParameters(_load_module_parameter);
@@ -70,7 +71,7 @@ void EVAAComputeEngine::prepare(void) {
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
 
-	ReadXML reader(_xmlFileName);
+	ReadXML reader(_xmlLoadFileName);
 
 	int DOF = _parameters.DOF;
 
@@ -225,7 +226,7 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
 void EVAAComputeEngine::computeMKL11DOF(void) {
 
-	ReadXML reader(_xmlFileName);
+	ReadXML reader(_xmlLoadFileName);
 
 	int DOF = _parameters.DOF;
 
@@ -553,7 +554,7 @@ void EVAAComputeEngine::computeMKLlinear11dof_reduced(void) {
 void EVAAComputeEngine::computeBlaze11DOF(void) {
 #ifdef USE_BLAZE
 
-	ReadXML reader(_xmlFileName);
+	ReadXML reader(_xmlLoadFileName);
 
 	using blaze::CompressedMatrix;
 	using blaze::DynamicMatrix;

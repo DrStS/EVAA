@@ -47,16 +47,16 @@ class ReadXML{
     private:
         std::string _filename;
 		std::string _load_filename;
-    	std::auto_ptr<car_properties::car_settings_t> settings;
-		std::auto_ptr<car_load::load_t> load_data;
-        void readVectorLegs(double* storage, car_properties::legs_vector_t vec);
-        void readLegs(double* storage, car_properties::legs_t vec);
-        void readVector(double* storage, car_properties::vector_t vec);
-		void readangles(double* storage, car_properties::quad vec);
+    	std::auto_ptr<car_settings_t> settings;
+		std::auto_ptr<load_t> load_data;
+        template<typename T> void readVectorLegs(double* storage, T vec);
+        void readLegs(double* storage, legs_t vec);
+        template<typename T> void readVector(double* storage, T vec);
+        void readangles(double* storage, quad vec);
 
     public:
         ReadXML();
-        ReadXML(const std::string & filename);
+        ReadXML(const std::string & load_filename);
 		ReadXML(const std::string & filename, const std::string & load_filename);
         void setFileName (const std::string & filename);
 		void setloadFileName(const std::string & filename);
