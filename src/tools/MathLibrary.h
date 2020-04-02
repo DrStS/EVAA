@@ -248,6 +248,67 @@ namespace MathLibrary {
 		q_nrm = cblas_dnrm2(4, q, 1);
 		cblas_dscal(4, 1.0 / (q_nrm), q, 1);
 	}
+	template <typename T>
+	void get_basis(const T* initial_orientation, T* transfrormed_basis) {
+		// quaternion initial_orientation yields basis(calculates basically the matrix rotation
+		// the euclidian basis to the local basis)
+
+		// get local basis vectors using unit quaternion rotation
+		// s = 1 / norm(q) ^ 2;      %normalizer, only to remove numerical stuffy stuff
+		size_t quad_dim = 4;
+		size_t dim = 3;
+		T nrm = cblas_dnrm2(quad_dim, initial_orientation, 1);
+		T s = 1.0 / (nrm * nrm);
+		cblas_dscal(dim*dim, 0.0, transfrormed_basis, 1);
+		size_t i, j;
+
+		T quad_sum = 0.0;
+		for (i = 0; i < dim; ++i) {
+			quad_sum += initial_orientation[i] * initial_orientation[i];
+		}
+		i = 0;
+		j = 0;
+		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+		j = 1;
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
+		j = 2;
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
+		i = 1;
+		j = 0;
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
+		j = 1;
+		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+		j = 2;
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
+		i = 2;
+		j = 0;
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
+		j = 1;
+		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
+		j = 2;
+		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+	}
+	template <typename T>
+	void get_tilda(const T* input_vector, T* tilda_output) {
+		/*
+		This function is only suitable for a 3 dimensional system and renders unusable, might throw exceptions when used with other dimensions.
+		given y: x_tilda*y = cross(x,y)
+		[Stoneking, page 3 bottom]
+		x_tilda = [	0, -x(3), x(2)
+					x(3), 0, -x(1)
+					-x(2), x(1), 0	]
+
+		*/
+		tilda_output[0] = 0;
+		tilda_output[1] = -input_vector[2];
+		tilda_output[2] = input_vector[1];
+		tilda_output[3] = input_vector[2];
+		tilda_output[4] = 0;
+		tilda_output[5] = -input_vector[0];
+		tilda_output[6] = -input_vector[1];
+		tilda_output[7] = input_vector[0];
+		tilda_output[8] = 0;
+	}
 
 	template <typename T, class C>
 	class Solvers{

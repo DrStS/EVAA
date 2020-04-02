@@ -101,7 +101,6 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
 
 	readVector(parameters.initial_pos_body, settings->InitialConditions().Position().Body());
 	if (settings->InitialConditions().Position().UnsprungMass().present()) {
-		std::cout << "Legs condition is present" << std::endl;
 		parameters.initial_leg = 1;
 		readVectorLegs(parameters.initial_pos_wheel, settings->InitialConditions().Position().UnsprungMass().get());
 		readVectorLegs(parameters.initial_pos_tyre, settings->InitialConditions().Position().Tyre().get());
@@ -163,7 +162,6 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 		exit(2);
 	}
 	if (load_data->boundary_description().circular().present()) {
-		std::cout << "circular is present" << std::endl;
 		parameters.profile_radius = load_data->boundary_description().circular()->radius();
 		readVector(parameters.profile_center, load_data->boundary_description().circular()->center());
 	}
