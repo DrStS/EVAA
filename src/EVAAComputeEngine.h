@@ -598,8 +598,8 @@ public:
 		B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
 		time = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
 	
-
-		
+			
+		// A=((1/(h*h))*M+(1/h)*D+K);
 		
 		// B=((2/(h*h))*M+(1/h)*D);
 		cblas_daxpy(mat_len, 2 * factor_h2, M, 1, B, 1);
@@ -612,9 +612,8 @@ public:
 
 			// K update here
 
-
-			// A=((1/(h*h))*M+(1/h)*D+K);
 			cblas_dcopy(mat_len, M, 1, A, 1);
+			cblas_dscal(mat_len, factor_h2, A, 1);
 			cblas_daxpy(mat_len, factor_h, D, 1, A, 1);
 			cblas_daxpy(mat_len, 1, K, 1, A, 1);
 			// Cholesky factorization of A
@@ -624,6 +623,7 @@ public:
 			status = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', DOF, A, DOF);
 			//status = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF + 4, DOF + 4, A, DOF + 4, piv);
 			check_status(status);
+			
 			// u_n_p_1=A\(B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
 			// u_n_p_1 = B*u_n
 

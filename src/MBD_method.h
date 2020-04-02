@@ -161,7 +161,6 @@ private:
 
 		// 2.	C_Nc = get_basis(qc);
 		MathLibrary::get_basis<T>(initial_orientation_, C_Nc);
-
 		// 3.	global_y = C_Nc(:,2);
 		cblas_dcopy(this->DIM, C_Nc + 1, this->DIM, global_y, 1);
 
@@ -845,6 +844,7 @@ public:
 		cblas_dcopy(this->DIM, pcc_, 1, cf_r_up4, 1);
 		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, cf_C_cN, this->DIM, this->r4, 1, 1, cf_r_up4, 1);
 		cblas_daxpy(this->DIM, -1.0, pw4_, 1, cf_r_up4, 1);
+		
 		// r_low1
 		cblas_dcopy(this->DIM, pw1_, 1, cf_r_low1, 1);
 		cblas_daxpy(this->DIM, -1.0, pt1_, 1, cf_r_low1, 1);
@@ -1502,6 +1502,7 @@ public:
 		cblas_dcopy(this->DIM, vt4_, 1, start_next, 1);
 		start_next += this->DIM;
 
+
 	}
 
 	void solve(T* solution_vector) {
@@ -1513,7 +1514,7 @@ public:
 		MathLibrary::get_tilda<T>(r2, r2_tilda);
 		MathLibrary::get_tilda<T>(r3, r3_tilda);
 		MathLibrary::get_tilda<T>(r4, r4_tilda);
-
+		
 		/*
 		Preparing x_vector in the form of
 		x_vector = [wc; ...     % 3 1:3

@@ -287,7 +287,6 @@ namespace MathLibrary {
 		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
 		j = 2;
 		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
-
 	}
 	template <typename T>
 	void get_tilda(const T* input_vector, T* tilda_output) {
