@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="EVAA_LOOKUP_XML" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xs:complexType name="lookup_legs_t">
+    <xs:sequence>
+      <xs:element name="ReerRight" type="xs:double"/>
+      <xs:element name="ReerLeft" type="xs:double"/>
+      <xs:element name="FrontLeft" type="xs:double"/>
+      <xs:element name="FrontRight" type="xs:double"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="generator_t">
+		<xs:sequence>
+			<xs:element name="Size" type="xs:int"/>
+      <xs:element name="Magnitude">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Tyre" type="lookup_legs_t"/>
+            <xs:element name="Body" type="lookup_legs_t"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+			<xs:element name="TableParameters">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="b" type="xs:double"/>
+						<xs:element name="c" type="xs:double"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Range">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="l_min" type="xs:double"/>
+						<xs:element name="l_max" type="xs:double"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="InterpolationMethod">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="k" type="xs:int"/>
+						<xs:element name="type" type="xs:int"/>
+						<xs:element name="order" type="xs:int"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	  </xs:complexType>
+
+	<xs:complexType name="plain_table_t">
+		<xs:sequence>
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<xs:complexType name="lookup_handler_t">
+		<xs:choice>
+			<xs:element name="LookupTableGenerator" type="generator_t"/>
+			<xs:element name="LookupTablePlain" type="plain_table_t"/>
+		</xs:choice>
+	</xs:complexType>
+
+
+	<xs:element name="LookupHandler" type="lookup_handler_t"/>
+
+</xs:schema>

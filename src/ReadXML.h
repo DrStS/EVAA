@@ -5,6 +5,7 @@
 #include <iostream>
 #include "IP_EVAA_XML.h"
 #include "LOAD_EVAA_XML.h"
+#include "LOOKUP_EVAA_XML.h"
 
 
 struct Simulation_Parameters {int DOF; 
@@ -46,12 +47,14 @@ class ReadXML{
     private:
         std::string _filename;
 		std::string _load_filename;
-    	std::auto_ptr<car_settings_t> settings;
+        std::string _lookup_filename;
+        std::auto_ptr<car_settings_t> settings;
 		std::auto_ptr<load_t> load_data;
+        std::auto_ptr<lookup_handler_t> lookup_table;
         template<typename T> void readVectorLegs(double* storage, T vec);
-        void readLegs(double* storage, legs_t vec);
+        template<typename T> void readLegs(double* storage, T vec);
         template<typename T> void readVector(double* storage, T vec);
-        void readangles(double* storage, quad vec);
+        template<typename T> void readangles(double* storage, T vec);
 
     public:
         ReadXML();
@@ -61,5 +64,6 @@ class ReadXML{
 		void setloadFileName(const std::string & filename);
         void ReadParameters(Simulation_Parameters& parameters);
         void ReadLoadParameters(Load_Params & parameters);
+        void ReadLookupParameters();
 };
 
