@@ -1,5 +1,8 @@
 /src/database/IP_EVAA_XML.cpp
 /src/database/IP_EVAA_XML.h
+/src/database/LOAD_EVAA_XML.cpp
+/src/database/LOAD_EVAA_XML.h
 /src/tools/AuxiliaryParameters.cpp
 /build*
 *.asv
+*.cmake

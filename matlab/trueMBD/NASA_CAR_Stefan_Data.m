@@ -158,7 +158,7 @@ FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
                 lower_spring_stiffness, upper_spring_stiffness, lower_spring_damping, upper_spring_damping, lower_rotational_stiffness, upper_rotational_stiffness, ...
                 vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4,...
                 num_iter, delta_t, solver);
-y_sol(end, :)'
+
 %% visulalization
 figure()
 plot(t,y(:,6));

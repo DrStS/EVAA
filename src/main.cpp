@@ -51,17 +51,19 @@
  * \version alpha
  **************************************************************************************************/
 #ifdef EVAA_COMMANDLINE_ON
-   #include <iostream>
-   #include <string>
-   #include <vector>
-   #include "AuxiliaryParameters.h"
-   #include "EVAAComputeEngine.h"
-   #include "Timer.h"
+#include <iostream>
+#include <string>
+#include <vector>
+#include "AuxiliaryParameters.h"
+#include "EVAAComputeEngine.h"
+#include "Timer.h"
+#include "EVAAComputeStiffness.h"
 #endif // EVAA_COMMANDLINE_ON
 
 #ifndef EVAA_COMMANDLINE_ON
 #include "EVAAMainWindow.h"
 #endif // EVAA_COMMANDLINE_ON
+
 
 
 int main(int argc, char **argv) {
@@ -76,7 +78,7 @@ int main(int argc, char **argv) {
 	if (allArgs.size()>1) {
 		EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine(allArgs[1]);
 	}
-	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml");
+	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml","C:\\software\\repos\\EVAA\\inputFiles\\load.xml" );
 		myComputeEngine->prepare();
 		anaysisTimer01.start();
 		myComputeEngine->computeMKL11DOF();
@@ -107,6 +109,10 @@ int main(int argc, char **argv) {
 		myComputeEngine->computeMKLNasa_example();
 		myComputeEngine->clean();
 		*/
+		double* a = (double*)malloc(sizeof(double));
+		double* b = (double*)malloc(sizeof(double));
+		EVAAComputeStiffness_Linear myStif(100, 1, 2, 3, -0.7, 0.1, 1);
+		myStif.getStiffness(a, b);
 	std::cout << "\nWe did a great job! Awesome!" << std::endl;
 #endif // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON
@@ -118,6 +124,4 @@ int main(int argc, char **argv) {
 
 	EVAAMainWindow(argc, argv);
 #endif // EVAA_COMMANDLINE_ON
-
-
 }

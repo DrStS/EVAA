@@ -157,18 +157,19 @@
       </Tyre>
     </Velocities>
     <Orientation>
-      <w>1</w>
-    	<x>0</x>
+	  <x>0</x>
       <y>0</y>
       <z>0</z>
+	  <w>1</w>
     </Orientation>
- 		<pos_body>
-			<x>5</x>
-			<y>0</y>
-			<z>0</z>
-		</pos_body>
+	  <Position>
+		  <Body>
+			  <x>0</x>
+			  <y>0</y>
+			  <z>0</z>
+		  </Body>  
+	  </Position>
   </InitialConditions>
-
 
   <SimulationParameters>
     <GeneralSettings>
@@ -190,5 +191,5 @@
     <LinearALE>
       <DOF>11</DOF>
     </LinearALE>
-  </SimulationParameters>>
+  </SimulationParameters>
 </EVAA_settings>

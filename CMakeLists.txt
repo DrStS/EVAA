@@ -226,6 +226,11 @@ IF (${USE_XSD})
       COMMAND ${XSD_EXE} cxx-tree --type-naming knr --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/IP_EVAA_XML.xsd
       WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
    )
+   execute_process(  
+      COMMAND ${XSD_EXE} cxx-tree --type-naming knr --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/LOAD_EVAA_XML.xsd
+      WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
+   )
+   
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find HDF5

@@ -66,6 +66,7 @@ namespace MathLibrary {
 	
 	template <typename T>
 	void transmutate_elements(T* arr, size_t start, size_t end, T value, T tol) {
+		#pragma loop( ivdep )
 		for (size_t i = start; i < end; ++i) {
 			if (arr[i] * arr[i] < tol*tol) {
 				arr[i] = value;
@@ -83,6 +84,7 @@ namespace MathLibrary {
 
 	template <typename T>
 	void diagonal_matrix(T* mat, size_t dim, T val) {
+		#pragma loop( ivdep )
 		for (size_t i = 0; i < dim; ++i) {
 			mat[i*dim + i] = val;
 		}
@@ -128,7 +130,6 @@ namespace MathLibrary {
 	void crossProduct(const T* vect_A, const T* vect_B, T* cross_P)
 
 	{
-
 		cross_P[0] = vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1];
 		cross_P[1] = vect_A[2] * vect_B[0] - vect_A[0] * vect_B[2];
 		cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0];
