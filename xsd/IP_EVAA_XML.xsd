@@ -121,28 +121,11 @@
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-  <!--			<xs:element name="pos_body" type="vector_t" />
-			      <xs:element name="pos_tyre" type="legs_vector_t" />
-			      <xs:element name="pos_wheel" type="legs_vector_t" /> -->
-      			<xs:element name="Orientation" type="quad" />
+            <xs:element name="pos_body" type="vector_t" />
+	    			<xs:element name="Orientation" type="quad" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-
-
-
-<!--      <xs:element name="external">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="force_tyre"  type="legs_vector_t"/> 
-            <xs:element name="force_wheel"  type="legs_vector_t"/> 
-            <xs:element name="force_body" type="vector_t" /> 
-            <xs:element name="gravity" type="vector_t" />
-          </xs:sequence>       
-        </xs:complexType>
-      </xs:element>
--->
-
 
       <xs:element name="SimulationParameters">
         <xs:complexType>

@@ -13,7 +13,7 @@ void ReadXML::readVectorLegs(double* storage, legs_vector_t vec){
        readVector(storage+9,vec.FrontRight());
  }
 void ReadXML::readVector(double* storage, vector_t vec) {
-    storage[0] = vec.z();
+    storage[0] = vec.x();
     storage[1] = vec.y();
     storage[2] = vec.z();
 }
@@ -25,10 +25,10 @@ void ReadXML::readLegs(double* storage, legs_t vec) {
 }
 
 void ReadXML::readangles(double* storage, quad vec) {
-	storage[0] = vec.w();
-	storage[1] = vec.x();
-	storage[2] = vec.y();
-	storage[3] = vec.z();
+	storage[0] = vec.x();
+	storage[1] = vec.y();
+	storage[2] = vec.z();
+    storage[3] = vec.w();
 }
 
 
@@ -82,22 +82,10 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     readLegs(parameters.initial_lower_spring_length, settings->InitialConditions().SpringElongation().Tyre());
     readLegs(parameters.initial_upper_spring_length, settings->InitialConditions().SpringElongation().Body());
 
-/*	readVector(parameters.initial_pos_body, settings->initial().pos_body());
-	readVectorLegs(parameters.initial_pos_wheel, settings->initial().pos_wheel());
-	readVectorLegs(parameters.initial_pos_tyre, settings->initial().pos_tyre());
-*/
+	readVector(parameters.initial_pos_body, settings->InitialConditions().pos_body());
 
 	readangles(parameters.initial_angle, settings->InitialConditions().Orientation());
 
-//--------------------------------------------------
-// Load external parameters
-//--------------------------------------------------
-/*    readVector(parameters.external_force_body, settings->external().force_body());
-    readVector(parameters.gravity, settings->external().gravity());
-    readVectorLegs(parameters.external_force_tyre, settings->external().force_tyre());
-    readVectorLegs(parameters.external_force_wheel, settings->external().force_wheel());
-
-    */
 
 //--------------------------------------------------
 // Load simulation parameters
@@ -118,11 +106,14 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     if (boundary_conditions == "fixed") {
         parameters.boundary_condition_road = FIXED;
     }
-    else if (boundary_conditions == "notfixed") {
+    else if (boundary_conditions == "nonfixed") {
         parameters.boundary_condition_road = NONFIXED;
     }
+    else if (boundary_conditions == "circular_path") {
+        parameters.boundary_condition_road = CIRCULAR;
+    }
     else {
-        std::cerr << "Wrong boundary conditions! Only fixed and nonfixed implemented so far" << std::endl;
+        std::cerr << "Wrong boundary conditions! Only circular_path, fixed and nonfixed implemented so far" << std::endl;
         exit(2);
     }
 
@@ -145,27 +136,22 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
 
 void ReadXML::ReadVariableParameters(Simulation_Parameters& parameters) {
 
-    //--------------------------------------------------
-    // Load external parameters
-    //--------------------------------------------------
-/*    readVector(parameters.external_force_body, settings->external().force_body());
-    readVectorLegs(parameters.external_force_tyre, settings->external().force_tyre());
-    readVectorLegs(parameters.external_force_wheel, settings->external().force_wheel());
-*/
     std::string boundary_conditions = settings->SimulationParameters().GeneralSettings().BoundaryConditions();
 
     readVector(parameters.gravity, settings->SimulationParameters().GeneralSettings().Gravity());
 
+
     if (boundary_conditions == "fixed") {
         parameters.boundary_condition_road = FIXED;
     }
-    else if (boundary_conditions == "notfixed") {
+    else if (boundary_conditions == "nonfixed") {
         parameters.boundary_condition_road = NONFIXED;
     }
+    else if (boundary_conditions == "circular_path") {
+        parameters.boundary_condition_road = CIRCULAR;
+    }
     else {
-        std::cerr << "Wrong boundary conditions! Only fixed and nonfixed implemented so far" << std::endl;
+        std::cerr << "Wrong boundary conditions! Only circular_path, fixed and nonfixed implemented so far" << std::endl;
         exit(2);
     }
-
-
 }

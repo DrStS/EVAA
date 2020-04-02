@@ -1,5 +1,3 @@
-
-
 #pragma once
 #include <string>
 #include <stdlib.h>
@@ -26,7 +24,7 @@ struct Simulation_Parameters {int DOF;
 			int solution_dim;
             };
 
-enum boundary_condition_road{FIXED, NONFIXED};
+enum boundary_condition_road{FIXED, NONFIXED, CIRCULAR};
 
 enum solver {EXPLICIT_EULER, RUNGE_KUTTA_4, BROYDEN_EULER, BROYDEN_CN, BROYDEN_BDF2}; 
 

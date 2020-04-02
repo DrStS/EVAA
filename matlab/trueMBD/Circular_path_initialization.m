@@ -5,7 +5,7 @@ pcc(2) = 0;
 
 radius = norm(pcc);
 
-omega = -cross(pcc, v) / (radius * radius);    % angular velocity of the car
+omega = cross(pcc, v) / (radius * radius);    % angular velocity of the car
 
 vc = cross(omega, pcc);
 

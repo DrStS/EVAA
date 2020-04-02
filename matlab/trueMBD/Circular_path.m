@@ -1,10 +1,7 @@
 function [FR] = Circular_path(vt, mt, pt)
-% v is the velocity of the mass body
-% m is a fourth of the total mass of the car
-% FT is the current force in the tyre
-% r is the position of the tyre in the local car frame with respect to the
-% center of mass
-% pt is the global position of the body
+% vt is the velocity of the tyre
+% mt is the mass of the tyre
+% pt is the global position of the tyre
 %
 % The rotation is always around the origin!
     pt(2) = 0;

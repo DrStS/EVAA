@@ -55,7 +55,7 @@ r3 = [l_long_fl ; 0  ; -l_lat_fl];
 r4 = [l_long_fr ; 0  ;  l_lat_fr];
 
 mass = mass_Body;
-Ic = diag([I_body_xx, I_body_zz, I_body_yy]);                           % moment of intertia of the car
+Ic = diag([I_body_xx, I_body_yy, I_body_zz]);                           % moment of intertia of the car
 
 initial_orientation = [0; 0; 0; 1];                                     % initial orientation of the car body as quaternion
 initial_position = [5;0;0];                                             % of the center of mass
@@ -82,7 +82,7 @@ upper_rotational_stiffness = [k_body_rot_rr; k_body_rot_rl; k_body_rot_fl; k_bod
 lower_rotational_stiffness = [k_tyre_rot_rr; k_tyre_rot_rl; k_tyre_rot_fl; k_tyre_rot_fr];
 
 % initial velocities 
-vc = [0; 0; 5];       % car body
+vc = [0; 0; 3];       % car body
 
 vw1 = [0; 0; 0];    % wheel 
 vw2 = [0; 0; 0];    
@@ -93,7 +93,6 @@ vt1 = [0; 0; 1];    % tyres
 vt2 = [0; 0; 1];    
 vt3 = [0; 0; 1];    
 vt4 = [0; 0; 1];    
-
 
 % initial angular velocities
 wc = [0; 0; 0];
@@ -115,7 +114,7 @@ FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
 % simulation specifications
-num_iter = 4e4;
+num_iter = 1000;
 delta_t = 1e-3;
 tol = 1e-7;
 max_iter = 10000;
@@ -147,11 +146,11 @@ FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
 
 % Explicit solvers
 % solver = @(f, t, x) explicit_solver(f, t, x);
-% solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+ solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
- solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+% solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 
@@ -159,7 +158,7 @@ FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
                 lower_spring_stiffness, upper_spring_stiffness, lower_spring_damping, upper_spring_damping, lower_rotational_stiffness, upper_rotational_stiffness, ...
                 vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4,...
                 num_iter, delta_t, solver);
-toc
+y_sol(end, :)'
 %% visulalization
 figure()
 plot(t,y(:,6));

@@ -88,16 +88,16 @@
   <InitialConditions>
     <SpringElongation>
       <Body>
-        <ReerRight>0.24</ReerRight>
-        <ReerLeft>0.18</ReerLeft>
-        <FrontLeft>0.21</FrontLeft>
-        <FrontRight>0.14</FrontRight>
+        <ReerRight>0.2</ReerRight>
+        <ReerLeft>0.2</ReerLeft>
+        <FrontLeft>0.2</FrontLeft>
+        <FrontRight>0.2</FrontRight>
       </Body>
       <Tyre>
-        <ReerRight>0.24</ReerRight>
+        <ReerRight>0.2</ReerRight>
         <ReerLeft>0.2</ReerLeft>
-        <FrontLeft>0.16</FrontLeft>
-        <FrontRight>0.18</FrontRight>
+        <FrontLeft>0.2</FrontLeft>
+        <FrontRight>0.2</FrontRight>
       </Tyre>
     </SpringElongation>
     <Velocities>
@@ -109,7 +109,7 @@
       <Body>
         <x>0</x>
         <y>0</y>
-        <z>0</z>
+        <z>3</z>
       </Body>
       <UnsprungMass>
         <ReerRight>
@@ -162,115 +162,19 @@
       <y>0</y>
       <z>0</z>
     </Orientation>
-´<!--		<pos_body>
-			<x>0</x>
+ 		<pos_body>
+			<x>5</x>
 			<y>0</y>
 			<z>0</z>
 		</pos_body>
-		<pos_wheel>
-            <ReerRight>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </ReerRight> 
-            <ReerLeft>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </ReerLeft> 
-            <FrontLeft>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </FrontLeft>
-            <FrontRight>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </FrontRight>
-        </pos_wheel>
-        <pos_tyre>
-            <ReerRight>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </ReerRight> 
-            <ReerLeft>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </ReerLeft> 
-            <FrontLeft>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </FrontLeft>
-            <FrontRight>
-              <x>0</x>
-              <y>0</y>
-              <z>0</z>
-            </FrontRight>
-        </pos_tyre> -->
   </InitialConditions>
 
-<!--  <external>
-      <force_body>
-        <x>0</x>
-        <y>1.1e3</y>
-        <z>0</z>
-      </force_body>
-      <force_wheel>
-        <ReerRight>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </ReerRight>
-        <ReerLeft>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </ReerLeft>
-        <FrontLeft>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </FrontLeft>
-        <FrontRight>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </FrontRight>
-      </force_wheel>
-      <force_tyre>
-        <ReerRight>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </ReerRight>
-        <ReerLeft>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </ReerLeft>
-        <FrontLeft>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </FrontLeft>
-        <FrontRight>
-          <x>0</x>
-          <y>0</y>
-          <z>0</z>
-        </FrontRight>
-      </force_tyre>
-    </external>
--->
 
   <SimulationParameters>
     <GeneralSettings>
       <TimestepSize>1e-3</TimestepSize>
       <NumberOfIterations>1000</NumberOfIterations>
-      <BoundaryConditions>fixed</BoundaryConditions>
+      <BoundaryConditions>circular_path</BoundaryConditions>
       <Gravity>
         <x>0</x>
         <y>0</y>
@@ -278,7 +182,7 @@
       </Gravity>
     </GeneralSettings>
     <MultyBodyDynamics>
-      <Solver>Broyden_CN</Solver>
+      <Solver>RK4</Solver>
       <MaximalIterationNumber>10000</MaximalIterationNumber>
       <Tolerance>1e-7</Tolerance>
       <SolutionDimension>61</SolutionDimension>
