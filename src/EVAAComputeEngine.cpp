@@ -59,6 +59,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 	ReadXML reader(_xmlFileName, _xmlLoadFileName);
 	reader.ReadParameters(_parameters);
 	reader.ReadLoadParameters(_load_module_parameter);
+	reader.ReadLookupParameters(lookupStiffness);
 }
 
 
@@ -516,13 +517,13 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 }
 
 
-void EVAAComputeEngine::computeMKLlinear11dof(void) {
+void EVAAComputeEngine::computeMKLlinear11dof() {
 	floatEVAA h = _parameters.timestep;
 	floatEVAA tend = _parameters.num_time_iter*h;
 	int DOF = _parameters.DOF;
 	const int alignment = 64;
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-	linear11dof<floatEVAA> solver(_parameters, _load_module_parameter);
+	linear11dof<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
 	solver.apply_boundary_condition("road_force");
 	solver.solve(soln);
 	size_t steps = floor(tend / h);
@@ -533,13 +534,13 @@ void EVAAComputeEngine::computeMKLlinear11dof(void) {
 	mkl_free(soln);
 }
 
-void EVAAComputeEngine::computeMKLlinear11dof_reduced(void) {
+void EVAAComputeEngine::computeMKLlinear11dof_reduced() {
 	floatEVAA h = _parameters.timestep;
 	floatEVAA tend = _parameters.num_time_iter*h;
 	int DOF = _parameters.DOF - 4;
 	const int alignment = 64;
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-	linear11dof<floatEVAA> solver(_parameters, _load_module_parameter);
+	linear11dof<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
 	solver.apply_boundary_condition("fixed_to_road");
 	solver.solve(soln);
 	size_t steps = floor(tend / h);

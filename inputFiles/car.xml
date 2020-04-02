@@ -28,8 +28,7 @@
           <FrontRight>0.2</FrontRight>
         </TyreSprings>
       </Geometry>
-      <Stiffness>
-        
+      <Stiffness>        
         <Constant>
           <Tyre>
             <ReerRight>260e3</ReerRight>
@@ -170,7 +169,7 @@
     </Orientation>
 	<Position>
 		<Body>
-			<x>0</x>
+			<x>5</x>
 			<y>0</y>
 			<z>0</z>
 		</Body>

@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!--<xs:schema id="EVAA_XML" xmlns="car_properties" targetNamespace="car_properties" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
--->  <xs:schema id="EVAA_XML" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xs:schema id="EVAA_XML" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xs:complexType name="legs_t">
     <xs:sequence>    
       <xs:element name="ReerRight" type="xs:double"/>

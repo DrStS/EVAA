@@ -29,6 +29,10 @@
 #include "MathLibrary.h"
 #include "ReadXML.h"
 #include "MBD_method.h"
+#ifndef U_COMPSTIFF
+#define U_COMPSTIFF
+#include "EVAAComputeStiffness.h"
+#endif
 
 
 /********//**
@@ -78,8 +82,8 @@ public:
 	* \author Stefan Sicklinger
 	***********/
 	// MKL Linear solver
-	void computeMKLlinear11dof(void);
-	void computeMKLlinear11dof_reduced(void);
+	void computeMKLlinear11dof();
+	void computeMKLlinear11dof_reduced();
 	/***********************************************************************************************
 	* \brief compute engine
 	* \author Stefan Sicklinger
@@ -102,6 +106,7 @@ private:
 	std::string _xmlLoadFileName;
 	Simulation_Parameters _parameters;
 	Load_Params _load_module_parameter;
+	EVAAComputeStiffness* lookupStiffness;
 };
 
 template <class T>
@@ -116,6 +121,7 @@ private:
 	const int num_wheels_x_dim = num_wheels * dim;
 	const int DOF_diag = 9; // the diagonal elements from A
 	int DOF;
+	EVAAComputeStiffness* lookupStiffness;
 
 	T k_body_fl;
 	T k_tyre_fl;
@@ -155,6 +161,8 @@ private:
 	T u_init_body;
 	T theta_x_init_body;
 	T theta_z_init_body;
+
+
 
 	//// Solver type selection based on type of boundary condition
 	std::string condition_type;
@@ -363,8 +371,12 @@ private:
 
 
 public:
-	linear11dof(const Simulation_Parameters &params, const Load_Params &load_param){
+	linear11dof(const Simulation_Parameters &params, const Load_Params &load_param, EVAAComputeStiffness* interpolator){
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+		lookupStiffness = interpolator;
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
