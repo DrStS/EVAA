@@ -23,6 +23,7 @@ private:
 	int used_solver;
 	int boundary_conditions;
 	T radius_circular_path;
+	T* center_of_circle;
 	////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
 	T k_body_fl;
 	T k_tyre_fl;
@@ -334,6 +335,8 @@ public:
 		solution_dim = params.solution_dim; /// this is by the formulation
 		used_solver = params.solver;
 		boundary_conditions = load_params.boundary_condition_road;
+		radius_circular_path = load_params.profile_radius;
+
 
 		////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
 		k_body_fl = params.k_body[2];
@@ -444,6 +447,8 @@ public:
 		FT = (T*)mkl_calloc((this->NUM_LEGS), sizeof(T*), this->alignment);
 		A_Ic = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
 		A_rem = (T*)mkl_calloc(9 * this->DIM, sizeof(T), this->alignment);
+		center_of_circle = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
+
 
 		i = 0;
 		r1[i] = -l_long_rr; r2[i] = -l_long_rl; r3[i] = l_long_fl; r4[i] = l_long_fr;
@@ -474,6 +479,7 @@ public:
 		vt4[i] = params.initial_vel_tyre[i+9];
 		pcc[i] = params.initial_pos_body[i]; 
 		FC[i] = 0;
+		center_of_circle[i] = load_params.profile_center[i];
 
 		i = 1;
 		r1[i] = 0; r2[i] = 0; r3[i] = 0; r4[i] = 0;
@@ -504,6 +510,7 @@ public:
 		vt4[i] = params.initial_vel_tyre[i + 9];
 		pcc[i] = params.initial_pos_body[i];
 		FC[i] = -mass * g;
+		center_of_circle[i] = load_params.profile_center[i];
 
 		i = 2;
 		r1[i] = l_lat_rr; r2[i] = -l_lat_rl; r3[i] = -l_lat_fl; r4[i] = l_lat_fr;
@@ -534,6 +541,7 @@ public:
 		vt4[i] = params.initial_vel_tyre[i + 9];
 		pcc[i] = params.initial_pos_body[i];
 		FC[i] = 0;
+		center_of_circle[i] = load_params.profile_center[i];
 
 		i = 3;
 		mass_wheel[i] = mass_wheel_fr;
@@ -557,15 +565,22 @@ public:
 		LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', this->DIM, A_Ic, this->DIM);
 	}
 
-	void circular_path_initialization(T* vc, T* vw1, T* vw2, T* vw3, T* vw4, T* vt1, T* vt2, T* vt3, T* vt4, T* omega, T* pcc, T* pt1 , T* pt2, T* pt3, T* pt4, T &radius) {
+	void circular_path_initialization(T* vc, T* vw1, T* vw2, T* vw3, T* vw4, T* vt1, T* vt2, T* vt3, T* vt4, T* omega, T* pcc, T* pt1 , T* pt2, T* pt3, T* pt4, T &radius_param) {
 		vc[1] = 0;
-		pcc[1] = 0;
-		
-		radius = cblas_dnrm2(this->DIM, pcc, 1);
+
+		T* radial_vector = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
+		radial_vector[0] = pcc[0] - center_of_circle[0];
+		radial_vector[1] = 0;
+		radial_vector[2] = pcc[2] - center_of_circle[2];
+
+		T radius = cblas_dnrm2(this->DIM, radial_vector, 1);
+
+		if (abs(radius - radius_param) > 0.01)
+			std::cout << "Warning! the initial position of the car is not on the trajectory provided in the circular path. \n The expected radius is " << radius_circular_path << ", but the car is at an initial distance of " << radius << " from the center of the circle.\n The execution procedes with the current spatial configuration and with the current distance to the center of the circle." << std::endl;
 
 		T inv_radius_squared = 1. / (radius * radius);
 
-		MathLibrary::crossProduct(pcc, vc, omega);
+		MathLibrary::crossProduct(radial_vector, vc, omega);
 		
 		cblas_dscal(this->DIM, inv_radius_squared, omega, 1);
 
@@ -1568,6 +1583,7 @@ public:
 		size_t solution_size = (this->num_iter + 1) * this->solution_dim;
 		T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), this->alignment);
 		x_vector = (T*)mkl_calloc(solution_dim, sizeof(T), this->alignment);
+
 		get_tilda(r1, r1_tilda);
 		get_tilda(r2, r2_tilda);
 		get_tilda(r3, r3_tilda);

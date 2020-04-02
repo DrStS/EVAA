@@ -161,11 +161,10 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 		parameters.boundary_condition_road = CIRCULAR;
 	}
 	else {
-		std::cerr << "Wrong boundary conditions! Only fixed and nonfixed implemented so far" << std::endl;
+		std::cerr << "Wrong boundary conditions! Only circle, fixed and nonfixed implemented so far" << std::endl;
 		exit(2);
 	}
 	if (load_data->boundary_description().circular().present()) {
-		std::cout << "circular is present" << std::endl;
 		parameters.profile_radius = load_data->boundary_description().circular()->radius();
 		readVector(parameters.profile_center, load_data->boundary_description().circular()->center());
 	}

@@ -28,9 +28,8 @@
           <FrontRight>0.2</FrontRight>
         </TyreSprings>
       </Geometry>
-      <Stiffness>
-        
-<!--        <Constant>
+      <Stiffness>        
+        <Constant>
           <Tyre>
             <ReerRight>260e3</ReerRight>
             <ReerLeft>260e3</ReerLeft>
@@ -43,10 +42,10 @@
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
           </Body>
-        </Constant> -->
-        <LookupTable>
+        </Constant>
+<!--        <LookupTable>
           <FilePath>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePath>
-        </LookupTable>
+        </LookupTable> -->
       </Stiffness>
       <DampingCoefficients>
         <Tyre>
@@ -170,7 +169,7 @@
     </Orientation>
 	<Position>
 		<Body>
-			<x>0</x>
+			<x>5</x>
 			<y>0</y>
 			<z>0</z>
 		</Body>
