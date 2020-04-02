@@ -168,7 +168,7 @@
 			<y>0</y>
 			<z>0</z>
 		</Body>
-    <!--<UnsprungMass>
+    <UnsprungMass>
       <ReerRight>
         <x>0</x>
         <y>0</y>
@@ -211,7 +211,7 @@
         <y>0</y>
         <z>0</z>
       </FrontRight>
-    </Tyre>-->
+    </Tyre>
   </Position>
   </InitialConditions>
 

@@ -2,14 +2,14 @@
 <EVAA_load_module>
 	<boundary_description>
 		<BoundaryConditions>circle</BoundaryConditions>
-    <!--<circular>
+    <circular>
 			<radius>50</radius>
 			<center>
 				<x>0</x>
 				<y>0</y>
 				<z>0</z>
 			</center>
-		</circular> -->
+	</circular>
 	</boundary_description>
   <forces>
     <force_body>

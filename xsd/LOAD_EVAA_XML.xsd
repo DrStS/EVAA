@@ -4,9 +4,9 @@
  <xs:schema id="EVAA_LOAD_XML" xmlns=""  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
    <xs:complexType name="load_vector_t">
      <xs:sequence>
-       <xs:element name="x" type="xs:double"/>
-       <xs:element name="y" type="xs:double"/>
-       <xs:element name="z" type="xs:double"/>
+       <xs:element name="x" type="xs:double" />
+       <xs:element name="y" type="xs:double" />
+       <xs:element name="z" type="xs:double" />
      </xs:sequence>
    </xs:complexType>
 

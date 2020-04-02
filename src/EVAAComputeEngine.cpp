@@ -534,8 +534,8 @@ void EVAAComputeEngine::computeMKLlinear11dof(void) {
 }
 
 void EVAAComputeEngine::computeMKLlinear11dof_reduced(void) {
-	floatEVAA tend = _parameters.timestep;
-	floatEVAA h = _parameters.num_time_iter*h;
+	floatEVAA h = _parameters.timestep;
+	floatEVAA tend = _parameters.num_time_iter*h;
 	int DOF = _parameters.DOF - 4;
 	const int alignment = 64;
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);

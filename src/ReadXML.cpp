@@ -39,7 +39,7 @@ ReadXML::ReadXML(){
 
 ReadXML::ReadXML(const std::string& load_filename) :
     _load_filename(load_filename),
-    load_data(EVAA_settings(load_filename, xml_schema::flags::dont_validate)) {
+    load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
 
     std::cout << "ghour" << std::endl;
 }
