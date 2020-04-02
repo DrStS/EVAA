@@ -77,8 +77,6 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     else {
         _lookup_filename = settings->Vehicle().TwoTrackModel().Stiffness().LookupTable().get().FilePath();
         std::cout << "Read lookup table from " << _lookup_filename << std::endl;
-
-        ReadLookupParameters();
     }
     readLegs(parameters.c_tyre, settings->Vehicle().TwoTrackModel().DampingCoefficients().Tyre());
     readLegs(parameters.c_body, settings->Vehicle().TwoTrackModel().DampingCoefficients().Body());
@@ -174,7 +172,7 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
     readVector(parameters.external_force_body, load_data->forces().force_body());
 }
 
-void ReadXML::ReadLookupParameters() {
+void ReadXML::ReadLookupParameters(EVAAComputeStiffness* lookupStiffness) {
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
 
     if (lookup_table->LookupTableGenerator().present()) {
@@ -197,7 +195,8 @@ void ReadXML::ReadLookupParameters() {
         readLegs(a+4, lookup_table->LookupTableGenerator().get().Magnitude().Tyre());
 
         //@Felix, initialize your lookup table here, add and change function signatures, private variables as you need it
-
+		// EVAAComputeStiffness(int size, double a, double b, double c, double l_min, double l_max, int k, int type, int order);
+		lookupStiffness = new EVAAComputeStiffness(size, a, b, c, l_min, l_max, k, type, order);
         delete[] a;
     }
 }

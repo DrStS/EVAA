@@ -23,7 +23,10 @@
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
+#ifndef U_COMPSTIFF
+#define U_COMPSTIFF
 #include "EVAAComputeStiffness.h"
+#endif
 
 #define ALIGNMENT 64
 
@@ -36,25 +39,25 @@ double EVAAComputeGrid::responseFunction(const double a, const double b, const d
 	return c * length * length + b * length + a;
 }
 
-void EVAAComputeGrid::buildLinearGrid(double* grid, double* axis, int size, double l_min, double l_max, double a, double b, double c, int k) {
+void EVAAComputeGrid::buildLinearGrid(double* grid, double* axis, int size, double l_min, double l_max, double* a, double b, double c, int k) {
 	double density = (l_max - l_min) / size;
 	for (auto i = 0; i < size; i++) {
 		axis[i] = l_min + i * density;
 	}
 	for (auto j = 0; j < k; j++) {
 		for (auto i = 0; i < size; i++) {
-			grid[i + j * size] = responseFunction(a * j, b, c, axis[i]);
+			grid[i + j * size] = responseFunction(a[j], b, c, axis[i]);
 		}
 	}
 }
 
-void EVAAComputeGrid::buildChebyshevGrid(double* grid, double* axis, int size, double l_min, double l_max, double a, double b, double c, int k) {
+void EVAAComputeGrid::buildChebyshevGrid(double* grid, double* axis, int size, double l_min, double l_max, double* a, double b, double c, int k) {
 	for (auto i = 0; i < size; i++) {
 		axis[i] = (1 + cos((2 * i + 1) / (2 * size) * M_PI)) / 2 * (l_max - l_min) + l_min;
 	}
 	for (auto j = 0; j < k; j++) {
 		for (auto i = 0; i < size; i++) {
-			grid[i + j * size] = responseFunction(a, b, c * j, axis[i]);
+			grid[i + j * size] = responseFunction(a[j], b, c, axis[i]);
 		}
 	}
 }
@@ -99,7 +102,7 @@ void EVAAComputeStiffness::getDerivative(double* length, double* deriv) {
 *	for spline interpolation:
 *	type = DF_PP_NATURAL, order = DF_PP_CUBIC
 */
-EVAAComputeStiffness::EVAAComputeStiffness(int size, double a, double b, double c, double l_min, double l_max, int k, int type, int order) : nx(size), ny(k), sorder(order), stype(type) {
+EVAAComputeStiffness::EVAAComputeStiffness(int size, double* a, double b, double c, double l_min, double l_max, int k, int type, int order) : nx(size), ny(k), sorder(order), stype(type) {
 	if (sorder == DF_PP_CUBIC) {
 		bc_type = DF_BC_FREE_END;
 	}
