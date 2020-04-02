@@ -144,6 +144,14 @@ private:
 	T mass_tyre_rl;
 	T mass_wheel_rr;
 	T mass_tyre_rr;
+	T upper_spring_length_fl;
+	T upper_spring_length_fr;
+	T upper_spring_length_rl;
+	T upper_spring_length_rr;
+	T lower_spring_length_fl;
+	T lower_spring_length_fr;
+	T lower_spring_length_rl;
+	T lower_spring_length_rr;
 	T u_init_body;
 	T theta_x_init_body;
 	T theta_z_init_body;
@@ -160,6 +168,7 @@ private:
 	int i;
 	T *quad_angle_init, *euler_angle_init;
 	T* M, * temp, * K, * K_trans, * D, * M_red, * D_red, * K_red;
+	T *upper_spring_length, *lower_spring_length;
 	T* u_sol, * u_sol_red, * u_n_p_1, * u_n_p_1_red, * u_n_m_1, * u_n, * u_n_red, * u_n_m_1_red, * A, * Ared, * B, * Bred, * f_n_p_1, * f_n_p_1_red;
 	size_t* tyre_index_set;
 	T* k_vect, *l_lat, *l_long;
@@ -348,6 +357,10 @@ private:
 		k_vect[7] = k_tyre_rr;
 	}
 
+	void compute_dx(T* current_length, T* dx) {
+		
+	}
+
 
 public:
 	linear11dof(const Simulation_Parameters &params, const Load_Params &load_param){
@@ -411,9 +424,10 @@ public:
 		u_n_m_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		u_n = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		f_n_p_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
-		k_vect = (T*)mkl_calloc(num_wheels*2, sizeof(T), alignment);
-		l_lat = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
-		l_long = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
+		k_vect = (T*)mkl_malloc(num_wheels*2 * sizeof(T), alignment);
+		l_lat = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
+		l_long = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
+		upper_spring_length = (T*)mkl_malloc(num_tyre, sizeof(T), alignment);
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////// Initial Iteration vector ////////////////////////////////////////////////////
