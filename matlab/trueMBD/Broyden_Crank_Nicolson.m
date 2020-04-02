@@ -1,15 +1,15 @@
-function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_iter)
+function [t, x_vector_new, metrics] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_iter)
     
     % Initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
+    metrics = zeros(length(t), 2); %first component: number of iteration to convergence, second component: condition of the Jacobian
 
     dt_inv = round(1/(t(2)-t(1))); %only needed to print progress
 
     for n = 2 : length(t)
 		delta_t = t(n) - t(n-1);
-		% 0 ~= F(x_new) = x_new - x_n - delta_t * x_dot(x_new)
 
-		x_previous = x_vector_new(n-1, :);
+       x_previous = x_vector_new(n-1, :);
 		
 		% 1. Initial guess using previous time step
 		f_old = f(t(n-1), x_previous');
@@ -28,6 +28,7 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
 		
 		% Approximate J(x_0)         
 		J = eye(length(df)) - delta_t *0.5 * ((1./dx)' * df)'; 
+        metrics(n,2) = cond(J);
 		% Calculate initial F for stopping condition
 		x_dot = f_new';
 		x_dot_previous = f_old';
@@ -55,6 +56,7 @@ function [t, x_vector_new] = Broyden_Crank_Nicolson(f, t, x_previous, tol, max_i
 			F = F_new;
 			x = x_new;
         end
+        metrics(n,1) = i;
         if(i==max_iter)
             dispstr = ['Maximum number of iteration ', num2str(max_iter),' reached! Current accuracy: ', num2str(norm(F))];
             disp(dispstr)

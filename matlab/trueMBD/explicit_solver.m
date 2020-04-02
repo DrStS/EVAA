@@ -1,5 +1,5 @@
-function [t,x_vector_new] = explicit_solver(f, t, x_previous)
-    
+function [t,x_vector_new, metrics] = explicit_solver(f, t, x_previous)
+    metrics =0;
 %     [~, x_vector_new] = ode45(f, [t(1), t(2)], x_vector);
 
 

@@ -1,4 +1,4 @@
-function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, qc, pcc, ... 
+function [t, y_return, y, metrics] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, qc, pcc, ... 
         lower_spring_length, upper_spring_length, initial_lower_spring_length, initial_upper_spring_length, ...
         lower_spring_stiffness, upper_spring_stiffness,  lower_spring_damping, upper_spring_damping, lower_rotational_stiffness, upper_rotational_stiffness, ...
         vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4,...
@@ -7,7 +7,7 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
     %% INITIALLIZATION
     [qc, pw1, pw2, pw3, pw4, pt1, pt2, pt3, pt4] = get_initial_positions(qc, r1, r2, r3, r4, pcc, initial_upper_spring_length, initial_lower_spring_length);
 
-    [vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc] = Circular_path_initialization(pcc, pt1, pt2, pt3, pt4, vc);
+%    [vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc] = Circular_path_initialization(pcc, pt1, pt2, pt3, pt4, vc);
 
     % computation of ri_tilda, ro_tilda
     r1_tilda = get_tilda(r1);
@@ -35,7 +35,7 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
                 pt1; ...    % 3 50:52
                 pt2; ...    % 3 53:55
                 pt3; ...    % 3 56:58
-                pt4]       % 3 59:61
+                pt4];       % 3 59:61
     
     % create the reduced system matrix (probably best to store directly
     % its inverse, maybe split it into one vector of the inverse diagonal
@@ -89,7 +89,7 @@ function [t, y_return, y] = main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass
     f = @(t,x) compute_f3D_reduced(x,t,aux_vals);
 
     tic;
-    [t,y] = solver(f, t, x_vector);
+    [t,y, metrics] = solver(f, t, x_vector);
     solvetime=toc;
     timestr=['It took ', num2str(floor(solvetime)), 'sec ', num2str(round(mod(solvetime, 1)*1000)),'ms to solve the system!'];
     disp(timestr)

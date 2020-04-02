@@ -1,8 +1,9 @@
-function [t, x_vector_new] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
+function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
 % implementation of the previous difference formula (also called BDF in
 % older literature)
     % Initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
+    metrics = zeros(length(t), 2); %first component: number of iteration to convergence, second component: condition of the Jacobian
 
     dt_inv = round(1/(t(2)-t(1))); %only needed to print progress
 
@@ -29,6 +30,7 @@ function [t, x_vector_new] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
 
     % approximate J(x_0)         
     J = eye(length(df)) - delta_t*((1./dx)'*df)'; 
+        metrics(2,2) = cond(J);
 
     % calculate initial F for stopping condition
     x_dot = f_new';
@@ -81,6 +83,7 @@ function [t, x_vector_new] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
         
         % approximate J(x_0)         
         J = eye(length(df)) - delta_t*((1./dx)'*df)'; 
+        metrics(n,2) = cond(J);
         
         % calculate initial F for stopping condition
         x_dot = f_new';
@@ -108,6 +111,7 @@ function [t, x_vector_new] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
             F = F_new;
             x = x_new;
         end
+        metrics(n,1) = i;
         if(i==max_iter)
             dispstr = ['Maximum number of iteration ', num2str(max_iter),' reached! Current accuracy: ', num2str(norm(F))];
             disp(dispstr)

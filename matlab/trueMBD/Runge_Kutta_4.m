@@ -1,5 +1,6 @@
-function [t,x_vector_new] = Runge_Kutta_4(f, t, x_previous)
-
+function [t,x_vector_new, metrics] = Runge_Kutta_4(f, t, x_previous)
+    metrics = 0;
+    
     %initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
     
