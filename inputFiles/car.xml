@@ -42,8 +42,8 @@
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
           </Body>
-        </Constant> 
-<!--        <LookupTable>
+        </Constant> <!--
+        <LookupTable>
           <FilePath>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePath>
         </LookupTable> -->
       </Stiffness>
