@@ -157,10 +157,10 @@
       </Tyre>
     </Velocities>
     <Orientation>
-      <w>1</w>
 	  <x>0</x>
       <y>0</y>
       <z>0</z>
+	  <w>1</w>
     </Orientation>
 		<pos_body>
 			<x>0</x>
