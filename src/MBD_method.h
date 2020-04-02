@@ -160,7 +160,7 @@ private:
 		cblas_dscal(this->NUM_LEGS, 1.0 / nrm, initial_orientation_, 1);
 
 		// 2.	C_Nc = get_basis(qc);
-		get_basis(initial_orientation_, C_Nc);
+		MathLibrary::get_basis<T>(initial_orientation_, C_Nc);
 
 		// 3.	global_y = C_Nc(:,2);
 		cblas_dcopy(this->DIM, C_Nc + 1, this->DIM, global_y, 1);
@@ -238,67 +238,6 @@ private:
 		mkl_free(C_Nc);
 	}
 
-	void get_basis(const T* initial_orientation, T* transfrormed_basis) {
-		// quaternion initial_orientation yields basis(calculates basically the matrix rotation
-		// the euclidian basis to the local basis)
-
-		// get local basis vectors using unit quaternion rotation
-		// s = 1 / norm(q) ^ 2;      %normalizer, only to remove numerical stuffy stuff
-		size_t quad_dim = 4;
-		size_t dim = 3;
-		T nrm = cblas_dnrm2(quad_dim, initial_orientation, 1);
-		T s = 1.0 / (nrm * nrm);
-		cblas_dscal(dim*dim, 0.0, transfrormed_basis, 1);
-		size_t i, j;
-
-		T quad_sum = 0.0;
-		for (i = 0; i < dim; ++i) {
-			quad_sum += initial_orientation[i] * initial_orientation[i];
-		}
-		i = 0;
-		j = 0;
-		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
-		j = 1;
-		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
-		j = 2;
-		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
-		i = 1;
-		j = 0;
-		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
-		j = 1;
-		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
-		j = 2;
-		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
-		i = 2;
-		j = 0;
-		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
-		j = 1;
-		transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
-		j = 2;
-		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
-
-	}
-
-	void get_tilda(const T* input_vector, T* tilda_output) {
-		/*
-		This function is only suitable for a 3 dimensional system and renders unusable, might throw exceptions when used with other dimensions.
-		given y: x_tilda*y = cross(x,y)
-		[Stoneking, page 3 bottom]
-		x_tilda = [	0, -x(3), x(2)
-					x(3), 0, -x(1)
-					-x(2), x(1), 0	]
-
-		*/
-		tilda_output[0] = 0;
-		tilda_output[1] = -input_vector[2];
-		tilda_output[2] = input_vector[1];
-		tilda_output[3] = input_vector[2];
-		tilda_output[4] = 0;
-		tilda_output[5] = -input_vector[0];
-		tilda_output[6] = -input_vector[1];
-		tilda_output[7] = input_vector[0];
-		tilda_output[8] = 0;
-	}
 	void write_matrix(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
 		for (size_t i = 0; i < count; ++i) {
@@ -866,7 +805,7 @@ public:
 		basis_c = get_basis(qc);
 		*/
 
-		get_basis(qc_, cf_C_cN);
+		MathLibrary::get_basis<T>(qc_, cf_C_cN);
 		const MKL_INT mkl_DIM = this->DIM;
 		const MKL_INT mkl_incx = 1;
 		const MKL_INT mkl_incy = 1;
@@ -1392,7 +1331,7 @@ public:
 
 		// Hc = A(1:3, 1:3) * wc;
 		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1.0, this->Ic, this->DIM, wc_, 1, 0.0, cf_Hc, 1);
-		get_tilda(wc_, cf_wc_tilda);
+		MathLibrary::get_tilda<T>(wc_, cf_wc_tilda);
 		cblas_dcopy(this->DIM, cf_Hc, 1, cf_temp, 1);
 		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, -1.0, cf_wc_tilda, this->DIM, cf_temp, 1, 0.0, cf_Hc, 1);
 		cblas_dcopy(this->DIM, cf_Hc, 1, cf_sum_torque_spring_car, 1);
@@ -1570,10 +1509,10 @@ public:
 		size_t solution_size = (this->num_iter + 1) * this->solution_dim;
 		T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), this->alignment);
 		x_vector = (T*)mkl_calloc(solution_dim, sizeof(T), this->alignment);
-		get_tilda(r1, r1_tilda);
-		get_tilda(r2, r2_tilda);
-		get_tilda(r3, r3_tilda);
-		get_tilda(r4, r4_tilda);
+		MathLibrary::get_tilda<T>(r1, r1_tilda);
+		MathLibrary::get_tilda<T>(r2, r2_tilda);
+		MathLibrary::get_tilda<T>(r3, r3_tilda);
+		MathLibrary::get_tilda<T>(r4, r4_tilda);
 
 		/*
 		Preparing x_vector in the form of
