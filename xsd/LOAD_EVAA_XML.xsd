@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="EVAA_LOAD_XML" xmlns="car_load" xmlns:im="car_properties" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" targetNamespace="car_load">
+  <xs:import namespace="car_properties" schemaLocation="IP_EVAA_XML.xsd"/>
+
+  <xs:complexType name="load_t">
+    <xs:sequence>
+	
+      <xs:element name="boundary_description">
+        <xs:complexType>
+          <xs:sequence>
+		    <xs:element name="BoundaryConditions" type="xs:string" />
+            <xs:element name="circular" minOccurs="0" maxOccurs="1">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="radius" type="xs:double" />
+                  <xs:element name="center" type="im:vector_t" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+			</xs:sequence>
+        </xs:complexType>
+      </xs:element>
+	  
+	  <xs:element name="forces">
+		<xs:complexType>
+		  <xs:sequence>
+			<xs:element name="force_body" type="im:vector_t" />
+			<xs:element name="force_wheel" type="im:legs_vector_t" />
+			<xs:element name="force_tyre" type="im:legs_vector_t" />
+		  </xs:sequence>
+		</xs:complexType>
+	  </xs:element>
+         
+		 
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="EVAA_load_module" type="load_t"/>
+
+</xs:schema>
