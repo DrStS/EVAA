@@ -323,7 +323,7 @@ private:
 
 
 public:
-	MBD_method(const Simulation_Parameters& params) {
+	MBD_method(const Simulation_Parameters& params, const Load_Params& load_params) {
 
 		////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
 		h = params.timestep;
@@ -333,7 +333,7 @@ public:
 		tol = params.tolerance;
 		solution_dim = params.solution_dim; /// this is by the formulation
 		used_solver = params.solver;
-		boundary_conditions = params.boundary_condition_road;
+		boundary_conditions = load_params.boundary_condition_road;
 
 		////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
 		k_body_fl = params.k_body[2];
