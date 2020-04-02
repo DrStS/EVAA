@@ -46,79 +46,40 @@ public:
 	static void buildChebyshevGrid(double* grid, double* axis, int size, double l_min, double l_max, double a, double b, double c, int k);
 };
 
-class EVAAComputeStiffness_Linear {
+class EVAAComputeStiffness {
 private:
-	DFTaskPtr task;                     // Data Fitting task descriptor
-	MKL_INT nx;                         // number of break points
-	MKL_INT xhint = DF_NON_UNIFORM_PARTITION;                      // additional info about break points
-	MKL_INT ny;                         // number of functions
-	MKL_INT yhint = DF_NO_HINT;                      // additional info about function
-
-	double* axis;                        // array of break points
-	double* grid;                    // function values
-
-	MKL_INT nsite;                      // total number of interpolation sites
-	MKL_INT sitehint = DF_NON_UNIFORM_PARTITION;                   // additional info about interpolation
-	double* site; ;                 // array of interpolation sites
-
-	MKL_INT ndorder = 1;                    // size of array describing derivative
-										// orders
-	MKL_INT dorder[1] = { 1 };           // only value to calculate
-										// will be computed
-
-	MKL_INT rhint = DF_MATRIX_STORAGE_ROWS;                      // interpolation results storage format
-	double* result;                    // spline evaluation results
-
-	MKL_INT stype = DF_LOOKUP_INTERPOLANT;
-	MKL_INT sorder = DF_PP_STD;
-
-	double* datahint = 0;                   // additional info about structure
-										// of arrays x and y
+	DFTaskPtr* task;									// Data Fitting task descriptor
+	MKL_INT nx;											// number of break points
+	MKL_INT xhint = DF_NON_UNIFORM_PARTITION;			// additional info about break points
+	MKL_INT ny;											// number of functions
+	MKL_INT yhint = DF_NO_HINT;							// additional info about function
+	MKL_INT scoeffhint = DF_NO_HINT;					// additional info about spline coefficients
+	MKL_INT bc_type = DF_NO_BC;							// boundary conditions type
+	MKL_INT ic_type = DF_NO_IC;							// internal conditions type
+	MKL_INT rhint = DF_NO_HINT;							// interpolation results storage format
+	double* axis;										// array of break points
+	double* grid;										// function values
+	double* ic = 0;										// internal conditions
+	double* bc = 0;										// boundary conditions
+	double* scoeff;										// array of spline coefficients
+	double* datahint = 0;								// additional info about the structure
+	MKL_INT stype;										// linear = DF_PP_DEFAULT, spline = DF_PP_NATURAL
+	MKL_INT sorder;										// linear = DF_PP_LINEAR, spline = DF_PP_CUBIC
 public:
 	/*
 	* \brief Constructor
 	*/
-	EVAAComputeStiffness_Linear(int size, double a, double b, double c, double l_min, double l_max, int k);
+	EVAAComputeStiffness(int size, double a, double b, double c, double l_min, double l_max, int k, int type, int order);
 	/*
 	* \brief free all the allocated storage
 	*/
-	~EVAAComputeStiffness_Linear();
+	~EVAAComputeStiffness();
 	/*
 	* \brief get stiffness value via linear interpolation
 	*/
-	void getStiffness(double* stiffness, double* x); // or double* x and calculate length
+	void getStiffness(double* length, double* stiffness); // or double* x and calculate length
 	/*
-	* \brief get derivative of linear interpolation
+	* \brief get the derivative ob k after l
 	*/
-	double getDerivative(double* x);  // or double* x and calculate length
-};
-
-
-class EVAAComputeStiffness_Spline {
-private:
-	/*
-	* \brief boundary value for spring length (later for all params)
-	*/
-	const double _l_min, _l_max;
-	/*
-	* \brief function evaluations of all param combinations
-	*/
-	double* grid;
-	/*
-	* \brief _l_min to _l_max in _density steps
-	*/
-	double* axis;
-public:
-	/*
-	* \brief Constructor
-	*/
-	EVAAComputeStiffness_Spline(double size, double a, double b, double c, double l_max, double l_min);
-	/*
-	* \brief get stiffness value via linear interpolation
-	*/
-	void getStiffness(double* stiffness, double* x); // or double* x and calculate length
-	/*
-	* \brief get derivative of linear interpolation
-	*/
-	double getDerivative(double* x);  // or double* x and calculate length
+	void getDerivative(double* length, double* deriv);
 };

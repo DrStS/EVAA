@@ -21,10 +21,13 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <iostream>
+#include <stdlib.h>
 #include <vector>
 #include "EVAAComputeStiffness.h"
 
 #define ALIGNMENT 64
+
+void CheckDfError(int num);
 
 /*************************************************/
 /*			Functions for building a grid        */
@@ -35,24 +38,20 @@ double EVAAComputeGrid::responseFunction(const double a, const double b, const d
 
 void EVAAComputeGrid::buildLinearGrid(double* grid, double* axis, int size, double l_min, double l_max, double a, double b, double c, int k) {
 	double density = (l_max - l_min) / size;
-#pragma simd
 	for (auto i = 0; i < size; i++) {
 		axis[i] = l_min + i * density;
 	}
-#pragma simd
 	for (auto j = 0; j < k; j++) {
 		for (auto i = 0; i < size; i++) {
-			grid[i] = responseFunction(a, b, c * j, axis[i]);
+			grid[i + j * size] = responseFunction(a * j, b, c, axis[i]);
 		}
 	}
 }
 
 void EVAAComputeGrid::buildChebyshevGrid(double* grid, double* axis, int size, double l_min, double l_max, double a, double b, double c, int k) {
-#pragma simd
 	for (auto i = 0; i < size; i++) {
 		axis[i] = (1 + cos((2 * i + 1) / (2 * size) * M_PI)) / 2 * (l_max - l_min) + l_min;
 	}
-#pragma simd
 	for (auto j = 0; j < k; j++) {
 		for (auto i = 0; i < size; i++) {
 			grid[i + j * size] = responseFunction(a, b, c * j, axis[i]);
@@ -64,104 +63,288 @@ void EVAAComputeGrid::buildChebyshevGrid(double* grid, double* axis, int size, d
 /*************************************************/
 /*	Functions for EVAAComputeStiffness_Linear    */
 /*************************************************/
-void EVAAComputeStiffness_Linear::getStiffness(double* stiffness, double* x) {
-	/*
-	int ind_low = floor((length - _l_min));
-	if (length > _l_max) { // over max
-		stiffness = _grid[_size - 1];
+void EVAAComputeStiffness::getStiffness(double* length, double* stiffness) {
+	int err = 0;
+	MKL_INT ndorder = 1;                    // size of array describing derivative (dorder), which is definde two lines below
+	MKL_INT dorder[1] = { 1 }; // only the values are computed
+	for (auto i = 0; i < ny; i++) {
+		err = dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
+			1, &length[i], DF_NO_HINT, ndorder,
+			dorder, datahint, &stiffness[i], rhint, 0);
+		printf("inter %d: %d\n", i, (int)err);
+		CheckDfError(err);
+		double one = 3 * length[i] * length[i] + 2 * length[i] + 1 * i;
+		std::cout << "ana: " << one << ", inter: " << stiffness[i] << std::endl;
 	}
-	else {
-		if (length < _l_min) { // below min
-			stiffness = grid[0];
-		}
-		else { // in boundaries
-			double val_low = grid[ind_low];
-			double val_up = grid[ceil((length - _l_min) / _density)];
-			double weight = (length - _l_min - _density * ind_low) / _density;
-			stiffness = (1 - weight) * val_low + weight * val_up;
-		}
-	}*/
-	/***** Interpolate using lookup method *****/
-	dfdInterpolate1D(task, DF_INTERP, DF_METHOD_PP,
-		nsite, site, sitehint, ndorder,
-		dorder, datahint, result, rhint, 0);
 }
 
+void EVAAComputeStiffness::getDerivative(double* length, double* deriv) {
+	int err = 0;
+	MKL_INT ndorder = 2;                    // size of array describing derivative (dorder), which is definde two lines below
+	MKL_INT dorder[2] = { 0, 1 }; // only the derivative values are computed
+	for (auto i = 0; i < ny; i++) {
+		err = dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
+			1, &length[i], DF_NO_HINT, ndorder,
+			dorder, datahint, &deriv[i], rhint, 0);
+		printf("deriv %d: %d\n", i, (int)err);
+		CheckDfError(err);
+		double one = 6 * length[i] + 2;
+		std::cout << "ana: " << one << ", inter: " << deriv[i] << std::endl;
+	}
+}
 /*
-double EVAAComputeStiffness_Linear::getDerivative(double length) {
-	double val_low, val_up, val_der;
-	if (length > _l_max) { // over max
-		val_low = _grid[_grid.size() - 2];
-		val_up = _grid[_grid.size() - 1];
-		val_der =  (val_up - val_low) / _density;
+*	for linear interpolation:
+* 	type = DF_PP_DEFAULT, order = DF_PP_LINEAR
+*
+*	for spline interpolation:
+*	type = DF_PP_NATURAL, order = DF_PP_CUBIC
+*/
+EVAAComputeStiffness::EVAAComputeStiffness(int size, double a, double b, double c, double l_min, double l_max, int k, int type, int order) : nx(size), ny(k), sorder(order), stype(type) {
+	if (sorder == DF_PP_CUBIC) {
+		bc_type = DF_BC_FREE_END;
 	}
-	else {
-		if (length < _l_min) { // below min
-			val_low = _grid[0];
-			val_up = _grid[1];
-			val_der = (val_up - val_low) / _density;
-		}
-		else { // in boundaries
-			val_low = _grid[floor((length - _l_min) / _density)];
-			val_up = _grid[ceil((length - _l_min) / _density)];
-			val_der = (val_up - val_low) / _density;
-		}
-	}
-	return val_der;
-}*/
-
-EVAAComputeStiffness_Linear::EVAAComputeStiffness_Linear(MKL_INT size, double a, double b, double c, double l_min, double l_max, MKL_INT k) {
 	// we will get the grid aftwards from a file. That why I do not directly write size, l_min, l_max into the variables
-	nx = size;
-	ny = k;
-	nsite = nx;
+	task = (DFTaskPtr*)mkl_malloc(ny * sizeof(DFTaskPtr), ALIGNMENT);
 	grid = (double*)mkl_calloc(nx * ny, sizeof(double), ALIGNMENT);
 	axis = (double*)mkl_calloc(nx, sizeof(double), ALIGNMENT);
-	site = (double*)mkl_calloc(nx, sizeof(double), ALIGNMENT);
-	result = (double*)mkl_calloc(nx, sizeof(double), ALIGNMENT);
+	scoeff = (double*)mkl_calloc(ny * (nx - 1) * sorder, sizeof(double), ALIGNMENT);
+
+	/* create grid */
 	EVAAComputeGrid::buildLinearGrid(grid, axis, nx, l_min, l_max, a, b, c, ny);
 
-	/***** Generate interpolation sites *****/
-	for (auto i = 0; i < nx; i++)
-	{
-		site[i] = axis[i];
-	}
+	int err = 0;
+	for (auto i = 0; i < ny; i++) {
+		/***** Create Data Fitting task *****/
+		err = dfdNewTask1D(&task[i], nx, axis, xhint, 1, &grid[i * nx], yhint);
+		printf("new : %d\n", (int)err);
+		CheckDfError(err);
 
-	/***** Create Data Fitting task *****/
-	dfdNewTask1D(&task, nx, axis, xhint, ny, grid, yhint);
-	
-	/***** Edit task parameters for look up interpolant *****/
-	dfdEditPPSpline1D(task, sorder, stype, 0, 0, 0, 0, 0, 0);
-	
+		/***** Edit task parameters for look up interpolant *****/
+		err = dfdEditPPSpline1D(task[i], sorder, stype, bc_type, bc,
+			ic_type, ic, &scoeff[i * (nx - 1) * sorder], scoeffhint);
+		printf("edit : %d\n", (int)err);
+		CheckDfError(err);
+
+		/***** Construct linear spline using STD method *****/
+		err = dfdConstruct1D(task[i], DF_PP_SPLINE, DF_METHOD_STD);
+		printf("constr : %d\n", (int)err);
+		CheckDfError(err);
+	}
 }
 
-EVAAComputeStiffness_Linear::~EVAAComputeStiffness_Linear() {
+EVAAComputeStiffness::~EVAAComputeStiffness() {
 	/***** Delete Data Fitting task *****/
-	dfDeleteTask(&task);
-
-	int errnums = 0;
-	/***** Check interpolation results *****/
-	for (auto j = 0; j < nx; j++)
-	{
-		if (abs(result[j] - grid[j]) > std::numeric_limits<double>::epsilon())
-			errnums++;
-	}
-
-	/***** Print summary of the test *****/
-	if (errnums != 0)
-	{
-		printf("\n\nError: Computed interpolation results");
-		printf(" are incorrect\n");
-	}
-	else
-	{
-		printf("\n\nComputed interpolation results");
-		printf(" are correct\n");
+	for (auto i = 0; i < ny; i++) {
+		dfDeleteTask(&task[i]);
 	}
 
 	/* free used space */
+	MKL_free(task);
+	MKL_free(scoeff);
 	MKL_free(grid);
 	MKL_free(axis);
-	MKL_free(site);
-	MKL_free(result);
+}
+
+
+// the following is just to know what exactly the error code of a function means
+/*******************************************************************************
+* Copyright 2010-2019 Intel Corporation.
+*
+* This software and the related documents are Intel copyrighted  materials,  and
+* your use of  them is  governed by the  express license  under which  they were
+* provided to you (License).  Unless the License provides otherwise, you may not
+* use, modify, copy, publish, distribute,  disclose or transmit this software or
+* the related documents without Intel's prior written permission.
+*
+* This software and the related documents  are provided as  is,  with no express
+* or implied  warranties,  other  than those  that are  expressly stated  in the
+* License.
+*******************************************************************************/
+
+
+void CheckDfError(int num)
+{
+	switch (num)
+	{
+	case DF_ERROR_NULL_TASK_DESCRIPTOR:
+	{
+		printf("Error: null task descriptor (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_MEM_FAILURE:
+	{
+		printf("Error: memory allocation failure in DF functionality (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_NX:
+	{
+		printf("Error: the number of breakpoints is invalid (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_X:
+	{
+		printf("Error: the array which contains the breakpoints is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_X_HINT:
+	{
+		printf("Error: invalid flag describing structure of partition (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_NY:
+	{
+		printf("Error: invalid dimension of vector-valued function y (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_Y:
+	{
+		printf("Error: the array which contains function values is invalid (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_Y_HINT:
+	{
+		printf("Error: invalid flag describing structure of function y (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_SPLINE_ORDER:
+	{
+		printf("Error: invalid spline order (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_SPLINE_TYPE:
+	{
+		printf("Error: invalid type of the spline (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_IC_TYPE:
+	{
+		printf("Error: invalid type of internal conditions used in the spline construction (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_IC:
+	{
+		printf("Error: array of internal conditions for spline construction is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_BC_TYPE:
+	{
+		printf("Error: invalid type of boundary conditions used in the spline construction (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_BC:
+	{
+		printf("Error: array which presents boundary conditions for spline construction is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_PP_COEFF:
+	{
+		printf("Error: array of piece-wise polynomial spline coefficients is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_PP_COEFF_HINT:
+	{
+		printf("Error: invalid flag describing structure of the piece-wise polynomial spline coefficients (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_PERIODIC_VAL:
+	{
+		printf("Error: function values at the end points of the interpolation interval are not equal as required in periodic boundary conditions (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_DATA_ATTR:
+	{
+		printf("Error: invalid attribute of the pointer to be set or modified in Data Fitting task descriptor with EditIdxPtr editor (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_DATA_IDX:
+	{
+		printf("Error: index of pointer to be set or modified in Data Fitting task descriptor with EditIdxPtr editor is out of range (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_NSITE:
+	{
+		printf("Error: invalid number of interpolation sites (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_SITE:
+	{
+		printf("Error: array of interpolation sites is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_SITE_HINT:
+	{
+		printf("Error: invalid flag describing structure of interpolation sites (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_NDORDER:
+	{
+		printf("Error: invalid size of array that defines order of the derivatives to be computed at the interpolation sites (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_DORDER:
+	{
+		printf("Error: array defining derivative orders to be computed at interpolation sites is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_DATA_HINT:
+	{
+		printf("Error: invalid flag providing a-priori information about partition and/or interpolation sites (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_INTERP:
+	{
+		printf("Error: array of spline based interpolation results is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_INTERP_HINT:
+	{
+		printf("Error: invalid flag defining structure of spline based interpolation results (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_CELL_IDX:
+	{
+		printf("Error: array of indices of partition cells containing interpolation sites is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_NLIM:
+	{
+		printf("Error: invalid size of arrays containing integration limits (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_LLIM:
+	{
+		printf("Error: array of left integration limits is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_RLIM:
+	{
+		printf("Error: array of right integration limits is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_INTEGR:
+	{
+		printf("Error: array of spline based integration results is not defined (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_INTEGR_HINT:
+	{
+		printf("Error: invalid flag defining structure of spline based integration results (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_BAD_LOOKUP_INTERP_SITE:
+	{
+		printf("Error: bad site provided for interpolation with look-up interpolator (code %d).\n", num);
+		break;
+	}
+	case DF_ERROR_NULL_PTR:
+	{
+		printf("Error: bad pointer provided in DF function (code %d).\n", num);
+		break;
+	}
+	default: break;
+	}
+
+	if (num < 0) {
+		exit(1);
+	}
 }
