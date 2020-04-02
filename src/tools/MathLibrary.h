@@ -158,6 +158,10 @@ namespace MathLibrary {
 		T cosy_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
 		E[2] = std::atan2(siny_cosp, cosy_cosp);
 	}
+	template <typename T>
+	T construct_rotation_matrix(const T yaw, const T pitch,  const T roll, T* R) {
+	
+	}
 
 	template <typename T>
 	T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim) {

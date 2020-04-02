@@ -25,6 +25,7 @@ struct Simulation_Parameters {int DOF;
 			double initial_pos_body[3]; double initial_angle[4];
 			double initial_pos_wheel[12]; double initial_pos_tyre[12]; // this has to be removed or used only if it is prescribed
 			bool initial_leg = 0;
+			bool interpolation = 0;
             int solver; 
             int max_num_iter; double tolerance;
             double timestep; int num_time_iter;
@@ -68,6 +69,6 @@ class ReadXML{
 		void setloadFileName(const std::string & filename);
         void ReadParameters(Simulation_Parameters& parameters);
         void ReadLoadParameters(Load_Params & parameters);
-        void ReadLookupParameters(EVAAComputeStiffness* lookupStiffness);
+        void ReadLookupParameters(EVAAComputeStiffness* lookupStiffness, Simulation_Parameters & parameters);
 };
 

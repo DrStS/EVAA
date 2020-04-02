@@ -179,7 +179,7 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
     readVector(parameters.external_force_body, load_data->forces().force_body());
 }
 
-void ReadXML::ReadLookupParameters(EVAAComputeStiffness* lookupStiffness) {
+void ReadXML::ReadLookupParameters(EVAAComputeStiffness* lookupStiffness, Simulation_Parameters & parameters) {
     if (_lookup_filename == "NO_FILE_SPECIFIED") return;
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
     if (lookup_table->LookupTableGenerator().present()) {
@@ -206,6 +206,7 @@ void ReadXML::ReadLookupParameters(EVAAComputeStiffness* lookupStiffness) {
         //@Felix, initialize your lookup table here, add and change function signatures, private variables as you need it
 		// EVAAComputeStiffness(int size, double a, double b, double c, double l_min, double l_max, int k, int type, int order);
 		lookupStiffness = new EVAAComputeStiffness(size, a, b, c, l_min, l_max, k, type, order);
+		parameters.interpolation = 1;  // to switch from constant to interpolation type
         delete[] a;
     }
 }

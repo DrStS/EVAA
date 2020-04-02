@@ -357,16 +357,24 @@ private:
 		cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
 		MathLibrary::allocate_to_diagonal(K, temp, DOF); // K = K + K'+ diag(K)
 	}
-	void populate_K(T* k_vect, T* k_body_fl, T* k_tyre_fl, T* k_body_fr,
-		T* k_tyre_fr, T* k_body_rl, T* k_tyre_rl,T* k_body_rr, T* k_tyre_rr) {
-		k_body_fl = k_vect[0];
-		k_tyre_fl = k_vect[1];
-		k_body_fr = k_vect[2];
-		k_tyre_fr = k_vect[3];
-		k_body_rl = k_vect[4];
-		k_tyre_rl = k_vect[5];
-		k_body_rr = k_vect[6];
-		k_tyre_rr = k_vect[7];
+	void populate_K(T* k_vect, T k_body_fl, T k_tyre_fl, T k_body_fr,
+		T k_tyre_fr,
+		T k_body_rl,
+		T k_tyre_rl,
+		T k_body_rr,
+		T k_tyre_rr) {
+
+		/*
+		This is needed when interpolation is turned off
+		*/
+		k_vect[0] = k_body_fl;
+		k_vect[1] = k_tyre_fl;
+		k_vect[2] = k_body_fr;
+		k_vect[3] = k_tyre_fr;
+		k_vect[4] = k_body_rl;
+		k_vect[5] = k_tyre_rl;
+		k_vect[6] = k_body_rr;
+		k_vect[7] = k_tyre_rr;
 	}
 	void get_length(
 		T* initial_orientation_,
@@ -485,7 +493,6 @@ private:
 		// 7.	pw4 = pw4 + upper_length(4)*global_y;
 		cblas_daxpy(this->DIM, initial_upper_spring_length_[3], global_y, 1, wheel_coordinate4_, 1);
 
-<<<<<<< HEAD
 		// 8.	pt4 = pw4
 		cblas_dcopy(this->DIM, wheel_coordinate4_, 1, tyre_coordinate4_, 1);
 
@@ -496,7 +503,7 @@ private:
 		mkl_free(global_y);
 		mkl_free(C_Nc);
 	}
-=======
+
 	inline void compute_dx(const T* current_length, T* dx) {
 		/*
 		the dx follows the order 
@@ -510,9 +517,6 @@ private:
 	}
 
 
-
->>>>>>> b49291c93d1c0457f2e154ebd99a91ec49479dd9
-
 public:
 	linear11dof(const Simulation_Parameters &params, const Load_Params &load_param, EVAAComputeStiffness* interpolator){
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -525,14 +529,6 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		DOF = params.DOF;
-		k_body_fl = params.k_body[2];
-		k_tyre_fl = params.k_tyre[2];
-		k_body_fr = params.k_body[3];
-		k_tyre_fr = params.k_tyre[3];
-		k_body_rl = params.k_body[1];
-		k_tyre_rl = params.k_tyre[1];
-		k_body_rr = params.k_body[0];
-		k_tyre_rr = params.k_tyre[0];
 		l_long_fl = params.l_long[2];
 		l_long_fr = params.l_long[3];
 		l_long_rl = params.l_long[1];
@@ -596,22 +592,12 @@ public:
 		u_n_m_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		u_n = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		f_n_p_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
-<<<<<<< HEAD
-		k_vect = (T*)mkl_calloc(num_wheels*2, sizeof(T), alignment);
-		l_lat = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
-		l_long = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
-		lenght = (T*)mkl_calloc(num_wheels*2, sizeof(T), alignment);
-=======
 		k_vect = (T*)mkl_malloc(num_wheels*2 * sizeof(T), alignment);
 		l_lat = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
 		l_long = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
 		spring_length = (T*)mkl_malloc(2*num_tyre*sizeof(T), alignment);
-<<<<<<< HEAD
->>>>>>> b49291c93d1c0457f2e154ebd99a91ec49479dd9
-
-=======
 		current_spring_length = (T*)mkl_malloc(2 * num_tyre * sizeof(T), alignment);
->>>>>>> 4160b337536228cf02ed2d04c2b2e1fae5718291
+
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////// Initial Iteration vector ////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -693,10 +679,21 @@ public:
 		// crate length array
 		// get_length()
 		// lookup k values
-		lookupStiffness->getStiffness(length, k_vect);
-		// write back k values
-		populate_K(k_vect, &k_body_fl, &k_tyre_fl, &k_body_fr, &k_tyre_fr, &k_body_rl, &k_tyre_rl, &k_body_rr, &k_tyre_rr);
-
+		// buggy needs fixes
+		if (params.interpolation) {
+			lookupStiffness->getStiffness(current_spring_length, k_vect);
+		}
+		else{
+			k_body_fl = params.k_body[2];
+			k_tyre_fl = params.k_tyre[2];
+			k_body_fr = params.k_body[3];
+			k_tyre_fr = params.k_tyre[3];
+			k_body_rl = params.k_body[1];
+			k_tyre_rl = params.k_tyre[1];
+			k_body_rr = params.k_body[0];
+			k_tyre_rr = params.k_tyre[0];
+			populate_K(k_vect, k_body_fl, k_tyre_fl, k_body_fr, k_tyre_fr, k_body_rl, k_tyre_rl, k_body_rr, k_tyre_rr);
+		}
 		l_lat[0] = l_lat_fl;
 		l_lat[1] = l_lat_fr;
 		l_lat[2] = l_lat_rl;
