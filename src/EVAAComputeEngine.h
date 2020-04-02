@@ -150,6 +150,14 @@ private:
 	T mass_tyre_rl;
 	T mass_wheel_rr;
 	T mass_tyre_rr;
+	T upper_spring_length_fl;
+	T upper_spring_length_fr;
+	T upper_spring_length_rl;
+	T upper_spring_length_rr;
+	T lower_spring_length_fl;
+	T lower_spring_length_fr;
+	T lower_spring_length_rl;
+	T lower_spring_length_rr;
 	T u_init_body;
 	T theta_x_init_body;
 	T theta_z_init_body;
@@ -168,6 +176,7 @@ private:
 	int i;
 	T *quad_angle_init, *euler_angle_init;
 	T* M, * temp, * K, * K_trans, * D, * M_red, * D_red, * K_red;
+	T *spring_length;
 	T* u_sol, * u_sol_red, * u_n_p_1, * u_n_p_1_red, * u_n_m_1, * u_n, * u_n_red, * u_n_m_1_red, * A, * Ared, * B, * Bred, * f_n_p_1, * f_n_p_1_red;
 	size_t* tyre_index_set;
 	T* k_vect, *l_lat, *l_long, *length;
@@ -468,6 +477,7 @@ private:
 		// 7.	pw4 = pw4 + upper_length(4)*global_y;
 		cblas_daxpy(this->DIM, initial_upper_spring_length_[3], global_y, 1, wheel_coordinate4_, 1);
 
+<<<<<<< HEAD
 		// 8.	pt4 = pw4
 		cblas_dcopy(this->DIM, wheel_coordinate4_, 1, tyre_coordinate4_, 1);
 
@@ -478,6 +488,22 @@ private:
 		mkl_free(global_y);
 		mkl_free(C_Nc);
 	}
+=======
+	inline void compute_dx(const T* current_length, T* dx) {
+		/*
+		the dx follows the order 
+		[w1, t1, w2, t2, w3, t3, w4, t4]
+		current_length has input of type
+		[w1, t1, w2, t2, w3, t3, w4, t4]
+
+		*/
+		cblas_dcopy(2 * (this->num_tyre), spring_length, 1, dx, 1);
+		cblas_daxpy(2 * (this->num_tyre), -1.0, current_length, 1, dx, 1);
+	}
+
+
+
+>>>>>>> b49291c93d1c0457f2e154ebd99a91ec49479dd9
 
 public:
 	linear11dof(const Simulation_Parameters &params, const Load_Params &load_param, EVAAComputeStiffness* interpolator){
@@ -518,6 +544,14 @@ public:
 		mass_tyre_rl = params.mass_tyre[1];
 		mass_wheel_rr = params.mass_wheel[0];
 		mass_tyre_rr = params.mass_tyre[0];
+		upper_spring_length_fl = params.upper_spring_length[2];
+		upper_spring_length_fr = params.upper_spring_length[3];
+		upper_spring_length_rl = params.upper_spring_length[1];
+		upper_spring_length_rr = params.upper_spring_length[0];
+		lower_spring_length_fl = params.lower_spring_length[2];
+		lower_spring_length_fr = params.lower_spring_length[3];
+		lower_spring_length_rl = params.lower_spring_length[1];
+		lower_spring_length_rr = params.lower_spring_length[0];
 
 		h_ = params.timestep;
 		tend_ = params.num_time_iter*h_;
@@ -545,10 +579,17 @@ public:
 		u_n_m_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		u_n = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		f_n_p_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
+<<<<<<< HEAD
 		k_vect = (T*)mkl_calloc(num_wheels*2, sizeof(T), alignment);
 		l_lat = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
 		l_long = (T*)mkl_calloc(num_wheels, sizeof(T), alignment);
 		lenght = (T*)mkl_calloc(num_wheels*2, sizeof(T), alignment);
+=======
+		k_vect = (T*)mkl_malloc(num_wheels*2 * sizeof(T), alignment);
+		l_lat = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
+		l_long = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
+		spring_length = (T*)mkl_malloc(2*num_tyre*sizeof(T), alignment);
+>>>>>>> b49291c93d1c0457f2e154ebd99a91ec49479dd9
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////// Initial Iteration vector ////////////////////////////////////////////////////
@@ -588,7 +629,15 @@ public:
 		f_n_p_1[9] = load_param.external_force_wheel[0 * 3 + 1];
 		f_n_p_1[10] = load_param.external_force_tyre[0 * 3 + 1];
 
-		
+		spring_length[0] = upper_spring_length_fl;
+		spring_length[1] = lower_spring_length_fl; 
+		spring_length[2] = upper_spring_length_fr; 
+		spring_length[3] = lower_spring_length_fr; 
+		spring_length[4] = upper_spring_length_rl;
+		spring_length[5] = lower_spring_length_rl;
+		spring_length[6] = upper_spring_length_rr;
+		spring_length[7] = lower_spring_length_rr;
+
 
 		cblas_dscal(DOF, -h_, u_n_m_1, 1);
 		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
@@ -935,5 +984,10 @@ public:
 		mkl_free(quad_angle_init);
 		mkl_free(euler_angle_init);
 		mkl_free(f_n_p_1);
+		mkl_free(k_vect);
+		mkl_free(l_lat);
+		mkl_free(l_long);
+		mkl_free(spring_length);
+
 	}
 };
