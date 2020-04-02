@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 
 #include "ReadXML.h"
 
@@ -71,12 +72,21 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     parameters.I_body[4] = settings->Vehicle().TwoTrackModel().Inertia().XZ();
     parameters.I_body[5] = settings->Vehicle().TwoTrackModel().Inertia().YZ();
     if (settings->Vehicle().TwoTrackModel().Stiffness().Constant().present()) {
+        std::cout << "Take constant stiffness without lookup table" << std::endl;
         readLegs(parameters.k_tyre, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Tyre());
         readLegs(parameters.k_body, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Body());
+        _lookup_filename = "NO_FILE_SPECIFIED";
     }
     else {
         _lookup_filename = settings->Vehicle().TwoTrackModel().Stiffness().LookupTable().get().FilePath();
-        std::cout << "Read lookup table from " << _lookup_filename << std::endl;
+        std::ifstream f(_lookup_filename.c_str());
+        if (f.good()) {
+            std::cout << "Read lookup table from " << _lookup_filename << std::endl;
+        }
+        else {
+            std::cout << "Lookup table at " << _lookup_filename << " does not exist!" << std::endl;
+            exit(2);
+        }
     }
     readLegs(parameters.c_tyre, settings->Vehicle().TwoTrackModel().DampingCoefficients().Tyre());
     readLegs(parameters.c_body, settings->Vehicle().TwoTrackModel().DampingCoefficients().Body());
@@ -89,7 +99,6 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
 //--------------------------------------------------
 // Load initial parameters
 //--------------------------------------------------
-
     readVector(parameters.initial_vel_body, settings->InitialConditions().Velocities().Body());
     readVector(parameters.initial_ang_vel_body, settings->InitialConditions().Velocities().angularBody());
 
@@ -112,7 +121,7 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
 //--------------------------------------------------
 // Load simulation parameters
 //--------------------------------------------------
-    readVector(parameters.gravity, settings->SimulationParameters().GeneralSettings().Gravity());
+   readVector(parameters.gravity, settings->SimulationParameters().GeneralSettings().Gravity());
     parameters.num_time_iter = settings->SimulationParameters().GeneralSettings().NumberOfIterations();
     parameters.timestep = settings->SimulationParameters().GeneralSettings().TimestepSize();
     
@@ -171,14 +180,16 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 }
 
 void ReadXML::ReadLookupParameters(EVAAComputeStiffness* lookupStiffness) {
+    if (_lookup_filename == "NO_FILE_SPECIFIED") return;
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
-
     if (lookup_table->LookupTableGenerator().present()) {
         double* a;
         double b, c, l_min, l_max;
         int size, k, type, order;
 
         a = new(double[8]);
+
+        std::cout << "Generate look up table from parameters." << std::endl;
 
         size = lookup_table->LookupTableGenerator().get().Size();
         b = lookup_table->LookupTableGenerator().get().TableParameters().b();
