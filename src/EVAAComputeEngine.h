@@ -158,6 +158,14 @@ private:
 	T lower_spring_length_fr;
 	T lower_spring_length_rl;
 	T lower_spring_length_rr;
+	T initial_upper_spring_length_fl;
+	T initial_upper_spring_length_fr;
+	T initial_upper_spring_length_rl;
+	T initial_upper_spring_length_rrl;
+	T initial_lower_spring_length_fl;
+	T initial_lower_spring_length_fr;
+	T initial_lower_spring_length_rl;
+	T initial_lower_spring_length_rr;
 	T u_init_body;
 	T theta_x_init_body;
 	T theta_z_init_body;
@@ -176,7 +184,7 @@ private:
 	int i;
 	T *quad_angle_init, *euler_angle_init;
 	T* M, * temp, * K, * K_trans, * D, * M_red, * D_red, * K_red;
-	T *spring_length;
+	T *spring_length, current_spring_length;
 	T* u_sol, * u_sol_red, * u_n_p_1, * u_n_p_1_red, * u_n_m_1, * u_n, * u_n_red, * u_n_m_1_red, * A, * Ared, * B, * Bred, * f_n_p_1, * f_n_p_1_red;
 	size_t* tyre_index_set;
 	T* k_vect, *l_lat, *l_long;
@@ -428,6 +436,15 @@ public:
 		lower_spring_length_rl = params.lower_spring_length[1];
 		lower_spring_length_rr = params.lower_spring_length[0];
 
+		initial_upper_spring_length_fl = params.initial_upper_spring_length[2];
+		initial_upper_spring_length_fr = params.initial_upper_spring_length[3];
+		initial_upper_spring_length_rl = params.initial_upper_spring_length[1];
+		initial_upper_spring_length_rr = params.initial_upper_spring_length[0];
+		initial_lower_spring_length_fl = params.initial_lower_spring_length[2];
+		initial_lower_spring_length_fr = params.initial_lower_spring_length[3];
+		initial_lower_spring_length_rl = params.initial_lower_spring_length[1];
+		initial_lower_spring_length_rr = params.initial_lower_spring_length[0];
+
 		h_ = params.timestep;
 		tend_ = params.num_time_iter*h_;
 		quad_angle_init = (T*)mkl_calloc(4, sizeof(T), alignment);
@@ -458,7 +475,7 @@ public:
 		l_lat = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
 		l_long = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
 		spring_length = (T*)mkl_malloc(2*num_tyre*sizeof(T), alignment);
-
+		current_spring_length = (T*)mkl_malloc(2 * num_tyre * sizeof(T), alignment);
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////// Initial Iteration vector ////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -505,6 +522,15 @@ public:
 		spring_length[5] = lower_spring_length_rl;
 		spring_length[6] = upper_spring_length_rr;
 		spring_length[7] = lower_spring_length_rr;
+
+		current_spring_length[0] = initial_upper_spring_length_fl;
+		current_spring_length[1] = initial_lower_spring_length_fl;
+		current_spring_length[2] = initial_upper_spring_length_fr;
+		current_spring_length[3] = initial_lower_spring_length_fr;
+		current_spring_length[4] = initial_upper_spring_length_rl;
+		current_spring_length[5] = initial_lower_spring_length_rl;
+		current_spring_length[6] = initial_upper_spring_length_rr;
+		current_spring_length[7] = initial_lower_spring_length_rr;
 
 
 		cblas_dscal(DOF, -h_, u_n_m_1, 1);
