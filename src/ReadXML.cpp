@@ -13,7 +13,7 @@ void ReadXML::readVectorLegs(double* storage, legs_vector_t vec){
        readVector(storage+9,vec.FrontRight());
  }
 void ReadXML::readVector(double* storage, vector_t vec) {
-    storage[0] = vec.z();
+    storage[0] = vec.x();
     storage[1] = vec.y();
     storage[2] = vec.z();
 }
@@ -25,10 +25,10 @@ void ReadXML::readLegs(double* storage, legs_t vec) {
 }
 
 void ReadXML::readangles(double* storage, quad vec) {
-	storage[0] = vec.w();
-	storage[1] = vec.x();
-	storage[2] = vec.y();
-	storage[3] = vec.z();
+	storage[0] = vec.x();
+	storage[1] = vec.y();
+	storage[2] = vec.z();
+	storage[3] = vec.w();
 }
 
 
@@ -105,7 +105,7 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     readVector(parameters.gravity, settings->SimulationParameters().GeneralSettings().Gravity());
     parameters.num_time_iter = settings->SimulationParameters().GeneralSettings().NumberOfIterations();
     parameters.timestep = settings->SimulationParameters().GeneralSettings().TimestepSize();
-    std::string boundary_conditions = settings->SimulationParameters().GeneralSettings().BoundaryConditions();
+    
 
     parameters.DOF = settings->SimulationParameters().LinearALE().DOF();
 
@@ -115,16 +115,6 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
 
     std::string solver = settings->SimulationParameters().MultyBodyDynamics().Solver();
 
-    if (boundary_conditions == "fixed") {
-        parameters.boundary_condition_road = FIXED;
-    }
-    else if (boundary_conditions == "notfixed") {
-        parameters.boundary_condition_road = NONFIXED;
-    }
-    else {
-        std::cerr << "Wrong boundary conditions! Only fixed and nonfixed implemented so far" << std::endl;
-        exit(2);
-    }
 
     if (solver=="explicit_Euler"){
         parameters.solver = EXPLICIT_EULER;
@@ -143,29 +133,32 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
 }
 
 
-void ReadXML::ReadVariableParameters(Simulation_Parameters& parameters) {
+void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 
     //--------------------------------------------------
     // Load external parameters
     //--------------------------------------------------
-/*    readVector(parameters.external_force_body, settings->external().force_body());
-    readVectorLegs(parameters.external_force_tyre, settings->external().force_tyre());
-    readVectorLegs(parameters.external_force_wheel, settings->external().force_wheel());
-*/
-    std::string boundary_conditions = settings->SimulationParameters().GeneralSettings().BoundaryConditions();
-
-    readVector(parameters.gravity, settings->SimulationParameters().GeneralSettings().Gravity());
-
-    if (boundary_conditions == "fixed") {
-        parameters.boundary_condition_road = FIXED;
-    }
-    else if (boundary_conditions == "notfixed") {
-        parameters.boundary_condition_road = NONFIXED;
-    }
-    else {
-        std::cerr << "Wrong boundary conditions! Only fixed and nonfixed implemented so far" << std::endl;
-        exit(2);
-    }
-
-
+	std::string boundary_conditions = load_data->boundary_description.BoundaryConditions();
+	if (boundary_conditions == "fixed") {
+		parameters.boundary_condition_road = FIXED;
+	}
+	else if (boundary_conditions == "notfixed") {
+		parameters.boundary_condition_road = NONFIXED;
+	}
+	else if (boundary_conditions == "circle") {
+		parameters.boundary_condition_road = CIRCULAR;
+	}
+	else {
+		std::cerr << "Wrong boundary conditions! Only fixed and nonfixed implemented so far" << std::endl;
+		exit(2);
+	}
+	if (!load_data->boundary_description().circular().empty()) {
+		for (auto iter = load_data->boundary_description().circular().begin(); iter < load_data->boundary_description().circular().end(); ++iter) {
+			parameters.profile_radius = iter->radius();
+			readVector(parameters.profile_center, iter->center());
+		}
+	}
+	readVectorLegs(parameters.external_force_tyre, load_data->forces().force_tyre());
+	readVectorLegs(parameters.external_force_wheel, load_data->forces().force_wheel());
+    readVector(parameters.external_force_body, load_data->forces().force_body());
 }

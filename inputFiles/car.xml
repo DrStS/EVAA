@@ -158,11 +158,11 @@
     </Velocities>
     <Orientation>
       <w>1</w>
-    	<x>0</x>
+	  <x>0</x>
       <y>0</y>
       <z>0</z>
     </Orientation>
-´		<pos_body>
+		<pos_body>
 			<x>0</x>
 			<y>0</y>
 			<z>0</z>

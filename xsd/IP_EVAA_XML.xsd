@@ -127,21 +127,6 @@
         </xs:complexType>
       </xs:element>
 
-
-
-<!--      <xs:element name="external">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="force_tyre"  type="legs_vector_t"/> 
-            <xs:element name="force_wheel"  type="legs_vector_t"/> 
-            <xs:element name="force_body" type="vector_t" /> 
-            <xs:element name="gravity" type="vector_t" />
-          </xs:sequence>       
-        </xs:complexType>
-      </xs:element>
--->
-
-
       <xs:element name="SimulationParameters">
         <xs:complexType>
           <xs:sequence>
@@ -168,7 +153,6 @@
                   <xs:element name="Gravity" type="vector_t" />
                   <xs:element name="TimestepSize" type="xs:double" />
                   <xs:element name="NumberOfIterations" type="xs:int" />
-                  <xs:element name="BoundaryConditions" type="xs:string"/>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>

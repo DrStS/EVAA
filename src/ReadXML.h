@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "IP_EVAA_XML.h"
+#include "LOAD_EVAA_XML.h"
 
 
 struct Simulation_Parameters {int DOF; 
@@ -17,8 +18,7 @@ struct Simulation_Parameters {int DOF;
             double lower_spring_length[4]; double upper_spring_length[4];
             double initial_lower_spring_length[4]; double initial_upper_spring_length[4];
             double initial_vel_body[3]; double initial_vel_wheel[12]; double initial_vel_tyre[12];
-            double external_force_body[3]; double external_force_wheel[12]; double external_force_tyre[12];
-            double initial_ang_vel_body[3]; double gravity[3]; int boundary_condition_road;
+            double initial_ang_vel_body[3]; double gravity[3];
 			double initial_pos_body[3]; double initial_pos_wheel[12]; double initial_pos_tyre[12]; double initial_angle[4];
             int solver; 
             int max_num_iter; double tolerance;
@@ -26,7 +26,16 @@ struct Simulation_Parameters {int DOF;
 			int solution_dim;
             };
 
-enum boundary_condition_road{FIXED, NONFIXED};
+struct Load_Params {
+	double external_force_body[3]; double external_force_wheel[12]; double external_force_tyre[12];
+	// circular profile params
+	double profile_radius; double profile_center[3];
+	// boundary condition type
+	int boundary_condition_road;
+
+};
+
+enum boundary_condition_road{FIXED, NONFIXED, CIRCULAR};
 
 enum solver {EXPLICIT_EULER, RUNGE_KUTTA_4, BROYDEN_EULER, BROYDEN_CN, BROYDEN_BDF2}; 
 
@@ -36,6 +45,7 @@ class ReadXML{
     private:
         std::string _filename;
     	std::auto_ptr<car_settings_t> settings;
+		std::auto_ptr<load_t> load_data;
         void readVectorLegs(double* storage, legs_vector_t vec);
         void readLegs(double* storage, legs_t vec);
         void readVector(double* storage, vector_t vec);
@@ -46,6 +56,6 @@ class ReadXML{
         ReadXML(const std::string & filename);
         void setFileName (const std::string & filename);
         void ReadParameters(Simulation_Parameters& parameters);
-        void ReadVariableParameters(Simulation_Parameters & parameters);
+        void ReadLoadParameters(Load_Params & parameters);
 };
 
