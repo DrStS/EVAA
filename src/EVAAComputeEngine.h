@@ -42,6 +42,8 @@ public:
 	* \author Stefan Sicklinger
 	***********/
 	EVAAComputeEngine(std::string _xmlFileName);
+
+	EVAAComputeEngine(std::string xmlFileName, std::string loadxml);
 	/***********************************************************************************************
 	* \brief Destructor
 	* \author Stefan Sicklinger
@@ -96,7 +98,9 @@ public:
 	void clean(void);
 private:
 	std::string _xmlFileName;
+	std::string _xmlLoadFileName;
 	Simulation_Parameters _parameters;
+	Load_Params _load_module_parameter;
 };
 
 template <class T>
@@ -213,7 +217,7 @@ private:
 
 
 public:
-	linear11dof(const Simulation_Parameters &params){
+	linear11dof(const Simulation_Parameters &params, const Load_Params &load_param){
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
@@ -303,15 +307,15 @@ public:
 		u_n_m_1[9] = params.initial_vel_wheel[0 * 3 + 1];
 		u_n_m_1[10] = params.initial_vel_tyre[0 * 3 + 1];
 
-		f_n_p_1[0] = params.external_force_body[1];
-		f_n_p_1[3] = params.external_force_wheel[2 * 3 + 1];
-		f_n_p_1[4] = params.external_force_tyre[2 * 3 + 1];
-		f_n_p_1[5] = params.external_force_wheel[3 * 3 + 1];
-		f_n_p_1[6] = params.external_force_tyre[3 * 3 + 1];
-		f_n_p_1[7] = params.external_force_wheel[1 * 3 + 1];
-		f_n_p_1[8] = params.external_force_tyre[1 * 3 + 1];
-		f_n_p_1[9] = params.external_force_wheel[0 * 3 + 1];
-		f_n_p_1[10] = params.external_force_tyre[0 * 3 + 1];
+		f_n_p_1[0] = load_param.external_force_body[1];
+		f_n_p_1[3] = load_param.external_force_wheel[2 * 3 + 1];
+		f_n_p_1[4] = load_param.external_force_tyre[2 * 3 + 1];
+		f_n_p_1[5] = load_param.external_force_wheel[3 * 3 + 1];
+		f_n_p_1[6] = load_param.external_force_tyre[3 * 3 + 1];
+		f_n_p_1[7] = load_param.external_force_wheel[1 * 3 + 1];
+		f_n_p_1[8] = load_param.external_force_tyre[1 * 3 + 1];
+		f_n_p_1[9] = load_param.external_force_wheel[0 * 3 + 1];
+		f_n_p_1[10] = load_param.external_force_tyre[0 * 3 + 1];
 
 		
 

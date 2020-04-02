@@ -6,25 +6,25 @@
 #include "ReadXML.h"
 
 
-void ReadXML::readVectorLegs(double* storage, legs_vector_t vec){
+void ReadXML::readVectorLegs(double* storage, car_properties::legs_vector_t vec){
        readVector(storage, vec.ReerRight());
        readVector(storage+3,vec.ReerLeft());
        readVector(storage+6,vec.FrontLeft());
        readVector(storage+9,vec.FrontRight());
  }
-void ReadXML::readVector(double* storage, vector_t vec) {
+void ReadXML::readVector(double* storage, car_properties::vector_t vec) {
     storage[0] = vec.x();
     storage[1] = vec.y();
     storage[2] = vec.z();
 }
-void ReadXML::readLegs(double* storage, legs_t vec) {
+void ReadXML::readLegs(double* storage, car_properties::legs_t vec) {
     storage[0] = vec.ReerRight();
     storage[1] = vec.ReerLeft();
     storage[2] = vec.FrontLeft();
     storage[3] = vec.FrontRight();
 }
 
-void ReadXML::readangles(double* storage, quad vec) {
+void ReadXML::readangles(double* storage, car_properties::quad vec) {
 	storage[0] = vec.x();
 	storage[1] = vec.y();
 	storage[2] = vec.z();
@@ -34,14 +34,23 @@ void ReadXML::readangles(double* storage, quad vec) {
 
 ReadXML::ReadXML(){
     _filename = "";
+	_load_filename = "";
 }
 
 ReadXML::ReadXML(const std::string & filename):
             _filename(filename), 
-            settings(EVAA_settings(filename, xml_schema::flags::dont_validate)){}
+            settings(car_properties::EVAA_settings(filename, xml_schema::flags::dont_validate)){}
+
+ReadXML::ReadXML(const std::string & filename, const std::string & load_filename) :
+	_filename(filename), _load_filename(load_filename),
+	settings(car_properties::EVAA_settings(filename, xml_schema::flags::dont_validate)), load_data(car_load::EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {}
 
 void ReadXML::setFileName(const std::string & filename){
     _filename = filename;
+}
+
+void ReadXML::setloadFileName(const std::string & filename) {
+	_load_filename = filename;
 }
 
 void ReadXML::ReadParameters(Simulation_Parameters & parameters){
@@ -82,11 +91,14 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     readLegs(parameters.initial_lower_spring_length, settings->InitialConditions().SpringElongation().Tyre());
     readLegs(parameters.initial_upper_spring_length, settings->InitialConditions().SpringElongation().Body());
 
-/*	readVector(parameters.initial_pos_body, settings->initial().pos_body());
-	readVectorLegs(parameters.initial_pos_wheel, settings->initial().pos_wheel());
-	readVectorLegs(parameters.initial_pos_tyre, settings->initial().pos_tyre());
+	readVector(parameters.initial_pos_body, settings->InitialConditions().Position().Body());
+/*	if (settings->InitialConditions().Position().UnsprungMass().present()) {
+		std::cout << "Legs condition is present" << std::endl;
+		parameters.initial_leg = 1;
+		readVectorLegs(parameters.initial_pos_wheel, settings->InitialConditions().Position().UnsprungMass().get());
+		readVectorLegs(parameters.initial_pos_tyre, settings->InitialConditions().Position().Tyre().get());
+	}
 */
-
 	readangles(parameters.initial_angle, settings->InitialConditions().Orientation());
 
 //--------------------------------------------------
@@ -138,7 +150,7 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
     //--------------------------------------------------
     // Load external parameters
     //--------------------------------------------------
-	std::string boundary_conditions = load_data->boundary_description.BoundaryConditions();
+	std::string boundary_conditions = load_data->boundary_description().BoundaryConditions();
 	if (boundary_conditions == "fixed") {
 		parameters.boundary_condition_road = FIXED;
 	}
@@ -152,11 +164,10 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 		std::cerr << "Wrong boundary conditions! Only fixed and nonfixed implemented so far" << std::endl;
 		exit(2);
 	}
-	if (!load_data->boundary_description().circular().empty()) {
-		for (auto iter = load_data->boundary_description().circular().begin(); iter < load_data->boundary_description().circular().end(); ++iter) {
-			parameters.profile_radius = iter->radius();
-			readVector(parameters.profile_center, iter->center());
-		}
+	if (load_data->boundary_description().circular().present()) {
+		std::cout << "circular is present" << std::endl;
+		parameters.profile_radius = load_data->boundary_description().circular()->radius();
+		readVector(parameters.profile_center, load_data->boundary_description().circular()->center());
 	}
 	readVectorLegs(parameters.external_force_tyre, load_data->forces().force_tyre());
 	readVectorLegs(parameters.external_force_wheel, load_data->forces().force_wheel());

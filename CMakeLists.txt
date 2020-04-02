@@ -223,13 +223,14 @@ IF (${USE_XSD})
    include_directories(${XERCES_INCLUDE_DIR})
    SET(EVAA_3rd_LIBS ${EVAA_3rd_LIBS} ${XERCES_LIBRARIES})
    execute_process(  
-      COMMAND ${XSD_EXE} cxx-tree --type-naming knr --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/LOAD_EVAA_XML.xsd
-      WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
-   )
-   execute_process(  
       COMMAND ${XSD_EXE} cxx-tree --type-naming knr --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/IP_EVAA_XML.xsd
       WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
    )
+   execute_process(  
+      COMMAND ${XSD_EXE} cxx-tree --type-naming knr --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/LOAD_EVAA_XML.xsd
+      WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
+   )
+   
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find HDF5

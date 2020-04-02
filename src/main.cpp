@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
 	if (allArgs.size()>1) {
 		EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine(allArgs[1]);
 	}
-	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml");
+	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml","C:\\software\\repos\\EVAA\\inputFiles\\load.xml" );
 		myComputeEngine->prepare();
 		anaysisTimer01.start();
 		myComputeEngine->computeMKL11DOF();
@@ -124,3 +124,4 @@ int main(int argc, char **argv) {
 
 	EVAAMainWindow(argc, argv);
 #endif // EVAA_COMMANDLINE_ON
+}

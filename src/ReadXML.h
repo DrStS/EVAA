@@ -19,7 +19,9 @@ struct Simulation_Parameters {int DOF;
             double initial_lower_spring_length[4]; double initial_upper_spring_length[4];
             double initial_vel_body[3]; double initial_vel_wheel[12]; double initial_vel_tyre[12];
             double initial_ang_vel_body[3]; double gravity[3];
-			double initial_pos_body[3]; double initial_pos_wheel[12]; double initial_pos_tyre[12]; double initial_angle[4];
+			double initial_pos_body[3]; double initial_angle[4];
+			double initial_pos_wheel[12]; double initial_pos_tyre[12]; // this has to be removed or used only if it is prescribed
+			bool initial_leg = 0;
             int solver; 
             int max_num_iter; double tolerance;
             double timestep; int num_time_iter;
@@ -44,17 +46,20 @@ enum solver {EXPLICIT_EULER, RUNGE_KUTTA_4, BROYDEN_EULER, BROYDEN_CN, BROYDEN_B
 class ReadXML{
     private:
         std::string _filename;
-    	std::auto_ptr<car_settings_t> settings;
-		std::auto_ptr<load_t> load_data;
-        void readVectorLegs(double* storage, legs_vector_t vec);
-        void readLegs(double* storage, legs_t vec);
-        void readVector(double* storage, vector_t vec);
-		void readangles(double* storage, quad vec);
+		std::string _load_filename;
+    	std::auto_ptr<car_properties::car_settings_t> settings;
+		std::auto_ptr<car_load::load_t> load_data;
+        void readVectorLegs(double* storage, car_properties::legs_vector_t vec);
+        void readLegs(double* storage, car_properties::legs_t vec);
+        void readVector(double* storage, car_properties::vector_t vec);
+		void readangles(double* storage, car_properties::quad vec);
 
     public:
         ReadXML();
         ReadXML(const std::string & filename);
+		ReadXML(const std::string & filename, const std::string & load_filename);
         void setFileName (const std::string & filename);
+		void setloadFileName(const std::string & filename);
         void ReadParameters(Simulation_Parameters& parameters);
         void ReadLoadParameters(Load_Params & parameters);
 };
