@@ -56,10 +56,23 @@
                   </xs:element>
                   <xs:element name="Stiffness">
                     <xs:complexType>
-                      <xs:sequence>
-                        <xs:element name="Tyre" type="legs_t"/>
-                        <xs:element name="Body" type="legs_t"/>
-                      </xs:sequence>
+                      <xs:choice>
+                        <xs:element name="Constant">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Tyre" type="legs_t"/>
+                              <xs:element name="Body" type="legs_t"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="LookupTable">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="FilePath" type="xs:string"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:choice>
                     </xs:complexType>
                   </xs:element>
                   <xs:element name="DampingCoefficients">

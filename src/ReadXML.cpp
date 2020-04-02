@@ -17,14 +17,14 @@ template<typename T> void ReadXML::readVector(double* storage, T vec) {
     storage[1] = vec.y();
     storage[2] = vec.z();
 }
-void ReadXML::readLegs(double* storage, legs_t vec) {
+template<typename T> void ReadXML::readLegs(double* storage, T vec) {
     storage[0] = vec.ReerRight();
     storage[1] = vec.ReerLeft();
     storage[2] = vec.FrontLeft();
     storage[3] = vec.FrontRight();
 }
 
-void ReadXML::readangles(double* storage, quad vec) {
+template<typename T> void ReadXML::readangles(double* storage, T vec) {
 	storage[0] = vec.x();
 	storage[1] = vec.y();
 	storage[2] = vec.z();
@@ -40,14 +40,11 @@ ReadXML::ReadXML(){
 ReadXML::ReadXML(const std::string& load_filename) :
     _load_filename(load_filename),
     load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
-
-    std::cout << "ghour" << std::endl;
 }
 
 ReadXML::ReadXML(const std::string & filename, const std::string & load_filename) :
 	_filename(filename), _load_filename(load_filename),
 	settings(EVAA_settings(filename, xml_schema::flags::dont_validate)), load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
-    std::cout << "four" << std::endl;
 }
 
 void ReadXML::setFileName(const std::string & filename){
@@ -73,8 +70,16 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     parameters.I_body[3] = settings->Vehicle().TwoTrackModel().Inertia().XY();
     parameters.I_body[4] = settings->Vehicle().TwoTrackModel().Inertia().XZ();
     parameters.I_body[5] = settings->Vehicle().TwoTrackModel().Inertia().YZ();
-    readLegs(parameters.k_tyre, settings->Vehicle().TwoTrackModel().Stiffness().Tyre());
-    readLegs(parameters.k_body, settings->Vehicle().TwoTrackModel().Stiffness().Body());
+    if (settings->Vehicle().TwoTrackModel().Stiffness().Constant().present()) {
+        readLegs(parameters.k_tyre, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Tyre());
+        readLegs(parameters.k_body, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Body());
+    }
+    else {
+        _lookup_filename = settings->Vehicle().TwoTrackModel().Stiffness().LookupTable().get().FilePath();
+        std::cout << "Read lookup table from " << _lookup_filename << std::endl;
+
+        ReadLookupParameters();
+    }
     readLegs(parameters.c_tyre, settings->Vehicle().TwoTrackModel().DampingCoefficients().Tyre());
     readLegs(parameters.c_body, settings->Vehicle().TwoTrackModel().DampingCoefficients().Body());
     readLegs(parameters.l_long, settings->Vehicle().TwoTrackModel().Geometry().LongitudinalReferenceToWheel());
@@ -140,7 +145,6 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     }
 }
 
-
 void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 
     //--------------------------------------------------
@@ -168,4 +172,32 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 	readVectorLegs(parameters.external_force_tyre, load_data->forces().force_tyre());
 	readVectorLegs(parameters.external_force_wheel, load_data->forces().force_wheel());
     readVector(parameters.external_force_body, load_data->forces().force_body());
+}
+
+void ReadXML::ReadLookupParameters() {
+    lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
+
+    if (lookup_table->LookupTableGenerator().present()) {
+        double* a;
+        double b, c, l_min, l_max;
+        int size, k, type, order;
+
+        a = new(double[8]);
+
+        size = lookup_table->LookupTableGenerator().get().Size();
+        b = lookup_table->LookupTableGenerator().get().TableParameters().b();
+        c = lookup_table->LookupTableGenerator().get().TableParameters().c();
+        l_min = lookup_table->LookupTableGenerator().get().Range().l_min();
+        l_max = lookup_table->LookupTableGenerator().get().Range().l_max();
+        k = lookup_table->LookupTableGenerator().get().InterpolationMethod().k();
+        type = lookup_table->LookupTableGenerator().get().InterpolationMethod().type();
+        order = lookup_table->LookupTableGenerator().get().InterpolationMethod().order();
+
+        readLegs(a, lookup_table->LookupTableGenerator().get().Magnitude().Body());
+        readLegs(a+4, lookup_table->LookupTableGenerator().get().Magnitude().Tyre());
+
+        //@Felix, initialize your lookup table here, add and change function signatures, private variables as you need it
+
+        delete[] a;
+    }
 }
