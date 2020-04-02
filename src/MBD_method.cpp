@@ -1,6 +1,8 @@
 
 #include "MBD_method.h"
 
+/*
+
 void create_basis_car(floatEVAA* qc, floatEVAA* basis_c) {
 	const MKL_INT n = 4, incx = 1;
 	floatEVAA q_norm_inv = 2 / (floatEVAA)cblas_ddot(n, qc, incx, qc, incx); // 2 / (||q||_2)^2
@@ -78,3 +80,4 @@ void get_quaternion_derivative(floatEVAA* qc, floatEVAA* Qc) {
 	Qc[10] = -0.5 * qc[1];
 	Qc[11] = -0.5 * qc[2];
 }
+*/

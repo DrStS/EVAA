@@ -643,6 +643,8 @@ public:
 
 		cblas_dscal(this->DIM, force_magnitude_tyre, Fr, 1);
 
+		MKL_free(unit_y_vector);
+		MKL_free(velocity_direction_tyre);
 	}
 
 
