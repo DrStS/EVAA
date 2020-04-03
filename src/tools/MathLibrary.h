@@ -22,8 +22,8 @@
 * This file holds the math funcktion of EVAA.
 * \date 6/13/2019
 **************************************************************************************************/
-#pragma once
 
+#pragma once
 #include "AuxiliaryParameters.h"
 #ifndef U_COMPSTIFF
 #define U_COMPSTIFF
@@ -31,7 +31,6 @@
 #endif
 #include <vector>
 #include <cmath>
-
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
 #endif
@@ -691,7 +690,7 @@ namespace MathLibrary {
 			MKL_free(x_new);
 		}
 
-		static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter, bool use_interpolation) {
+		static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
 			/*
 			method requires that the object using this solver has following public member functions
 			1. get_alignment()

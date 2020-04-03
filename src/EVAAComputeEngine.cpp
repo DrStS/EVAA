@@ -558,11 +558,6 @@ void EVAAComputeEngine::computeMKLlinear11dof() {
 		std::cout << soln[i] << std::endl;
 	}
 	mkl_free(soln);
-
-	floatEVAA* R = (floatEVAA*)mkl_malloc(9*sizeof(floatEVAA), alignment);
-	MathLibrary::get_rotation_matrix<floatEVAA>(0, 10, 10, R);
-	MathLibrary::write_matrix<floatEVAA>(R, 3);
-	mkl_free(R);
 }
 
 void EVAAComputeEngine::computeMKLlinear11dof_reduced() {
@@ -777,7 +772,7 @@ void EVAAComputeEngine::computeMBD(void) {
 	const int alignment = 64;
 	size_t solution_dim = _parameters.solution_dim;
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
-	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter);
+	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
 	solver.solve(soln);
 	std::cout << "Solution after " << num_iter << " timesteps, f =" << std::endl;
 	for (auto i = 0; i < solution_dim; ++i) {
