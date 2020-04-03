@@ -772,7 +772,7 @@ void EVAAComputeEngine::computeMBD(void) {
 	const int alignment = 64;
 	size_t solution_dim = _parameters.solution_dim;
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
-	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
+	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter);
 	solver.solve(soln);
 	std::cout << "Solution after " << num_iter << " timesteps, f =" << std::endl;
 	for (auto i = 0; i < solution_dim; ++i) {

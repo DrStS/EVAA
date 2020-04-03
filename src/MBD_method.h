@@ -110,10 +110,6 @@ private:
 	T* cf_local_FR1, * cf_local_FR2, * cf_local_FR3, * cf_local_FR4;
 	T* cf_Hc, * cf_sum_torque_spring_car, * cf_Tc, * cf_wc_tilda;
 	T* cf_b_rem, * cf_Qc, * cf_qc_dot;
-	T* current_spring_lengths, * stiffness_vector;
-	////////////////////////// Lookup table ///////////////////////////////////////////
-	EVAAComputeStiffness* lookupStiffness;
-
 
 	void get_initial_length(
 		T* initial_orientation_,
@@ -269,7 +265,7 @@ private:
 
 
 public:
-	MBD_method(const Simulation_Parameters& params, const Load_Params& load_params, EVAAComputeStiffness* interpolator) {
+	MBD_method(const Simulation_Parameters& params, const Load_Params& load_params) {
 
 		////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
 		h = params.timestep;
@@ -282,7 +278,6 @@ public:
 		boundary_conditions = load_params.boundary_condition_road;
 		radius_circular_path = load_params.profile_radius;
 		use_interpolation = params.interpolation;
-		lookupStiffness = interpolator;
 
 		////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
 		k_body_fl = params.k_body[2];
@@ -704,11 +699,6 @@ public:
 		cf_b_rem = (T*)mkl_calloc(9 * this->DIM, sizeof(T), this->alignment);
 		cf_Qc = (T*)mkl_calloc((this->NUM_LEGS) * (this->DIM), sizeof(T), this->alignment);
 		cf_qc_dot = (T*)mkl_calloc((this->NUM_LEGS), sizeof(T), this->alignment);
-
-		// required for the look up table
-		current_spring_lengths = (T*)mkl_calloc(8 * this->DIM, sizeof(T), this->alignment);
-		stiffness_vector = (T*)mkl_calloc(8 * this->DIM, sizeof(T), this->alignment);
-
 	}
 	void compute_f_clean() {
 		mkl_free(cf_C_cN);
@@ -789,8 +779,6 @@ public:
 		mkl_free(cf_b_rem);
 		mkl_free(cf_Qc);
 		mkl_free(cf_qc_dot);
-		mkl_free(current_spring_lengths);
-		mkl_free(stiffness_vector);
 	}
 
 	void compute_f3D_reduced(T* x_, T t_, T* f_) {
@@ -821,8 +809,6 @@ public:
 		T* pt4_ = x_ + 18 * this->DIM + this->NUM_LEGS;
 		T inv_norm_r_up1, inv_norm_r_up2, inv_norm_r_up3, inv_norm_r_up4;
 		T inv_norm_r_low1, inv_norm_r_low2, inv_norm_r_low3, inv_norm_r_low4;
-		T norm_r_up1, norm_r_up2, norm_r_up3, norm_r_up4;
-		T norm_r_low1, norm_r_low2, norm_r_low3, norm_r_low4;
 		//write_vector(r1, this->DIM);
 		//write_matrix(r1_tilda, this->DIM);
 		/*
@@ -890,52 +876,15 @@ public:
 		cblas_dcopy(this->DIM, pw4_, 1, cf_r_low4, 1);
 		cblas_daxpy(this->DIM, -1.0, pt4_, 1, cf_r_low4, 1);
 
-		/* Compute spring lengths and their inverses */
-		norm_r_up1 = cblas_dnrm2(this->DIM, cf_r_up1, 1);
-		norm_r_up2 = cblas_dnrm2(this->DIM, cf_r_up2, 1);
-		norm_r_up3 = cblas_dnrm2(this->DIM, cf_r_up3, 1);
-		norm_r_up4 = cblas_dnrm2(this->DIM, cf_r_up4, 1);
+		inv_norm_r_up1 = 1.0 / cblas_dnrm2(this->DIM, cf_r_up1, 1);
+		inv_norm_r_up2 = 1.0 / cblas_dnrm2(this->DIM, cf_r_up2, 1);
+		inv_norm_r_up3 = 1.0 / cblas_dnrm2(this->DIM, cf_r_up3, 1);
+		inv_norm_r_up4 = 1.0 / cblas_dnrm2(this->DIM, cf_r_up4, 1);
 
-		inv_norm_r_up1 = 1.0 / norm_r_up1;
-		inv_norm_r_up2 = 1.0 / norm_r_up2;
-		inv_norm_r_up3 = 1.0 / norm_r_up3;
-		inv_norm_r_up4 = 1.0 / norm_r_up4;
-
-		norm_r_low1 = cblas_dnrm2(this->DIM, cf_r_low1, 1);
-		norm_r_low2 = cblas_dnrm2(this->DIM, cf_r_low2, 1);
-		norm_r_low3 = cblas_dnrm2(this->DIM, cf_r_low3, 1);
-		norm_r_low4 = cblas_dnrm2(this->DIM, cf_r_low4, 1);
-
-		inv_norm_r_low1 = 1.0 / norm_r_low1;
-		inv_norm_r_low2 = 1.0 / norm_r_low2;
-		inv_norm_r_low3 = 1.0 / norm_r_low3;
-		inv_norm_r_low4 = 1.0 / norm_r_low4;
-
-		/* Compute stiffness from lookup table*/
-		if (use_interpolation) {
-			//populate the lenght_vector
-			current_spring_lengths[0] = norm_r_up3;
-			current_spring_lengths[1] = norm_r_low3;
-			current_spring_lengths[2] = norm_r_up4;
-			current_spring_lengths[3] = norm_r_low4;
-			current_spring_lengths[4] = norm_r_up2;
-			current_spring_lengths[5] = norm_r_low2;
-			current_spring_lengths[6] = norm_r_up1;
-			current_spring_lengths[7] = norm_r_low1;
-
-			// calculate the new stiffnesses
-			lookupStiffness->getStiffness(current_spring_lengths, stiffness_vector);
-
-			// overwrite stiffness values
-			upper_spring_stiffness[2] = stiffness_vector[0];
-			lower_spring_stiffness[2] = stiffness_vector[1];
-			upper_spring_stiffness[3] = stiffness_vector[2];
-			lower_spring_stiffness[3] = stiffness_vector[3];
-			upper_spring_stiffness[1] = stiffness_vector[4];
-			lower_spring_stiffness[1] = stiffness_vector[5];
-			upper_spring_stiffness[0] = stiffness_vector[6];
-			lower_spring_stiffness[0] = stiffness_vector[7];
-		}
+		inv_norm_r_low1 = 1.0 / cblas_dnrm2(this->DIM, cf_r_low1, 1);
+		inv_norm_r_low2 = 1.0 / cblas_dnrm2(this->DIM, cf_r_low2, 1);
+		inv_norm_r_low3 = 1.0 / cblas_dnrm2(this->DIM, cf_r_low3, 1);
+		inv_norm_r_low4 = 1.0 / cblas_dnrm2(this->DIM, cf_r_low4, 1);
 
 		/*
 		get angle and normal vectors at the legs
@@ -1738,22 +1687,13 @@ public:
 		compute_f_mem_alloc();
 
 		if (used_solver == BROYDEN_CN) {
-			MathLibrary::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+			MathLibrary::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter, this->use_interpolation);
 		}
 		else if (used_solver == RUNGE_KUTTA_4) {
-			MathLibrary::Solvers<T, MBD_method>::RK4(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
-		}
-		else if (used_solver == BROYDEN_BDF2) {
-			MathLibrary::Solvers<T, MBD_method>::Broyden_PDF2(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
-		}
-		else if (used_solver == BROYDEN_EULER) {
-			MathLibrary::Solvers<T, MBD_method>::Broyden_Euler(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
-		}
-		else if (used_solver == EXPLICIT_EULER) {
-			std::cout << "Expliticit solver hasn't been implemented, you don't want to use it" << std::endl;
+			MathLibrary::Solvers<T, MBD_method>::RK4(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter, this->use_interpolation, );
 		}
 		else {
-			std::cout << "sorry man, the solver you picked for MBD is weird and hasn't been implemented yet" << std::endl;
+			std::cout << "sorry man, the solver you picked for MBD hasn't been implemented yet, only Broyden_CN and RK4 work so far" << std::endl;
 		}
 
 		compute_f_clean();
