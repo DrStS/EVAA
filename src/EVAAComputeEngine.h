@@ -93,6 +93,9 @@ public:
 	// MKL MBD solver
 	void computeMBD(void);
 
+	// Fancy solver ALE
+	void computeALE(void);
+
 	// MKL
 /*	void computeMKLNasa(void);
 	void computeMKLNasa_example(void);
@@ -102,6 +105,7 @@ public:
 	* \author Stefan Sicklinger
 	***********/
 	void clean(void);
+
 private:
 	std::string _xmlFileName;
 	std::string _xmlLoadFileName;
@@ -191,6 +195,11 @@ private:
 	T* k_vect, *l_lat, *l_long, *length;
 	size_t num_tyre = 4;
 	T* time; // this is not necessary
+
+	T factor_h2;
+	T factor_h;
+	const int mat_len = (DOF) * (DOF);
+
 
 	void check_status(lapack_int status) {
 		if (status == 1) {
@@ -568,6 +577,8 @@ public:
 		initial_lower_spring_length_rr = params.initial_lower_spring_length[0];
 
 		h_ = params.timestep;
+		factor_h2 = (1 / (h_ * h_));
+		factor_h = (1 / (h_));
 		tend_ = params.num_time_iter*h_;
 		quad_angle_init = (T*)mkl_calloc(4, sizeof(T), alignment);
 		euler_angle_init = (T*)mkl_calloc(3, sizeof(T), alignment);
@@ -709,6 +720,34 @@ public:
 		// default D value is 0
 	}
 
+	void allocate_aux_vectors() {
+		// full system
+		A = (T*)mkl_malloc((DOF) * (DOF), sizeof(T), alignment);
+		B = (T*)mkl_calloc((DOF) * (DOF), sizeof(T), alignment);
+		u_n_p_1 = (T*)mkl_calloc((DOF), sizeof(T), alignment);
+		
+		// Initialize B
+		// B=((2/(h*h))*M+(1/h)*D);
+		cblas_daxpy(mat_len, 2 * factor_h2, M, 1, B, 1);
+		cblas_daxpy(mat_len, factor_h, D, 1, B, 1);
+
+
+		// reduced system
+		Ared = (T*)mkl_calloc((DOF) * (DOF), sizeof(T), alignment);
+		Bred = (T*)mkl_calloc((DOF) * (DOF), sizeof(T), alignment);
+		u_n_p_1_red = (T*)mkl_calloc((DOF), sizeof(T), alignment);
+
+		// Initialize B_red
+		cblas_daxpy(mat_len, 2 * factor_h2, M_red, 1, Bred, 1);
+		cblas_daxpy(mat_len, factor_h, D_red, 1, Bred, 1);
+
+		// Initilize A_red
+		// A=((1/(h*h))*M+(1/h)*D+K);
+		cblas_daxpy(mat_len, factor_h2, M_red, 1, Ared, 1);
+		cblas_daxpy(mat_len, factor_h, D_red, 1, Ared, 1);
+		cblas_daxpy(mat_len, 1, K_red, 1, Ared, 1);
+	}
+
 	void apply_boundary_condition(std::string s) {
 		
 		condition_type = s;
@@ -790,6 +829,7 @@ public:
 			throw "Incorrect boundary condition";
 		}
 	}
+	
 	void solve(T* sol_vect) {
 		if (condition_type == cond1) {
 			solve_reduced(sol_vect);
@@ -801,6 +841,64 @@ public:
 			throw "Inappropriate boundary condition!";
 		}
 	}
+		
+	void solve_full_one_step(T* sol_vect) {
+		
+		// K update here
+		cblas_dcopy(mat_len, M, 1, A, 1);
+		cblas_dscal(mat_len, factor_h2, A, 1);
+		cblas_daxpy(mat_len, factor_h, D, 1, A, 1);
+		cblas_daxpy(mat_len, 1, K, 1, A, 1);
+		// Cholesky factorization of A
+		lapack_int status;
+		//lapack_int* piv = (lapack_int*)mkl_calloc((DOF + 4), sizeof(lapack_int), alignment);
+		//write_matrix(A, DOF);
+		status = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', DOF, A, DOF);
+		//status = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF + 4, DOF + 4, A, DOF + 4, piv);
+		check_status(status);
+
+		// u_n_p_1=A\(B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
+		
+		// u_n_p_1 = B*u_n
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, 1, B, DOF, u_n, 1, 0, u_n_p_1, 1);
+		// u_n_p_1 = -((1/(h*h))*M)*u_n_m_1 + u_n_p_1
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, -factor_h2, M, DOF, u_n_m_1, 1, 1, u_n_p_1, 1);
+		// u_n_p_1 = f_n_p_1 + u_n_p_1
+		cblas_daxpy(DOF, 1, f_n_p_1, 1, u_n_p_1, 1);
+		// u_n_p_1=A\u_n_p_1
+		LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', DOF, 1, A, DOF, u_n_p_1, 1);
+		//LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF + 4, 1, A, DOF + 4, piv, u_n_p_1, 1);
+
+		/*
+		f_n_p_1(idx) = -K(idx,idx)*u_n_p_1(idx);
+		f_n_p_1(idx) = f_update(f_n_p_1, idx);
+		u_n_p_1(idx) = 0;
+		*/
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////// Normal force computation here /////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
+
+
+		///////////////// Debug print statements ///////////////////////////////
+		/*if (iter==10){
+			write_vector(u_n_p_1, DOF);
+		}*/
+
+
+
+		// apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		// u_n_m_1=u_n;
+		cblas_dcopy(DOF, u_n, 1, u_n_m_1, 1);
+		// u_n    =u_n_p_1;
+		cblas_dcopy(DOF, u_n_p_1, 1, u_n, 1);
+	}
 
 	void solve_full(T* sol_vect) {
 		///////////////////////////////////// For 7 DOF System //////////////////////////////////////////////////////
@@ -810,13 +908,9 @@ public:
 		int sol_size = (floor(tend_ / h_) + 1);
 		T factor_h2 = (1 / (h_ * h_));
 		T factor_h = (1 / (h_));
-		int mat_len = (DOF) * (DOF);
+		const int mat_len = (DOF) * (DOF);
+		time = (T*)mkl_calloc(sol_size, sizeof(T), alignment);	
 		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
-		u_n_p_1 = (T*)mkl_calloc((DOF), sizeof(T), alignment);
-		A = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
-		B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
-		time = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
-	
 			
 		// A=((1/(h*h))*M+(1/h)*D+K);
 		
@@ -830,7 +924,6 @@ public:
 		while (std::abs(t-(tend_+h_)) > eps) {
 
 			// K update here
-
 			cblas_dcopy(mat_len, M, 1, A, 1);
 			cblas_dscal(mat_len, factor_h2, A, 1);
 			cblas_daxpy(mat_len, factor_h, D, 1, A, 1);
@@ -851,9 +944,10 @@ public:
 			cblas_dgemv(CblasRowMajor, CblasNoTrans, DOF, DOF, -factor_h2, M, DOF, u_n_m_1, 1, 1, u_n_p_1, 1);
 			// u_n_p_1 = f_n_p_1 + u_n_p_1
 			cblas_daxpy(DOF, 1, f_n_p_1, 1, u_n_p_1, 1);
-			// u_n_p_1=A\u_n_p_1
+			// u_n_p_1=A\u_n_p_1    ====> u_n_p_1 computed
 			LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', DOF, 1, A, DOF, u_n_p_1, 1);
 			//LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF + 4, 1, A, DOF + 4, piv, u_n_p_1, 1);
+
 			///////////////// Debug print statements ///////////////////////////////
 			/*if (iter==2){
 				write_vector(u_n_p_1, DOF + 4);
@@ -902,6 +996,7 @@ public:
 		clean("full");
 
 	}
+	
 	void solve_reduced(T* sol_vect) {
 		///////////////////////////////////// For 7 DOF System //////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -937,6 +1032,7 @@ public:
 		// B=((2/(h*h))*M+(1/h)*D);
 		cblas_daxpy(mat_len, 2 * factor_h2, M_red, 1, Bred, 1);
 		cblas_daxpy(mat_len, factor_h, D_red, 1, Bred, 1);
+
 		int iter = 1;
 		T t = h_;
 		/*auto start = std::chrono::steady_clock::now();*/
@@ -979,25 +1075,107 @@ public:
 		std::string full = "full";
 		std::string reduced = "reduced";
 		if (s == full) {
-			mkl_free(u_sol);
-			mkl_free(u_n_p_1);
-			mkl_free(tyre_index_set);
-			mkl_free(A);
-			mkl_free(B);
-			mkl_free(time);
+			if (u_sol != NULL) {
+				mkl_free(u_sol);
+				u_sol = NULL;
+			}
+			if (u_n_p_1 != NULL) {
+				mkl_free(u_n_p_1);
+				u_n_p_1 = NULL;
+			}
+			
+			if (tyre_index_set != NULL) {
+				mkl_free(tyre_index_set);
+				tyre_index_set = NULL;
+			}
+
+			if (A != NULL) {
+				mkl_free(A);
+				A = NULL;
+			}
+
+			if (B != NULL) {
+				mkl_free(B);
+				B = NULL;
+			}
+			
+			
 		}
 		else if (s == reduced) {
-			mkl_free(u_sol_red);
-			mkl_free(u_n_red);
-			mkl_free(u_n_m_1_red);
-			mkl_free(u_n_p_1_red);
-			mkl_free(f_n_p_1_red);
-			mkl_free(Ared);
-			mkl_free(Bred);
+			if (u_sol_red != NULL) {
+				mkl_free(u_sol_red);
+				u_sol_red = NULL;
+			}
+			if (u_n_red != NULL) {
+				mkl_free(u_n_red);
+				u_n_red = NULL;
+			}
+			if (u_n_m_1_red != NULL) {
+				mkl_free(u_n_m_1_red);
+				u_n_m_1_red = NULL;
+			}
+			if (u_n_p_1_red != NULL) {
+				mkl_free(u_n_p_1_red);
+				u_n_p_1_red = NULL;
+			}
+			if (f_n_p_1_red != NULL) {
+				mkl_free(f_n_p_1_red);
+				f_n_p_1_red = NULL;
+			}
+			if (Ared != NULL) {
+				mkl_free(Ared);
+				Ared = NULL;
+			}
+			if (Bred != NULL) {
+				mkl_free(Bred);
+				Bred = NULL;
+			}
+			if (K_red != NULL) {
+				mkl_free(K_red);
+				K_red = NULL;
+			}
+
+			if (M_red != NULL) {
+				mkl_free(M_red);
+				M_red = NULL;
+			}
+
+			if (D_red != NULL) {
+				mkl_free(D_red);
+				D_red = NULL;
+			}
+		}
+
+		if (time != NULL) {
 			mkl_free(time);
-			mkl_free(K_red);
-			mkl_free(M_red);
-			mkl_free(D_red);
+			time = NULL;
+		}
+	}
+
+	void clean() {
+		if (u_n_p_1 != NULL) {
+			mkl_free(u_n_p_1);
+			u_n_p_1 = NULL;
+		}
+
+		if (A != NULL) {
+			mkl_free(A);
+			A = NULL;
+		}
+
+		if (B != NULL) {
+			mkl_free(B);
+			B = NULL;
+		}
+
+		if (Ared != NULL) {
+			mkl_free(Ared);
+			Ared = NULL;
+		}
+
+		if (Bred != NULL) {
+			mkl_free(Bred);
+			Bred = NULL;
 		}
 	}
 

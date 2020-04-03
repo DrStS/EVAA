@@ -394,170 +394,6 @@ void Car::set_I_body_yy(const double& I_body_yy_val) {
 
 // =============================== END of Car class implementation =======================
 
-// ===============================   Circular class implementation ===================
-Circular::Circular() {
-	Name = new char[strlen("Circular") + 1];
-	Name = strcpy(Name, "Circular");
-	Position = (double*)mkl_malloc(sizeof(double) * 3, alignment);
-	Position[2] = Position[1] = Position[0] = 0;
-	Radius = 100;
-}
-
-Circular::Circular(double* Pos) : Circular::Circular() {
-	// Position
-	if (Pos != NULL) {
-		cblas_dcopy(3, Pos, 1, Position, 1);
-	}
-}
-
-Circular::Circular(double* Pos, double Rad) : Circular::Circular(Pos) {
-	Radius = Rad;
-};
-
-Circular::Circular(const Circular& Circ1) {
-	*this = Circ1;
-}
-
-Circular& Circular::operator=(const Circular& Circ1) {
-	if (this != &Circ1) {
-		if (Name != NULL)
-			delete[] Name;
-		if (Position != NULL)
-			delete[] Position;
-
-		// Name
-		if (Circ1.Name != NULL) {
-			Name = new char[strlen(Circ1.Name) + 1];
-			strcpy(Name, Circ1.Name);
-		}
-		else
-			Name = NULL;
-
-		// Position
-		if (Circ1.Position != NULL) {
-			Position = (double*)mkl_malloc(sizeof(double) * 3, alignment);
-			cblas_dcopy(3, Circ1.Position, 1, Position, 1);
-		}
-		else
-			Position = NULL;
-
-		// Radius
-		Radius = Circ1.Radius;
-	}
-	return *this;
-}
-
-Circular::~Circular() {
-	if (Position != NULL) {
-		MKL_free(Position);
-		Position = NULL;
-	}
-
-	if (Name != NULL) {
-		free(Name);
-	}
-}
-
-void Circular::get_Position(double* Pos) {
-	if (Pos != NULL) {
-		cblas_dcopy(3, Position, 1, Pos, 1);
-	}
-}
-
-double Circular::get_Radius() const {
-	return Radius;
-}
-
-void Circular::set_Radius(const double& Rad) {
-	Radius = Rad;
-}
-
-void Circular::set_Position(const double* Pos) {
-	if (Pos != NULL) {
-		cblas_dcopy(mkl_DIM, Pos, 1, Position, 1);
-	}
-}
-
-void Circular::get_centripet_force(double* Fr, double* v, double& m, double* p) {
-	// calculates the force in a body only with respect to its velocity, mass and position
-	// v is the velocity of the body
-	// m is the mass of the body
-	// p is the global position of the body
-	// Fr - the centripetal force
-	// The rotation is always around the origin!
-
-	const MKL_INT mkl_DIM = 3;
-	const MKL_INT mkl_incx = 1;
-	const MKL_INT mkl_incy = 1;
-
-	double* unit_y_vector = (double*)mkl_calloc(mkl_DIM, sizeof(double), this->alignment);
-	double* velocity_direction = (double*)mkl_calloc(mkl_DIM, sizeof(double), this->alignment);
-
-	double velocity_magnitude, inv_radius, force_magnitude;
-
-	cblas_dcopy(mkl_DIM, p, 1, Fr, 1);
-
-	Fr[1] = 0;		// path only in XZ-plane
-
-	inv_radius = 1.0 / cblas_dnrm2(mkl_DIM, p, 1);		// corresponds to the (inverse) radius of the trajectory at the considered tyre
-
-	cblas_dscal(mkl_DIM, -inv_radius, Fr, 1);
-
-	unit_y_vector[0] = 0.;
-	unit_y_vector[1] = 1.;
-	unit_y_vector[2] = 0.;
-
-	MathLibrary::crossProduct(Fr, unit_y_vector, velocity_direction);
-
-	velocity_magnitude = cblas_ddot(mkl_DIM, v, mkl_incx, velocity_direction, mkl_incy);
-
-	force_magnitude = m * velocity_magnitude * velocity_magnitude * inv_radius;
-
-	cblas_dscal(mkl_DIM, force_magnitude, Fr, 1);
-
-	MKL_free(unit_y_vector);
-	MKL_free(velocity_direction);
-}
-
-void Circular::update_Profile_force(Car* Car1, double* F_vec, double* Normal_ext) {
-	// out: F_vec = [F_CG, F_W1, F_T1, F_W2, F_T2, F_W3, F_T3, F_W4, F_T4] (Centripetal components of the force)
-	// out: Normal_ext - normal over the full body; updated in this function from the centripetal forces
-
-	// get distance vector between center of circle and the car = Positions of points from the car vs Center of Circle, which is seen as 0
-	double* dist_car_center = (double*)mkl_malloc(sizeof(double) * mkl_DIM * vec_DIM, alignment);
-	Car1->get_dist_vector(Position, dist_car_center);
-
-	//// the distance to [CG<->Center of Circle] MUST BE EQUAL with the RADIUS of the Circle - place an ASSERT here!!!!
-	//if (abs(Car1->get_dist_vector_abs_val(Position) - Radius * Radius) > 1e-12) {
-	//	std::cout << "\n\n ERROR (in Circular.update_normal_force): The radius of the circle is different than the distance  \\
-	//		between the car and center of the circle!!!!Please take care!!!";
-	//}
-
-	// Vectors with Velocities and Masses
-	double* Velocity_vec = (double*)mkl_malloc(sizeof(double) * mkl_DIM * vec_DIM, alignment);
-	double* Mass_vec = (double*)mkl_malloc(sizeof(double) * vec_DIM, alignment);
-
-	Car1->get_Velocity_vec(Velocity_vec);
-	Car1->get_Mass_vec(Mass_vec);
-
-	// Compute each of the 9 centripetal forces
-	for (int i = 0; i < vec_DIM; ++i) {
-		get_centripet_force(&F_vec[mkl_DIM * i], &Velocity_vec[mkl_DIM * i], *(Mass_vec + i), &dist_car_center[mkl_DIM * i]);
-	}
-
-	// Compute centripetal part of the global normal force 
-	// N = F_CG + F_W1 + F_T1 + F_W2 + F_T2 + F_W3 + F_T3 + F_W4 + F_T4
-	cblas_dcopy(mkl_DIM, F_vec, incx, Normal_ext, incx);
-	for (auto i = 1; i < vec_DIM; ++i) {
-		vdAdd(mkl_DIM, Normal_ext, &F_vec[mkl_DIM * i], Normal_ext);
-	}
-
-	MKL_free(dist_car_center);
-	MKL_free(Velocity_vec);
-	MKL_free(Mass_vec);
-}
-
-// =============================== END OF Circular class implementation ===================
 
 // ===============================  Load_module class implementation =======================
 
@@ -567,14 +403,40 @@ void Circular::update_Profile_force(Car* Car1, double* F_vec, double* Normal_ext
 Load_module::Load_module() {
 	Active_Profile = new Profile();
 	Car_obj = new Car();
+
+	// Auxiliary vectors
+	Normal_ext = (double*)mkl_malloc(sizeof(double) * mkl_DIM, alignment); // Normal_force
+	k_vec = (double*)mkl_malloc(sizeof(double) * (vec_DIM - 1), alignment); // k_vec; vec_DIM-1 = 8
 }
 
-Load_module::Load_module(Profile* Profile_type) : Load_module() {
+Load_module::Load_module(Profile* Profile_type) {
 	Active_Profile = Profile_type;
+	Car_obj = new Car();
+
+	// Auxiliary vectors
+	Normal_ext = (double*)mkl_malloc(sizeof(double) * mkl_DIM, alignment); // Normal_force
+	k_vec = (double*)mkl_malloc(sizeof(double) * (vec_DIM - 1), alignment); // k_vec; vec_DIM-1 = 8
 }
 
-Load_module::Load_module(Profile* Profile_type, Car* Car1) : Load_module(Profile_type) {
+Load_module::Load_module(Profile* Profile_type, Car* Car1) {
+	Active_Profile = Profile_type;
 	Car_obj = Car1;
+
+	// Auxiliary vectors
+	Normal_ext = (double*)mkl_malloc(sizeof(double) * mkl_DIM, alignment); // Normal_force
+	k_vec = (double*)mkl_malloc(sizeof(double) * (vec_DIM - 1), alignment); // k_vec; vec_DIM-1 = 8
+}
+
+Load_module::~Load_module() {
+	if (Normal_ext != NULL) {
+		MKL_free(Normal_ext);
+		Normal_ext = NULL;
+	}
+
+	if (k_vec != NULL) {
+		MKL_free(k_vec);
+		k_vec = NULL;
+	}
 }
 
 Load_module::Load_module(const Load_module& Load_module_1) {
@@ -596,9 +458,7 @@ void Load_module::get_Profile(Profile* Profile_type) {
 	Profile_type = Active_Profile;
 }
 
-
 void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec, double* External_force) {
-	double* Normal_ext = (double*)mkl_malloc(sizeof(double) * mkl_DIM, alignment); // Normal_force
 	Active_Profile->update_Profile_force(Car_obj, F_vec, Normal_ext);
 
 	// N += External_force
@@ -611,7 +471,6 @@ void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec
 	}
 	
 	// get Stiffnesses vector k_vec
-	double* k_vec = (double*)mkl_malloc(sizeof(double) * (vec_DIM - 1), alignment); // k_vec; vec_DIM-1 = 8
 	Car_obj->get_k_vec(k_vec);
 
 	for (auto i = 0; i < (vec_DIM - 1); i += 2) {
@@ -627,11 +486,44 @@ void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec
 		// F_t_i += k_t_i * Delta_x_{i+1}
 		cblas_daxpy(mkl_DIM, k_vec[i + 1], &Delta_x_vec[mkl_DIM * (i + 1)], incx, &F_vec[mkl_DIM * (i + 2)], incx);
 	}
-
-
-	MKL_free(Normal_ext);
-	MKL_free(k_vec);
-
 }
+
+// read external force
+/*{
+cblas_dcopy(mkl_DIM, load_param.external_force_body, 1, force_vector, 1); // copy the center of mass position
+T* xml_start, * position_start;
+xml_start = load_param.external_force_wheel + 2 * 3;
+position_start = force_vector + 3;
+cblas_dcopy(mkl_DIM, xml_start, 1, position_start, 1);
+// W2 = W_fr
+xml_start = load_param.external_force_wheel + 3 * 3;
+position_start += 6; // skip 3 for tyre
+cblas_dcopy(mkl_DIM, xml_start, 1, position_start, 1);
+// W3 = W_rl
+xml_start = load_param.external_force_wheel + 1 * 3;
+position_start += 6; // skip 3 for tyre
+cblas_dcopy(mkl_DIM, xml_start, 1, position_start, 1);
+// W2 = W_rr
+xml_start = load_param.external_force_wheel + 0 * 3;
+position_start += 6; // skip 3 for tyre
+cblas_dcopy(mkl_DIM, xml_start, 1, position_start, 1);
+
+// T1 = T_fl
+xml_start = load_param.external_force_tyre + 2 * 3;
+position_start = force_vector + 6; // skip 3 for center of mass and 3 for the wheel
+cblas_dcopy(mkl_DIM, xml_start, 1, position_start, 1);
+// T2 = T_fr
+xml_start = load_param.external_force_tyre + 3 * 3;
+position_start += 6; // skip 3 for the wheel
+cblas_dcopy(mkl_DIM, xml_start, 1, position_start, 1);
+// T3 = T_rl
+xml_start = load_param.external_force_tyre + 1 * 3;
+position_start += 6; // skip 3 for the wheel
+cblas_dcopy(mkl_DIM, xml_start, 1, position_start, 1);
+// T4 = T_rr
+xml_start = load_param.external_force_tyre + 0 * 3;
+position_start += 6; // skip 3 for the wheel
+cblas_dcopy(mkl_DIM, xml_start, 1, position_start, 1);
+}*/
 
 // =============================== END of Load_module class implementation =======================
