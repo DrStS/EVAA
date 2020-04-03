@@ -8,7 +8,7 @@ private:
 	// alignment and g are defined globally === REPLACE THEM!!!!
 	const int alignment = 64;
 	// MKL / vector constants:
-	const int mkl_DIM = 3, vec_DIM = 9, incx = 1; // consider mkl_DIM = 4 for efficiency!!!
+	const int mkl_DIM = 3, vec_DIM = 10, incx = 1; // consider mkl_DIM = 4 for efficiency!!! // 10 dimension because of torque of the body
 
 	double* Position_vec = NULL; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3 !!! Consider alignment (3+1),(3+1),... 
 	double* Velocity_vec = NULL; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3

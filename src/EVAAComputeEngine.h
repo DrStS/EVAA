@@ -29,6 +29,7 @@
 #include "MathLibrary.h"
 #include "ReadXML.h"
 #include "MBD_method.h"
+#include "ALE.h"
 #ifndef U_COMPSTIFF
 #define U_COMPSTIFF
 #include "EVAAComputeStiffness.h"
