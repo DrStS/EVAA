@@ -171,7 +171,6 @@ private:
 	T theta_z_init_body;
 
 
-
 	//// Solver type selection based on type of boundary condition
 	std::string condition_type;
 	std::string cond1 = "fixed_to_road";
@@ -191,6 +190,7 @@ private:
 	T* l_lat, *l_long, *length;
 	size_t num_tyre = 4;
 	T* time; // this is not necessary
+	T* Corners_init, *Corners_current, *Corners_rot;
 
 	void check_status(lapack_int status) {
 		if (status == 1) {
@@ -373,103 +373,29 @@ private:
 		k_vect[6] = k_body_rr;
 		k_vect[7] = k_tyre_rr;
 	}
-	/*
-	* length is an array of length 8 (for each spring)
-	* u is the current positions vector of length 11
-	*/
-	void get_length(T* length, T* u)
+
+	// stores the vectors to the corners in the columns of Corners_current [fl,fr,rl,rr]
+	void update_corners()
 	{
-		/*
-		* rotation matrix to rotate the edges of the car
-		*/
-		T* rotationMat = (T*)mkl_calloc(dim * dim, sizeof(T), alignment);
-		/*
-		* each column is a vector to one of the wheels
-		*/
-		T* r = (T*)mkl_calloc(dim * num_wheels, sizeof(T), alignment);
+		// zz, yy, xx
+		MathLibrary::get_rotation_matrix(0.0, u_n_p_1[2], u_n_p_1[1], Corners_rot);
+		
+		// do rotation: rotationMat * r
+		//void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const double beta, double* c, const MKL_INT ldc);
+		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, num_wheels, dim, 1, Corners_rot, dim, Corners_init, num_wheels, 0, Corners_current, num_wheels);
+	}
 
-
-
-		//	1. qc = qc/norm(qc); This is in quaternions 
-		T nrm = cblas_dnrm2(this->NUM_LEGS, initial_orientation_, 1);
-		cblas_dscal(this->NUM_LEGS, 1.0 / nrm, initial_orientation_, 1);
-
-		// 2.	C_Nc = get_basis(qc);
-		MathLibrary::get_basis<T>(initial_orientation_, C_Nc);
-		// 3.	global_y = C_Nc(:,2);
-		cblas_dcopy(this->DIM, C_Nc + 1, this->DIM, global_y, 1);
-
-		// 4.	global_y = -global_y / norm(global_y);
-		nrm = cblas_dnrm2(this->DIM, global_y, 1);
-		cblas_dscal(this->DIM, -1.0 / nrm, global_y, 1);
-
-		/////////////////////////////////////////// Leg 1 ////////////////////////////////////////////////////////
-		// 5.	pw1 = pcc;
-		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate1_, 1);
-
-		// 6.	pw1 = pw1 + C_Nc*r1;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r1_, 1, 1, wheel_coordinate1_, 1);
-
-		// 7.	pw1 = pw1 + upper_length(1)*global_y;
-		cblas_daxpy(this->DIM, initial_upper_spring_length_[0], global_y, 1, wheel_coordinate1_, 1);
-
-		// 8.	pt1 = pw1
-		cblas_dcopy(this->DIM, wheel_coordinate1_, 1, tyre_coordinate1_, 1);
-
-		// 9.	pt1 = pw1 + lower_length(1)*global_y;
-		cblas_daxpy(this->DIM, initial_lower_spring_length_[0], global_y, 1, tyre_coordinate1_, 1);
-
-		/////////////////////////////////////////// Leg 2 ////////////////////////////////////////////////////////
-		// 5.	pw2 = pcc;
-		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate2_, 1);
-
-		// 6.	pw2 = pw2 + C_Nc*r2;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r2_, 1, 1, wheel_coordinate2_, 1);
-
-		// 7.	pw2 = pw2 + upper_length(2)*global_y;
-		cblas_daxpy(this->DIM, initial_upper_spring_length_[1], global_y, 1, wheel_coordinate2_, 1);
-
-		// 8.	pt2 = pw2
-		cblas_dcopy(this->DIM, wheel_coordinate2_, 1, tyre_coordinate2_, 1);
-
-		// 9.	pt2 = pw2 + lower_length(2)*global_y;
-		cblas_daxpy(this->DIM, initial_lower_spring_length_[1], global_y, 1, tyre_coordinate2_, 1);
-
-		/////////////////////////////////////////// Leg 3 ////////////////////////////////////////////////////////
-		// 5.	pw3 = pcc;
-		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate3_, 1);
-
-		// 6.	pw3 = pw3 + C_Nc*r3;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r3_, 1, 1, wheel_coordinate3_, 1);
-
-		// 7.	pw3 = pw3 + upper_length(3)*global_y;
-		cblas_daxpy(this->DIM, initial_upper_spring_length_[2], global_y, 1, wheel_coordinate3_, 1);
-
-		// 8.	pt3 = pw3
-		cblas_dcopy(this->DIM, wheel_coordinate3_, 1, tyre_coordinate3_, 1);
-
-		// 9.	pt3 = pw3 + lower_length(3)*global_y;
-		cblas_daxpy(this->DIM, initial_lower_spring_length_[2], global_y, 1, tyre_coordinate3_, 1);
-
-		/////////////////////////////////////////// Leg 4 ////////////////////////////////////////////////////////
-		// 5.	pw4 = pcc;
-		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate4_, 1);
-
-		// 6.	pw4 = pw4 + C_Nc*r4;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r4_, 1, 1, wheel_coordinate4_, 1);
-
-		// 7.	pw4 = pw4 + upper_length(4)*global_y;
-		cblas_daxpy(this->DIM, initial_upper_spring_length_[3], global_y, 1, wheel_coordinate4_, 1);
-
-		// 8.	pt4 = pw4
-		cblas_dcopy(this->DIM, wheel_coordinate4_, 1, tyre_coordinate4_, 1);
-
-		// 9.	pt4 = pw4 + lower_length(4)*global_y;
-		cblas_daxpy(this->DIM, initial_lower_spring_length_[3], global_y, 1, tyre_coordinate4_, 1);
-
-
-		mkl_free(global_y);
-		mkl_free(C_Nc);
+	// first updates the corner and afterwards compute the lengths;
+	void update_lengths() {
+		update_corners();
+		current_spring_length[0] = spring_length[0] + Corners_current[8] + u_n_p_1[0] - u_n_p_1[3];
+		current_spring_length[1] = spring_length[1] + u_n_p_1[3] - u_n_p_1[4];
+		current_spring_length[2] = spring_length[2] + Corners_current[9] + u_n_p_1[0] - u_n_p_1[5];
+		current_spring_length[3] = spring_length[3] + u_n_p_1[5] - u_n_p_1[6];
+		current_spring_length[4] = spring_length[4] + Corners_current[10] + u_n_p_1[0] - u_n_p_1[7];
+		current_spring_length[5] = spring_length[5] + u_n_p_1[7] - u_n_p_1[8];
+		current_spring_length[6] = spring_length[6] + Corners_current[11] + u_n_p_1[0] - u_n_p_1[9];
+		current_spring_length[7] = spring_length[7] + u_n_p_1[9] - u_n_p_1[10];
 	}
 
 	inline void compute_dx(const T* current_length, T* dx) {
@@ -558,6 +484,9 @@ public:
 		l_long = (T*)mkl_malloc(num_wheels*sizeof(T), alignment);
 		spring_length = (T*)mkl_malloc(2*num_tyre*sizeof(T), alignment);
 		current_spring_length = (T*)mkl_malloc(2 * num_tyre * sizeof(T), alignment);
+		Corners_init = (T*)mkl_malloc(dim * num_wheels * sizeof(T), alignment);
+		Corners_current = (T*)mkl_malloc(dim * num_wheels * sizeof(T), alignment);
+		Corners_rot = (T*)mkl_calloc(dim * dim, sizeof(T), alignment);
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////// Initial Iteration vector ////////////////////////////////////////////////////
@@ -637,10 +566,17 @@ public:
 		MathLibrary::allocate_to_diagonal(M, temp, DOF);
 		//M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 	
-		// crate length array
-		// get_length()
+		// read init corners vectors into matrix
+		Corners_init[0] = l_long_fl;
+		Corners_init[4] = l_lat_fl;
+		Corners_init[1] = l_long_fr;
+		Corners_init[5] = -l_lat_fr;
+		Corners_init[2] = -l_long_rl;
+		Corners_init[6] = l_lat_rl;
+		Corners_init[3] = -l_long_rr;
+		Corners_init[7] = -l_lat_rr;
+		
 		// lookup k values
-		// buggy needs fixes
 		if (params.interpolation) {
 			lookupStiffness->getStiffness(current_spring_length, k_vect);
 		}
@@ -655,6 +591,10 @@ public:
 			k_tyre_rr = params.k_tyre[0];
 			populate_K(k_vect, k_body_fl, k_tyre_fl, k_body_fr, k_tyre_fr, k_body_rl, k_tyre_rl, k_body_rr, k_tyre_rr);
 		}
+		write_matrix(Corners_init, 3);
+		MathLibrary::get_rotation_matrix(0.0, 0.785, 0.785, Corners_rot);
+		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, num_wheels, dim, 1, Corners_rot, dim, Corners_init, num_wheels, 0, Corners_current, num_wheels);
+		std::cout << "0.277 = " << Corners_current[8] << std::endl;
 		l_lat[0] = l_lat_fl;
 		l_lat[1] = l_lat_fr;
 		l_lat[2] = l_lat_rl;
@@ -790,7 +730,15 @@ public:
 		while (std::abs(t-(tend_+h_)) > eps) {
 
 			// K update here
-
+			update_lengths();
+			//std::cout << "current length: " << std::endl;
+			//write_vector(current_spring_length, 8);
+			lookupStiffness->getStiffness(current_spring_length, k_vect);
+			//std::cout << "current k: " << std::endl;
+			//write_vector(k_vect, 8);
+			//std::cout << "current pos: " << std::endl;
+			//write_vector(u_n_p_1, DOF);
+			construct_K(K, k_vect, l_lat, l_long);
 			cblas_dcopy(mat_len, M, 1, A, 1);
 			cblas_dscal(mat_len, factor_h2, A, 1);
 			cblas_daxpy(mat_len, factor_h, D, 1, A, 1);
@@ -976,6 +924,9 @@ public:
 		mkl_free(l_lat);
 		mkl_free(l_long);
 		mkl_free(spring_length);
-
+		mkl_free(Corners_init);
+		mkl_free(Corners_current);
+		mkl_free(Corners_rot);
+		delete lookupStiffness;
 	}
 };

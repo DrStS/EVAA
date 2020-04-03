@@ -16,16 +16,16 @@
           <FrontRight>1.395</FrontRight>
         </LongitudinalReferenceToWheel>
         <SuspensionSprings>
-          <ReerRight>0.2</ReerRight>
-          <ReerLeft>0.2</ReerLeft>
-          <FrontLeft>0.2</FrontLeft>
-          <FrontRight>0.2</FrontRight>
+          <ReerRight>0.5</ReerRight>
+          <ReerLeft>0.5</ReerLeft>
+          <FrontLeft>0.5</FrontLeft>
+          <FrontRight>0.5</FrontRight>
         </SuspensionSprings>
         <TyreSprings>
-          <ReerRight>0.2</ReerRight>
-          <ReerLeft>0.2</ReerLeft>
-          <FrontLeft>0.2</FrontLeft>
-          <FrontRight>0.2</FrontRight>
+          <ReerRight>0.5</ReerRight>
+          <ReerLeft>0.5</ReerLeft>
+          <FrontLeft>0.5</FrontLeft>
+          <FrontRight>0.5</FrontRight>
         </TyreSprings>
       </Geometry>
       <Stiffness>        
