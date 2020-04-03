@@ -22,6 +22,7 @@ private:
 	std::string solver_name;
 	int used_solver;
 	int boundary_conditions;
+	bool use_interpolation;
 	T radius_circular_path;
 	T* center_of_circle;
 	////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
@@ -276,7 +277,7 @@ public:
 		used_solver = params.solver;
 		boundary_conditions = load_params.boundary_condition_road;
 		radius_circular_path = load_params.profile_radius;
-
+		use_interpolation = params.interpolation;
 
 		////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
 		k_body_fl = params.k_body[2];
@@ -1686,10 +1687,10 @@ public:
 		compute_f_mem_alloc();
 
 		if (used_solver == BROYDEN_CN) {
-			MathLibrary::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+			MathLibrary::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter, this->use_interpolation);
 		}
 		else if (used_solver == RUNGE_KUTTA_4) {
-			MathLibrary::Solvers<T, MBD_method>::RK4(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+			MathLibrary::Solvers<T, MBD_method>::RK4(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter, this->use_interpolation, );
 		}
 		else {
 			std::cout << "sorry man, the solver you picked for MBD hasn't been implemented yet, only Broyden_CN and RK4 work so far" << std::endl;
