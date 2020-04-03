@@ -159,8 +159,16 @@ namespace MathLibrary {
 		E[2] = std::atan2(siny_cosp, cosy_cosp);
 	}
 	template <typename T>
-	T construct_rotation_matrix(const T yaw, const T pitch,  const T roll, T* R) {
-	
+	void get_rotation_matrix(const T yaw, const T pitch,  const T roll, T* R) {
+		R[0] = (std::cos(yaw))*(std::cos(pitch));
+		R[1] = ((std::cos(yaw))*(std::sin(pitch))*(std::sin(roll)) - (std::sin(yaw))*(std::cos(roll)));
+		R[2] = ((std::cos(yaw))*(std::sin(pitch))*(std::cos(roll)) + (std::sin(yaw))*(std::sin(roll)));
+		R[3] = (std::sin(yaw))*(std::cos(pitch));
+		R[4] = ((std::sin(yaw))*(std::sin(pitch))*(std::sin(roll)) + (std::cos(yaw))*(std::cos(roll)));
+		R[5] = ((std::sin(yaw))*(std::sin(pitch))*(std::cos(roll)) - (std::cos(yaw))*(std::sin(roll)));
+		R[6] = -(std::sin(pitch));
+		R[7] = (std::cos(pitch))*(std::sin(roll));
+		R[8] = (std::cos(pitch))*(std::cos(roll));
 	}
 
 	template <typename T>

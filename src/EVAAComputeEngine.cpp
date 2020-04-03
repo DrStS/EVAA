@@ -558,6 +558,11 @@ void EVAAComputeEngine::computeMKLlinear11dof() {
 		std::cout << soln[i] << std::endl;
 	}
 	mkl_free(soln);
+
+	floatEVAA* R = (floatEVAA*)mkl_malloc(9*sizeof(floatEVAA), alignment);
+	MathLibrary::get_rotation_matrix<floatEVAA>(0, 10, 10, R);
+	MathLibrary::write_matrix<floatEVAA>(R, 3);
+	mkl_free(R);
 }
 
 void EVAAComputeEngine::computeMKLlinear11dof_reduced() {
