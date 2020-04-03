@@ -106,7 +106,6 @@ public:
 	void set_I_body_yy(const double& I_body_yy_val);
 };
 
-
 class Profile {
 protected:
 	// consider replacing double with floatEVAA
