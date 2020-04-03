@@ -22,13 +22,16 @@
 * This file holds the math funcktion of EVAA.
 * \date 6/13/2019
 **************************************************************************************************/
-#pragma once
 
+#pragma once
 #include "AuxiliaryParameters.h"
+<<<<<<< HEAD
 #ifndef U_COMPSTIFF
 #define U_COMPSTIFF
 #include "EVAAComputeStiffness.h"
 #endif
+=======
+>>>>>>> bce521d8c578893ef31f12c911ed8b248c091fc8
 #include <vector>
 #include <cmath>
 
@@ -683,7 +686,7 @@ namespace MathLibrary {
 			MKL_free(x_new);
 		}
 
-		static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter, bool use_interpolation) {
+		static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
 			/*
 			method requires that the object using this solver has following public member functions
 			1. get_alignment()
