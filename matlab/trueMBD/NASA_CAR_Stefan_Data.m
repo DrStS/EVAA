@@ -46,8 +46,6 @@ mass_tyre_rl=30;
 mass_wheel_rr=135/2;
 mass_tyre_rr=30;
 
-visualize = true;
-
 % Dimensions of the main car body (the center of rotation is at the origin)
 r1 = [-l_long_rr; 0  ;  l_lat_rr];
 r2 = [-l_long_rl; 0  ; -l_lat_rl];
@@ -56,9 +54,6 @@ r4 = [l_long_fr ; 0  ;  l_lat_fr];
 
 mass = mass_Body;
 Ic = diag([I_body_xx, I_body_yy, I_body_zz]);                           % moment of intertia of the car
-
-initial_orientation = [0; 0; 0; 1];                                     % PLAY AROUND WITH IT initial orientation of the car body as quaternion
-initial_position = [5;0;0];                                             % of the center of mass
 
 % wheel parameters (provided as vectors [right-back, left-back, left-front, right_front])
 mass_wheel = [mass_wheel_rr, mass_wheel_rl, mass_wheel_fl, mass_wheel_fr];      
@@ -97,6 +92,11 @@ vt4 = [0; 0; 0];
 % initial angular velocities
 wc = [0; 0; 0];
 
+initial_orientation = [0; 0; 0; 1];                                     % PLAY AROUND WITH IT initial orientation of the car body as quaternion
+initial_position = [5;0;0];                                             % of the center of mass
+
+visualize = false;
+
 % force parameters
 g = 1;               % there is no gravity in outer space! 
 
@@ -114,7 +114,7 @@ FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
 % simulation specifications 
-num_iter = 40000;     % LENGTH OF THE SIMULATION
+num_iter = 100000;     % LENGTH OF THE SIMULATION
 delta_t = 1e-3;       % PLAY AROUND
 tol = 1e-7;           % !!!! PLAY AROUND !!!!
 max_iter = 10000;     % for Broyden´
@@ -147,12 +147,12 @@ FR4 = @(t, y, pcc, vt, vb, F) zeros(3,1);
 %PLAY AROUND; expect RK4 and BCN to work fine
 % Explicit solvers 
 % solver = @(f, t, x) explicit_solver(f, t, x);
- solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+% solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
-% solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
+solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol, metrics] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 
                 lower_spring_length, upper_spring_length, initial_lower_spring_length, initial_upper_spring_length, ...

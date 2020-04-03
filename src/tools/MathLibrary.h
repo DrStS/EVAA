@@ -25,6 +25,10 @@
 #pragma once
 
 #include "AuxiliaryParameters.h"
+#ifndef U_COMPSTIFF
+#define U_COMPSTIFF
+#include "EVAAComputeStiffness.h"
+#endif
 #include <vector>
 #include <cmath>
 
@@ -687,13 +691,14 @@ namespace MathLibrary {
 			MKL_free(x_new);
 		}
 
-		static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+		static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter, bool use_interpolation) {
 			/*
 			method requires that the object using this solver has following public member functions
 			1. get_alignment()
 			2. get_solution_dimension()
 			*/
 			//std::cout << "Broyden started!\n" << std::endl;
+			
 			size_t alignment = obj->get_alignment();
 			size_t x_len = obj->get_solution_dimension();
 			T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
