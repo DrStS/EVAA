@@ -28,8 +28,6 @@
 #include "EVAAComputeStiffness.h"
 #endif
 
-#define ALIGNMENT 64
-
 void CheckDfError(int num);
 
 /*************************************************/
@@ -74,10 +72,8 @@ void EVAAComputeStiffness::getStiffness(double* length, double* stiffness) {
 		err = dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
 			1, &length[i], DF_NO_HINT, ndorder,
 			dorder, datahint, &stiffness[i], rhint, 0);
-		printf("inter %d: %d\n", i, (int)err);
+		//printf("inter %d: %d\n", i, (int)err);
 		CheckDfError(err);
-		double one = 3 * length[i] * length[i] + 2 * length[i] + 1 * i;
-		std::cout << "ana: " << one << ", inter: " << stiffness[i] << std::endl;
 	}
 }
 
@@ -89,10 +85,8 @@ void EVAAComputeStiffness::getDerivative(double* length, double* deriv) {
 		err = dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
 			1, &length[i], DF_NO_HINT, ndorder,
 			dorder, datahint, &deriv[i], rhint, 0);
-		printf("deriv %d: %d\n", i, (int)err);
+		//printf("deriv %d: %d\n", i, (int)err);
 		CheckDfError(err);
-		double one = 6 * length[i] + 2;
-		std::cout << "ana: " << one << ", inter: " << deriv[i] << std::endl;
 	}
 }
 /*
@@ -107,11 +101,11 @@ EVAAComputeStiffness::EVAAComputeStiffness(int size, double* a, double b, double
 		bc_type = DF_BC_FREE_END;
 	}
 	// we will get the grid aftwards from a file. That why I do not directly write size, l_min, l_max into the variables
-	task = (DFTaskPtr*)mkl_malloc(ny * sizeof(DFTaskPtr), ALIGNMENT);
-	grid = (double*)mkl_calloc(nx * ny, sizeof(double), ALIGNMENT);
-	axis = (double*)mkl_calloc(nx, sizeof(double), ALIGNMENT);
-	scoeff = (double*)mkl_calloc(ny * (nx - 1) * sorder, sizeof(double), ALIGNMENT);
-
+	task = (DFTaskPtr*)mkl_malloc(ny * sizeof(DFTaskPtr), alignment);
+	grid = (double*)mkl_calloc(nx * ny, sizeof(double), alignment);
+	axis = (double*)mkl_calloc(nx, sizeof(double), alignment);
+	scoeff = (double*)mkl_calloc(ny * (nx - 1) * sorder, sizeof(double), alignment);
+	
 	/* create grid */
 	EVAAComputeGrid::buildLinearGrid(grid, axis, nx, l_min, l_max, a, b, c, ny);
 
@@ -119,18 +113,18 @@ EVAAComputeStiffness::EVAAComputeStiffness(int size, double* a, double b, double
 	for (auto i = 0; i < ny; i++) {
 		/***** Create Data Fitting task *****/
 		err = dfdNewTask1D(&task[i], nx, axis, xhint, 1, &grid[i * nx], yhint);
-		printf("new : %d\n", (int)err);
+		//printf("new : %d\n", (int)err);
 		CheckDfError(err);
 
 		/***** Edit task parameters for look up interpolant *****/
 		err = dfdEditPPSpline1D(task[i], sorder, stype, bc_type, bc,
 			ic_type, ic, &scoeff[i * (nx - 1) * sorder], scoeffhint);
-		printf("edit : %d\n", (int)err);
+		//printf("edit : %d\n", (int)err);
 		CheckDfError(err);
 
 		/***** Construct linear spline using STD method *****/
 		err = dfdConstruct1D(task[i], DF_PP_SPLINE, DF_METHOD_STD);
-		printf("constr : %d\n", (int)err);
+		//printf("constr : %d\n", (int)err);
 		CheckDfError(err);
 	}
 }

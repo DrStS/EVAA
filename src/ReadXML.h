@@ -69,6 +69,6 @@ class ReadXML{
 		void setloadFileName(const std::string & filename);
         void ReadParameters(Simulation_Parameters& parameters);
         void ReadLoadParameters(Load_Params & parameters);
-        void ReadLookupParameters(EVAAComputeStiffness* lookupStiffness, Simulation_Parameters & parameters);
+		void ReadLookupParameters(EVAAComputeStiffness** lookupStiffness, Simulation_Parameters& parameters);
 };
 

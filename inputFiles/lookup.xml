@@ -25,9 +25,9 @@
 			<l_max>0.3</l_max>
 		</Range>
     <InterpolationMethod>
-			<k>2</k>
-			<type>0</type>
-			<order>2</order>
+			<k>8</k>
+			<type>0</type><!-- spline 2 -->
+			<order>2</order><!-- spline 4 -->
 		</InterpolationMethod>
 	</LookupTableGenerator>	
 </LookupHandler>

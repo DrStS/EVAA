@@ -29,7 +29,6 @@
 #include "MathLibrary.h"
 #include "ReadXML.h"
 #include "MBD_method.h"
-#include "ALE.h"
 #ifndef U_COMPSTIFF
 #define U_COMPSTIFF
 #include "EVAAComputeStiffness.h"
@@ -185,10 +184,11 @@ private:
 	int i;
 	T *quad_angle_init, *euler_angle_init;
 	T* M, * temp, * K, * K_trans, * D, * M_red, * D_red, * K_red;
+	T* k_vect;
 	T *spring_length, *current_spring_length;
 	T* u_sol, * u_sol_red, * u_n_p_1, * u_n_p_1_red, * u_n_m_1, * u_n, * u_n_red, * u_n_m_1_red, * A, * Ared, * B, * Bred, * f_n_p_1, * f_n_p_1_red;
 	size_t* tyre_index_set;
-	T* k_vect, *l_lat, *l_long, *length;
+	T* l_lat, *l_long, *length;
 	size_t num_tyre = 4;
 	T* time; // this is not necessary
 
@@ -359,11 +359,7 @@ private:
 		MathLibrary::allocate_to_diagonal(K, temp, DOF); // K = K + K'+ diag(K)
 	}
 	void populate_K(T* k_vect, T k_body_fl, T k_tyre_fl, T k_body_fr,
-		T k_tyre_fr,
-		T k_body_rl,
-		T k_tyre_rl,
-		T k_body_rr,
-		T k_tyre_rr) {
+		T k_tyre_fr, T k_body_rl, T k_tyre_rl, T k_body_rr, T k_tyre_rr) {
 
 		/*
 		This is needed when interpolation is turned off
@@ -377,51 +373,22 @@ private:
 		k_vect[6] = k_body_rr;
 		k_vect[7] = k_tyre_rr;
 	}
-	void get_length(
-		T* initial_orientation_,
-		const T* r1_,
-		const T* r2_,
-		const T* r3_,
-		const T* r4_,
-		const T* pcc_,
-		const T* initial_upper_spring_length_,
-		const T* initial_lower_spring_length_,
-		T* wheel_coordinate1_,
-		T* wheel_coordinate2_,
-		T* wheel_coordinate3_,
-		T* wheel_coordinate4_,
-		T* tyre_coordinate1_,
-		T* tyre_coordinate2_,
-		T* tyre_coordinate3_,
-		T* tyre_coordinate4_)
-
+	/*
+	* length is an array of length 8 (for each spring)
+	* u is the current positions vector of length 11
+	*/
+	void get_length(T* length, T* u)
 	{
 		/*
-		To reduce memory trace and better use cache this function is implemented in following fashion:
-		Original steps for computation of one component:
-														1.	qc = qc/norm(qc);
-														2.	C_Nc = get_basis(qc);
-														3.	global_y = C_Nc(:,2);
-														4.	global_y = -global_y / norm(global_y);
-														5.	global_r1 = pcc + C_Nc*r1;
-														6.	upper_global_spring_1 = upper_length(1)*global_y;
-														7.	lower_global_spring_1 = lower_length(1)*global_y;
-														8.	pw1 = global_r1 + upper_global_spring_1;
-														9.	pt1 = pw1 + lower_global_spring_1;
-		Modified steps for computation of one component:
-														1.	qc = qc/norm(qc);
-														2.	C_Nc = get_basis(qc);
-														3.	global_y = C_Nc(:,2);
-														4.	global_y = -global_y / norm(global_y);
-														5.	pw1 = pcc;
-														6.	pw1 = pw1 + C_Nc*r1;
-														7.	pw1 = pw1 + upper_length(1)*global_y;
-														8.	pt1 = pw1
-														8.	pt1	= pt1 + lower_length(1)*global_y;
+		* rotation matrix to rotate the edges of the car
 		*/
+		T* rotationMat = (T*)mkl_calloc(dim * dim, sizeof(T), alignment);
+		/*
+		* each column is a vector to one of the wheels
+		*/
+		T* r = (T*)mkl_calloc(dim * num_wheels, sizeof(T), alignment);
 
-		T* global_y = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		T* C_Nc = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
+
 
 		//	1. qc = qc/norm(qc); This is in quaternions 
 		T nrm = cblas_dnrm2(this->NUM_LEGS, initial_orientation_, 1);
@@ -516,15 +483,8 @@ private:
 		cblas_dcopy(2 * (this->num_tyre), spring_length, 1, dx, 1);
 		cblas_daxpy(2 * (this->num_tyre), -1.0, current_length, 1, dx, 1);
 	}
-
-
 public:
-	linear11dof(const Simulation_Parameters &params, const Load_Params &load_param, EVAAComputeStiffness* interpolator){
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		lookupStiffness = interpolator;
+	linear11dof(const Simulation_Parameters& params, const Load_Params& load_param, EVAAComputeStiffness* interpolator): lookupStiffness(interpolator) {
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////

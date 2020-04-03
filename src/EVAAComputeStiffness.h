@@ -65,6 +65,7 @@ private:
 	double* datahint = 0;								// additional info about the structure
 	MKL_INT stype;										// linear = DF_PP_DEFAULT, spline = DF_PP_NATURAL
 	MKL_INT sorder;										// linear = DF_PP_LINEAR, spline = DF_PP_CUBIC
+	int alignment = 64;
 public:
 	/*
 	* \brief Constructor
