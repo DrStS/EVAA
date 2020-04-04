@@ -17,11 +17,9 @@ private:
 	const int DOF_diag = 9; // the diagonal elements from A
 
 	//// Solver type selection based on type of boundary condition
-	std::string condition_type;
-	std::string cond1 = "fixed_to_road";
-	std::string cond2 = "road_force";
+	
 
-	T* u_sol, *u_sol_red, *u_n_p_1, *u_n_p_1_red, *u_n_m_1, *u_n, *u_n_red, *u_n_m_1_red, *A, *Ared, *B, *Bred, *f_n_p_1, *f_n_p_1_red;
+	T* u_sol, *u_n_p_1, *u_n_m_1, *u_n, *A, *B, *f_n_p_1;
 	size_t* tyre_index_set;
 	size_t num_tyre = 4;
 	void check_status(lapack_int status) {
@@ -59,6 +57,10 @@ private:
 
 public:
 	linear11dof(Car* input_car) {
-
+		factor_h2 = (1 / (h_ * h_));
+		factor_h = (1 / (h_));
+		u_n_m_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
+		u_n = (T*)mkl_calloc(DOF, sizeof(T), alignment);
+		f_n_p_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 	}
 };
