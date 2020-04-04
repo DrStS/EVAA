@@ -10,12 +10,12 @@ Circular::Circular() {
 	Radius = 100;
 
 	// auxiliary vectors
-	unit_y_vector = (double*)mkl_calloc(mkl_DIM, sizeof(double), alignment);
-	unit_y_vector[0] = 0.; unit_y_vector[1] = 1.; unit_y_vector[2] = 0.;
+	unit_y_vector = (double*)mkl_calloc(DIM, sizeof(double), alignment);
+	unit_y_vector[0] = 0.; unit_y_vector[1] = 0.; unit_y_vector[2] = 1.; // in z direction is 0
 
-	velocity_direction = (double*)mkl_calloc(mkl_DIM, sizeof(double), alignment);
-	dist_car_center = (double*)mkl_malloc(sizeof(double) * mkl_DIM * vec_DIM, alignment);
-	Velocity_vec = (double*)mkl_malloc(sizeof(double) * mkl_DIM * vec_DIM, alignment);
+	velocity_direction = (double*)mkl_calloc(DIM, sizeof(double), alignment);
+	dist_car_center = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
+	Velocity_vec = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
 	Mass_vec = (double*)mkl_malloc(sizeof(double) * vec_DIM, alignment);
 }
 
@@ -116,7 +116,7 @@ void Circular::set_Radius(const double& rad) {
 
 void Circular::set_Position(const double* pos) {
 	if (pos != NULL) {
-		cblas_dcopy(mkl_DIM, pos, 1, Position, 1);
+		cblas_dcopy(DIM, pos, 1, Position, 1);
 	}
 }
 
@@ -128,22 +128,22 @@ void Circular::get_centrifugal_force(double* fr, double* v, double& m, double* p
 	// fr - the centripetal force
 	// the rotation is always around the origin!
 
-	cblas_dcopy(mkl_DIM, p, 1, fr, 1);
+	cblas_dcopy(DIM, p, 1, fr, 1);
 
-	fr[1] = 0;		// path only in xz-plane
+	fr[2] = 0;		// path only in xy-plane
 
-	double inv_radius = 1.0 / cblas_dnrm2(mkl_DIM, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered tyre
+	double inv_radius = 1.0 / cblas_dnrm2(DIM, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered tyre
 
-	// Raffi: cblas_dscal(mkl_DIM, -inv_radius, fr, 1);
-	cblas_dscal(mkl_DIM, inv_radius, fr, 1);
+	// Raffi: cblas_dscal(DIM, -inv_radius, fr, 1);
+	cblas_dscal(DIM, inv_radius, fr, 1);
 
 	MathLibrary::crossProduct(fr, unit_y_vector, velocity_direction);
 
-	double velocity_magnitude = cblas_ddot(mkl_DIM, v, incx, velocity_direction, incx);
+	double velocity_magnitude = cblas_ddot(DIM, v, incx, velocity_direction, incx);
 
 	double force_magnitude = m * velocity_magnitude * velocity_magnitude * inv_radius;
 
-	cblas_dscal(mkl_DIM, force_magnitude, fr, 1);
+	cblas_dscal(DIM, force_magnitude, fr, incx);
 }
 
 void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* normal_ext) {
@@ -165,18 +165,43 @@ void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* norma
 
 	// compute each of the 9 centripetal forces
 	for (int i = 0; i < vec_DIM; ++i) {
-		get_centrifugal_force(&f_vec[mkl_DIM * i], &Velocity_vec[mkl_DIM * i], *(Mass_vec + i), &dist_car_center[mkl_DIM * i]);
+		get_centrifugal_force(&f_vec[DIM * i], &Velocity_vec[DIM * i], *(Mass_vec + i), &dist_car_center[DIM * i]);
 	}
 
 	// compute centripetal part of the global normal force 
 	// n = f_cg + f_w1 + f_t1 + f_w2 + f_t2 + f_w3 + f_t3 + f_w4 + f_t4
-	cblas_dcopy(mkl_DIM, f_vec, incx, normal_ext, incx);
+	cblas_dcopy(DIM, f_vec, incx, normal_ext, incx);
 	for (auto i = 1; i < vec_DIM; ++i) {
-		vdAdd(mkl_DIM, normal_ext, &f_vec[mkl_DIM * i], normal_ext);
+		vdAdd(DIM, normal_ext, &f_vec[DIM * i], normal_ext);
 	}
 }
 
 void Circular::get_Profile_torque(Car<double>* Car1, double* Torque) {
 	Torque[2] = 0; // Torque on z direction
+}
+
+void Circular::get_omega(Car<double>* Car1, double* omega){
+
+	double* radial_vector = (double*)mkl_calloc(DIM, sizeof(double), this->alignment);
+	radial_vector[0] = Car1->Position_vec_xy[0] - this->Position[0];
+	radial_vector[1] = Car1->Position_vec_xy[1] - this->Position[1];
+	radial_vector[2] = 0;
+
+	double radius = cblas_dnrm2(DIM, radial_vector, 1);
+
+	if (abs(radius - this->Radius) > 0.01)
+		std::cout << "Warning! the initial position of the car is not on the trajectory provided in the \
+					 circular path. \n The expected radius is " 
+				<< this->Radius << ", but the car is at an initial distance of " << radius <<
+				" from the center of the circle.\n The execution procedes with the current spatial \
+				configuration and with the current distance to the center of the circle." << std::endl;
+
+	double inv_radius_squared = 1. / (radius * radius);
+
+	MathLibrary::crossProduct(radial_vector, Car1->Velocity_vec, omega);
+
+	cblas_dscal(this->DIM, inv_radius_squared, omega, 1);
+
+	mkl_free(radial_vector);
 }
 // =============================== end of Circular class implementation ===================

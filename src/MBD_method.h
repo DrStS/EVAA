@@ -511,7 +511,9 @@ public:
 		LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', this->DIM, A_Ic, this->DIM);
 	}
 
-	void circular_path_initialization(T* vc, T* vw1, T* vw2, T* vw3, T* vw4, T* vt1, T* vt2, T* vt3, T* vt4, T* omega, T* pcc, T* pt1 , T* pt2, T* pt3, T* pt4, T &radius_param) {
+	void circular_path_initialization(T* vc, T* vw1, T* vw2, T* vw3, T* vw4, 
+		T* vt1, T* vt2, T* vt3, T* vt4, T* omega, T* pcc, 
+		T* pt1 , T* pt2, T* pt3, T* pt4, T &radius_param) {
 		vc[1] = 0;
 
 		T* radial_vector = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);

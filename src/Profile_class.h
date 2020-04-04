@@ -8,7 +8,7 @@ class Profile {
 protected:
 	// consider replacing double with floatEVAA
 	// alignment and g are defined globally === REPLACE THEM!!!!
-	const int alignment = 64, mkl_DIM = 3, vec_DIM = 9, incx = 1;
+	const int alignment = 64, DIM = 3, vec_DIM = 9, incx = 1;
 
 	char* Name = NULL;
 
@@ -16,6 +16,7 @@ public:
 	Profile& operator=(const Profile& Prof1) {};
 	void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
 	void get_Profile_torque(Car<double>* Car1, double* Torque_vec) {};
+	void get_omega(Car<double>* Car1, double* omega) {};
 };
 
 class Circular : public Profile {
@@ -45,4 +46,5 @@ public:
 	void get_centrifugal_force(double* Fr, double* v, double& m, double* p);
 	void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext);
 	void get_Profile_torque(Car<double>* Car1, double* Torque);
+	void get_omega(Car<double>* Car1, double* omega);
 };
