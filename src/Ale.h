@@ -32,6 +32,7 @@ private:
 
 	// needed to solve the 11DOF system
 	T* force_vector_11dof;
+	T* k_vect;
 
 	// needed to apply the load module
 	T* force_vector;
@@ -54,11 +55,13 @@ public:
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
 		linear11dof<T>* linear11dof_val,
+		EVAAComputeStiffness* lookup_table,
 		Simulation_Parameters &params_val) {
 
 		Car_obj = Car_obj_val;
 		Load_module_obj = Load_module_val;
 		linear11dof_obj = linear11dof_val;
+		interpolator = lookup_table;
 
 		// general parameters of the simulation
 		params = params_val;
@@ -108,16 +111,20 @@ public:
 
 		//initialize solution vector
 		int sol_size = (floor(tend_ / h_) + 1);
-		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
-		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
 		int force_dimensions = Car_obj->DIM * Car_obj->vec_DIM;
 		int weighted_force_dimensions = 2;
 		int full_torque_dimensions = 3;
+		int num_springs = 8;
+
+		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
+		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
 		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), alignment);
 		weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
 		new_weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
+		k_vect = (T*)mkl_calloc(num_legs, sizeof(T), alignment);
+
 		torque = new T[3];
 		new_torque = new T[3];
 
@@ -148,6 +155,11 @@ public:
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
 			
 			linear11dof_obj->update_step(force_vector_11dof, u_sol);
+
+			if (params.interpolation) {
+				interpolator->getStiffness(Delta_x_vec, k_vect);
+				Car_obj->updateK(k_vect);
+			}
 		}
 
 		MKL_free(time_vec);
