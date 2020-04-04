@@ -24,7 +24,7 @@ struct Simulation_Parameters {int DOF;
             double initial_ang_vel_body[3]; double gravity[3];
 			double initial_pos_body[3]; double initial_angle[4];
 			double initial_pos_wheel[12]; double initial_pos_tyre[12]; // this has to be removed or used only if it is prescribed
-			bool initial_leg = 0;
+			bool initial_leg_flag = 0;
 			bool interpolation = 0;
             int solver; 
             int max_num_iter; double tolerance;
