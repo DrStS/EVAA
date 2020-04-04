@@ -935,10 +935,10 @@ namespace MathLibrary {
 		}
 
 		static void Stoermer_Verlet_Position(T& x, T& v, T& F, T& delta_t, T& mass) {
-			x += delta_t * v + delta_t * delta_t / (2 * m) * F;
+			x += delta_t * v + delta_t * delta_t / (2 * mass) * F;
 		}
 		static void Stoermer_Verlet_Velocity(T& v, T& F, T& F_new, T& delta_t, T& mass) {
-			v += delta_t / (2 * m) * (F + F_new);
+			v += delta_t / (2 * mass) * (F + F_new);
 		}
    };
 } /* namespace Math */

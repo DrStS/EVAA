@@ -172,7 +172,7 @@ public:
 		I_CG[8] = params.I_body[2];
 		
 		Mass_vec[0] = params.mass_body;
-		Mass_vecMass_vec[1] = params.mass_wheel[2];
+		Mass_vec[1] = params.mass_wheel[2];
 		Mass_vec[2] = params.mass_tyre[2];
 		Mass_vec[3] = params.mass_wheel[3];
 		Mass_vec[4] = params.mass_tyre[3];
