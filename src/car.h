@@ -624,7 +624,7 @@ public:
 		*/
 
 		// vdSub(n, a, b, y);  <---> y = a - b: 
-		cblas_dcopy(2 * (this->num_tyre), spring_length, current_length, dx);
+		vdSub(2 * (this->num_tyre), spring_length, current_length, dx);
 	}
 
 	inline void compute_dx(T* dx) {

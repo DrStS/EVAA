@@ -1750,7 +1750,7 @@ public:
 			MathLibrary::Solvers<T, MBD_method>::Broyden_Euler(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
 		}
 		else if (used_solver == EXPLICIT_EULER) {
-			std::cout << "Expliticit solver hasn't been implemented, you don't want to use it" << std::endl;
+			std::cout << "Explicit solver hasn't been implemented, you don't want to use it" << std::endl;
 		}
 		else {
 			std::cout << "sorry man, the solver you picked for MBD is weird and hasn't been implemented yet" << std::endl;
