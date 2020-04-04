@@ -37,10 +37,11 @@ private:
 	// needed to apply the load module
 	T* force_vector;
 	T* full_torque;
+	T* Delta_x_vec;
 
 	// needed for position integrator
-	T* weighted_forceXY;
-	T* new_weighted_forceXY;
+	T* centripetal_force;
+	T* new_centripetal_force;
 	T* torque;
 	T* new_torque;
 	T* posXY_vec;
@@ -71,38 +72,32 @@ public:
 		tend_ = params.num_time_iter * h_;
 	}
 
-	void global_frame_solver() {
+	void global_frame_solver(T& t) {
 		/* ??????????????????????????????????????? */
 
 		// 2. Update global X,Y positions of the car
-		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[0], Car_obj->Velocity_vec_xy[0], weighted_forceXY[0], h_, global_mass);			;
-		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[1], Car_obj->Velocity_vec_xy[1], weighted_forceXY[1], h_, global_mass); 
+		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[0], Car_obj->Velocity_vec_xy[0], centripetal_force[0], h_, global_mass);			;
+		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[1], Car_obj->Velocity_vec_xy[1], centripetal_force[1], h_, global_mass); 
 
 		// 4. Update Z-rotation
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(*Car_obj->Angle_z, *Car_obj->w_z, torque[2], h_, global_inertia_Z);
 
 		// get forces 
-		Car_obj->compute_dx(current_length, Delta_x_vec);
-		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
-		Load_module_obj->update_torque(t, new_torque, Delta_x_vec); // TODO: ask Teo
+		Car_obj->compute_dx(Delta_x_vec);
+		Load_module_obj->update_force(t, force_vector, Delta_x_vec, new_centripetal_force);
+		Load_module_obj->update_torque(t, new_torque, Delta_x_vec);
 
-		// Compute weighted force sum TODO: Shubham
-		function_from_shubham(new_weighted_forceXY, force_vector);
 
 		// 1. Update global X,Y velocities
-		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[0], weighted_forceXY[0], new_weighted_forceXY[0], h_, global_mass);
-		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[1], weighted_forceXY[1], new_weighted_forceXY[1], h_, global_mass);
+		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[0], centripetal_force[0], new_centripetal_force[0], h_, global_mass);
+		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[1], centripetal_force[1], new_centripetal_force[1], h_, global_mass);
 
 		// 3. Update Z-angular velocities
-		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(*Car_obj->w_z, torque[2], new_torque[2], h_, global_inertial_Z);
-
-
-		// Implement ALE solver!!!!!!
-		// or is it already done within the load module ? 
+		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(*Car_obj->w_z, torque[2], new_torque[2], h_, global_inertia_Z);
 
 		// update forces and torque
-		weighted_forceXY[0] = new_weighted_forceXY[0];
-		weighted_forceXY[1] = new_weighted_forceXY[1];
+		centripetal_force[0] = new_centripetal_force[0];
+		centripetal_force[1] = new_centripetal_force[1];
 
 		torque[2] = new_torque[2]; // z - component
 
@@ -113,22 +108,23 @@ public:
 		//initialize solution vector
 		int sol_size = (floor(tend_ / h_) + 1);
 		int force_dimensions = Car_obj->DIM * Car_obj->vec_DIM;
-		int weighted_force_dimensions = 2;
+		int centripetal_force_dimensions = 2;
 		int full_torque_dimensions = 3;
-		int num_springs = 8;
+		int num_springs = 2 * Car_obj->num_wheels;
 
+		// allocate memory
 		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
 		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
 		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), alignment);
-		weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
-		new_weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
-		k_vect = (T*)mkl_calloc(num_legs, sizeof(T), alignment);
+		centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), alignment);
+		new_centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), alignment);
+		k_vect = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
+		Delta_x_vec = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
 
 		torque = new T[3];
 		new_torque = new T[3];
-		Delta_x_vec = (T*)mkl_calloc(2 * (Car_obj->num_wheels), sizeof(T), alignment);
 
 		// calculate characteristics of the whole car
 		calculate_global_inertia_Z();
@@ -137,11 +133,8 @@ public:
 		// start time iteration
 		T t = h_;
 		Car_obj->compute_dx(Delta_x_vec);
-		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
-		Load_module_obj->update_torque(t, torque, Delta_x_vec); // TODO: ask Teo
-
-		// Compute weighted force sum TODO: Shubham
-		function_from_shubham(weighted_forceXY);
+		Load_module_obj->update_force(t, force_vector, Delta_x_vec, centripetal_force);
+		Load_module_obj->update_torque(t, torque, Delta_x_vec);
 
 		// initialize the linear solver
 		linear11dof_obj->initialize_solver(h_);
@@ -151,7 +144,7 @@ public:
 		double eps = h_ / 100;
 		while (std::abs(t - (tend_ + h_)) > eps) {
 
-			global_frame_solver();
+			global_frame_solver(t);
 
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
@@ -160,15 +153,15 @@ public:
 
 			if (params.interpolation) {
 				interpolator->getStiffness(Delta_x_vec, k_vect);
-				Car_obj->updateK(k_vect);
+				Car_obj->update_K(k_vect);
 			}
 		}
 
 		MKL_free(time_vec);
 		MKL_free(u_sol);
 		MKL_free(force_vector);
-		MKL_free(weighted_forceXY);
-		MKL_free(new_weighted_forceXY);
+		MKL_free(centripetal_force);
+		MKL_free(new_centripetal_force);
 		MKL_free(Delta_x_vec);
 
 		delete[] torque;
