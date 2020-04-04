@@ -177,10 +177,6 @@ private:
 
 
 
-	//// Solver type selection based on type of boundary condition
-	std::string condition_type;
-	std::string cond1 = "fixed_to_road";
-	std::string cond2 = "road_force";
 	////////////////////////////////////////////////////////////////////////////////////////////
 	T tend_;
 	T u_init_;
@@ -748,11 +744,11 @@ public:
 		cblas_daxpy(mat_len, 1, K_red, 1, Ared, 1);
 	}
 
-	void apply_boundary_condition(std::string s) {
+	void apply_boundary_condition(int s) {
 		
 		condition_type = s;
 
-		if (s == cond1) {
+		if (s == FIXED) {
 			T* start_loc_k_trans, * start_loc_k, * start_loc_D_red, * start_loc_D;
 			// using K_trans as temperory variable copy all element of K to k_trans
 			// cblas_dcopy(DOF*DOF, K, 1, K_trans, 1);
@@ -818,19 +814,22 @@ public:
 				j++;
 			}
 		}
-		else if (s == cond2) {
+		else if (s == CIRCULAR) {
 			// memory allocation for the force field
 			tyre_index_set = (size_t*)mkl_calloc(num_tyre, sizeof(size_t), alignment);
 			for (int i = 4, j=0; i < DOF && j<num_tyre; i = i + 2, j++) {
 				tyre_index_set[j] = i;
 			}
 		}
+		else if (s == NONFIXED) {
+			// don't do anything, proceed as usual (solve full 11DOF system)
+		}
 		else {
 			throw "Incorrect boundary condition";
 		}
 	}
 	
-	void solve(T* sol_vect) {
+	void solve(T* ) {
 		if (condition_type == cond1) {
 			solve_reduced(sol_vect);
 		}
