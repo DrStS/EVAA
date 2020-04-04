@@ -172,8 +172,10 @@ public:
 				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
-			solution_vect = u_sol + iter * (Car_obj->vec_DIM);
+			solution_vect = u_sol + iter * (Car_obj->vec_DIM*Car_obj->DIM);
 			Car_obj->populate_results(Car_obj->Position_vec_xy, Car_obj->u_current_linear, solution_vect);
+			MathLibrary::write_vector(solution_vect, (Car_obj->vec_DIM*Car_obj->DIM));
+			exit(5);
 			t += h_;
 			iter++;
 			

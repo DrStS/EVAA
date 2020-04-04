@@ -826,7 +826,6 @@ public:
 		if (current_spring_length != NULL) {
 			mkl_free(current_spring_length);
 		}
-		
 		mkl_free(u_prev_linear); 
 		mkl_free(u_current_linear);
 		mkl_free(k_vec); 
