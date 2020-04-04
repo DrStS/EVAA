@@ -19,8 +19,6 @@ private:
 
 
 public:
-	Load_module();
-	Load_module(Profile* Profile_type);
 	Load_module(Profile* Profile_type, Car<double>* Car1);
 	~Load_module();
 	Load_module(const Load_module& Load_module_1);
