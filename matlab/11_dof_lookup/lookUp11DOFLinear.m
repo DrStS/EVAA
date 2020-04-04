@@ -1,7 +1,7 @@
 clear; clc; close all;
 format long e;
 %%
-a = [19.32e3; 19.32e3; 13.12e3; 13.12e3; 260e3; 260e3; 260e3; 260e3] ;
+a = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3] ;
 b = 1.59;
 c = 1.2;
 
@@ -18,21 +18,21 @@ l_long_fl=1.395;
 l_long_fr=1.395;
 l_long_rl=1.596;
 l_long_rr=1.596;
-l_lat_fl=2*0.8458;
-l_lat_fr=2*0.8458;
-l_lat_rl=2*0.84;
-l_lat_rr=2*0.84;
+l_lat_fl=1.6916;
+l_lat_fr=1.6916;
+l_lat_rl=1.68;
+l_lat_rr=1.68;
 mass_Body=1936;
 I_body_xx=640;
 I_body_yy=4800;
-mass_wheel_fl=145/2;
-mass_tyre_fl=0;
-mass_wheel_fr=145/2;
-mass_tyre_fr=0;
-mass_wheel_rl=135/2;
-mass_tyre_rl=0;
-mass_wheel_rr=135/2;
-mass_tyre_rr=0;
+mass_wheel_fl=67.5;
+mass_tyre_fl=30;
+mass_wheel_fr=67.5;
+mass_tyre_fr=30;
+mass_wheel_rl=67.5;
+mass_tyre_rl=30;
+mass_wheel_rr=67.5;
+mass_tyre_rr=30;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 interpolation = "linear";
 tend=1;
@@ -101,17 +101,13 @@ u_n=[u_init; zeros(10,1)];
 u_n_m_1=[u_init; zeros(10,1)]-h*[du_init; zeros(10,1)];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % System Mono
-M=diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
+M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 K = get_K(u_n);
 D = K *0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 A_pre=(1/(h*h))*M+(1/h)*D;
 B=((2/(h*h))*M+(1/h)*D);
 f_n_p_1=[0.1; zeros(10,1)];
-
-
-
-f_newton = @(y_curr,y1,y2,K)( ( (1/(h*h))*M + K ) * y_curr - 2 * (1/(h*h))*M * y1 + (1/(h*h))*M * y2 - rhs);
 
 
 %% Time loop
@@ -127,8 +123,9 @@ for i = 0:h:tend
     u_sol(j,:)=u_n_p_1;   
     u_n_m_1=u_n;
     u_n    =u_n_p_1;
-    j=j+1;
+    j = j + 1;
 end
+K
 toc
 
 % Some plots
@@ -161,15 +158,25 @@ function K = get_K(x)
     global Corners
     R = get_R(x);
     currentCorners = R*Corners;
+    length = [
+        0.5 + currentCorners(3,1) - upper_fl + car;...
+        0.5 + upper_fl - lower_fl;...
+        0.5 + currentCorners(3,2) - upper_fr + car;...
+        0.5 + upper_fr - lower_fr;...
+        0.5 + currentCorners(3,3) - upper_rl + car;....
+        0.5 + upper_rl - lower_rl;...
+        0.5 + currentCorners(3,4) - upper_rr + car;...
+        0.5 + upper_rr - lower_rr
+        ];
     
     % for spline interp3(X,Y,Z,k_grid,x(2),long_fl,x(3),'spline')
-    k_body_fl=interp1(X,k_grid1,0.5 + currentCorners(3,1) + upper_fl + car);
+    k_body_fl=interp1(X,k_grid1,0.5 + currentCorners(3,1) - upper_fl + car);
     k_tyre_fl=interp1(X,k_grid2,0.5 + upper_fl - lower_fl);
-    k_body_fr=interp1(X,k_grid3,0.5 + currentCorners(3,2) + upper_fr + car);
+    k_body_fr=interp1(X,k_grid3,0.5 + currentCorners(3,2) - upper_fr + car);
     k_tyre_fr=interp1(X,k_grid4,0.5 + upper_fr - lower_fr);
-    k_body_rl=interp1(X,k_grid5,0.5 + currentCorners(3,3) + upper_rl + car);
+    k_body_rl=interp1(X,k_grid5,0.5 + currentCorners(3,3) - upper_rl + car);
     k_tyre_rl=interp1(X,k_grid6,0.5 + upper_rl -lower_rl);
-    k_body_rr=interp1(X,k_grid7,0.5 + currentCorners(3,4) + upper_rr + car);
+    k_body_rr=interp1(X,k_grid7,0.5 + currentCorners(3,4) - upper_rr + car);
     k_tyre_rr=interp1(X,k_grid8,0.5 + upper_rr - lower_rr);
     
     K = [k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_fr+k_body_rl*l_lat_rl-k_body_rr*l_lat_rr, -k_body_fl*l_long_fl-k_body_fr*l_long_fr+k_body_rl*l_long_rl+k_body_rr*l_long_rr,  -k_body_fl, 0, -k_body_fr, 0, -k_body_rl, 0, -k_body_rr, 0;
