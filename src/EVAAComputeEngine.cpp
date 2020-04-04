@@ -786,3 +786,13 @@ void EVAAComputeEngine::computeMBD(void) {
 void EVAAComputeEngine::clean(void) {
 
 }
+
+void EVAAComputeEngine::computeALE(void) {
+	Car* Car1 = Car(_load_module_parameter, _interpolator);
+	Profile* Circular_Profile = Circular(_load_module_parameter.profile_radius, 
+										 _load_module_parameter.profile_center);
+	Load_module* Load_module1 = Load_module(Circular_Profile, Car1);
+	linear11dof* linear11dof_sys = linear11dof(Car1);
+	Ale* Ale_sys = Ale(Car1, Load_module1, linear11dof_sys);
+
+}
