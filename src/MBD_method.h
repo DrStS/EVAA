@@ -513,21 +513,27 @@ public:
 
 	void circular_path_initialization(T* vc, T* vw1, T* vw2, T* vw3, T* vw4, T* vt1, T* vt2, T* vt3, T* vt4, T* omega, T* pcc, T* pt1 , T* pt2, T* pt3, T* pt4, T &radius_param) {
 		vc[1] = 0;
-
+		T* perpendicular_dir = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
+		T* tangential_dir = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
 		T* radial_vector = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
 		radial_vector[0] = pcc[0] - center_of_circle[0];
 		radial_vector[1] = 0;
 		radial_vector[2] = pcc[2] - center_of_circle[2];
 
 		T radius = cblas_dnrm2(this->DIM, radial_vector, 1);
-
+		perpendicular_dir[1] = 1;
 		if (abs(radius - radius_param) > 0.01)
 			std::cout << "Warning! the initial position of the car is not on the trajectory provided in the circular path. \n The expected radius is " << radius_circular_path << ", but the car is at an initial distance of " << radius << " from the center of the circle.\n The execution procedes with the current spatial configuration and with the current distance to the center of the circle." << std::endl;
 
 		T inv_radius_squared = 1. / (radius * radius);
 
+		const MKL_INT dim = this->DIM;
+		const MKL_INT incx = 1;
+		MathLibrary::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
+		T magnitude = cblas_ddot(dim, vc, incx, tangential_dir, incx);
+		cblas_dcopy(this->DIM, tangential_dir, 1, vc, 1);
+		cblas_dscal(dim, magnitude, vc, incx);
 		MathLibrary::crossProduct(radial_vector, vc, omega);
-		
 		cblas_dscal(this->DIM, inv_radius_squared, omega, 1);
 
 		MathLibrary::crossProduct(omega, pt1, vt1);
