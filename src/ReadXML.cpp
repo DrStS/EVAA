@@ -159,13 +159,16 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 	std::string boundary_conditions = load_data->boundary_description().BoundaryConditions();
 	if (boundary_conditions == "fixed") {
 		parameters.boundary_condition_road = FIXED;
+        std::cout << "Run the simulation with fixed tyres" << std::endl;
 	}
-	else if (boundary_conditions == "notfixed") {
+	else if (boundary_conditions == "nonfixed") {
 		parameters.boundary_condition_road = NONFIXED;
-	}
+        std::cout << "Run the simulation without any tyre constraints" << std::endl;
+    }
 	else if (boundary_conditions == "circle") {
 		parameters.boundary_condition_road = CIRCULAR;
-	}
+        std::cout << "Run the simulation on a circular road" << std::endl;
+    }
 	else {
 		std::cerr << "Wrong boundary conditions! Only circle, fixed and nonfixed implemented so far" << std::endl;
 		exit(2);
