@@ -145,7 +145,7 @@ void Circular::get_centripet_force(double* fr, double* v, double& m, double* p) 
 	cblas_dscal(mkl_DIM, force_magnitude, fr, 1);
 }
 
-void Circular::update_Profile_force(Car<double>* car1, double* f_vec, double* normal_ext) {
+void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* normal_ext) {
 	// out: f_vec = [f_cg, f_w1, f_t1, f_w2, f_t2, f_w3, f_t3, f_w4, f_t4] (centripetal components of the force)
 	// out: normal_ext - normal over the full body; updated in this function from the centripetal forces
 
@@ -175,4 +175,8 @@ void Circular::update_Profile_force(Car<double>* car1, double* f_vec, double* no
 	}
 }
 
+
+void Circular::get_Profile_torque(Car<double>* Car1, double* Torque_vec) {
+
+}
 // =============================== end of Circular class implementation ===================

@@ -14,7 +14,8 @@ protected:
 
 public:
 	Profile& operator=(const Profile& Prof1) {};
-	void update_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
+	void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
+	void get_Profile_torque(Car<double>* Car1, double* Torque_vec) {};
 };
 
 class Circular : public Profile {
@@ -42,5 +43,6 @@ public:
 	void set_Radius(const double& Rad);
 	void set_Position(const double* Pos);
 	void get_centripet_force(double* Fr, double* v, double& m, double* p);
-	void update_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext);
+	void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext);
+	void get_Profile_torque(Car<double>* Car1, double* Torque_vec);
 };
