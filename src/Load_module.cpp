@@ -15,9 +15,9 @@
 // in:  [f, t, w1, t1, w2, t2, w3, t3, w4, t4]
 // out: [f, t, w1, t1, w2, t2, w3, t3, w4, t4]
 
-Load_module::Load_module(Profile* profile_type, Car<double>* car1) {
-	Active_Profile = profile_type;
-	Car_obj = car1;
+Load_module::Load_module(Profile* Profile_type, Car<double>* Car1) {
+	Active_Profile = Profile_type;
+	Car_obj = Car1;
 
 	// auxiliary vectors
 	Normal_ext = (double*)mkl_malloc(sizeof(double) * mkl_DIM, alignment); // normal_force
@@ -36,26 +36,26 @@ Load_module::~Load_module() {
 	}
 }
 
-Load_module::Load_module(const Load_module& load_module_1) {
+Load_module::Load_module(const Load_module& Load_module_1) {
 	*this = load_module_1;
 };
 
-Load_module& Load_module::operator= (const Load_module& load_module_1) {
+Load_module& Load_module::operator= (const Load_module& Load_module_1) {
 	Active_Profile = load_module_1.Active_Profile;
 	Car_obj = load_module_1.Car_obj;
 
 	return *this;
 }
 
-void Load_module::set_Profile(Profile* profile_type) {
+void Load_module::set_Profile(Profile* Profile_type) {
 	Active_Profile = profile_type;
 }
 
-void Load_module::get_Profile(Profile* profile_type) {
+void Load_module::get_Profile(Profile* Profile_type) {
 	profile_type = Active_Profile;
 }
 
-void Load_module::update_force(double time_t, double* f_vec, double* delta_x_vec, double* external_force) {
+void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec, double* External_force) {
 	Active_Profile->update_Profile_force(Car_obj, f_vec, Normal_ext);
 
 	// n += external_force
