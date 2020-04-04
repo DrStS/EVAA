@@ -37,34 +37,34 @@ Load_module::~Load_module() {
 }
 
 Load_module::Load_module(const Load_module& Load_module_1) {
-	*this = load_module_1;
+	*this = Load_module_1;
 };
 
 Load_module& Load_module::operator= (const Load_module& Load_module_1) {
-	Active_Profile = load_module_1.Active_Profile;
-	Car_obj = load_module_1.Car_obj;
+	Active_Profile = Load_module_1.Active_Profile;
+	Car_obj = Load_module_1.Car_obj;
 
 	return *this;
 }
 
 void Load_module::set_Profile(Profile* Profile_type) {
-	Active_Profile = profile_type;
+	Active_Profile = Profile_type;
 }
 
 void Load_module::get_Profile(Profile* Profile_type) {
-	profile_type = Active_Profile;
+	Profile_type = Active_Profile;
 }
 
 void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec, double* External_force) {
-	Active_Profile->update_Profile_force(Car_obj, f_vec, Normal_ext);
+	Active_Profile->update_Profile_force(Car_obj, F_vec, Normal_ext);
 
 	// n += external_force
-	if (external_force != NULL) {
-		vdAdd(mkl_DIM, external_force, Normal_ext, Normal_ext);
+	if (External_force != NULL) {
+		vdAdd(mkl_DIM, External_force, Normal_ext, Normal_ext);
 	}
 	// f_ti += -0.25 * n; [f[2], f[4], f[6], f[8]]
 	for (auto i = 2; i < vec_DIM; i += 2) {
-		cblas_daxpy(mkl_DIM, -0.25, Normal_ext, incx, &f_vec[i * mkl_DIM], incx);
+		cblas_daxpy(mkl_DIM, -0.25, Normal_ext, incx, &F_vec[i * mkl_DIM], incx);
 	}
 	
 	// get stiffnesses vector k_vec
@@ -73,15 +73,15 @@ void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec
 	for (auto i = 0; i < (vec_DIM - 1); i += 2) {
 		// use the elastic forces at wheels
 		// f_cg += k_wi * delta_x_i
-		cblas_daxpy(mkl_DIM, k_vec[i], &delta_x_vec[mkl_DIM * i], incx, f_vec, incx);
+		cblas_daxpy(mkl_DIM, k_vec[i], &Delta_x_vec[mkl_DIM * i], incx, F_vec, incx);
 		// f_w_i -= k_wi * delta_x_i
-		cblas_daxpy(mkl_DIM, -k_vec[i], &delta_x_vec[mkl_DIM * i], incx, &f_vec[mkl_DIM * (i + 1)], incx);
+		cblas_daxpy(mkl_DIM, -k_vec[i], &Delta_x_vec[mkl_DIM * i], incx, &F_vec[mkl_DIM * (i + 1)], incx);
 
 		// use the elastic forces at tyres
 		// f_w_i -= k_t_i * delta_x_{i+1}
-		cblas_daxpy(mkl_DIM, -k_vec[i + 1], &delta_x_vec[mkl_DIM * (i + 1)], incx, &f_vec[mkl_DIM * (i + 1)], incx);
+		cblas_daxpy(mkl_DIM, -k_vec[i + 1], &Delta_x_vec[mkl_DIM * (i + 1)], incx, &F_vec[mkl_DIM * (i + 1)], incx);
 		// f_t_i += k_t_i * delta_x_{i+1}
-		cblas_daxpy(mkl_DIM, k_vec[i + 1], &delta_x_vec[mkl_DIM * (i + 1)], incx, &f_vec[mkl_DIM * (i + 2)], incx);
+		cblas_daxpy(mkl_DIM, k_vec[i + 1], &Delta_x_vec[mkl_DIM * (i + 1)], incx, &F_vec[mkl_DIM * (i + 2)], incx);
 	}
 }
 
