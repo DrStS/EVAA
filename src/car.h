@@ -23,12 +23,7 @@ private:
 			current_ptr += DIM - 1;
 		}
 	}
-	void populate_results() {
-		/*
-		Not implemented
-		assign the ALE components to x and y direction and 11 dof components to z direction
-		*/
-	}
+	
 	void update_corners_11DOF()
 	{
 		// zz, yy, xx
@@ -36,21 +31,10 @@ private:
 
 		// do rotation: rotationMat * r
 		//void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const double beta, double* c, const MKL_INT ldc);
-		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, num_wheels, dim, 1, Corners_rot, dim, Corners_init, num_wheels, 0, Corners_current, num_wheels);
+		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, DIM, num_wheels, DIM, 1, Corners_rot, DIM, Corners_init, num_wheels, 0, Corners_current, num_wheels);
 	}
 
-	// first updates the corner and afterwards compute the lengths;
-	void update_lengths_11DOF() {
-		update_corners();
-		current_spring_length[0] = spring_length[0] + Corners_current[8] + u_current_linear[0] - u_current_linear[3];
-		current_spring_length[1] = spring_length[1] + u_current_linear[3] - u_current_linear[4];
-		current_spring_length[2] = spring_length[2] + Corners_current[9] + u_current_linear[0] - u_current_linear[5];
-		current_spring_length[3] = spring_length[3] + u_current_linear[5] - u_current_linear[6];
-		current_spring_length[4] = spring_length[4] + Corners_current[10] + u_n_p_1[0] - u_n_p_1[7];
-		current_spring_length[5] = spring_length[5] + u_current_linear[7] - u_current_linear[8];
-		current_spring_length[6] = spring_length[6] + Corners_current[11] + u_current_linear[0] - u_current_linear[9];
-		current_spring_length[7] = spring_length[7] + u_current_linear[9] - u_current_linear[10];
-	}
+	
 public:
 	/*
 	Using Stefan's convention
@@ -676,6 +660,40 @@ public:
 	inline void compute_dx(T* dx) {
 		compute_dx(current_spring_length, dx);
 	}
+	// first updates the corner and afterwards compute the lengths;
+	void update_lengths_11DOF() {
+		update_corners_11DOF();
+		current_spring_length[0] = spring_length[0] + Corners_current[8] + u_current_linear[0] - u_current_linear[3];
+		current_spring_length[1] = spring_length[1] + u_current_linear[3] - u_current_linear[4];
+		current_spring_length[2] = spring_length[2] + Corners_current[9] + u_current_linear[0] - u_current_linear[5];
+		current_spring_length[3] = spring_length[3] + u_current_linear[5] - u_current_linear[6];
+		current_spring_length[4] = spring_length[4] + Corners_current[10] + u_current_linear[0] - u_current_linear[7];
+		current_spring_length[5] = spring_length[5] + u_current_linear[7] - u_current_linear[8];
+		current_spring_length[6] = spring_length[6] + Corners_current[11] + u_current_linear[0] - u_current_linear[9];
+		current_spring_length[7] = spring_length[7] + u_current_linear[9] - u_current_linear[10];
+	}
+
+	void populate_results(T* ALE_vector, T * vector_11DOF, T* global_vector) {
+		/*
+		Not implemented
+		assign the ALE components to x and y direction and 11 dof components to z direction
+		*/
+		global_vector[0] = ALE_vector[0];
+		global_vector[1] = ALE_vector[1];
+		global_vector[2] = vector_11DOF[0];
+		T* start_pos_global, *start_pos_11dof, *start_pos_ale;
+		start_pos_global = global_vector + 3;
+		start_pos_11dof = vector_11DOF + 3;
+		start_pos_ale = ALE_vector + 2;
+		for (size_t i = 0; i < vec_DIM - 1; ++i) {
+			start_pos_global[0] = start_pos_ale[0];
+			start_pos_global[1] = start_pos_ale[1];
+			start_pos_global[2] = start_pos_11dof[0];
+			start_pos_11dof += 1;
+			start_pos_ale += 2;
+			start_pos_global += 3;
+		}
+	}
 
 	void get_Position_vec(T* Pos) {
 		if (Pos != NULL) {
@@ -805,7 +823,10 @@ public:
 		mkl_free(K_trans);
 		mkl_free(D);
 		mkl_free(spring_length); 
-		mkl_free(current_spring_length);
+		if (current_spring_length != NULL) {
+			mkl_free(current_spring_length);
+		}
+		
 		mkl_free(u_prev_linear); 
 		mkl_free(u_current_linear);
 		mkl_free(k_vec); 

@@ -78,6 +78,14 @@ public:
 		// 2. Update global X,Y positions of the car
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[0], Car_obj->Velocity_vec_xy[0], centripetal_force[0], h_, global_mass);			;
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[1], Car_obj->Velocity_vec_xy[1], centripetal_force[1], h_, global_mass); 
+		#pragma loop(ivdep)
+		for (size_t i = 1; i < Car_obj->vec_DIM; ++i) {
+			Car_obj->Position_vec_xy[2 * i] = Car_obj->Position_vec_xy[0];
+		}
+		#pragma loop(ivdep)
+		for (size_t i = 1; i < Car_obj->vec_DIM; ++i) {
+			Car_obj->Position_vec_xy[2 * i + 1] = Car_obj->Position_vec_xy[1];
+		}
 
 		// 4. Update Z-rotation
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(*Car_obj->Angle_z, *Car_obj->w_z, torque[2], h_, global_inertia_Z);
@@ -91,6 +99,14 @@ public:
 		// 1. Update global X,Y velocities
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[0], centripetal_force[0], new_centripetal_force[0], h_, global_mass);
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[1], centripetal_force[1], new_centripetal_force[1], h_, global_mass);
+		#pragma loop(ivdep)
+		for (size_t i = 1; i < Car_obj->vec_DIM; ++i) {
+			Car_obj->Velocity_vec_xy[2 * i] = Car_obj->Velocity_vec_xy[0];
+		}
+		#pragma loop(ivdep)
+		for (size_t i = 1; i < Car_obj->vec_DIM; ++i) {
+			Car_obj->Velocity_vec_xy[2 * i + 1] = Car_obj->Velocity_vec_xy[1];
+		}
 
 		// 3. Update Z-angular velocities
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(*Car_obj->w_z, torque[2], new_torque[2], h_, global_inertia_Z);
@@ -114,7 +130,7 @@ public:
 
 		// allocate memory
 		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
-		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
+		u_sol = (T*)mkl_calloc(sol_size * (Car_obj->vec_DIM* Car_obj->DIM), sizeof(T), alignment);
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
 		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), alignment);
@@ -138,8 +154,8 @@ public:
 
 		// initialize the linear solver
 		linear11dof_obj->initialize_solver(h_);
-
-
+		T* solution_vect;
+		int iter = 1;
 		// time iteration
 		double eps = h_ / 100;
 		while (std::abs(t - (tend_ + h_)) > eps) {
@@ -149,14 +165,22 @@ public:
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
 			
-			linear11dof_obj->update_step(force_vector_11dof, u_sol);
+			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
 
 			if (params.interpolation) {
 				Car_obj->update_lengths_11DOF();
 				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
+			solution_vect = u_sol + iter * (Car_obj->vec_DIM);
+			Car_obj->populate_results(Car_obj->Position_vec_xy, Car_obj->u_current_linear, solution_vect);
+			t += h_;
+			iter++;
+			
 		}
+		cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
+
+
 
 		MKL_free(time_vec);
 		MKL_free(u_sol);

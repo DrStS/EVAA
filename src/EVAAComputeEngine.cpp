@@ -791,7 +791,7 @@ void EVAAComputeEngine::computeALE(void) {
 		linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
 		ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, lookupStiffness, _parameters);
 
-		floatEVAA* soln = (floatEVAA*)mkl_calloc(_parameters.DOF, sizeof(floatEVAA), Car1->alignment);
+		floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), Car1->alignment);
 
 		Ale_sys->solve(soln);
 		std::cout << "ALE: Solution after " << num_iter << " timesteps, f =" << std::endl;
