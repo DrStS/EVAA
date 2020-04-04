@@ -32,6 +32,7 @@ private:
 
 	// needed to solve the 11DOF system
 	T* force_vector_11dof;
+	T* k_vect;
 
 	// needed to apply the load module
 	T* force_vector;
@@ -54,11 +55,13 @@ public:
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
 		linear11dof<T>* linear11dof_val,
+		EVAAComputeStiffness* lookup_table,
 		Simulation_Parameters &params_val) {
 
 		Car_obj = Car_obj_val;
 		Load_module_obj = Load_module_val;
 		linear11dof_obj = linear11dof_val;
+		interpolator = lookup_table;
 
 		// general parameters of the simulation
 		params = params_val;
@@ -79,6 +82,7 @@ public:
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(*Car_obj->Angle_z, *Car_obj->w_z, torque[2], h_, global_inertia_Z);
 
 		// get forces 
+		Car_obj->compute_dx(current_length, Delta_x_vec);
 		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
 		Load_module_obj->update_torque(t, new_torque, Delta_x_vec); // TODO: ask Teo
 
@@ -108,18 +112,23 @@ public:
 
 		//initialize solution vector
 		int sol_size = (floor(tend_ / h_) + 1);
-		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
-		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
 		int force_dimensions = Car_obj->DIM * Car_obj->vec_DIM;
 		int weighted_force_dimensions = 2;
 		int full_torque_dimensions = 3;
+		int num_springs = 8;
+
+		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
+		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
 		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), alignment);
 		weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
 		new_weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
+		k_vect = (T*)mkl_calloc(num_legs, sizeof(T), alignment);
+
 		torque = new T[3];
 		new_torque = new T[3];
+		Delta_x_vec = (T*)mkl_calloc(2 * (Car_obj->num_wheels), sizeof(T), alignment);
 
 		// calculate characteristics of the whole car
 		calculate_global_inertia_Z();
@@ -127,7 +136,7 @@ public:
 
 		// start time iteration
 		T t = h_;
-
+		Car_obj->compute_dx(Delta_x_vec);
 		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
 		Load_module_obj->update_torque(t, torque, Delta_x_vec); // TODO: ask Teo
 
@@ -148,6 +157,11 @@ public:
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
 			
 			linear11dof_obj->update_step(force_vector_11dof, u_sol);
+
+			if (params.interpolation) {
+				interpolator->getStiffness(Delta_x_vec, k_vect);
+				Car_obj->updateK(k_vect);
+			}
 		}
 
 		MKL_free(time_vec);
@@ -155,6 +169,7 @@ public:
 		MKL_free(force_vector);
 		MKL_free(weighted_forceXY);
 		MKL_free(new_weighted_forceXY);
+		MKL_free(Delta_x_vec);
 
 		delete[] torque;
 		delete[] new_torque;
