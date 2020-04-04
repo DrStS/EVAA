@@ -73,8 +73,8 @@ public:
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Angle_z, Car_obj->w_z, torque, h_, global_inertia_Z);
 
 		// get forces 
-		Load_module_obj->update_force(t, force_vector, Delta_x_vec, External_force); // TODO: ask Teo
-		Load_module_obj->update_torque(t, new_torque, Delta_x_vec, External_force); // TODO: ask Teo
+		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
+		Load_module_obj->update_torque(t, new_torque, Delta_x_vec); // TODO: ask Teo
 
 		// Compute weighted force sum TODO: Shubham
 		function_from_shubham(new_weighted_forceXY);
@@ -115,8 +115,8 @@ public:
 		calculate_global_inertia_Z();
 		calculate_global_mass();
 
-		Load_module_obj->update_force(t, force_vector, Delta_x_vec, External_force); // TODO: ask Teo
-		Load_module_obj->update_torque(t, torque, Delta_x_vec, External_force); // TODO: ask Teo
+		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
+		Load_module_obj->update_torque(t, torque, Delta_x_vec); // TODO: ask Teo
 		// Compute weighted force sum TODO: Shubham
 		function_from_shubham(weighted_forceXY);
 
