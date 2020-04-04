@@ -4,25 +4,22 @@
 // ===============================   Circular class implementation ===================
 Circular::Circular() {
 	Name = "Circular";
-	Position = (double*)mkl_malloc(sizeof(double) * 3, alignment);
-	Position[2] = Position[1] = Position[0] = 0;
+	Position = (double*)mkl_calloc(DIM, sizeof(double) , alignment);
 	Radius = 100;
 	
 	// auxiliary vectors
 	unit_y_vector = (double*)mkl_calloc(DIM, sizeof(double), alignment);
-	unit_y_vector[0] = 0.; unit_y_vector[1] = 0.; unit_y_vector[2] = 1.; // in z direction is 0
+	unit_y_vector[2] = 1.; // used in cross product (z direction is 0)
 
 	velocity_direction = (double*)mkl_calloc(DIM, sizeof(double), alignment);
-	dist_car_center = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
 	Velocity_vec = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
 	Mass_vec = (double*)mkl_malloc(sizeof(double) * vec_DIM, alignment);
+	dist_car_center = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
 }
 
 Circular::Circular(double* pos) : Circular::Circular() {
 	// Position
-	if (pos != NULL) {
-		cblas_dcopy(3, pos, 1, Position, 1);
-	}
+	cblas_dcopy(3, pos, 1, Position, 1);
 }
 
 Circular::Circular(double* pos, double rad) : Circular::Circular(pos) {
@@ -40,9 +37,7 @@ Circular::~Circular() {
 }
 
 void Circular::get_Position(double* pos) {
-	if (pos != NULL) {
-		cblas_dcopy(3, Position, 1, pos, 1);
-	}
+	cblas_dcopy(DIM, Position, 1, pos, 1);
 }
 
 double Circular::get_Radius() const {
@@ -54,9 +49,7 @@ void Circular::set_Radius(const double& rad) {
 }
 
 void Circular::set_Position(const double* pos) {
-	if (pos != NULL) {
-		cblas_dcopy(DIM, pos, 1, Position, 1);
-	}
+	cblas_dcopy(DIM, pos, 1, Position, 1);
 }
 
 void Circular::get_centrifugal_force(double* fr, double* v, double& m, double* p) {
