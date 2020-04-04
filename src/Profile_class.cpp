@@ -177,6 +177,6 @@ void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* norma
 }
 
 void Circular::get_Profile_torque(Car<double>* Car1, double* Torque) {
-	*Torque = 0;
+	Torque[2] = 0; // Torque on z direction
 }
 // =============================== end of Circular class implementation ===================

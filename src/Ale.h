@@ -69,7 +69,7 @@ public:
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vect_xy[1], Car_obj->Velocity_vec_xy[1], weighted_forceXY[1], h_, global_mass); 
 
 		// 4. Update Z-rotation
-		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Angle_z, Car_obj->w_z, torque, h_, global_inertia_Z);
+		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Angle_z, Car_obj->w_z, torque[2], h_, global_inertia_Z);
 
 		// get forces 
 		Load_module_obj->update_force(t, new_force_vector, Delta_x_vec); // TODO: ask Teo
@@ -83,7 +83,7 @@ public:
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[1], weighted_forceXY[1], new_weighted_forceXY[1], h_, global_mass);
 
 		// 3. Update Z-angular velocities
-		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->w_z, torque, new_torque, h_, global_inertial_Z);
+		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->w_z, torque[2], new_torque[2], h_, global_inertial_Z);
 
 
 		// Implement ALE solver!!!!!!
@@ -93,7 +93,7 @@ public:
 		weighted_forceXY[0] = new_weighted_forceXY[0];
 		weighted_forceXY[1] = new_weighted_forceXY[1];
 
-		torque[0] = new_torque[0];
+		torque[2] = new_torque[2]; // z - component
 
 	}
 
@@ -109,8 +109,8 @@ public:
 		new_force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
 		weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
 		new_weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
-		torque = new(T);
-		new_torque = new(T);
+		torque = new T[3];
+		new_torque = new T[3];
 
 		calculate_global_inertia_Z();
 		calculate_global_mass();
@@ -143,8 +143,8 @@ public:
 		MKL_free(weighted_forceXY);
 		MKL_free(new_weighted_forceXY);
 
-		delete torque;
-		delete new_torque;
+		delete[] torque;
+		delete[] new_torque;
 	}
 
 	void calculate_global_inertia_Z() {
