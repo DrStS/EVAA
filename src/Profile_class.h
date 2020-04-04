@@ -13,9 +13,11 @@ protected:
 	char* Name = NULL;
 
 public:
-	void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
-	void get_Profile_torque(Car<double>* Car1, double* Torque_vec) {};
-	void update_initial_condition(Car<double>* Car1) {};
+	virtual void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
+	virtual void get_Profile_torque(Car<double>* Car1, double* Torque_vec) {};
+	virtual void update_initial_condition(Car<double>* Car1) { std::cout << "I am fucked" << std::endl; };
+	virtual void this_is_a_test_fn(std::string s) {};
+	virtual ~Profile() {};
 };
 
 class Circular : public Profile {
@@ -37,13 +39,14 @@ public:
 	Circular(double* Pos, double Rad);
 	Circular(const Circular& Circ1);
 	virtual Circular& operator=(const Circular& Circ1);
-	~Circular();
+	virtual ~Circular();
 	void get_Position(double* Pos);
 	double get_Radius() const;
 	void set_Radius(const double& Rad);
 	void set_Position(const double* Pos);
 	void get_centrifugal_force(double* Fr, double* v, double& m, double* p);
-	void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext);
-	void get_Profile_torque(Car<double>* Car1, double* Torque);
-	void update_initial_condition(Car<double>* Car1);
+	virtual void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext);
+	virtual void get_Profile_torque(Car<double>* Car1, double* Torque);
+	virtual void update_initial_condition(Car<double>* Car1);
+	virtual void this_is_a_test_fn(std::string s);
 };

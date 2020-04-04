@@ -1,5 +1,5 @@
 #include "profile_class.h"
-
+#include "MathLibrary.h"
 
 // ===============================   Circular class implementation ===================
 Circular::Circular() {
@@ -8,7 +8,7 @@ Circular::Circular() {
 	Position = (double*)mkl_malloc(sizeof(double) * 3, alignment);
 	Position[2] = Position[1] = Position[0] = 0;
 	Radius = 100;
-
+	
 	// auxiliary vectors
 	unit_y_vector = (double*)mkl_calloc(DIM, sizeof(double), alignment);
 	unit_y_vector[0] = 0.; unit_y_vector[1] = 0.; unit_y_vector[2] = 1.; // in z direction is 0
@@ -64,40 +64,14 @@ Circular& Circular::operator=(const Circular& circ1) {
 }
 
 Circular::~Circular() {
-	if (Position != NULL) {
+	std::cout << "I am getting fucked in destruction of profile" << std::endl;
 		mkl_free(Position);
-		Position = NULL;
-	}
-
-	if (Name != NULL) {
 		delete[] Name;
-		Name = NULL;
-	}
-
-	if (unit_y_vector != NULL) {
 		mkl_free(unit_y_vector);
-		unit_y_vector = NULL;
-	}
-
-	if (velocity_direction != NULL) {
 		mkl_free(velocity_direction);
-		velocity_direction = NULL;
-	}
-
-	if (Velocity_vec != NULL) {
 		mkl_free(Velocity_vec);
-		Velocity_vec = NULL;
-	}
-
-	if (Mass_vec != NULL) {
 		mkl_free(Mass_vec);
-		Mass_vec = NULL;
-	}
-
-	if (dist_car_center != NULL) {
 		mkl_free(dist_car_center);
-		dist_car_center = NULL;
-	}
 }
 
 void Circular::get_Position(double* pos) {
@@ -152,7 +126,7 @@ void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* norma
 
 	// get distance vector between center of circle and the car = positions of points from the car vs center of circle, which is seen as 0
 	car1->get_dist_vector(Position, dist_car_center);
-
+	
 	//// the distance to [cg<->center of circle] must be equal with the Radius of the circle - place an assert here!!!!
 	//if (abs(car1->get_dist_vector_abs_val(Position) - Radius * Radius) > 1e-12) {
 	//	std::cout << "\n\n error (in Circular.update_normal_force): the Radius of the circle is different than the distance  \\
@@ -174,6 +148,7 @@ void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* norma
 	for (auto i = 1; i < vec_DIM; ++i) {
 		vdAdd(DIM, normal_ext, &f_vec[DIM * i], normal_ext);
 	}
+	
 }
 
 void Circular::get_Profile_torque(Car<double>* Car1, double* Torque) {
@@ -207,5 +182,9 @@ void Circular::update_initial_condition(Car<double>* Car1){
 	MKL_free(perpendicular_dir);
 	MKL_free(tangential_dir);
 	MKL_free(radial_vector);
+}
+
+void Circular::this_is_a_test_fn(std::string s) {
+	std::cout << "This is a test function I got " <<s<< std::endl;
 }
 // =============================== end of Circular class implementation ===================
