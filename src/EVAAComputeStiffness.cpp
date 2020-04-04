@@ -34,7 +34,7 @@ void CheckDfError(int num);
 /*			Functions for building a grid        */
 /*************************************************/
 double EVAAComputeGrid::responseFunction(const double a, const double b, const double c, const double length) {
-	return c * length * length + b * length + a + 2/length;
+	return c * length * length + b * length + a;
 	// return a;
 }
 
