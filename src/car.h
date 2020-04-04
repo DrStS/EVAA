@@ -53,7 +53,7 @@ public:
 	T* Mass_vec; // [CG,  W1, T1, W2, T2, W3, T3, W4, T4]     9
 	T* angle_CG; // [x, y, z]
 	T* w_CG; // [x, y, z]
-	T* I_CG; // [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izx]
+	T* I_CG; // [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izz]
 	
 
 	// Initial Conditions of the car

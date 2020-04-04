@@ -933,5 +933,12 @@ namespace MathLibrary {
 			LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
 			//LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF + 4, 1, A, DOF + 4, piv, u_n_p_1, 1);
 		}
+
+		static void Stoermer_Verlet_Position(T& x, T& v, T& F, T& delta_t, T& mass) {
+			x += delta_t * v + delta_t * delta_t / (2 * m) * F;
+		}
+		static void Stoermer_Verlet_Velocity(T& v, T& F, T& F_new, T& delta_t, T& mass) {
+			v += delta_t / (2 * m) * (F + F_new);
+		}
    };
 } /* namespace Math */
