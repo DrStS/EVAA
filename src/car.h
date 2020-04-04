@@ -336,7 +336,7 @@ public:
 			k_tyre_rr = params.k_tyre[0];
 			populate_K(k_vec, k_body_fl, k_tyre_fl, k_body_fr, k_tyre_fr, k_body_rl, k_tyre_rl, k_body_rr, k_tyre_rr);
 		}
-		construct_K(K, k_vec, l_lat, l_long);
+		update_K(k_vec);
 
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -370,118 +370,89 @@ public:
 			force[index[i]] = -K[index[i] * dim + index[i]] * u[index[i]];
 		}
 	}
-	void construct_K(T* K, T *k_vect, T *l_lat, T* l_long) {
-		int i;
-		i = 0;
-		T k_body_fl_, k_body_fr_, k_body_rl_, k_body_rr_, k_tyre_fl_, k_tyre_fr_, k_tyre_rl_, k_tyre_rr_;
-		k_body_fl_ = k_vect[0];
-		k_tyre_fl_ = k_vect[1];
-		k_body_fr_ = k_vect[2];
-		k_tyre_fr_ = k_vect[3];
-		k_body_rl_ = k_vect[4];
-		k_tyre_rl_ = k_vect[5];
-		k_body_rr_ = k_vect[6];
-		k_tyre_rr_ = k_vect[7];
-		T l_lat_fl_, l_lat_fr_, l_lat_rl_, l_lat_rr_, l_long_fl_, l_long_fr_, l_long_rl_, l_long_rr_;
-		l_lat_fl_ = l_lat[0];
-		l_lat_fr_ = l_lat[1];
-		l_lat_rl_ = l_lat[2];
-		l_lat_rr_ = l_lat[3];
-		l_long_fl_ = l_long[0];
-		l_long_fr_ = l_long[1];
-		l_long_rl_ = l_long[2];
-		l_long_rr_ = l_long[3];
-		temp_linear[0] = k_body_fl_ + k_body_fr_ + k_body_rl_ + k_body_rr_; // K[i*DOF + 0] to be set later
-		K[i * DOF + 1] = k_body_fl_ * l_lat_fl_ - k_body_fr_ * l_lat_fr_ + k_body_rl_ * l_lat_rl_ - k_body_rr_ * l_lat_rr_;
-		K[i * DOF + 2] = -k_body_fl_ * l_long_fl_ - k_body_fr_ * l_long_fr_ + k_body_rl_ * l_long_rl_ + k_body_rr_ * l_long_rr_;
-		K[i * DOF + 3] = -k_body_fl_;
-		K[i * DOF + 4] = 0;
-		K[i * DOF + 5] = -k_body_fr_;
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = -k_body_rl_;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = -k_body_rr_;
-		K[i * DOF + 10] = 0;
+	void update_K(T* k_vect) {
+		cblas_dscal(DOF * DOF, 0.0, K, 1);
 
-		i = 1;
-		temp_linear[1] = l_lat_fl_ * l_lat_fl_ * k_body_fl_ + l_lat_fr_ * l_lat_fr_ * k_body_fr_ + l_lat_rl_ * l_lat_rl_ * k_body_rl_ + l_lat_rr_ * l_lat_rr_ * k_body_rr_; // K[i*DOF + 1] to be set later
-		K[i * DOF + 2] = -l_long_fl_ * l_lat_fl_ * k_body_fl_ + l_lat_fr_ * l_long_fr_ * k_body_fr_ + l_long_rl_ * l_lat_rl_ * k_body_rl_ - l_long_rr_ * l_lat_rr_ * k_body_rr_;
-		K[i * DOF + 3] = -l_lat_fl_ * k_body_fl_;
-		K[i * DOF + 4] = 0;
-		K[i * DOF + 5] = l_lat_fr_ * k_body_fr_;
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = -l_lat_rl_ * k_body_rl_;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = l_lat_rr_ * k_body_rr_;
-		K[i * DOF + 10] = 0;
+		temp_linear[0] = k_vect[0] + k_vect[2] + k_vect[4] + k_vect[6];
+		K[1] = k_vect[0] * l_lat[0] - k_vect[2] * l_lat[1] + k_vect[4] * l_lat[2] - k_vect[6] * l_lat[3];
+		K[2] = -k_vect[0] * l_long[0] - k_vect[2] * l_long[1] + k_vect[4] * l_long[2] + k_vect[6] * l_long[3];
+		K[3] = -k_vect[0];
+		K[4] = 0.0;
+		K[5] = -k_vect[2];
+		K[6] = 0.0;
+		K[7] = -k_vect[4];
+		K[8] = 0.0;
+		K[9] = -k_vect[6];
+		K[10] = 0.0;
 
-		i = 2;
-		temp_linear[2] = l_long_fl_ * l_long_fl_ * k_body_fl_ + l_long_fr_ * l_long_fr_ * k_body_fr_ + l_long_rl_ * l_long_rl_ * k_body_rl_ + l_long_rr_ * l_long_rr_ * k_body_rr_; // K[i*DOF + 2] to be set later
-		K[i * DOF + 3] = l_long_fl_ * k_body_fl_;
-		K[i * DOF + 4] = 0;
-		K[i * DOF + 5] = l_long_fr_ * k_body_fr_;
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = -l_long_rl_ * k_body_rl_;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = -l_long_rr_ * k_body_rr_;
-		K[i * DOF + 10] = 0;
+		temp_linear[1] = l_lat[0] * l_lat[0] * k_vect[0] + l_lat[1] * l_lat[1] * k_vect[2] + l_lat[2] * l_lat[2] * k_vect[4] + l_lat[3] * l_lat[3] * k_vect[6];
+		K[DOF + 2] = -l_long[0] * l_lat[0] * k_vect[0] + l_lat[1] * l_long[1] * k_vect[2] + l_long[2] * l_lat[2] * k_vect[4] - l_long[3] * l_lat[3] * k_vect[6];
+		K[DOF + 3] = -l_lat[0] * k_vect[0];
+		K[DOF + 4] = 0;
+		K[DOF + 5] = l_lat[1] * k_vect[2];
+		K[DOF + 6] = 0;
+		K[DOF + 7] = -l_lat[2] * k_vect[4];
+		K[DOF + 8] = 0;
+		K[DOF + 9] = l_lat[3] * k_vect[6];
+		K[DOF + 10] = 0;
 
-		i = 3;
+		temp_linear[2] = l_long[0] * l_long[0] * k_vect[0] + l_long[1] * l_long[1] * k_vect[2] + l_long[2] * l_long[2] * k_vect[4] + l_long[3] * l_long[3] * k_vect[6];
+		K[2 * DOF + 3] = l_long[0] * k_vect[0];
+		K[2 * DOF + 4] = 0;
+		K[2 * DOF + 5] = l_long[1] * k_vect[2];
+		K[2 * DOF + 6] = 0;
+		K[2 * DOF + 7] = -l_long[2] * k_vect[4];
+		K[2 * DOF + 8] = 0;
+		K[2 * DOF + 9] = -l_long[3] * k_vect[6];
+		K[2 * DOF + 10] = 0;
 
-		temp_linear[3] = k_body_fl_ + k_tyre_fl_; // K[i*DOF + 3]
-		K[i * DOF + 4] = -k_tyre_fl_;
-		K[i * DOF + 5] = 0;
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = 0;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[3] = k_vect[0] + k_vect[1];
+		K[3 * DOF + 4] = -k_vect[1];
+		K[3 * DOF + 5] = 0;
+		K[3 * DOF + 6] = 0;
+		K[3 * DOF + 7] = 0;
+		K[3 * DOF + 8] = 0;
+		K[3 * DOF + 9] = 0;
+		K[3 * DOF + 10] = 0;
 		// all others are zero
 
-		i = 4;
-		temp_linear[4] = k_tyre_fl_; //K[i*DOF + 4]
-		K[i * DOF + 5] = 0;
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = 0;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[4] = k_vect[1];
+		K[4 * DOF + 5] = 0;
+		K[4 * DOF + 6] = 0;
+		K[4 * DOF + 7] = 0;
+		K[4 * DOF + 8] = 0;
+		K[4 * DOF + 9] = 0;
+		K[4 * DOF + 10] = 0;
 
-		i = 5;
-		temp_linear[5] = k_body_fr_ + k_tyre_fr_; // K[i*DOF + 5]
-		K[i * DOF + 6] = -k_tyre_fr_;
-		K[i * DOF + 7] = 0;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[5] = k_vect[2] + k_vect[3];
+		K[5 * DOF + 6] = -k_vect[3];
+		K[5 * DOF + 7] = 0;
+		K[5 * DOF + 8] = 0;
+		K[5 * DOF + 9] = 0;
+		K[5 * DOF + 10] = 0;
 
-		i = 6;
-		temp_linear[6] = k_tyre_fr_; // K[i*DOF + 6]
-		K[i * DOF + 7] = 0;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[6] = k_vect[3];
+		K[6 * DOF + 7] = 0;
+		K[6 * DOF + 8] = 0;
+		K[6 * DOF + 9] = 0;
+		K[6 * DOF + 10] = 0;
 
-		i = 7;
-		temp_linear[7] = k_body_rl_ + k_tyre_rl_; // K[i*DOF + 7]
-		K[i * DOF + 8] = -k_tyre_rl_;
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[7] = k_vect[4] + k_vect[5];
+		K[7 * DOF + 8] = -k_vect[5];
+		K[7 * DOF + 9] = 0;
+		K[7 * DOF + 10] = 0;
 
 
-		i = 8;
-		temp_linear[8] = k_tyre_rl_; // K[i*DOF + 8]
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[8] = k_vect[5];
+		K[8 * DOF + 9] = 0;
+		K[8 * DOF + 10] = 0;
 
-		i = 9;
-		temp_linear[9] = k_body_rr_ + k_tyre_rr_; // K[i*DOF + 9]
-		K[i * DOF + 10] = -k_tyre_rr_;
 
-		i = 10;
-		temp_linear[10] = k_tyre_rr_; // K[i*DOF + 10]
+		temp_linear[9] = k_vect[6] + k_vect[7];
+		K[9 * DOF + 10] = -k_vect[7];
 
-		// K=K+K'-diag(diag(K));
+		temp_linear[10] = k_vect[7];
+
 		cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
 		mkl_dimatcopy('R', 'T', DOF, DOF, 1.0, K_trans, DOF, DOF); // get transpose of matrix
 		cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
