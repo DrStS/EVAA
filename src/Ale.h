@@ -83,7 +83,7 @@ public:
 
 		// get forces 
 		Car_obj->compute_dx(current_length, Delta_x_vec);
-		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
+		Load_module_obj->update_force(t, force_vector, Delta_x_vec, Normal_ext); // TODO: ask Teo
 		Load_module_obj->update_torque(t, new_torque, Delta_x_vec); // TODO: ask Teo
 
 		// Compute weighted force sum TODO: Shubham
@@ -137,7 +137,7 @@ public:
 		// start time iteration
 		T t = h_;
 		Car_obj->compute_dx(Delta_x_vec);
-		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
+		Load_module_obj->update_force(t, force_vector, Delta_x_vec, Normal_ext); // TODO: ask Teo
 		Load_module_obj->update_torque(t, torque, Delta_x_vec); // TODO: ask Teo
 
 		// Compute weighted force sum TODO: Shubham
