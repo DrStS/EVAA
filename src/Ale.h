@@ -46,7 +46,8 @@ public:
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
 		linear11dof<T>* linear11dof_val,
-		Simulation_Parameters &params_val) {
+		Simulation_Parameters &params_val,
+		Load_Params &load_param) {
 
 		Car_obj = Car_obj_val;
 		Load_module_obj = Load_module_val;

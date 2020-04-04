@@ -770,11 +770,9 @@ void EVAAComputeEngine::computeMBD(void) {
 	mkl_free(soln);
 }
 
-
 void EVAAComputeEngine::clean(void) {
 
 }
-
 
 void EVAAComputeEngine::computeALE(void) {
 	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {

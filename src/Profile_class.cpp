@@ -120,7 +120,7 @@ void Circular::set_Position(const double* pos) {
 	}
 }
 
-void Circular::get_centripet_force(double* fr, double* v, double& m, double* p) {
+void Circular::get_centrifugal_force(double* fr, double* v, double& m, double* p) {
 	// calculates the force in a body only with respect to its velocity, mass and Position
 	// v is the velocity of the body
 	// m is the mass of the body
@@ -134,7 +134,8 @@ void Circular::get_centripet_force(double* fr, double* v, double& m, double* p) 
 
 	double inv_radius = 1.0 / cblas_dnrm2(mkl_DIM, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered tyre
 
-	cblas_dscal(mkl_DIM, -inv_radius, fr, 1);
+	// Raffi: cblas_dscal(mkl_DIM, -inv_radius, fr, 1);
+	cblas_dscal(mkl_DIM, inv_radius, fr, 1);
 
 	MathLibrary::crossProduct(fr, unit_y_vector, velocity_direction);
 
@@ -164,7 +165,7 @@ void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* norma
 
 	// compute each of the 9 centripetal forces
 	for (int i = 0; i < vec_DIM; ++i) {
-		get_centripet_force(&f_vec[mkl_DIM * i], &Velocity_vec[mkl_DIM * i], *(Mass_vec + i), &dist_car_center[mkl_DIM * i]);
+		get_centrifugal_force(&f_vec[mkl_DIM * i], &Velocity_vec[mkl_DIM * i], *(Mass_vec + i), &dist_car_center[mkl_DIM * i]);
 	}
 
 	// compute centripetal part of the global normal force 
