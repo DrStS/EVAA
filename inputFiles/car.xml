@@ -119,44 +119,44 @@
       <UnsprungMass>
         <ReerRight>
           <x>0</x>
-          <y>0</y>
+          <y>3</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
           <x>0</x>
-          <y>0</y>
+          <y>3</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
           <x>0</x>
-          <y>0</y>
+          <y>3</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
           <x>0</x>
-          <y>0</y>
+          <y>3</y>
           <z>0</z>
         </FrontRight>
       </UnsprungMass>
       <Tyre>
         <ReerRight>
           <x>0</x>
-          <y>0</y>
+          <y>3</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
           <x>0</x>
-          <y>0</y>
+          <y>3</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
           <x>0</x>
-          <y>0</y>
+          <y>3</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
           <x>0</x>
-          <y>0</y>
+          <y>3</y>
           <z>0</z>
         </FrontRight>
       </Tyre>

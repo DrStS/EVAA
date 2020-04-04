@@ -141,7 +141,7 @@ public:
 
 		torque = new T[3];
 		new_torque = new T[3];
-
+		
 		// calculate characteristics of the whole car
 		calculate_global_inertia_Z();
 		calculate_global_mass();

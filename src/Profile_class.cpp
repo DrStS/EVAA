@@ -180,28 +180,29 @@ void Circular::get_Profile_torque(Car<double>* Car1, double* Torque) {
 	Torque[2] = 0; // Torque on z direction
 }
 
-void Circular::get_omega(Car<double>* Car1, double* omega){
+void Circular::update_initial_condition(Car<double>* Car1){
 
-	double* radial_vector = (double*)mkl_calloc(DIM, sizeof(double), this->alignment);
-	radial_vector[0] = Car1->Position_vec_xy[0] - this->Position[0];
-	radial_vector[1] = Car1->Position_vec_xy[1] - this->Position[1];
+	double* perpendicular_dir = (double*)mkl_calloc(Car1->DIM, sizeof(double), Car1->alignment);
+	double* tangential_dir = (double*)mkl_calloc(Car1->alignment, sizeof(double), Car1->alignment);
+	double* radial_vector = (double*)mkl_calloc(Car1->alignment, sizeof(double), Car1->alignment);
+	radial_vector[0] = Car1->Position_vec[0] - this->Position[0];
+	radial_vector[1] = Car1->Position_vec[1] - this->Position[1];
 	radial_vector[2] = 0;
 
-	double radius = cblas_dnrm2(DIM, radial_vector, 1);
-
+	double radius = cblas_dnrm2(Car1->DIM, radial_vector, 1);
+	perpendicular_dir[2] = 1;
 	if (abs(radius - this->Radius) > 0.01)
-		std::cout << "Warning! the initial position of the car is not on the trajectory provided in the \
-					 circular path. \n The expected radius is " 
-				<< this->Radius << ", but the car is at an initial distance of " << radius <<
-				" from the center of the circle.\n The execution procedes with the current spatial \
-				configuration and with the current distance to the center of the circle." << std::endl;
+		std::cout << "Warning! the initial position of the car is not on the trajectory provided in the circular path. \n The expected radius is " << this->Radius << ", but the car is at an initial distance of " << radius << " from the center of the circle.\n The execution procedes with the current spatial configuration and with the current distance to the center of the circle." << std::endl;
 
 	double inv_radius_squared = 1. / (radius * radius);
 
-	MathLibrary::crossProduct(radial_vector, Car1->Velocity_vec, omega);
-
-	cblas_dscal(this->DIM, inv_radius_squared, omega, 1);
-
-	mkl_free(radial_vector);
+	const MKL_INT dim = Car1->DIM;
+	const MKL_INT incx = 1;
+	MathLibrary::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
+	double magnitude = cblas_ddot(dim, Car1->Velocity_vec, incx, tangential_dir, incx);
+	cblas_dcopy(Car1->DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
+	cblas_dscal(Car1->DIM, magnitude, Car1->Velocity_vec, incx);
+	MathLibrary::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
+	cblas_dscal(Car1->DIM, inv_radius_squared, Car1->w_CG, 1);
 }
 // =============================== end of Circular class implementation ===================
