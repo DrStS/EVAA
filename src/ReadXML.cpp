@@ -110,7 +110,7 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
 
 	readVector(parameters.initial_pos_body, settings->InitialConditions().Position().Body());
 	if (settings->InitialConditions().Position().UnsprungMass().present()) {
-		parameters.initial_leg = 1;
+		parameters.initial_leg_flag = 1;
 		readVectorLegs(parameters.initial_pos_wheel, settings->InitialConditions().Position().UnsprungMass().get());
 		readVectorLegs(parameters.initial_pos_tyre, settings->InitialConditions().Position().Tyre().get());
 	}
