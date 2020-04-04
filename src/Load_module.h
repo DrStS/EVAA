@@ -19,11 +19,9 @@ private:
 	double* Normal_ext = NULL; // Normal_force updated with external forces
 	double* k_vec = NULL; // vector with springs' stiffnesses (copied from Car!!!)
 	double* Normal_from_profile = NULL; // Normal_force computed inside get_Profile_force
-
-public:
-
 	double* External_force = NULL;
 
+public:
 	Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params load_param);
 	~Load_module();
 	Load_module(const Load_module& Load_module_1);

@@ -30,7 +30,6 @@ Load_module::Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params l
 	cblas_dcopy(mkl_DIM, load_param.external_force_body, 1, External_force, 1); // copy the center of mass position
 	double* xml_start, * position_start;
 	xml_start = load_param.external_force_wheel + 2 * 3;
-	std::cout << " External force [3] " << External_force[3] << "\n\n";
 	position_start = External_force + 3;
 	cblas_dcopy(mkl_DIM, xml_start, 1, position_start, 1);
 	// W2 = W_fr
