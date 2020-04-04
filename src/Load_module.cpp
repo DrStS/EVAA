@@ -132,8 +132,8 @@ void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec
 	}
 }
 
-void Load_module::update_torque(double time_t, double* Torque_vec, double* Delta_x_vec) {
-	Active_Profile->get_Profile_torque(Car_obj, Torque_vec);
+void Load_module::update_torque(double time_t, double* Torque, double* Delta_x_vec) {
+	Active_Profile->get_Profile_torque(Car_obj, Torque);
 }
 
 // =============================== end of Load_module class implementation =======================
