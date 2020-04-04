@@ -237,11 +237,11 @@ private:
 	}
 	void update_K(T* k_vect) {
 		cblas_dscal(DOF * DOF, 0.0, K, 1);
+		
 		temp_linear[0] = k_vect[0] + k_vect[2] + k_vect[4] + k_vect[6];
 		K[1] = k_vect[0] * l_lat[0] - k_vect[2] * l_lat[1] + k_vect[4] * l_lat[2] - k_vect[6] * l_lat[3];
 		K[2] = -k_vect[0] * l_long[0] - k_vect[2] * l_long[1] + k_vect[4] * l_long[2] + k_vect[6] * l_long[3];
 		K[3] = -k_vect[0];
-		std::cout << K[4] << std::endl;
 		K[4] = 0.0;
 		K[5] = -k_vect[2];
 		K[6] = 0.0;
@@ -434,12 +434,12 @@ public:
 		theta_z_init_body = euler_angle_init[2];
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////// System Mono ///////////////////////////////////////////////////////
-///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		std::cout << DOF << std::endl;
+		////////////////////////////////////////////// System Mono ///////////////////////////////////////////////////////
+		///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		M = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 		temp = (T*)mkl_malloc(DOF * sizeof(T), alignment);
+		temp_linear = (T*)mkl_malloc(DOF * sizeof(T), alignment);
 		K = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 		K_trans = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 		D = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
