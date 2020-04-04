@@ -22,7 +22,7 @@
 * This file holds the class of ComputeStiffness.
 * \date 03/18/2020
 **************************************************************************************************/
-
+#pragma once
 #include <vector>
 #include "mkl.h"
 

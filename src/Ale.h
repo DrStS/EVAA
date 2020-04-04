@@ -12,7 +12,7 @@ private:
 	const int alignment = 64;
 	
 	// necessary class objects
-	Car* Car_obj; // suppose Interpolation in the Car
+	Car<T>* Car_obj; // suppose Interpolation in the Car
 	Load_module* Load_module_obj; // needs Profile and Car
 	linear11dof<T>* linear11dof_obj;
 	EVAAComputeStiffness* interpolator;// interpolator member of EVAA
@@ -28,10 +28,16 @@ private:
 	// time and solution vectors
 	T* time_vec;
 	T* u_sol, u_init;
-
+	T* force_vector;
+	T* weighted_forceXY;
+	T* torque;
+	T* posXY_vec;
+	T* angleZ;
+	T* velXY_vec;
+	T* ang_velZ;
 
 public:
-	ALE(Car* Car_obj_val,
+	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
 		linear11dof<T>* linear11dof_val,
 		Simulation_Parameters &params_val) {
@@ -51,31 +57,61 @@ public:
 
 	}
 
-	void apply_boundary_condition(int s) {
-		linear11dof_obj->apply_boundary_condition(s);
+	void global_frame_solver() {
+		/* ??????????????????????????????????????? */
+
+		// Compute weighted force sum TODO: Shubham
+		function_from_shubham(weighted_forceXY);
+
+		// 1. Update global X,Y velocities
+		Car_obj->Velocity_vec_xy;
+
+		// 2. Update global X,Y positions of the car
+		Car_obj->Position_vect_xy;
+
+		// 3. Update Z-angular velocities
+		Car_obj->w_z;
+
+		// 4. Update Z-rotation
+		Car_obj->Angle_z;
+
+		// Implement ALE solver!!!!!!
+
 	}
 
 	void solve(T* sol_vect) {
-		///////////////////////////////////// For 11 DOF System //////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////////// Memory Allocation for Intermediate Solution Vectors //////////////////
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		//initialize solution vector
 		int sol_size = (floor(tend_ / h_) + 1);
 		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
 		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
+		int force_dimensions = Car_obj->mkl_DIM * Car_obj->vec_DIM;
+		int weighted_force_dimensions = 3;
+		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
+		weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
+		torque = new(T);
 
 		// start time iteration
 		T t = h_;
 		double eps = h_ / 100;
 
+		linear11dof_obj->solution_initialize(u_sol); // TODO: Shubham
+
 		// time iteration
 		while (std::abs(t - (tend_ + h_)) > eps) {
-			// TODO: ALE stuff
-			
+
+			Load_module_obj->update_force(t, force_vector, Delta_x_vec, External_force); // TODO: ask Teo
+			Load_module_obj->update_torque(t, torque, Delta_x_vec, External_force); // TODO: ask Teo
+
+			global_frame_solver();
+
 			// execute one time step of the linear solver
 			linear11dof_obj->solve_full_one_step(u_sol);
 		}
+
+		MKL_free(time_vec);
+		MKL_free(u_sol);
+		MKL_free(force_vector);
+		MKL_free(weighted_force_vectorXY);
 	}
 };
