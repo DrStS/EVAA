@@ -752,7 +752,6 @@ public:
 			iter++;
 			t += h_;
 		}
-		write_matrix(K, DOF);
 		/*auto end = std::chrono::steady_clock::now();
 		std::cout << "Elapsed time in nanoseconds : "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()

@@ -107,7 +107,7 @@ D = K *0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 A_pre=(1/(h*h))*M+(1/h)*D;
 B=((2/(h*h))*M+(1/h)*D);
-f_n_p_1=[0.1; zeros(10,1)];
+f_n_p_1=[1.1e3; zeros(10,1)];
 
 
 %% Time loop
@@ -125,7 +125,6 @@ for i = 0:h:tend
     u_n    =u_n_p_1;
     j = j + 1;
 end
-K
 toc
 
 % Some plots
@@ -158,16 +157,6 @@ function K = get_K(x)
     global Corners
     R = get_R(x);
     currentCorners = R*Corners;
-    length = [
-        0.5 + currentCorners(3,1) - upper_fl + car;...
-        0.5 + upper_fl - lower_fl;...
-        0.5 + currentCorners(3,2) - upper_fr + car;...
-        0.5 + upper_fr - lower_fr;...
-        0.5 + currentCorners(3,3) - upper_rl + car;....
-        0.5 + upper_rl - lower_rl;...
-        0.5 + currentCorners(3,4) - upper_rr + car;...
-        0.5 + upper_rr - lower_rr
-        ];
     
     % for spline interp3(X,Y,Z,k_grid,x(2),long_fl,x(3),'spline')
     k_body_fl=interp1(X,k_grid1,0.5 + currentCorners(3,1) - upper_fl + car);

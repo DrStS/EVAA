@@ -47,7 +47,6 @@ void EVAAComputeGrid::buildLinearGrid(double* grid, double* axis, int size, doub
 		for (auto i = 0; i < size; i++) {
 			grid[i + j * size] = responseFunction(a[j], b, c, axis[i]);
 		}
-		std::cout << "1: " << a[j] << std::endl;
 	}
 }
 
