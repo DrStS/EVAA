@@ -59,8 +59,6 @@ public:
 
 		h_ = params.timestep;
 		tend_ = params.num_time_iter * h_;
-
-
 	}
 
 	void global_frame_solver() {
