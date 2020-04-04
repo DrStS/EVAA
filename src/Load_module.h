@@ -28,7 +28,7 @@ public:
 	void set_Profile(Profile* Profile_type);
 	void get_Profile(Profile* Profile_type);
 	void update_force(double time_t, double* F_vec, double* Delta_x_vec);
-	void update_torque(double time_t, double* F_vec, double* Delta_x_vec);
+	void update_torque(double time_t, double* Torque, double* Delta_x_vec);
 	void set_External_force(Load_Params load_param);
 };
 

@@ -42,7 +42,7 @@ public:
 	double get_Radius() const;
 	void set_Radius(const double& Rad);
 	void set_Position(const double* Pos);
-	void get_centripet_force(double* Fr, double* v, double& m, double* p);
+	void get_centrifugal_force(double* Fr, double* v, double& m, double* p);
 	void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext);
-	void get_Profile_torque(Car<double>* Car1, double* Torque_vec);
+	void get_Profile_torque(Car<double>* Car1, double* Torque);
 };

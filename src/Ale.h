@@ -17,6 +17,7 @@ private:
 	linear11dof<T>* linear11dof_obj;
 	EVAAComputeStiffness* interpolator;// interpolator member of EVAA
 	Simulation_Parameters params;
+
 	Load_Params load_param;
 	Profile* profile_obj;
 
@@ -58,7 +59,6 @@ public:
 		Car_obj = Car_obj_val;
 		Load_module_obj = Load_module_val;
 		linear11dof_obj = linear11dof_val;
-
 
 		// general parameters of the simulation
 		params = params_val;
