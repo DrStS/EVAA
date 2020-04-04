@@ -222,7 +222,7 @@
 
   <SimulationParameters>
     <GeneralSettings>
-      <TimestepSize>1e-3</TimestepSize>
+      <TimestepSize>1e-4</TimestepSize>
       <NumberOfIterations>1000</NumberOfIterations>
       <Gravity>
         <x>0</x>

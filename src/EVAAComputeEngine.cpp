@@ -89,6 +89,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 
 
 EVAAComputeEngine::~EVAAComputeEngine() {
+	delete lookupStiffness;
 }
 
 void EVAAComputeEngine::prepare(void) {
