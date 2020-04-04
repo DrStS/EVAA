@@ -23,7 +23,7 @@ protected:
 	//// Solver type selection based on type of boundary condition
 	
 
-	T *u_n_p_1, *u_n_m_1, *u_n, *A, *B;
+	T* u_n_p_1, * u_n_m_1, * u_n, * A, * B;
 	size_t* tyre_index_set;
 	
 	void check_status(lapack_int status) {

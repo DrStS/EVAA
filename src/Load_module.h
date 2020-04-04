@@ -8,7 +8,7 @@ private:
 	// alignment and g are defined globally === REPLACE THEM!!!!
 	const int alignment = 64;
 	// MKL / vector constants:
-	const int mkl_DIM = 3, vec_DIM = 9, incx = 1; // consider mkl_DIM = 4 for efficiency!!!
+	const int DIM = 3, vec_DIM = 9, incx = 1; // consider mkl_DIM = 4 for efficiency!!!
 
 	Profile* Active_Profile = NULL;
 	Car<double>* Car_obj;
@@ -24,8 +24,6 @@ private:
 public:
 	Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params load_param);
 	~Load_module();
-	Load_module(const Load_module& Load_module_1);
-	Load_module& operator= (const Load_module& Load_module_1);
 	void set_Profile(Profile* Profile_type);
 	void get_Profile(Profile* Profile_type);
 	void update_force(double time_t, double* F_vec, double* Delta_x_vec, double* Normal_ext);
