@@ -2,6 +2,7 @@
 #include <mkl.h>
 #include <string>
 #include "MathLibrary.h"
+#include "car.h"
 
 class Profile {
 protected:
