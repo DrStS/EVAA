@@ -23,6 +23,7 @@
 #include "MathLibrary.h"
 #include <limits>
 #include <fstream>
+#include "car.h"
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
 #define USE_GEMM
