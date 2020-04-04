@@ -3,9 +3,6 @@
 #include "car.h"
 #include "Profile_class.h"
 
-
-
-
 class Load_module {
 private:
 	// alignment and g are defined globally === REPLACE THEM!!!!
@@ -14,7 +11,7 @@ private:
 	const int mkl_DIM = 3, vec_DIM = 9, incx = 1; // consider mkl_DIM = 4 for efficiency!!!
 
 	Profile* Active_Profile = NULL;
-	Car* Car_obj = NULL;
+	Car<double>* Car_obj;
 
 	// Auxiliary vectors
 	double* Normal_ext = NULL; // Normal_force computed inside update_Profile_force
@@ -24,7 +21,7 @@ private:
 public:
 	Load_module();
 	Load_module(Profile* Profile_type);
-	Load_module(Profile* Profile_type, Car* Car1);
+	Load_module(Profile* Profile_type, Car<double>* Car1);
 	~Load_module();
 	Load_module(const Load_module& Load_module_1);
 	Load_module& operator= (const Load_module& Load_module_1);

@@ -3,6 +3,7 @@
 #include "Profile.h"
 #include "Load_module.h"
 #include "EVAAComputeEngine.h"
+#include "11DOF.h"
 
 template <class T>
 class ALE {

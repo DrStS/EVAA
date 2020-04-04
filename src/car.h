@@ -11,7 +11,23 @@ private:
 		temp_linear[1] = Global_momemnt_Inertia[0];
 		temp_linear[2] = Global_momemnt_Inertia[4];
 		cblas_dcopy(vec_DIM - 1, Global_mass + 1, 1, temp_linear + 3, 1);
-		MathLibrary::allocate_to_diagonal(M, temp, DOF);
+		MathLibrary::allocate_to_diagonal(M_linear, temp_linear, DOF);
+	}
+	void construct_ALE_vectors(T* Global_vector, T* local_vector) {
+		T* start_pointer, *current_ptr;
+		start_pointer = Global_vector; // copy x and y and move next
+		current_ptr = local_vector;
+		for (size_t i = 0; i < vec_DIM; ++i) {
+			cblas_dcopy(mkl_DIM - 1, start_pointer, 1, current_ptr, 1);
+			start_pointer += mkl_DIM;
+			current_ptr += mkl_DIM - 1;
+		}
+	}
+	void populate_results() {
+		/*
+		Not implemented
+		assign the ALE components to x and y direction and 11 dof components to z direction
+		*/
 	}
 public:
 	/*
@@ -31,26 +47,26 @@ public:
 	const int alignment = 64;
 	// MKL / vector constants:
 	const int mkl_DIM = 3, vec_DIM = 9, incx = 1; // consider mkl_DIM = 4 for efficiency!!! // 10 dimension because of torque of the body
-
-	T* Position_vec = NULL; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3 !!! Consider alignment (3+1),(3+1),... 
-	T* Velocity_vec = NULL; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3
-	T* Mass_vec = NULL; // [CG,  W1, T1, W2, T2, W3, T3, W4, T4]     9
-	T* angle_CG = NULL; // [x, y, z]
-	T* w_CG = NULL; // [x, y, z]
-	T* I_CG = NULL; // [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izx]
+	const size_t num_wheels = 4;
+	T* Position_vec; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3 !!! Consider alignment (3+1),(3+1),... 
+	T* Velocity_vec; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3
+	T* Mass_vec; // [CG,  W1, T1, W2, T2, W3, T3, W4, T4]     9
+	T* angle_CG; // [x, y, z]
+	T* w_CG; // [x, y, z]
+	T* I_CG; // [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izx]
 	
 
 	// Initial Conditions of the car
-	T* initial_position = NULL; // [CG, W1, T1, W2, T2, W3, T3, W4, T4]
-	T* initial_velocity_vec = NULL; // [CG, W1, T1, W2, T2, W3, T3, W4, T4]
-	T* initial_angle = NULL; // [x, y, z]
-	T* initial_angular_velocity = NULL; // [x, y, z]
+	T* initial_position; // [CG, W1, T1, W2, T2, W3, T3, W4, T4]
+	T* initial_velocity_vec; // [CG, W1, T1, W2, T2, W3, T3, W4, T4]
+	T* initial_angle; // [x, y, z]
+	T* initial_angular_velocity; // [x, y, z]
 
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////// Members from 11 DOF system //////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
-	size_t DOF;
+	int DOF;
 	EVAAComputeStiffness* lookupStiffness;
 	T k_body_fl;
 	T k_tyre_fl;
@@ -72,97 +88,17 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////// ALE Vectors ///////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	T *Position_vect_xy, *Angle_z, *Velocity_vec_xy, *w_z;
+	T *Position_vec_xy, *Angle_z, *Velocity_vec_xy, *w_z;
 
 
-	Car() {
-		// Dimensions
-		Length = 4.;
-		Width = 2.;
-
-		// Position
-		Position_vec = (double*)mkl_malloc(sizeof(double) * mkl_DIM * vec_DIM, alignment);
-		// Default Positions - CG = 100m (= On the circle(0., 100m))
-		for (auto i = 0; i < mkl_DIM * vec_DIM; ++i) {
-			Position_vec[3 * i] = 100. / 3;
-			if (i == 1 || i == 2 || i == 3 || i == 4) // x-positions of {fl, fr} x {wheel, tyre}
-				Position_vec[3 * i] = 100. / 3 + Length / 2;
-			else if (i == 5 || i == 6 || i == 7 || i == 8) // x-positions of {rl, rr} x {wheel, tyre}
-				Position_vec[3 * i] = 100. / 3 - Length / 2;
-			else
-				Position_vec[3 * i] = 100. / 3;
-
-			Position_vec[3 * i + 1] = 200. / 3;
-
-			Position_vec[3 * i + 2] = 200. / 3;
-
-			if (i == 3 || i == 4 || i == 7 || i == 8) // z-positions of {fr, rr} x {wheel, tyre}
-				Position_vec[3 * i + 2] = 200. / 3 + Width / 2;
-			else if (i == 1 || i == 2 || i == 5 || i == 6) // z-positions of {fl, rl} x {wheel, tyre}
-				Position_vec[3 * i + 2] = 200. / 3 + Width / 2;
-			else
-				Position_vec[3 * i + 2] = 200. / 3;
-		}
-
-		// Velocity - 10 m/s (random)
-		Velocity_vec = (double*)mkl_malloc(sizeof(double) * mkl_DIM * vec_DIM, alignment);
-		for (auto i = 0; i < 9; ++i) {
-			Velocity_vec[3 * i] = 8;
-			Velocity_vec[3 * i + 1] = 0;
-			Velocity_vec[3 * i + 2] = 6;
-		}
-
-		// Mass
-		Mass_vec = (double*)mkl_malloc(sizeof(double) * vec_DIM, alignment);
-		Mass_vec[0] = 1936.; // Body
-		Mass_vec[1] = 145. / 2; // wheel_fl
-		Mass_vec[2] = 0.; // tire_fl
-		Mass_vec[3] = 145. / 2; // wheel_fr
-		Mass_vec[4] = 0.; // tire_fr
-		Mass_vec[5] = 135. / 2; // wheel_rl
-		Mass_vec[6] = 0.; // tire_rl
-		Mass_vec[7] = 135. / 2; // wheel_rr
-		Mass_vec[8] = 0.; // tire_rr
-
-		// Springs
-		// Stiffnesses
-		k_vec = (double*)mkl_malloc(sizeof(double) * (vec_DIM - 1), alignment);
-		for (auto i = 0; i < 4; ++i) {
-			k_vec[2 * i] = 260e3; // Tyre
-			k_vec[2 * i + 1] = 28e3 * 0.69; // Wheel
-		}
-		// Length of springs (?)
-		L_body_fl = 1;
-		L_tire_fl = 1;
-		L_body_fr = 1;
-		L_tire_fr = 1;
-		L_body_rl = 1;
-		L_tire_rl = 1;
-		L_body_rr = 1;
-		L_tire_rr = 1;
-
-		// Distances from CG to wheels
-		l_long_fl = 1.395;
-		l_long_fr = 1.395;
-		l_long_rl = 1.596;
-		l_long_rr = 1.596;
-		l_lat_fl = 2 * 0.8458;
-		l_lat_fr = 2 * 0.8458;
-		l_lat_rl = 2 * 0.84;
-		l_lat_rr = 2 * 0.84;
-
-		// 	// Moments of inertia
-		I_body_xx = 640;
-		I_body_yy = 4800;
-
-	}
+	
 	Car(const Simulation_Parameters &params, EVAAComputeStiffness* interpolator) {
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		lookupStiffness = interpolator;
-		
+		DOF = params.DOF;
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////// System Mono ///////////////////////////////////////////////////////
 		///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
@@ -195,7 +131,7 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		M_linear = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
-		temp_linear = (T*)mkl_malloc(DOF * sizeof(T), alignment);
+		temp_linear = (T*)mkl_calloc(DOF , sizeof(T), alignment);
 		K = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 		K_trans = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 		D = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
@@ -205,13 +141,13 @@ public:
 		k_vec = (T*)mkl_malloc(num_wheels * 2 * sizeof(T), alignment);
 		l_lat = (T*)mkl_malloc(num_wheels * sizeof(T), alignment);
 		l_long = (T*)mkl_malloc(num_wheels * sizeof(T), alignment);
-		spring_length = (T*)mkl_malloc(2 * num_tyre * sizeof(T), alignment);
-		current_spring_length = (T*)mkl_malloc(2 * num_tyre * sizeof(T), alignment);
+		spring_length = (T*)mkl_malloc(2 * num_wheels * sizeof(T), alignment);
+		current_spring_length = (T*)mkl_malloc(2 * num_wheels * sizeof(T), alignment);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		DOF = params.DOF;
+		
 		
 		l_long[0] = params.l_long[2];
 		l_long[1] = params.l_long[3];
@@ -240,10 +176,9 @@ public:
 		Mass_vec[3] = params.mass_wheel[3];
 		Mass_vec[4] = params.mass_tyre[3];
 		Mass_vec[5] = params.mass_wheel[1];
-		Mass_vec[7] = params.mass_tyre[1];
-		Mass_vec[8] = params.mass_wheel[0];
-		Mass_vec[9] = params.mass_tyre[0];
-		
+		Mass_vec[6] = params.mass_tyre[1];
+		Mass_vec[7] = params.mass_wheel[0];
+		Mass_vec[8] = params.mass_tyre[0];
 		
 		spring_length[0] = params.upper_spring_length[2];
 		spring_length[1] = params.lower_spring_length[2];
@@ -282,7 +217,8 @@ public:
 		cblas_dcopy(mkl_DIM, params.initial_pos_body, 1, initial_position, 1); // copy the center of mass position
 		
 
-		T* xml_start, *position_start;
+		const T* xml_start;
+		T *position_start;
 		if (params.initial_leg_flag) {
 			// if prescribed initial position (add a check for consistency with spring lengths)
 			// W1 = W_fl
@@ -380,7 +316,7 @@ public:
 		construct_11DOF_mass(Mass_vec, I_CG, M_linear);
 		construct_11DOF_vector(initial_position, initial_angle, u_prev_linear);
 		construct_11DOF_vector(initial_velocity_vec, initial_angular_velocity, velocity_current_linear);
-
+		
 		/* This stays in the 11 DOF
 		cblas_dscal(DOF, -h_, u_n_m_1, 1);
 		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
@@ -403,12 +339,16 @@ public:
 
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////// ALE ///////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////// ALE Buffer Initialization /////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Position_vect_xy = (T*)mkl_malloc((mkl_DIM - 1)*vec_DIM, alignment);
+		Position_vec_xy = (T*)mkl_malloc((mkl_DIM - 1)*vec_DIM, alignment);
 		Angle_z = new T;
 		Velocity_vec_xy = (T*)mkl_malloc((mkl_DIM - 1)*vec_DIM, alignment);
 		w_z = new T;
+		construct_ALE_vectors(Position_vec, Position_vec_xy);
+		construct_ALE_vectors(Velocity_vec, Velocity_vec_xy);
+		*Angle_z = angle_CG[2];
+		*w_z = w_CG[2];
 
 
 	}
@@ -450,7 +390,7 @@ public:
 		l_long_fr_ = l_long[1];
 		l_long_rl_ = l_long[2];
 		l_long_rr_ = l_long[3];
-		temp[0] = k_body_fl_ + k_body_fr_ + k_body_rl_ + k_body_rr_; // K[i*DOF + 0] to be set later
+		temp_linear[0] = k_body_fl_ + k_body_fr_ + k_body_rl_ + k_body_rr_; // K[i*DOF + 0] to be set later
 		K[i * DOF + 1] = k_body_fl_ * l_lat_fl_ - k_body_fr_ * l_lat_fr_ + k_body_rl_ * l_lat_rl_ - k_body_rr_ * l_lat_rr_;
 		K[i * DOF + 2] = -k_body_fl_ * l_long_fl_ - k_body_fr_ * l_long_fr_ + k_body_rl_ * l_long_rl_ + k_body_rr_ * l_long_rr_;
 		K[i * DOF + 3] = -k_body_fl_;
@@ -463,7 +403,7 @@ public:
 		K[i * DOF + 10] = 0;
 
 		i = 1;
-		temp[1] = l_lat_fl_ * l_lat_fl_ * k_body_fl_ + l_lat_fr_ * l_lat_fr_ * k_body_fr_ + l_lat_rl_ * l_lat_rl_ * k_body_rl_ + l_lat_rr_ * l_lat_rr_ * k_body_rr_; // K[i*DOF + 1] to be set later
+		temp_linear[1] = l_lat_fl_ * l_lat_fl_ * k_body_fl_ + l_lat_fr_ * l_lat_fr_ * k_body_fr_ + l_lat_rl_ * l_lat_rl_ * k_body_rl_ + l_lat_rr_ * l_lat_rr_ * k_body_rr_; // K[i*DOF + 1] to be set later
 		K[i * DOF + 2] = -l_long_fl_ * l_lat_fl_ * k_body_fl_ + l_lat_fr_ * l_long_fr_ * k_body_fr_ + l_long_rl_ * l_lat_rl_ * k_body_rl_ - l_long_rr_ * l_lat_rr_ * k_body_rr_;
 		K[i * DOF + 3] = -l_lat_fl_ * k_body_fl_;
 		K[i * DOF + 4] = 0;
@@ -475,7 +415,7 @@ public:
 		K[i * DOF + 10] = 0;
 
 		i = 2;
-		temp[2] = l_long_fl_ * l_long_fl_ * k_body_fl_ + l_long_fr_ * l_long_fr_ * k_body_fr_ + l_long_rl_ * l_long_rl_ * k_body_rl_ + l_long_rr_ * l_long_rr_ * k_body_rr_; // K[i*DOF + 2] to be set later
+		temp_linear[2] = l_long_fl_ * l_long_fl_ * k_body_fl_ + l_long_fr_ * l_long_fr_ * k_body_fr_ + l_long_rl_ * l_long_rl_ * k_body_rl_ + l_long_rr_ * l_long_rr_ * k_body_rr_; // K[i*DOF + 2] to be set later
 		K[i * DOF + 3] = l_long_fl_ * k_body_fl_;
 		K[i * DOF + 4] = 0;
 		K[i * DOF + 5] = l_long_fr_ * k_body_fr_;
@@ -487,7 +427,7 @@ public:
 
 		i = 3;
 
-		temp[3] = k_body_fl_ + k_tyre_fl_; // K[i*DOF + 3]
+		temp_linear[3] = k_body_fl_ + k_tyre_fl_; // K[i*DOF + 3]
 		K[i * DOF + 4] = -k_tyre_fl_;
 		K[i * DOF + 5] = 0;
 		K[i * DOF + 6] = 0;
@@ -498,7 +438,7 @@ public:
 		// all others are zero
 
 		i = 4;
-		temp[4] = k_tyre_fl_; //K[i*DOF + 4]
+		temp_linear[4] = k_tyre_fl_; //K[i*DOF + 4]
 		K[i * DOF + 5] = 0;
 		K[i * DOF + 6] = 0;
 		K[i * DOF + 7] = 0;
@@ -507,7 +447,7 @@ public:
 		K[i * DOF + 10] = 0;
 
 		i = 5;
-		temp[5] = k_body_fr_ + k_tyre_fr_; // K[i*DOF + 5]
+		temp_linear[5] = k_body_fr_ + k_tyre_fr_; // K[i*DOF + 5]
 		K[i * DOF + 6] = -k_tyre_fr_;
 		K[i * DOF + 7] = 0;
 		K[i * DOF + 8] = 0;
@@ -515,36 +455,36 @@ public:
 		K[i * DOF + 10] = 0;
 
 		i = 6;
-		temp[6] = k_tyre_fr_; // K[i*DOF + 6]
+		temp_linear[6] = k_tyre_fr_; // K[i*DOF + 6]
 		K[i * DOF + 7] = 0;
 		K[i * DOF + 8] = 0;
 		K[i * DOF + 9] = 0;
 		K[i * DOF + 10] = 0;
 
 		i = 7;
-		temp[7] = k_body_rl_ + k_tyre_rl_; // K[i*DOF + 7]
+		temp_linear[7] = k_body_rl_ + k_tyre_rl_; // K[i*DOF + 7]
 		K[i * DOF + 8] = -k_tyre_rl_;
 		K[i * DOF + 9] = 0;
 		K[i * DOF + 10] = 0;
 
 
 		i = 8;
-		temp[8] = k_tyre_rl_; // K[i*DOF + 8]
+		temp_linear[8] = k_tyre_rl_; // K[i*DOF + 8]
 		K[i * DOF + 9] = 0;
 		K[i * DOF + 10] = 0;
 
 		i = 9;
-		temp[9] = k_body_rr_ + k_tyre_rr_; // K[i*DOF + 9]
+		temp_linear[9] = k_body_rr_ + k_tyre_rr_; // K[i*DOF + 9]
 		K[i * DOF + 10] = -k_tyre_rr_;
 
 		i = 10;
-		temp[10] = k_tyre_rr_; // K[i*DOF + 10]
+		temp_linear[10] = k_tyre_rr_; // K[i*DOF + 10]
 
 		// K=K+K'-diag(diag(K));
 		cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
 		mkl_dimatcopy('R', 'T', DOF, DOF, 1.0, K_trans, DOF, DOF); // get transpose of matrix
 		cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
-		MathLibrary::allocate_to_diagonal(K, temp, DOF); // K = K + K'+ diag(K)
+		MathLibrary::allocate_to_diagonal(K, temp_linear, DOF); // K = K + K'+ diag(K)
 	}
 
 	void construct_11DOF_vector(T* Global_position, T* Global_angle, T* Position_11dof) {
@@ -716,7 +656,6 @@ public:
 	Car(const Car& Car1) {
 		*this = Car1;
 	}
-	~Car();
 	void get_Position_vec(T* Pos) {
 		if (Pos != NULL) {
 			cblas_dcopy(mkl_DIM * vec_DIM, Position_vec, 1, Pos, 1);
@@ -820,5 +759,45 @@ public:
 	}
 	void set_I_body_yy(const T& I_body_yy_val) {
 		I_CG[4] = I_body_yy_val;
+	}
+	~Car() {
+		mkl_free(Position_vec); 
+		mkl_free(Velocity_vec);
+		mkl_free(Mass_vec);
+		mkl_free(angle_CG);
+		mkl_free(w_CG);
+		mkl_free(I_CG);
+
+
+		// Initial Conditions of the car
+		mkl_free(initial_position);
+		mkl_free(initial_velocity_vec); 
+		mkl_free(initial_angle);
+		mkl_free(initial_angular_velocity);
+
+		
+		
+		mkl_free(quad_angle_init);
+		mkl_free(M_linear); 
+		mkl_free(temp_linear); 
+		mkl_free(K);
+		mkl_free(K_trans);
+		mkl_free(D);
+		mkl_free(spring_length); 
+		mkl_free(current_spring_length);
+		mkl_free(u_prev_linear); 
+		mkl_free(u_current_linear);
+		mkl_free(k_vec); 
+		mkl_free(l_lat); 
+		mkl_free(l_long);
+		mkl_free(velocity_current_linear);
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////// ALE Vectors ///////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		mkl_free(Position_vec_xy);
+		mkl_free(Velocity_vec_xy);
+		delete Angle_z;
+		delete w_z;
 	}
 };

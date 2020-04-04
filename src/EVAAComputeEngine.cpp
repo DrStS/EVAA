@@ -24,6 +24,7 @@
 #include <limits>
 #include <fstream>
 #include "car.h"
+#include "11DOF.h"
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
 #define USE_GEMM
@@ -551,7 +552,8 @@ void EVAAComputeEngine::computeMKLlinear11dof() {
 	int DOF = _parameters.DOF;
 	const int alignment = 64;
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-	linear11dof<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
+	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
+	linear11dof_full<floatEVAA> solver(_parameters, _load_module_parameter, Car1);
 	solver.apply_boundary_condition(_load_module_parameter.boundary_condition_road);
 	solver.solve(soln);
 	size_t steps = floor(tend / h);
@@ -560,25 +562,9 @@ void EVAAComputeEngine::computeMKLlinear11dof() {
 		std::cout << soln[i] << std::endl;
 	}
 	mkl_free(soln);
+	delete Car1;
 }
 
-void EVAAComputeEngine::computeMKLlinear11dof_reduced() {
-	floatEVAA h = _parameters.timestep;
-	floatEVAA tend = _parameters.num_time_iter*h;
-	int DOF = _parameters.DOF - 4;
-	const int alignment = 64;
-	floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-	linear11dof<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
-	solver.apply_boundary_condition(FIXED);
-	solver.solve(soln);
-	size_t steps = floor(tend / h);
-	std::cout << "Solution after " << steps << " timesteps, f =" << std::endl;
-	for (auto i = 0; i < DOF; ++i) {
-		std::cout << soln[i] << std::endl;
-	}
-	std::cout << std::endl;
-	mkl_free(soln);
-}
 
 void EVAAComputeEngine::computeBlaze11DOF(void) {
 #ifdef USE_BLAZE
@@ -789,18 +775,18 @@ void EVAAComputeEngine::clean(void) {
 
 }
 
-void EVAAComputeEngine::computeALE(void) {
-	Car* Car1 = new Car(_load_module_parameter, lookupStiffness);
-	Profile* Road_Profile;
-	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {
-		Road_Profile = new Circular(_load_module_parameter.profile_center, _load_module_parameter.profile_radius);
-	}
-	Load_module* Load_module1 = new Load_module(Road_Profile, Car1);
-	linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
-	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, _parameters);
-
-	delete Car1;
-	delete Load_module1;
-
-
-}
+//void EVAAComputeEngine::computeALE(void) {
+//	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_load_module_parameter, lookupStiffness);
+//	Profile* Road_Profile;
+//	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {
+//		Road_Profile = new Circular(_load_module_parameter.profile_center, _load_module_parameter.profile_radius);
+//	}
+//	Load_module* Load_module1 = new Load_module(Road_Profile, Car1);
+//	linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
+//	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, _parameters);
+//
+//	delete Car1;
+//	delete Load_module1;
+//
+//
+//}

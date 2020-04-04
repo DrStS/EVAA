@@ -1,4 +1,7 @@
 #pragma once
+#include <mkl.h>
+#include <string>
+#include "MathLibrary.h"
 
 class Profile {
 protected:
@@ -10,7 +13,7 @@ protected:
 
 public:
 	Profile& operator=(const Profile& Prof1) {};
-	void update_Profile_force(Car* Car1, double* F_vec, double* Normal_ext) {};
+	void update_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
 };
 
 class Circular : public Profile {
@@ -38,5 +41,5 @@ public:
 	void set_Radius(const double& Rad);
 	void set_Position(const double* Pos);
 	void get_centripet_force(double* Fr, double* v, double& m, double* p);
-	void update_Profile_force(Car* Car1, double* F_vec, double* Normal_ext);
+	void update_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext);
 };

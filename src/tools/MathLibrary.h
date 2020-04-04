@@ -31,6 +31,7 @@
 #endif
 #include <vector>
 #include <cmath>
+#include <iostream>
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
 #endif
@@ -92,15 +93,17 @@ namespace MathLibrary {
 			mat[i*dim + i] = val;
 		}
 	}
-
-	//template <typename T>
-	//T dot_product(const T* A, const T* B, const size_t dim) {
-	//	T res = 0.0;
-	//	for (size_t i = 0; i < dim; ++i) {
-	//		res += A[i] * B[i];
-	//	}
-	//	return res;
-	//}
+	template <typename T>
+	void check_status(T status) {
+		if (status == 1) {
+			std::cout << "Matrix non Positive Definite" << std::endl;
+			exit(5);
+		}
+		else if (status == -1) {
+			std::cout << "Matrix contain illegal value" << std::endl;
+			exit(5);
+		}
+	}
 
 	template <typename T>
 	void elementwise_inversion(T* vect, size_t dim) {
@@ -907,6 +910,28 @@ namespace MathLibrary {
 			mkl_free(k3);
 			mkl_free(k4);
 			mkl_free(x);
+		}
+
+		static void Linear_Backward_Euler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
+			/*
+			This works for only symmetric positive definite A the provided matrix A would be overwritten and results stored in x
+			computes the backward euler step of following form
+			Ax = B*x_prev + C*x_prev_prev + b
+			A, B, C are coefficient of the euler formation matrix
+			not implemented
+			*/
+			lapack_int status;
+			status = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
+			//status = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF + 4, DOF + 4, A, DOF + 4, piv);
+			check_status<lapack_int>(status);
+			cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim, 1.0, B, dim, x_prev, 1, 0, x, 1);
+			// u_n_p_1 = -((1/(h*h))*M)*u_n_m_1 + u_n_p_1
+			cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim, 1.0, C, dim, x_prev_prev, 1, 1, x, 1);
+			// u_n_p_1 = f_n_p_1 + u_n_p_1
+			cblas_daxpy(dim, 1, b, 1, x, 1);
+			// u_n_p_1=A\u_n_p_1
+			LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
+			//LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF + 4, 1, A, DOF + 4, piv, u_n_p_1, 1);
 		}
    };
 } /* namespace Math */
