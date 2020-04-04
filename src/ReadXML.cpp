@@ -183,28 +183,35 @@ void ReadXML::ReadLookupParameters(EVAAComputeStiffness* lookupStiffness, Simula
     if (_lookup_filename == "NO_FILE_SPECIFIED") return;
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
     if (lookup_table->LookupTableGenerator().present()) {
-        double* a;
-        double b, c, l_min, l_max;
-        int size, k, type, order;
+		double* a, * k_body, * k_tyre;
+		double b, c, l_min, l_max;
+		int size, k, type, order;
 
-        a = new(double[8]);
+		a = new(double[8]);
+		k_body = new(double[8]);
+		k_tyre = new(double[8]);
 
-        std::cout << "Generate look up table from parameters." << std::endl;
+		std::cout << "Generate look up table from parameters." << std::endl;
 
-        size = lookup_table->LookupTableGenerator().get().Size();
-        b = lookup_table->LookupTableGenerator().get().TableParameters().b();
-        c = lookup_table->LookupTableGenerator().get().TableParameters().c();
-        l_min = lookup_table->LookupTableGenerator().get().Range().l_min();
-        l_max = lookup_table->LookupTableGenerator().get().Range().l_max();
-        k = lookup_table->LookupTableGenerator().get().InterpolationMethod().k();
-        type = lookup_table->LookupTableGenerator().get().InterpolationMethod().type();
-        order = lookup_table->LookupTableGenerator().get().InterpolationMethod().order();
+		size = lookup_table->LookupTableGenerator().get().Size();
+		b = lookup_table->LookupTableGenerator().get().TableParameters().b();
+		c = lookup_table->LookupTableGenerator().get().TableParameters().c();
+		l_min = lookup_table->LookupTableGenerator().get().Range().l_min();
+		l_max = lookup_table->LookupTableGenerator().get().Range().l_max();
+		k = lookup_table->LookupTableGenerator().get().InterpolationMethod().k();
+		type = lookup_table->LookupTableGenerator().get().InterpolationMethod().type();
+		order = lookup_table->LookupTableGenerator().get().InterpolationMethod().order();
 
-        readLegs(a, lookup_table->LookupTableGenerator().get().Magnitude().Body());
-        readLegs(a+4, lookup_table->LookupTableGenerator().get().Magnitude().Tyre());
-
-        //@Felix, initialize your lookup table here, add and change function signatures, private variables as you need it
-		// EVAAComputeStiffness(int size, double a, double b, double c, double l_min, double l_max, int k, int type, int order);
+		readLegs(k_body, lookup_table->LookupTableGenerator().get().Magnitude().Body());
+		readLegs(k_tyre, lookup_table->LookupTableGenerator().get().Magnitude().Tyre());
+		a[0] = k_body[2];
+		a[1] = k_tyre[0];
+		a[2] = k_body[3];
+		a[3] = k_tyre[1];
+		a[4] = k_body[0];
+		a[5] = k_tyre[2];
+		a[6] = k_body[1];
+		a[7] = k_tyre[3];
 		lookupStiffness = new EVAAComputeStiffness(size, a, b, c, l_min, l_max, k, type, order);
 		parameters.interpolation = 1;  // to switch from constant to interpolation type
         delete[] a;
