@@ -29,6 +29,28 @@ private:
 		assign the ALE components to x and y direction and 11 dof components to z direction
 		*/
 	}
+	void update_corners_11DOF()
+	{
+		// zz, yy, xx
+		MathLibrary::get_rotation_matrix(0.0, u_n_p_1[2], u_n_p_1[1], Corners_rot);
+
+		// do rotation: rotationMat * r
+		//void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const double beta, double* c, const MKL_INT ldc);
+		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim, num_wheels, dim, 1, Corners_rot, dim, Corners_init, num_wheels, 0, Corners_current, num_wheels);
+	}
+
+	// first updates the corner and afterwards compute the lengths;
+	void update_lengths_11DOF() {
+		update_corners();
+		current_spring_length[0] = spring_length[0] + Corners_current[8] + u_n_p_1[0] - u_n_p_1[3];
+		current_spring_length[1] = spring_length[1] + u_n_p_1[3] - u_n_p_1[4];
+		current_spring_length[2] = spring_length[2] + Corners_current[9] + u_n_p_1[0] - u_n_p_1[5];
+		current_spring_length[3] = spring_length[3] + u_n_p_1[5] - u_n_p_1[6];
+		current_spring_length[4] = spring_length[4] + Corners_current[10] + u_n_p_1[0] - u_n_p_1[7];
+		current_spring_length[5] = spring_length[5] + u_n_p_1[7] - u_n_p_1[8];
+		current_spring_length[6] = spring_length[6] + Corners_current[11] + u_n_p_1[0] - u_n_p_1[9];
+		current_spring_length[7] = spring_length[7] + u_n_p_1[9] - u_n_p_1[10];
+	}
 public:
 	/*
 	Using Stefan's convention
