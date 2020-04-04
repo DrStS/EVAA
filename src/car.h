@@ -172,7 +172,7 @@ public:
 		I_CG[8] = params.I_body[2];
 		
 		Mass_vec[0] = params.mass_body;
-		Mass_vec[1] = params.mass_wheel[2];
+		Mass_vecMass_vec[1] = params.mass_wheel[2];
 		Mass_vec[2] = params.mass_tyre[2];
 		Mass_vec[3] = params.mass_wheel[3];
 		Mass_vec[4] = params.mass_tyre[3];
@@ -651,8 +651,9 @@ public:
 		[w1, t1, w2, t2, w3, t3, w4, t4]
 
 		*/
-		cblas_dcopy(2 * (this->num_tyre), spring_length, 1, dx, 1);
-		cblas_daxpy(2 * (this->num_tyre), -1.0, current_length, 1, dx, 1);
+
+		// vdSub(n, a, b, y);  <---> y = a - b: 
+		cblas_dcopy(2 * (this->num_tyre), spring_length, current_length, dx);
 	}
 
 	void get_Position_vec(T* Pos) {
