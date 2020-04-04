@@ -130,7 +130,7 @@ public:
 
 		// allocate memory
 		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
-		u_sol = (T*)mkl_calloc(sol_size * (Car_obj->vec_DIM* Car_obj->DIM), sizeof(T), alignment);
+		u_sol = (T*)mkl_calloc(sol_size * (Car_obj->vec_DIM * Car_obj->DIM), sizeof(T), alignment);
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
 		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), alignment);
@@ -172,15 +172,15 @@ public:
 				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
-			solution_vect = u_sol + iter * (Car_obj->vec_DIM*Car_obj->DIM);
+			solution_vect = u_sol + iter * (Car_obj->vec_DIM * Car_obj->DIM);
 			Car_obj->populate_results(Car_obj->Position_vec_xy, Car_obj->u_current_linear, solution_vect);
-			MathLibrary::write_vector(solution_vect, (Car_obj->vec_DIM*Car_obj->DIM));
-			exit(5);
+			/*MathLibrary::write_vector(solution_vect, (Car_obj->vec_DIM*Car_obj->DIM));
+			exit(5);*/
 			t += h_;
 			iter++;
 			
 		}
-		cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
+		cblas_dcopy(DOF, u_sol + (iter - 1) * (DOF), 1, sol_vect, 1);
 
 
 

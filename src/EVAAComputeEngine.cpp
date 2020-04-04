@@ -785,7 +785,9 @@ void EVAAComputeEngine::computeALE(void) {
 		size_t solution_dim = _parameters.solution_dim;
 		Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
 
-		Profile* Road_Profile = new Circular(_load_module_parameter.profile_center, _load_module_parameter.profile_radius);
+		Profile* Road_Profile = new Circular(_load_module_parameter.profile_center,
+											 _load_module_parameter.profile_radius);
+		Road_Profile->update_initial_condition(Car1);
 
 		Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
 		linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);

@@ -13,10 +13,9 @@ protected:
 	char* Name = NULL;
 
 public:
-	Profile& operator=(const Profile& Prof1) {};
 	void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
 	void get_Profile_torque(Car<double>* Car1, double* Torque_vec) {};
-	void update_initial_condition(Car<double>* Car1);
+	void update_initial_condition(Car<double>* Car1) {};
 };
 
 class Circular : public Profile {

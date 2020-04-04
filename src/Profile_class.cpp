@@ -134,8 +134,8 @@ void Circular::get_centrifugal_force(double* fr, double* v, double& m, double* p
 
 	double inv_radius = 1.0 / cblas_dnrm2(DIM, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered tyre
 
-	// Raffi: cblas_dscal(DIM, -inv_radius, fr, 1);
-	cblas_dscal(DIM, inv_radius, fr, 1);
+	// Raffi: cblas_dscal(DIM, -inv_radius, fr, 1); - centripetal force 
+	cblas_dscal(DIM, inv_radius, fr, 1); // centrifugal force
 
 	MathLibrary::crossProduct(fr, unit_y_vector, velocity_direction);
 
@@ -196,13 +196,16 @@ void Circular::update_initial_condition(Car<double>* Car1){
 
 	double inv_radius_squared = 1. / (radius * radius);
 
-	const MKL_INT dim = Car1->DIM;
 	const MKL_INT incx = 1;
 	MathLibrary::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
-	double magnitude = cblas_ddot(dim, Car1->Velocity_vec, incx, tangential_dir, incx);
+	double magnitude = cblas_ddot(Car1->DIM, Car1->Velocity_vec, incx, tangential_dir, incx);
 	cblas_dcopy(Car1->DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
 	cblas_dscal(Car1->DIM, magnitude, Car1->Velocity_vec, incx);
 	MathLibrary::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
 	cblas_dscal(Car1->DIM, inv_radius_squared, Car1->w_CG, 1);
+
+	MKL_free(perpendicular_dir);
+	MKL_free(tangential_dir);
+	MKL_free(radial_vector);
 }
 // =============================== end of Circular class implementation ===================
