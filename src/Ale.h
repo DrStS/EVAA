@@ -104,7 +104,7 @@ public:
 		int sol_size = (floor(tend_ / h_) + 1);
 		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
 		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
-		int force_dimensions = Car_obj->mkl_DIM * Car_obj->vec_DIM;
+		int force_dimensions = Car_obj->DIM * Car_obj->vec_DIM;
 		int weighted_force_dimensions = 3;
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
 		weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
@@ -139,10 +139,14 @@ public:
 		MKL_free(time_vec);
 		MKL_free(u_sol);
 		MKL_free(force_vector);
-		MKL_free(weighted_force_vectorXY);
+		MKL_free(weighted_forceXY);
+		MKL_free(new_weighted_forceXY);
+
+		delete torque;
+		delete new_torque;
 	}
 
-	calculate_global_inertia_Z() {
+	void calculate_global_inertia_Z() {
 		// get the global inertia actiing in Z direction
 		global_inertial_Z = Car_obj->I_CG[8];
 		global_inertial_Z += (Car_obj->Mass_vec[1] + Car_obj->Mass_vec[2]) * 
@@ -155,7 +159,7 @@ public:
 			(Car_obj->l_lat[3] * Car_obj->l_lat[3] + Car_obj->l_long[3] * Car_obj->l_long[3]);
 	}
 
-	calculate_global_mass() {
+	void calculate_global_mass() {
 		global_mass = Car_obj->Mass_vec[0] + 
 			Car_obj->Mass_vec[1] + Car_obj->Mass_vec[2] + Car_obj->Mass_vec[3] + Car_obj->Mass_vec[4] + 
 			Car_obj->Mass_vec[5] + Car_obj->Mass_vec[6] + Car_obj->Mass_vec[7] + Car_obj->Mass_vec[8];
