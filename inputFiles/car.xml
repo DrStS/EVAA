@@ -175,44 +175,44 @@
 		</Body>
     <UnsprungMass>
       <ReerRight>
-        <x>0</x>
+        <x>50</x>
         <y>0</y>
         <z>0</z>
       </ReerRight>
       <ReerLeft>
-        <x>0</x>
+        <x>50</x>
         <y>0</y>
         <z>0</z>
       </ReerLeft>
       <FrontLeft>
-        <x>0</x>
+        <x>50</x>
         <y>0</y>
         <z>0</z>
       </FrontLeft>
       <FrontRight>
-        <x>0</x>
+        <x>50</x>
         <y>0</y>
         <z>0</z>
       </FrontRight>
     </UnsprungMass>
     <Tyre>
       <ReerRight>
-        <x>0</x>
+        <x>50</x>
         <y>0</y>
         <z>0</z>
       </ReerRight>
       <ReerLeft>
-        <x>0</x>
+        <x>50</x>
         <y>0</y>
         <z>0</z>
       </ReerLeft>
       <FrontLeft>
-        <x>0</x>
+        <x>50</x>
         <y>0</y>
         <z>0</z>
       </FrontLeft>
       <FrontRight>
-        <x>0</x>
+        <x>50</x>
         <y>0</y>
         <z>0</z>
       </FrontRight>

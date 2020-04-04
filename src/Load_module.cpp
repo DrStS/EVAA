@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "Load_module.h"
-#include "mathlibrary.h"
+#include "MathLibrary.h"
 #include "ReadXML.h"
 
 #ifdef use_intel_mkl
@@ -19,7 +19,7 @@
 Load_module::Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params load_param) {
 	Active_Profile = Profile_type;
 	Car_obj = Car1;
-
+	
 	// auxiliary vectors
 	Normal_ext = (double*)mkl_malloc(sizeof(double) * mkl_DIM, alignment); // normal_force, with external forces
 	k_vec = (double*)mkl_malloc(sizeof(double) * (vec_DIM - 1), alignment); // k_vec; vec_DIM-1 = 8
@@ -138,7 +138,7 @@ void Load_module::get_Profile(Profile* Profile_type) {
 
 void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec, double* Normal_ext) {
 	Active_Profile->get_Profile_force(Car_obj, F_vec, Normal_ext);
-
+	
 	// n += external_force
 	if (External_force != NULL) {
 		vdAdd(mkl_DIM, External_force, Normal_ext, Normal_ext);
@@ -164,6 +164,7 @@ void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec
 		// f_t_i += k_t_i * delta_x_{i+1}
 		cblas_daxpy(mkl_DIM, k_vec[i + 1], &Delta_x_vec[mkl_DIM * (i + 1)], incx, &F_vec[mkl_DIM * (i + 2)], incx);
 	}
+	
 }
 
 void Load_module::update_torque(double time_t, double* Torque, double* Delta_x_vec) {

@@ -78,6 +78,8 @@ public:
 		// 2. Update global X,Y positions of the car
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[0], Car_obj->Velocity_vec_xy[0], centripetal_force[0], h_, global_mass);			;
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[1], Car_obj->Velocity_vec_xy[1], centripetal_force[1], h_, global_mass); 
+		
+		
 		#pragma loop(ivdep)
 		for (size_t i = 1; i < Car_obj->vec_DIM; ++i) {
 			Car_obj->Position_vec_xy[2 * i] = Car_obj->Position_vec_xy[0];
@@ -151,7 +153,7 @@ public:
 		Car_obj->compute_dx(Delta_x_vec);
 		Load_module_obj->update_force(t, force_vector, Delta_x_vec, centripetal_force);
 		Load_module_obj->update_torque(t, torque, Delta_x_vec);
-
+		
 		// initialize the linear solver
 		linear11dof_obj->initialize_solver(h_);
 		T* solution_vect;
@@ -174,8 +176,7 @@ public:
 			}
 			solution_vect = u_sol + iter * (Car_obj->vec_DIM * Car_obj->DIM);
 			Car_obj->populate_results(Car_obj->Position_vec_xy, Car_obj->u_current_linear, solution_vect);
-			/*MathLibrary::write_vector(solution_vect, (Car_obj->vec_DIM*Car_obj->DIM));
-			exit(5);*/
+			
 			t += h_;
 			iter++;
 			
