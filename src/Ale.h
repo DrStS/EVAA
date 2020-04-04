@@ -152,7 +152,8 @@ public:
 			linear11dof_obj->update_step(force_vector_11dof, u_sol);
 
 			if (params.interpolation) {
-				interpolator->getStiffness(Delta_x_vec, k_vect);
+				Car_obj->update_lengths_11DOF();
+				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
 		}

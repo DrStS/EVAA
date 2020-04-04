@@ -32,7 +32,7 @@ private:
 	void update_corners_11DOF()
 	{
 		// zz, yy, xx
-		MathLibrary::get_rotation_matrix(0.0, u_n_p_1[2], u_n_p_1[1], Corners_rot);
+		MathLibrary::get_rotation_matrix(0.0, u_current_linear[2], u_current_linear[1], Corners_rot);
 
 		// do rotation: rotationMat * r
 		//void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const double beta, double* c, const MKL_INT ldc);
@@ -42,14 +42,14 @@ private:
 	// first updates the corner and afterwards compute the lengths;
 	void update_lengths_11DOF() {
 		update_corners();
-		current_spring_length[0] = spring_length[0] + Corners_current[8] + u_n_p_1[0] - u_n_p_1[3];
-		current_spring_length[1] = spring_length[1] + u_n_p_1[3] - u_n_p_1[4];
-		current_spring_length[2] = spring_length[2] + Corners_current[9] + u_n_p_1[0] - u_n_p_1[5];
-		current_spring_length[3] = spring_length[3] + u_n_p_1[5] - u_n_p_1[6];
+		current_spring_length[0] = spring_length[0] + Corners_current[8] + u_current_linear[0] - u_current_linear[3];
+		current_spring_length[1] = spring_length[1] + u_current_linear[3] - u_current_linear[4];
+		current_spring_length[2] = spring_length[2] + Corners_current[9] + u_current_linear[0] - u_current_linear[5];
+		current_spring_length[3] = spring_length[3] + u_current_linear[5] - u_current_linear[6];
 		current_spring_length[4] = spring_length[4] + Corners_current[10] + u_n_p_1[0] - u_n_p_1[7];
-		current_spring_length[5] = spring_length[5] + u_n_p_1[7] - u_n_p_1[8];
-		current_spring_length[6] = spring_length[6] + Corners_current[11] + u_n_p_1[0] - u_n_p_1[9];
-		current_spring_length[7] = spring_length[7] + u_n_p_1[9] - u_n_p_1[10];
+		current_spring_length[5] = spring_length[5] + u_current_linear[7] - u_current_linear[8];
+		current_spring_length[6] = spring_length[6] + Corners_current[11] + u_current_linear[0] - u_current_linear[9];
+		current_spring_length[7] = spring_length[7] + u_current_linear[9] - u_current_linear[10];
 	}
 public:
 	/*
@@ -107,6 +107,11 @@ public:
 	T* u_prev_linear, *u_current_linear;
 	T* k_vec, *l_lat, *l_long;
 	T* velocity_current_linear;
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////// Interpolator Members ///////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	T *Corners_rot, *Corners_current, *Corners_init;
+
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////// ALE Vectors ///////////////////////////////////////////////////////
@@ -167,6 +172,12 @@ public:
 		spring_length = (T*)mkl_malloc(2 * num_wheels * sizeof(T), alignment);
 		current_spring_length = (T*)mkl_malloc(2 * num_wheels * sizeof(T), alignment);
 
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////// Memory allocation for interpolator /////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		Corners_current = (T*)mkl_malloc(num_tyre*DIM * sizeof(T), alignment);
+		Corners_rot = (T*)mkl_malloc(DIM*DIM * sizeof(T), alignment);
+		Corners_init = (T*)mkl_malloc(num_tyre*DIM * sizeof(T), alignment);
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -372,6 +383,19 @@ public:
 		construct_ALE_vectors(Velocity_vec, Velocity_vec_xy);
 		*Angle_z = angle_CG[2];
 		*w_z = w_CG[2];
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////// Interpolator Initialization///////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// read init corners vectors into matrix
+		Corners_init[0] = l_long[0]; // fl
+		Corners_init[4] = l_lat[0]; // fl
+		Corners_init[1] = l_long[1]; // fr
+		Corners_init[5] = -l_lat[1]; // fr
+		Corners_init[2] = -l_long[2]; // rl
+		Corners_init[6] = l_lat[2]; // rl
+		Corners_init[3] = -l_long[3]; // rr
+		Corners_init[7] = -l_lat[3]; // rr
 
 
 	}
