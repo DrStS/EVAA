@@ -547,22 +547,27 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 
 void EVAAComputeEngine::computeMKLlinear11dof() {
-	floatEVAA h = _parameters.timestep;
-	floatEVAA tend = _parameters.num_time_iter*h;
-	int DOF = _parameters.DOF;
-	const int alignment = 64;
-	floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
-	linear11dof_full<floatEVAA> solver(_parameters, _load_module_parameter, Car1);
-	solver.apply_boundary_condition(_load_module_parameter.boundary_condition_road);
-	solver.solve(soln);
-	size_t steps = floor(tend / h);
-	std::cout << "Solution after " << steps << " timesteps, f =" << std::endl;
-	for (auto i = 0; i < DOF; ++i) {
-		std::cout << soln[i] << std::endl;
+	if (_load_module_parameter.boundary_condition_road == NONFIXED) {
+		floatEVAA h = _parameters.timestep;
+		floatEVAA tend = _parameters.num_time_iter * h;
+		int DOF = _parameters.DOF;
+		const int alignment = 64;
+		floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
+		Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
+		linear11dof_full<floatEVAA> solver(_parameters, _load_module_parameter, Car1);
+		solver.apply_boundary_condition(_load_module_parameter.boundary_condition_road);
+		solver.solve(soln);
+		size_t steps = floor(tend / h);
+		std::cout << "Solution after " << steps << " timesteps, f =" << std::endl;
+		for (auto i = 0; i < DOF; ++i) {
+			std::cout << soln[i] << std::endl;
+		}
+		mkl_free(soln);
+		delete Car1;
 	}
-	mkl_free(soln);
-	delete Car1;
+	else {
+		std::cout << "Linear11dof will only work with NONFIXED, computation skipped" << std::endl;
+	}
 }
 
 
@@ -762,7 +767,7 @@ void EVAAComputeEngine::computeMBD(void) {
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
 	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
 	solver.solve(soln);
-	std::cout << "Solution after " << num_iter << " timesteps, f =" << std::endl;
+	std::cout << "MBD: Solution after " << num_iter << " timesteps, f =" << std::endl;
 	for (auto i = 0; i < solution_dim; ++i) {
 		std::cout << soln[i] << std::endl;
 	}
@@ -776,6 +781,8 @@ void EVAAComputeEngine::clean(void) {
 
 void EVAAComputeEngine::computeALE(void) {
 	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {
+		size_t num_iter = _parameters.num_time_iter;
+		size_t solution_dim = _parameters.solution_dim;
 		Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
 
 		Profile* Road_Profile = new Circular(_load_module_parameter.profile_center, _load_module_parameter.profile_radius);
@@ -787,9 +794,17 @@ void EVAAComputeEngine::computeALE(void) {
 		floatEVAA* soln = (floatEVAA*)mkl_calloc(_parameters.DOF, sizeof(floatEVAA), Car1->alignment);
 
 		Ale_sys->solve(soln);
+		std::cout << "ALE: Solution after " << num_iter << " timesteps, f =" << std::endl;
+		for (auto i = 0; i < solution_dim; ++i) {
+			std::cout << soln[i] << std::endl;
+		}
+		std::cout << std::endl;
+
 
 		delete Car1;
 		delete Load_module1;
+
+		mkl_free(soln);
 	}
 	else {
 		std::cout << "ALE will only work with a circular path, computation skipped" << std::endl;
