@@ -656,6 +656,10 @@ public:
 		cblas_dcopy(2 * (this->num_tyre), spring_length, current_length, dx);
 	}
 
+	inline void compute_dx(T* dx) {
+		compute_dx(current_spring_length, dx);
+	}
+
 	void get_Position_vec(T* Pos) {
 		if (Pos != NULL) {
 			cblas_dcopy(DIM * vec_DIM, Position_vec, 1, Pos, 1);
