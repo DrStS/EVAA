@@ -3,8 +3,7 @@
 
 // ===============================   Circular class implementation ===================
 Circular::Circular() {
-	Name = new char[strlen("Circular") + 1];
-	Name = strcpy(Name, "Circular");
+	Name = "Circular";
 	Position = (double*)mkl_malloc(sizeof(double) * 3, alignment);
 	Position[2] = Position[1] = Position[0] = 0;
 	Radius = 100;
@@ -30,48 +29,14 @@ Circular::Circular(double* pos, double rad) : Circular::Circular(pos) {
 	Radius = rad;
 };
 
-Circular::Circular(const Circular& circ1) {
-	*this = circ1;
-}
-
-Circular& Circular::operator=(const Circular& circ1) {
-	if (this != &circ1) {
-		if (Name != NULL)
-			delete[] Name;
-		if (Position != NULL)
-			delete[] Position;
-
-		// Name
-		if (circ1.Name != NULL) {
-			Name = new char[strlen(circ1.Name) + 1];
-			strcpy(Name, circ1.Name);
-		}
-		else
-			Name = NULL;
-
-		// Position
-		if (circ1.Position != NULL) {
-			Position = (double*)mkl_malloc(sizeof(double) * 3, alignment);
-			cblas_dcopy(3, circ1.Position, 1, Position, 1);
-		}
-		else
-			Position = NULL;
-
-		// Radius
-		Radius = circ1.Radius;
-	}
-	return *this;
-}
-
 Circular::~Circular() {
 	std::cout << "I am getting fucked in destruction of profile" << std::endl;
-		mkl_free(Position);
-		delete[] Name;
-		mkl_free(unit_y_vector);
-		mkl_free(velocity_direction);
-		mkl_free(Velocity_vec);
-		mkl_free(Mass_vec);
-		mkl_free(dist_car_center);
+	mkl_free(Position);
+	mkl_free(unit_y_vector);
+	mkl_free(velocity_direction);
+	mkl_free(Velocity_vec);
+	mkl_free(Mass_vec);
+	mkl_free(dist_car_center);
 }
 
 void Circular::get_Position(double* pos) {
@@ -169,15 +134,17 @@ void Circular::update_initial_condition(Car<double>* Car1){
 	if (abs(radius - this->Radius) > 0.01)
 		std::cout << "Warning! the initial position of the car is not on the trajectory provided in the circular path. \n The expected radius is " << this->Radius << ", but the car is at an initial distance of " << radius << " from the center of the circle.\n The execution procedes with the current spatial configuration and with the current distance to the center of the circle." << std::endl;
 
-	double inv_radius_squared = 1. / (radius * radius);
+	double inv_radius = 1. / radius;
 
 	const MKL_INT incx = 1;
+	cblas_dscal(Car1->DIM, inv_radius, radial_vector, incx);
 	MathLibrary::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
 	double magnitude = cblas_ddot(Car1->DIM, Car1->Velocity_vec, incx, tangential_dir, incx);
 	cblas_dcopy(Car1->DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
 	cblas_dscal(Car1->DIM, magnitude, Car1->Velocity_vec, incx);
+	cblas_dscal(Car1->DIM, radius, radial_vector, incx);
 	MathLibrary::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
-	cblas_dscal(Car1->DIM, inv_radius_squared, Car1->w_CG, 1);
+	cblas_dscal(Car1->DIM, inv_radius * inv_radius, Car1->w_CG, 1);
 
 	MKL_free(perpendicular_dir);
 	MKL_free(tangential_dir);
