@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <EVAA_load_module>
 	<boundary_description>
-		<BoundaryConditions>notfixed</BoundaryConditions>
+		<BoundaryConditions>circle</BoundaryConditions>
     <circular>
 			<radius>50</radius>
 			<center>

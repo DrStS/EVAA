@@ -13,7 +13,7 @@ private:
 	Profile* Active_Profile = NULL;
 	Car<double>* Car_obj;
 
-	double* External_force = NULL;
+	
 
 	// Auxiliary vectors
 	double* Normal_ext = NULL; // Normal_force updated with external forces
@@ -21,6 +21,9 @@ private:
 	double* Normal_from_profile = NULL; // Normal_force computed inside get_Profile_force
 
 public:
+
+	double* External_force = NULL;
+
 	Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params load_param);
 	~Load_module();
 	Load_module(const Load_module& Load_module_1);

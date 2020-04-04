@@ -547,22 +547,27 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 
 void EVAAComputeEngine::computeMKLlinear11dof() {
-	floatEVAA h = _parameters.timestep;
-	floatEVAA tend = _parameters.num_time_iter*h;
-	int DOF = _parameters.DOF;
-	const int alignment = 64;
-	floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
-	linear11dof_full<floatEVAA> solver(_parameters, _load_module_parameter, Car1);
-	solver.apply_boundary_condition(_load_module_parameter.boundary_condition_road);
-	solver.solve(soln);
-	size_t steps = floor(tend / h);
-	std::cout << "Solution after " << steps << " timesteps, f =" << std::endl;
-	for (auto i = 0; i < DOF; ++i) {
-		std::cout << soln[i] << std::endl;
+	if (_load_module_parameter.boundary_condition_road == NONFIXED) {
+		floatEVAA h = _parameters.timestep;
+		floatEVAA tend = _parameters.num_time_iter * h;
+		int DOF = _parameters.DOF;
+		const int alignment = 64;
+		floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
+		Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
+		linear11dof_full<floatEVAA> solver(_parameters, _load_module_parameter, Car1);
+		solver.apply_boundary_condition(_load_module_parameter.boundary_condition_road);
+		solver.solve(soln);
+		size_t steps = floor(tend / h);
+		std::cout << "Solution after " << steps << " timesteps, f =" << std::endl;
+		for (auto i = 0; i < DOF; ++i) {
+			std::cout << soln[i] << std::endl;
+		}
+		mkl_free(soln);
+		delete Car1;
 	}
-	mkl_free(soln);
-	delete Car1;
+	else {
+		std::cout << "Linear11dof will only work with NONFIXED, computation skipped" << std::endl;
+	}
 }
 
 
