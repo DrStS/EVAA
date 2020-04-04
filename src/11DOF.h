@@ -1,4 +1,16 @@
 #pragma once
+
+#define _CRTDBG_MAP_ALLOC
+#include <cstdlib>
+#include <crtdbg.h>
+
+#ifdef _DEBUG
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+// Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
+// allocations to be of _CLIENT_BLOCK type
+#else
+#define DBG_NEW new
+#endif
 #include <mkl.h>
 #include "ReadXML.h"
 #include "MathLibrary.h"
@@ -119,7 +131,7 @@ public:
 		tend_ = params.num_time_iter*h_;
 		int sol_size = (floor(tend_ / h_) + 1);
 		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
-		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
+		u_sol = (T*)mkl_calloc((sol_size+1) * (DOF), sizeof(T), alignment);
 		
 		f_n_p_1[0] = load_param.external_force_body[2];
 		f_n_p_1[3] = load_param.external_force_wheel[2 * 3 + 2];
