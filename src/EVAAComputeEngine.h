@@ -131,14 +131,8 @@ private:
 	T k_tyre_rl;
 	T k_body_rr;
 	T k_tyre_rr;
-	T l_long_fl;
-	T l_long_fr;
-	T l_long_rl;
-	T l_long_rr;
-	T l_lat_fl;
-	T l_lat_fr;
-	T l_lat_rl;
-	T l_lat_rr;
+	T* l_long;
+	T* l_lat;
 	T mass_Body;
 	T I_body_xx;
 	T I_body_zz;
@@ -182,7 +176,7 @@ private:
 	T h_;
 	int i;
 	T *quad_angle_init, *euler_angle_init;
-	T* M, * temp, * K, * K_trans, * D, * M_red, * D_red, * K_red;
+	T* M, * temp, * temp_linear, * K, * K_trans, * D, * M_red, * D_red, * K_red;
 	T* k_vect;
 	T *spring_length, *current_spring_length;
 	T* u_sol, * u_sol_red, * u_n_p_1, * u_n_p_1_red, * u_n_m_1, * u_n, * u_n_red, * u_n_m_1_red, * A, * Ared, * B, * Bred, * f_n_p_1, * f_n_p_1_red;
@@ -241,154 +235,96 @@ private:
 			force[index[i]] = -K[index[i]*dim + index[i]]*u[index[i]];
 		}
 	}
-	void update_K() {
-		int i;
-		i = 0;
-		K[i * DOF + 0] = k_vect[0] + k_vect[2] + k_vect[4] + k_vect[6];
-		K[i * DOF + 1] = k_vect[0] * l_lat_fl - k_vect[2] * l_lat_fr + k_vect[4] * l_lat_rl - k_vect[6] * l_lat_rr;
-		K[i * DOF + 2] = -k_vect[0] * l_long_fl - k_vect[2] * l_long_fr + k_vect[4] * l_long_rl + k_vect[6] * l_long_rr;
-		K[i * DOF + 3] = -k_vect[0];
-		K[i * DOF + 4] = 0;
-		K[i * DOF + 5] = -k_vect[2];
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = -k_vect[4];
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = -k_vect[6];
-		K[i * DOF + 10] = 0;
+	void update_K(T* k_vect) {
+		cblas_dscal(DOF * DOF, 0.0, K, 1);
+		temp_linear[0] = k_vect[0] + k_vect[2] + k_vect[4] + k_vect[6];
+		K[1] = k_vect[0] * l_lat[0] - k_vect[2] * l_lat[1] + k_vect[4] * l_lat[2] - k_vect[6] * l_lat[3];
+		K[2] = -k_vect[0] * l_long[0] - k_vect[2] * l_long[1] + k_vect[4] * l_long[2] + k_vect[6] * l_long[3];
+		K[3] = -k_vect[0];
+		std::cout << K[4] << std::endl;
+		K[4] = 0.0;
+		K[5] = -k_vect[2];
+		K[6] = 0.0;
+		K[7] = -k_vect[4];
+		K[8] = 0.0;
+		K[9] = -k_vect[6];
+		K[10] = 0.0;
 
-		i = 1;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = l_lat_fl * l_lat_fl * k_vect[0] + l_lat_fr * l_lat_fr * k_vect[2] + l_lat_rl * l_lat_rl * k_vect[4] + l_lat_rr * l_lat_rr * k_vect[6];
-		K[i * DOF + 2] = -l_long_fl * l_lat_fl * k_vect[0] + l_lat_fr * l_long_fr * k_vect[2] + l_long_rl * l_lat_rl * k_vect[4] - l_long_rr * l_lat_rr * k_vect[6];
-		K[i * DOF + 3] = -l_lat_fl * k_vect[0];
-		K[i * DOF + 4] = 0;
-		K[i * DOF + 5] = l_lat_fr * k_vect[2];
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = -l_lat_rl * k_vect[4];
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = l_lat_rr * k_vect[6];
-		K[i * DOF + 10] = 0;
+		temp_linear[1] = l_lat[0] * l_lat[0] * k_vect[0] + l_lat[1] * l_lat[1] * k_vect[2] + l_lat[2] * l_lat[2] * k_vect[4] + l_lat[3] * l_lat[3] * k_vect[6];
+		K[DOF + 2] = -l_long[0] * l_lat[0] * k_vect[0] + l_lat[1] * l_long[1] * k_vect[2] + l_long[2] * l_lat[2] * k_vect[4] - l_long[3] * l_lat[3] * k_vect[6];
+		K[DOF + 3] = -l_lat[0] * k_vect[0];
+		K[DOF + 4] = 0;
+		K[DOF + 5] = l_lat[1] * k_vect[2];
+		K[DOF + 6] = 0;
+		K[DOF + 7] = -l_lat[2] * k_vect[4];
+		K[DOF + 8] = 0;
+		K[DOF + 9] = l_lat[3] * k_vect[6];
+		K[DOF + 10] = 0;
 
-		i = 2;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = K[1 * DOF + i];
-		K[i * DOF + 2] = l_long_fl * l_long_fl * k_vect[0] + l_long_fr * l_long_fr * k_vect[2] + l_long_rl * l_long_rl * k_vect[4] + l_long_rr * l_long_rr * k_vect[6];
-		K[i * DOF + 3] = l_long_fl * k_vect[0];
-		K[i * DOF + 4] = 0;
-		K[i * DOF + 5] = l_long_fr * k_vect[2];
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = -l_long_rl * k_vect[4];
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = -l_long_rr * k_vect[6];
-		K[i * DOF + 10] = 0;
+		temp_linear[2] = l_long[0] * l_long[0] * k_vect[0] + l_long[1] * l_long[1] * k_vect[2] + l_long[2] * l_long[2] * k_vect[4] + l_long[3] * l_long[3] * k_vect[6];
+		K[2 * DOF + 3] = l_long[0] * k_vect[0];
+		K[2 * DOF + 4] = 0;
+		K[2 * DOF + 5] = l_long[1] * k_vect[2];
+		K[2 * DOF + 6] = 0;
+		K[2 * DOF + 7] = -l_long[2] * k_vect[4];
+		K[2 * DOF + 8] = 0;
+		K[2 * DOF + 9] = -l_long[3] * k_vect[6];
+		K[2 * DOF + 10] = 0;
 
-		i = 3;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = K[1 * DOF + i];
-		K[i * DOF + 2] = K[2 * DOF + i];
-		K[i * DOF + 3] = k_vect[0] + k_vect[1];
-		K[i * DOF + 4] = -k_vect[1];
-		K[i * DOF + 5] = 0;
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = 0;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[3] = k_vect[0] + k_vect[1];
+		K[3 * DOF + 4] = -k_vect[1];
+		K[3 * DOF + 5] = 0;
+		K[3 * DOF + 6] = 0;
+		K[3 * DOF + 7] = 0;
+		K[3 * DOF + 8] = 0;
+		K[3 * DOF + 9] = 0;
+		K[3 * DOF + 10] = 0;
 		// all others are zero
 
-		i = 4;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = K[1 * DOF + i];
-		K[i * DOF + 2] = K[2 * DOF + i];
-		K[i * DOF + 3] = K[3 * DOF + i];
-		K[i * DOF + 4] = k_vect[1];
-		K[i * DOF + 5] = 0;
-		K[i * DOF + 6] = 0;
-		K[i * DOF + 7] = 0;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[4] = k_vect[1];
+		K[4 * DOF + 5] = 0;
+		K[4 * DOF + 6] = 0;
+		K[4 * DOF + 7] = 0;
+		K[4 * DOF + 8] = 0;
+		K[4 * DOF + 9] = 0;
+		K[4 * DOF + 10] = 0;
 
-		i = 5;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = K[1 * DOF + i];
-		K[i * DOF + 2] = K[2 * DOF + i];
-		K[i * DOF + 3] = K[3 * DOF + i];
-		K[i * DOF + 4] = K[4 * DOF + i];
-		K[i * DOF + 5] = k_vect[2] + k_vect[3];
-		K[i * DOF + 6] = -k_vect[3];
-		K[i * DOF + 7] = 0;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[5] = k_vect[2] + k_vect[3];
+		K[5 * DOF + 6] = -k_vect[3];
+		K[5 * DOF + 7] = 0;
+		K[5 * DOF + 8] = 0;
+		K[5 * DOF + 9] = 0;
+		K[5 * DOF + 10] = 0;
 
-		i = 6;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = K[1 * DOF + i];
-		K[i * DOF + 2] = K[2 * DOF + i];
-		K[i * DOF + 3] = K[3 * DOF + i];
-		K[i * DOF + 4] = K[4 * DOF + i];
-		K[i * DOF + 5] = K[5 * DOF + i];
-		K[i * DOF + 6] = k_vect[3];
-		K[i * DOF + 7] = 0;
-		K[i * DOF + 8] = 0;
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[6] = k_vect[3];
+		K[6 * DOF + 7] = 0;
+		K[6 * DOF + 8] = 0;
+		K[6 * DOF + 9] = 0;
+		K[6 * DOF + 10] = 0;
 
-		i = 7;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = K[1 * DOF + i];
-		K[i * DOF + 2] = K[2 * DOF + i];
-		K[i * DOF + 3] = K[3 * DOF + i];
-		K[i * DOF + 4] = K[4 * DOF + i];
-		K[i * DOF + 5] = K[5 * DOF + i];
-		K[i * DOF + 6] = K[6 * DOF + i];
-		K[i * DOF + 7] = k_vect[4] + k_vect[5];
-		K[i * DOF + 8] = -k_vect[5];
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[7] = k_vect[4] + k_vect[5];
+		K[7 * DOF + 8] = -k_vect[5];
+		K[7 * DOF + 9] = 0;
+		K[7 * DOF + 10] = 0;
 
 
-		i = 8;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = K[1 * DOF + i];
-		K[i * DOF + 2] = K[2 * DOF + i];
-		K[i * DOF + 3] = K[3 * DOF + i];
-		K[i * DOF + 4] = K[4 * DOF + i];
-		K[i * DOF + 5] = K[5 * DOF + i];
-		K[i * DOF + 6] = K[6 * DOF + i];
-		K[i * DOF + 7] = K[7 * DOF + i];
-		K[i * DOF + 8] = k_vect[5];
-		K[i * DOF + 9] = 0;
-		K[i * DOF + 10] = 0;
+		temp_linear[8] = k_vect[5];
+		K[8 * DOF + 9] = 0;
+		K[8 * DOF + 10] = 0;
 
-		i = 9;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = K[1 * DOF + i];
-		K[i * DOF + 2] = K[2 * DOF + i];
-		K[i * DOF + 3] = K[3 * DOF + i];
-		K[i * DOF + 4] = K[4 * DOF + i];
-		K[i * DOF + 5] = K[5 * DOF + i];
-		K[i * DOF + 6] = K[6 * DOF + i];
-		K[i * DOF + 7] = K[7 * DOF + i];
-		K[i * DOF + 8] = K[8 * DOF + i];
-		K[i * DOF + 9] = k_vect[6] + k_vect[7];
-		K[i * DOF + 10] = -k_vect[7];
 
-		i = 10;
-		K[i * DOF + 0] = K[0 * DOF + i];
-		K[i * DOF + 1] = K[1 * DOF + i];
-		K[i * DOF + 2] = K[2 * DOF + i];
-		K[i * DOF + 3] = K[3 * DOF + i];
-		K[i * DOF + 4] = K[4 * DOF + i];
-		K[i * DOF + 5] = K[5 * DOF + i];
-		K[i * DOF + 6] = K[6 * DOF + i];
-		K[i * DOF + 7] = K[7 * DOF + i];
-		K[i * DOF + 8] = K[8 * DOF + i];
-		K[i * DOF + 9] = K[9 * DOF + i];
-		K[i * DOF + 10] = k_vect[7];
+		temp_linear[9] = k_vect[6] + k_vect[7];
+		K[9 * DOF + 10] = -k_vect[7];
+
+		temp_linear[10] = k_vect[7];
+
+		cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
+		mkl_dimatcopy('R', 'T', DOF, DOF, 1.0, K_trans, DOF, DOF); // get transpose of matrix
+		cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
+		MathLibrary::allocate_to_diagonal(K, temp_linear, DOF); // K = K + K'+ diag(K)
 	}
-	void populate_K() {
+	void populate_K(T* k_vect, T k_body_fl, T k_tyre_fl, T k_body_fr,
+		T k_tyre_fr, T k_body_rl, T k_tyre_rl, T k_body_rr, T k_tyre_rr) {
 
 		/*
 		This is needed when interpolation is turned off
@@ -440,19 +376,21 @@ private:
 	}
 public:
 	linear11dof(const Simulation_Parameters& params, const Load_Params& load_param, EVAAComputeStiffness* interpolator): lookupStiffness(interpolator) {
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 		DOF = params.DOF;
-		l_long_fl = params.l_long[2];
-		l_long_fr = params.l_long[3];
-		l_long_rl = params.l_long[1];
-		l_long_rr = params.l_long[0];
-		l_lat_fl = params.l_lat[2];
-		l_lat_fr = params.l_lat[3];
-		l_lat_rl = params.l_lat[1];
-		l_lat_rr = params.l_lat[0];
+		l_lat = (T*)mkl_malloc(num_wheels * sizeof(T), alignment);
+		l_long = (T*)mkl_malloc(num_wheels * sizeof(T), alignment);
+		l_long[0] = params.l_long[2];
+		l_long[1] = params.l_long[3];
+		l_long[2] = params.l_long[1];
+		l_long[3] = params.l_long[0];
+		l_lat[0] = params.l_lat[2];
+		l_lat[1] = params.l_lat[3];
+		l_lat[2] = params.l_lat[1];
+		l_lat[3] = params.l_lat[0];
 		mass_Body = params.mass_body;
 		I_body_xx = params.I_body[0];
 		I_body_zz = params.I_body[2];
@@ -496,10 +434,10 @@ public:
 		theta_z_init_body = euler_angle_init[2];
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		////////////////////////////////////////////// System Mono ///////////////////////////////////////////////////////
-		///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////// System Mono ///////////////////////////////////////////////////////
+///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		std::cout << DOF << std::endl;
 		M = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
 		temp = (T*)mkl_malloc(DOF * sizeof(T), alignment);
 		K = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
@@ -508,8 +446,8 @@ public:
 		u_n_m_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		u_n = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		f_n_p_1 = (T*)mkl_calloc(DOF, sizeof(T), alignment);
-		k_vect = (T*)mkl_malloc(num_wheels*2 * sizeof(T), alignment);
-		spring_length = (T*)mkl_malloc(2*num_tyre*sizeof(T), alignment);
+		k_vect = (T*)mkl_malloc(num_wheels * 2 * sizeof(T), alignment);
+		spring_length = (T*)mkl_malloc(2 * num_tyre * sizeof(T), alignment);
 		current_spring_length = (T*)mkl_malloc(2 * num_tyre * sizeof(T), alignment);
 		Corners_init = (T*)mkl_malloc(dim * num_wheels * sizeof(T), alignment);
 		Corners_current = (T*)mkl_malloc(dim * num_wheels * sizeof(T), alignment);
@@ -594,14 +532,14 @@ public:
 		//M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 	
 		// read init corners vectors into matrix
-		Corners_init[0] = l_long_fl;
-		Corners_init[4] = l_lat_fl;
-		Corners_init[1] = l_long_fr;
-		Corners_init[5] = -l_lat_fr;
-		Corners_init[2] = -l_long_rl;
-		Corners_init[6] = l_lat_rl;
-		Corners_init[3] = -l_long_rr;
-		Corners_init[7] = -l_lat_rr;
+		Corners_init[0] = l_long[0]; // fl
+		Corners_init[4] = l_lat[0]; // fl
+		Corners_init[1] = l_long[1]; // fr
+		Corners_init[5] = -l_lat[1]; // fr
+		Corners_init[2] = -l_long[2]; // rl
+		Corners_init[6] = l_lat[2]; // rl
+		Corners_init[3] = -l_long[3]; // rr
+		Corners_init[7] = -l_lat[3]; // rr
 		
 		// lookup k values
 		if (params.interpolation) {
@@ -616,9 +554,9 @@ public:
 			k_tyre_rl = params.k_tyre[1];
 			k_body_rr = params.k_body[0];
 			k_tyre_rr = params.k_tyre[0];
-			populate_K();
+			populate_K(k_vect, k_body_fl, k_tyre_fl, k_body_fr, k_tyre_fr, k_body_rl, k_tyre_rl, k_body_rr, k_tyre_rr);
 		}
-		update_K();
+		update_K(k_vect);
 		//write_matrix(K, DOF);
 		// D = K *0;
 		// default D value is 0
@@ -751,7 +689,7 @@ public:
 			lookupStiffness->getStiffness(current_spring_length, k_vect);
 			//std::cout << "current k: " << std::endl;
 			//write_vector(k_vect, 8);
-			update_K();
+			update_K(k_vect);
 			// A=((1/(h*h))*M+(1/h)*D+K);
 			cblas_dcopy(mat_len, M, 1, A, 1);
 			cblas_dscal(mat_len, factor_h2, A, 1);
@@ -923,8 +861,11 @@ public:
 	}
 
 	~linear11dof() {
+		mkl_free(l_long);
+		mkl_free(l_lat);
 		mkl_free(M);
 		mkl_free(temp);
+		mkl_free(temp_linear);
 		mkl_free(K);
 		mkl_free(K_trans);
 		mkl_free(D);
