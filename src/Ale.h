@@ -29,6 +29,7 @@ private:
 	T* time_vec;
 	T* u_sol, u_init;
 	T* force_vector;
+	T* new_force_vector;
 	T* weighted_forceXY;
 	T* new_weighted_forceXY;
 	T* torque;
@@ -73,7 +74,7 @@ public:
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Angle_z, Car_obj->w_z, torque, h_, global_inertia_Z);
 
 		// get forces 
-		Load_module_obj->update_force(t, force_vector, Delta_x_vec, External_force); // TODO: ask Teo
+		Load_module_obj->update_force(t, new_force_vector, Delta_x_vec, External_force); // TODO: ask Teo
 		Load_module_obj->update_torque(t, new_torque, Delta_x_vec, External_force); // TODO: ask Teo
 
 		// Compute weighted force sum TODO: Shubham
@@ -107,6 +108,7 @@ public:
 		int force_dimensions = Car_obj->DIM * Car_obj->vec_DIM;
 		int weighted_force_dimensions = 3;
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
+		new_force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
 		weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
 		new_weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
 		torque = new(T);
@@ -139,6 +141,7 @@ public:
 		MKL_free(time_vec);
 		MKL_free(u_sol);
 		MKL_free(force_vector);
+		MKL_free(new_force_vector);
 		MKL_free(weighted_forceXY);
 		MKL_free(new_weighted_forceXY);
 
