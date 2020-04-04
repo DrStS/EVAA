@@ -3,8 +3,7 @@
 
 // ===============================   Circular class implementation ===================
 Circular::Circular() {
-	Name = new char[strlen("Circular") + 1];
-	Name = strcpy(Name, "Circular");
+	Name = "Circular";
 	Position = (double*)mkl_malloc(sizeof(double) * 3, alignment);
 	Position[2] = Position[1] = Position[0] = 0;
 	Radius = 100;
@@ -30,48 +29,14 @@ Circular::Circular(double* pos, double rad) : Circular::Circular(pos) {
 	Radius = rad;
 };
 
-Circular::Circular(const Circular& circ1) {
-	*this = circ1;
-}
-
-Circular& Circular::operator=(const Circular& circ1) {
-	if (this != &circ1) {
-		if (Name != NULL)
-			delete[] Name;
-		if (Position != NULL)
-			delete[] Position;
-
-		// Name
-		if (circ1.Name != NULL) {
-			Name = new char[strlen(circ1.Name) + 1];
-			strcpy(Name, circ1.Name);
-		}
-		else
-			Name = NULL;
-
-		// Position
-		if (circ1.Position != NULL) {
-			Position = (double*)mkl_malloc(sizeof(double) * 3, alignment);
-			cblas_dcopy(3, circ1.Position, 1, Position, 1);
-		}
-		else
-			Position = NULL;
-
-		// Radius
-		Radius = circ1.Radius;
-	}
-	return *this;
-}
-
 Circular::~Circular() {
 	std::cout << "I am getting fucked in destruction of profile" << std::endl;
-		mkl_free(Position);
-		delete[] Name;
-		mkl_free(unit_y_vector);
-		mkl_free(velocity_direction);
-		mkl_free(Velocity_vec);
-		mkl_free(Mass_vec);
-		mkl_free(dist_car_center);
+	mkl_free(Position);
+	mkl_free(unit_y_vector);
+	mkl_free(velocity_direction);
+	mkl_free(Velocity_vec);
+	mkl_free(Mass_vec);
+	mkl_free(dist_car_center);
 }
 
 void Circular::get_Position(double* pos) {

@@ -10,7 +10,7 @@ protected:
 	// alignment and g are defined globally === REPLACE THEM!!!!
 	const int alignment = 64, DIM = 3, vec_DIM = 9, incx = 1;
 
-	char* Name = NULL;
+	std::string Name;
 
 public:
 	virtual void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
@@ -37,8 +37,6 @@ public:
 	Circular();
 	Circular(double* Pos);
 	Circular(double* Pos, double Rad);
-	Circular(const Circular& Circ1);
-	virtual Circular& operator=(const Circular& Circ1);
 	virtual ~Circular();
 	void get_Position(double* Pos);
 	double get_Radius() const;
