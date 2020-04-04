@@ -21,7 +21,7 @@ Load_module::Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params l
 	Car_obj = Car1;
 
 	// auxiliary vectors
-	Normal_ext = (double*)mkl_malloc(sizeof(double) * mkl_DIM, alignment); // normal_force
+	Normal_ext = (double*)mkl_malloc(sizeof(double) * mkl_DIM, alignment); // normal_force, with external forces
 	k_vec = (double*)mkl_malloc(sizeof(double) * (vec_DIM - 1), alignment); // k_vec; vec_DIM-1 = 8
 
 	// read External_force
@@ -102,7 +102,7 @@ void Load_module::get_Profile(Profile* Profile_type) {
 	Profile_type = Active_Profile;
 }
 
-void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec) {
+void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec, double* Normal_ext) {
 	Active_Profile->get_Profile_force(Car_obj, F_vec, Normal_ext);
 
 	// n += external_force

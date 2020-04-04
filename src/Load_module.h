@@ -16,9 +16,9 @@ private:
 	double* External_force = NULL;
 
 	// Auxiliary vectors
-	double* Normal_ext = NULL; // Normal_force computed inside update_Profile_force
+	double* Normal_ext = NULL; // Normal_force updated with external forces
 	double* k_vec = NULL; // vector with springs' stiffnesses (copied from Car!!!)
-
+	double* Normal_from_profile = NULL; // Normal_force computed inside get_Profile_force
 
 public:
 	Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params load_param);
@@ -27,7 +27,7 @@ public:
 	Load_module& operator= (const Load_module& Load_module_1);
 	void set_Profile(Profile* Profile_type);
 	void get_Profile(Profile* Profile_type);
-	void update_force(double time_t, double* F_vec, double* Delta_x_vec);
+	void update_force(double time_t, double* F_vec, double* Delta_x_vec, double* Normal_ext);
 	void update_torque(double time_t, double* Torque, double* Delta_x_vec);
 	void set_External_force(Load_Params load_param);
 };
