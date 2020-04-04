@@ -74,10 +74,6 @@ void EVAAComputeStiffness::getStiffness(double* length, double* stiffness) {
 		err = dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
 			1, &length[i], DF_NO_HINT, ndorder,
 			dorder, datahint, &stiffness[i], rhint, 0);
-		printf("inter %d: %d\n", i, (int)err);
-		CheckDfError(err);
-		double one = 3 * length[i] * length[i] + 2 * length[i] + 1 * i;
-		std::cout << "ana: " << one << ", inter: " << stiffness[i] << std::endl;
 	}
 }
 
@@ -89,10 +85,6 @@ void EVAAComputeStiffness::getDerivative(double* length, double* deriv) {
 		err = dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
 			1, &length[i], DF_NO_HINT, ndorder,
 			dorder, datahint, &deriv[i], rhint, 0);
-		printf("deriv %d: %d\n", i, (int)err);
-		CheckDfError(err);
-		double one = 6 * length[i] + 2;
-		std::cout << "ana: " << one << ", inter: " << deriv[i] << std::endl;
 	}
 }
 /*
