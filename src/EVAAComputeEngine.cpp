@@ -247,7 +247,7 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
 		u_n_m_1 = u_n;
 		u_n = u_n_p_1;
-		reader.ReadLoadParameters(_load_module_parameter);
+		//reader.ReadLoadParameters(_load_module_parameter);
 	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	std::cout << u_n_p_1 << std::scientific << std::endl;
@@ -526,7 +526,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 			u_n_m_1[i] = u_n[i];
 			u_n[i] = u_n_p_1[i];
 		}
-		reader.ReadLoadParameters(_load_module_parameter);
+		//reader.ReadLoadParameters(_load_module_parameter);
 	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	for (int i = 0; i < DOF; ++i) {
@@ -764,13 +764,14 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 		getrs(A_LU, u_n_p_1, 'T', ipiv.data());
 		u_n_m_1 = u_n;
 		u_n = u_n_p_1;
-		reader.ReadLoadParameters(_load_module_parameter);
+		//reader.ReadLoadParameters(_load_module_parameter);
 	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	std::cout << u_n_p_1 << std::scientific << std::endl;
 
 #endif
 }
+
 
 //void EVAAComputeEngine::computeMBD(void) {
 //	size_t num_iter = _parameters.num_time_iter;
@@ -779,49 +780,34 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 //	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
 //	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
 //	solver.solve(soln);
-//	std::cout << "MBD: Solution after " << num_iter << " timesteps, f =" << std::endl;
-//	for (auto i = 0; i < solution_dim; ++i) {
-//		std::cout << soln[i] << std::endl;
-//	}
-//	std::cout << std::endl;
+//	std::cout << "MBD: Solution after " << num_iter << " timesteps" << std::endl;
+//	solver.print_final_result(soln);
 //	mkl_free(soln);
 //}
 void EVAAComputeEngine::computeMBD(void) {}
+
 void EVAAComputeEngine::clean(void) {
 
 }
+/*
+void EVAAComputeEngine::computeALE(void) {
 
-//void EVAAComputeEngine::computeALE(void) {
-//	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {
-//		size_t num_iter = _parameters.num_time_iter;
-//		size_t solution_dim = _parameters.solution_dim;
-//		Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
-//
-//		Profile* Road_Profile = new Circular(_load_module_parameter.profile_center,
-//											 _load_module_parameter.profile_radius);
-//		Road_Profile->update_initial_condition(Car1);
-//
-//		Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
-//		linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
-//		ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, lookupStiffness, _parameters);
-//
-//		floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), Car1->alignment);
-//
-//		Ale_sys->solve(soln);
-//		std::cout << "ALE: Solution after " << num_iter << " timesteps, f =" << std::endl;
-//		for (auto i = 0; i < solution_dim; ++i) {
-//			std::cout << soln[i] << std::endl;
-//		}
-//		std::cout << std::endl;
-//
-//
-//		delete Car1;
-//		delete Load_module1;
-//
-//		mkl_free(soln);
-//	}
-//	else {
-//		std::cout << "ALE will only work with a circular path, computation skipped" << std::endl;
-//	}
-//}
-void EVAAComputeEngine::computeALE(void){}
+	size_t num_iter = _parameters.num_time_iter;
+	size_t solution_dim = _parameters.solution_dim;
+	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
+
+	Profile* Road_Profile = new Circular(_load_module_parameter.profile_center,
+		_load_module_parameter.profile_radius);
+	Road_Profile->update_initial_condition(Car1);
+
+	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
+	std::cout << "Load module initialized!\n";
+
+	delete Load_module1;
+	delete Road_Profile;
+	delete Car1;
+
+}
+
+*/
+void EVAAComputeEngine::computeALE(void) {}

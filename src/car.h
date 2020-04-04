@@ -301,36 +301,36 @@ public:
 		// Initial Velocity (Reuse the pointers)
 		cblas_dcopy(DIM, params.initial_vel_body, 1, initial_velocity_vec, 1);
 		// W1 = W_fl
-		xml_start = params.initial_vel_body + 2 * 3;
+		xml_start = params.initial_vel_wheel + 2 * 3;
 		position_start = initial_velocity_vec + 3;
 		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 5)
 		// W2 = W_fr
-		xml_start = params.initial_vel_body + 3 * 3;
+		xml_start = params.initial_vel_wheel + 3 * 3;
 		position_start += 6; // skip 3 for tyre
 		cblas_dcopy(DIM, xml_start, 1, position_start, 1);// (end at 11)
 		// W3 = W_rl
-		xml_start = params.initial_vel_body + 1 * 3;
+		xml_start = params.initial_vel_wheel + 1 * 3;
 		position_start += 6; // skip 3 for tyre
 		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 17)
 		// W2 = W_rr
-		xml_start = params.initial_vel_body + 0 * 3;
+		xml_start = params.initial_vel_wheel + 0 * 3;
 		position_start += 6; // skip 3 for tyre
 		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 23)
 
 		// T1 = T_fl
-		xml_start = params.initial_vel_body + 2 * 3;
+		xml_start = params.initial_vel_tyre + 2 * 3;
 		position_start = initial_velocity_vec + 6; // skip 3 for center of mass and 3 for the wheel
 		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 8)
 		// T2 = T_fr
-		xml_start = params.initial_vel_body + 3 * 3;
+		xml_start = params.initial_vel_tyre + 3 * 3;
 		position_start += 6; // skip 3 for the wheel
 		cblas_dcopy(DIM, xml_start, 1, position_start, 1);// (end at 14)
 		// T3 = T_rl
-		xml_start = params.initial_vel_body + 1 * 3;
+		xml_start = params.initial_vel_tyre + 1 * 3;
 		position_start += 6; // skip 3 for the wheel
 		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 20)
 		// T4 = T_rr
-		xml_start = params.initial_vel_body + 0 * 3;
+		xml_start = params.initial_vel_tyre + 0 * 3;
 		position_start += 6; // skip 3 for the wheel
 		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 26)
 

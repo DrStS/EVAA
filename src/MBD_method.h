@@ -11,9 +11,9 @@ class MBD_method
 {
 private:
 	////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
-	int DIM = 3;
-	int NUM_LEGS = 4;
-	int alignment = 64;
+	const int DIM = 3;
+	const int NUM_LEGS = 4;
+	const int alignment = 64;
 	T h;
 	size_t num_iter;
 	int max_iter;
@@ -347,7 +347,7 @@ public:
 		lower_spring_length_fl = params.lower_spring_length[2];
 		lower_spring_length_fr = params.lower_spring_length[3];
 
-		g = params.gravity[1];
+		g = params.gravity[2];
 
 		int i;
 
@@ -429,7 +429,7 @@ public:
 
 		i = 1;
 		r1[i] = 0; r2[i] = 0; r3[i] = 0; r4[i] = 0;
-		Ic[i * DIM + i] = I_body_yy;
+		Ic[i * DIM + i] = I_body_zz;
 		mass_wheel[i] = mass_wheel_rl;
 		mass_tyre[i] = mass_tyre_rl;
 		upper_spring_length[i] = upper_spring_length_rl;
@@ -445,22 +445,22 @@ public:
 		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
 		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
 		initial_orientation[i] = params.initial_angle[i];
-		vc[i] = params.initial_vel_body[i];
-		vw1[i] = params.initial_vel_wheel[i];
-		vw2[i] = params.initial_vel_wheel[i + 3];
-		vw3[i] = params.initial_vel_wheel[i + 6];
-		vw4[i] = params.initial_vel_wheel[i + 9];
-		vt1[i] = params.initial_vel_tyre[i];
-		vt2[i] = params.initial_vel_tyre[i + 3];
-		vt3[i] = params.initial_vel_tyre[i + 6];
-		vt4[i] = params.initial_vel_tyre[i + 9];
-		pcc[i] = params.initial_pos_body[i];
+		vc[i] = params.initial_vel_body[i+1];
+		vw1[i] = params.initial_vel_wheel[i+1];
+		vw2[i] = params.initial_vel_wheel[i+1 + 3];
+		vw3[i] = params.initial_vel_wheel[i+1 + 6];
+		vw4[i] = params.initial_vel_wheel[i+1 + 9];
+		vt1[i] = params.initial_vel_tyre[i+1];
+		vt2[i] = params.initial_vel_tyre[i+1 + 3];
+		vt3[i] = params.initial_vel_tyre[i+1 + 6];
+		vt4[i] = params.initial_vel_tyre[i+1 + 9];
+		pcc[i] = params.initial_pos_body[i+1];
 		FC[i] = -mass * g;
-		center_of_circle[i] = load_params.profile_center[i];
+		center_of_circle[i] = load_params.profile_center[i+1];
 
 		i = 2;
 		r1[i] = l_lat_rr; r2[i] = -l_lat_rl; r3[i] = -l_lat_fl; r4[i] = l_lat_fr;
-		Ic[i * DIM + i] = I_body_zz;
+		Ic[i * DIM + i] = I_body_yy;
 		mass_wheel[i] = mass_wheel_fl;
 		mass_tyre[i] = mass_tyre_fl;
 		upper_spring_length[i] = upper_spring_length_fl;
@@ -476,18 +476,18 @@ public:
 		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
 		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
 		initial_orientation[i] = params.initial_angle[i];
-		vc[i] = params.initial_vel_body[i];
-		vw1[i] = params.initial_vel_wheel[i];
-		vw2[i] = params.initial_vel_wheel[i + 3];
-		vw3[i] = params.initial_vel_wheel[i + 6];
-		vw4[i] = params.initial_vel_wheel[i + 9];
-		vt1[i] = params.initial_vel_tyre[i];
-		vt2[i] = params.initial_vel_tyre[i + 3];
-		vt3[i] = params.initial_vel_tyre[i + 6];
-		vt4[i] = params.initial_vel_tyre[i + 9];
-		pcc[i] = params.initial_pos_body[i];
+		vc[i] = -params.initial_vel_body[i-1];
+		vw1[i] = -params.initial_vel_wheel[i-1];
+		vw2[i] = -params.initial_vel_wheel[i-1 + 3];
+		vw3[i] = -params.initial_vel_wheel[i-1 + 6];
+		vw4[i] = -params.initial_vel_wheel[i-1 + 9];
+		vt1[i] = -params.initial_vel_tyre[i-1];
+		vt2[i] = -params.initial_vel_tyre[i-1 + 3];
+		vt3[i] = -params.initial_vel_tyre[i-1 + 6];
+		vt4[i] = -params.initial_vel_tyre[i-1 + 9];
+		pcc[i] = -params.initial_pos_body[i-1];
 		FC[i] = 0;
-		center_of_circle[i] = load_params.profile_center[i];
+		center_of_circle[i] = -load_params.profile_center[i-1];
 
 		i = 3;
 		mass_wheel[i] = mass_wheel_fr;
@@ -514,29 +514,43 @@ public:
 	void circular_path_initialization(T* vc, T* vw1, T* vw2, T* vw3, T* vw4, 
 		T* vt1, T* vt2, T* vt3, T* vt4, T* omega, T* pcc, 
 		T* pt1 , T* pt2, T* pt3, T* pt4, T &radius_param) {
+		const MKL_INT dim = this->DIM;
+		const MKL_INT incx = 1;
+ 
 		vc[1] = 0;
+
 		T* perpendicular_dir = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
 		T* tangential_dir = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
 		T* radial_vector = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
+
 		radial_vector[0] = pcc[0] - center_of_circle[0];
 		radial_vector[1] = 0;
 		radial_vector[2] = pcc[2] - center_of_circle[2];
 
-		T radius = cblas_dnrm2(this->DIM, radial_vector, 1);
 		perpendicular_dir[1] = 1;
+
+		T radius = cblas_dnrm2(this->DIM, radial_vector, 1);
+
 		if (abs(radius - radius_param) > 0.01)
 			std::cout << "Warning! the initial position of the car is not on the trajectory provided in the circular path. \n The expected radius is " << radius_circular_path << ", but the car is at an initial distance of " << radius << " from the center of the circle.\n The execution procedes with the current spatial configuration and with the current distance to the center of the circle." << std::endl;
 
-		T inv_radius_squared = 1. / (radius * radius);
+		T inv_radius = 1. / radius;
 
-		const MKL_INT dim = this->DIM;
-		const MKL_INT incx = 1;
+		cblas_dscal(dim, inv_radius, radial_vector, incx);
+
 		MathLibrary::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
+
 		T magnitude = cblas_ddot(dim, vc, incx, tangential_dir, incx);
+
 		cblas_dcopy(this->DIM, tangential_dir, 1, vc, 1);
+
 		cblas_dscal(dim, magnitude, vc, incx);
+
+		cblas_dscal(dim, radius, radial_vector, incx);
+
 		MathLibrary::crossProduct(radial_vector, vc, omega);
-		cblas_dscal(this->DIM, inv_radius_squared, omega, 1);
+
+		cblas_dscal(this->DIM, inv_radius * inv_radius, omega, 1);
 
 		MathLibrary::crossProduct(omega, pt1, vt1);
 		MathLibrary::crossProduct(omega, pt2, vt2);
@@ -1779,6 +1793,30 @@ public:
 
 	size_t get_solution_dimension() {
 		return this->solution_dim;
+	}
+
+	void print_final_result(T* sln) {
+		std::cout << "MBD: angular velocity w=\n\t["<<sln[0] << "\n\t " << -sln[2] << "\n\t " << sln[1] << "]" << std::endl;
+		std::cout << "MBD: car body velocity vc=\n\t[" << sln[3] << "\n\t " << -sln[5] << "\n\t " << sln[4] << "]" << std::endl;
+		std::cout << "MBD: rear-right wheel velocity vw1=\n\t[" << sln[6] << "\n\t " << -sln[8] << "\n\t " << sln[7] << "]" << std::endl;
+		std::cout << "MBD: rear-left wheel velocity vw2=\n\t[" << sln[9] << "\n\t " << -sln[11] << "\n\t " << sln[10] << "]" << std::endl;
+		std::cout << "MBD: front-left wheel velocity vw3=\n\t[" << sln[12] << "\n\t " << -sln[14] << "\n\t " << sln[13] << "]" << std::endl;
+		std::cout << "MBD: front-right wheel velocity vw4=\n\t[" << sln[15] << "\n\t " << -sln[17] << "\n\t " << sln[16] << "]" << std::endl;
+		std::cout << "MBD: rear-right tyre velocity vt1=\n\t[" << sln[18] << "\n\t " << -sln[20] << "\n\t " << sln[19] << "]" << std::endl;
+		std::cout << "MBD: rear-left tyre velocity vt2=\n\t[" << sln[21] << "\n\t " << -sln[23] << "\n\t " << sln[22] << "]" << std::endl;
+		std::cout << "MBD: front-left tyre velocity vt3=\n\t[" << sln[24] << "\n\t " << -sln[26] << "\n\t " << sln[25] << "]" << std::endl;
+		std::cout << "MBD: front-right tyre velocity vt4=\n\t[" << sln[27] << "\n\t " << -sln[29] << "\n\t " << sln[28] << "]" << std::endl;
+		std::cout << "MBD: orientation q=\n\t[" << sln[30] << "\n\t " << sln[31] << "\n\t " << sln[32] << "\n\t " << sln[33] << "]" << std::endl;
+		std::cout << "MBD: car body position pc=\n\t[" << sln[34] << "\n\t " << -sln[5] << "\n\t " << sln[4] << "]" << std::endl;
+		std::cout << "MBD: rear-right wheel position pw1=\n\t[" << sln[37] << "\n\t " << -sln[39] << "\n\t " << sln[38] << "]" << std::endl;
+		std::cout << "MBD: rear-left wheel position pw2=\n\t[" << sln[40] << "\n\t " << -sln[42] << "\n\t " << sln[41] << "]" << std::endl;
+		std::cout << "MBD: front-left wheel position pw3=\n\t[" << sln[43] << "\n\t " << -sln[45] << "\n\t " << sln[44] << "]" << std::endl;
+		std::cout << "MBD: front-right wheel position pw4=\n\t[" << sln[46] << "\n\t " << -sln[48] << "\n\t " << sln[47] << "]" << std::endl;
+		std::cout << "MBD: rear-right tyre position pt1=\n\t[" << sln[49] << "\n\t " << -sln[51] << "\n\t " << sln[50] << "]" << std::endl;
+		std::cout << "MBD: rear-left tyre position pt2=\n\t[" << sln[52] << "\n\t " << -sln[54] << "\n\t " << sln[53] << "]" << std::endl;
+		std::cout << "MBD: front-left tyre position pt3=\n\t[" << sln[55] << "\n\t " << -sln[57] << "\n\t " << sln[56] << "]" << std::endl;
+		std::cout << "MBD: front-right tyre position pt4=\n\t[" << sln[58] << "\n\t " << -sln[60] << "\n\t " << sln[59] << "]" << std::endl;
+
 	}
 
 	~MBD_method() {
