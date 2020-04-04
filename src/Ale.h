@@ -56,12 +56,6 @@ public:
 
 	}
 
-	void apply_boundary_condition(int s) {
-		if (s != CIRCULAR) {
-			std::cout << "ALE will only work with a circular path, following results may be meaningless" << std::endl;
-		}
-	}
-
 	void global_frame_solver() {
 		/* ??????????????????????????????????????? */
 
@@ -69,16 +63,18 @@ public:
 		function_from_shubham(weighted_forceXY);
 
 		// 1. Update global X,Y velocities
-		Car_obj->Velocity_vecXY;
-		
-		// 2. Update global X,Y positions of the car (think about it)
+		Car_obj->Velocity_vec_xy;
+
+		// 2. Update global X,Y positions of the car
+		Car_obj->Position_vect_xy;
 
 		// 3. Update Z-angular velocities
+		Car_obj->w_z;
 
 		// 4. Update Z-rotation
+		Car_obj->Angle_z;
 
-
-
+		// Implement ALE solver!!!!!!
 
 	}
 

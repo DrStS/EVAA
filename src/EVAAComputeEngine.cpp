@@ -790,23 +790,23 @@ void EVAAComputeEngine::clean(void) {
 }
 
 void EVAAComputeEngine::computeALE(void) {
-	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_load_module_parameter, lookupStiffness);
-	Profile* Road_Profile;
 	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {
-		Road_Profile = new Circular(_load_module_parameter.profile_center, _load_module_parameter.profile_radius);
+		Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
+
+		Profile* Road_Profile = new Circular(_load_module_parameter.profile_center, _load_module_parameter.profile_radius);
+
+		Load_module* Load_module1 = new Load_module(Road_Profile, Car1);
+		linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
+		ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, _parameters);
+
+		floatEVAA* soln = (floatEVAA*)mkl_calloc(_parameters.DOF, sizeof(floatEVAA), Car1->alignment);
+
+		Ale_sys->solve(soln);
+
+		delete Car1;
+		delete Load_module1;
 	}
-	Load_module* Load_module1 = new Load_module(Road_Profile, Car1);
-	linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
-	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, _parameters);
-
-	Ale_sys->apply_boundary_condition(CIRCULAR);
-
-	floatEVAA* soln = (floatEVAA*)mkl_calloc(_parameters.DOF, sizeof(floatEVAA), Car1->alignment);
-	
-	Ale_sys->solve(soln);
-
-	delete Car1;
-	delete Load_module1;
-
-
+	else {
+		std::cout << "ALE will only work with a circular path, computation skipped" << std::endl;
+	}
 }
