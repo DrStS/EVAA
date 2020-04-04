@@ -800,6 +800,8 @@ public:
 		I_CG[4] = I_body_yy_val;
 	}
 	~Car() {
+		std::cout << "Car destructor";
+
 		mkl_free(Position_vec); 
 		mkl_free(Velocity_vec);
 		mkl_free(Mass_vec);
@@ -823,9 +825,7 @@ public:
 		mkl_free(K_trans);
 		mkl_free(D);
 		mkl_free(spring_length); 
-		if (current_spring_length != NULL) {
-			mkl_free(current_spring_length);
-		}
+		mkl_free(current_spring_length);
 		mkl_free(u_prev_linear); 
 		mkl_free(u_current_linear);
 		mkl_free(k_vec); 

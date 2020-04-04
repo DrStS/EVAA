@@ -2,28 +2,23 @@
 #include "MathLibrary.h"
 
 // ===============================   Circular class implementation ===================
-Circular::Circular() {
+Circular::Circular(double* Pos, double Rad) {
 	Name = "Circular";
-	Position = (double*)mkl_calloc(DIM, sizeof(double) , alignment);
-	Radius = 100;
-	
+
+	// Position
+	Position = (double*)mkl_calloc(DIM, sizeof(double), alignment);
+	cblas_dcopy(3, Pos, 1, Position, 1);
+
+	Radius = Rad;
+
 	// auxiliary vectors
 	unit_y_vector = (double*)mkl_calloc(DIM, sizeof(double), alignment);
 	unit_y_vector[2] = 1.; // used in cross product (z direction is 0)
-
+	std::cout << "Radius = " << Radius << "\n";
 	velocity_direction = (double*)mkl_calloc(DIM, sizeof(double), alignment);
 	Velocity_vec = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
 	Mass_vec = (double*)mkl_malloc(sizeof(double) * vec_DIM, alignment);
 	dist_car_center = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
-}
-
-Circular::Circular(double* pos) : Circular::Circular() {
-	// Position
-	cblas_dcopy(3, pos, 1, Position, 1);
-}
-
-Circular::Circular(double* pos, double rad) : Circular::Circular(pos) {
-	Radius = rad;
 };
 
 Circular::~Circular() {

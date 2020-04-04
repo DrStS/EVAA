@@ -26,16 +26,14 @@ private:
 	double Radius = 0; // Radius of the Circle (if the motion is a Circle)
 
 	// vectors used in computations inside the methods
-	double* unit_y_vector = NULL;
-	double* velocity_direction = NULL; // arrow from center towards object
+	double* unit_y_vector;
+	double* velocity_direction; // arrow from center towards object
 	// distance vector between center of circle and the car = Positions of points from the car vs Center of Circle, which is seen as 0
-	double* dist_car_center = NULL; // 3 x 9
-	double* Velocity_vec = NULL;
-	double* Mass_vec = NULL;
+	double* dist_car_center; // 3 x 9
+	double* Velocity_vec;
+	double* Mass_vec;
 
 public:
-	Circular();
-	Circular(double* Pos);
 	Circular(double* Pos, double Rad);
 	virtual ~Circular();
 	void get_Position(double* Pos);
