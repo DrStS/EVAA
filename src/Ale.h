@@ -108,8 +108,9 @@ public:
 			linear11dof_obj->solve_full_one_step(u_sol);
 		}
 
-		MKLfree(time_vec);
-		delete[] u_sol;
-		delete[] force_vector;
+		MKL_free(time_vec);
+		MKL_free(u_sol);
+		MKL_free(force_vector);
+		MKL_free(weighted_force_vectorXY);
 	}
 };
