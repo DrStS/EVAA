@@ -28,8 +28,15 @@ private:
 	// time and solution vectors
 	T* time_vec;
 	T* u_sol, u_init;
+
+	// needed to solve the 11DOF system
+	T* force_vector_11dof;
+
+	// needed to apply the load module
 	T* force_vector;
-	T* new_force_vector;
+	T* full_torque;
+
+	// needed for position integrator
 	T* weighted_forceXY;
 	T* new_weighted_forceXY;
 	T* torque;
@@ -59,8 +66,6 @@ public:
 
 		h_ = params.timestep;
 		tend_ = params.num_time_iter * h_;
-
-
 	}
 
 	void global_frame_solver() {
@@ -74,11 +79,11 @@ public:
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Angle_z, Car_obj->w_z, torque, h_, global_inertia_Z);
 
 		// get forces 
-		Load_module_obj->update_force(t, new_force_vector, Delta_x_vec); // TODO: ask Teo
+		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
 		Load_module_obj->update_torque(t, new_torque, Delta_x_vec); // TODO: ask Teo
 
 		// Compute weighted force sum TODO: Shubham
-		function_from_shubham(new_weighted_forceXY);
+		function_from_shubham(new_weighted_forceXY, force_vector);
 
 		// 1. Update global X,Y velocities
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[0], weighted_forceXY[0], new_weighted_forceXY[0], h_, global_mass);
@@ -89,7 +94,6 @@ public:
 
 
 		// Implement ALE solver!!!!!!
-
 
 		// update forces and torque
 		weighted_forceXY[0] = new_weighted_forceXY[0];
@@ -106,42 +110,49 @@ public:
 		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
 		u_sol = (T*)mkl_calloc(sol_size * (DOF), sizeof(T), alignment);
 		int force_dimensions = Car_obj->DIM * Car_obj->vec_DIM;
-		int weighted_force_dimensions = 3;
+		int weighted_force_dimensions = 2;
+		int full_torque_dimensions = 3;
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
-		new_force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
+		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), alignment);
+		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), alignment);
 		weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
 		new_weighted_forceXY = (T*)mkl_calloc(weighted_force_dimensions, sizeof(T), alignment);
 		torque = new(T);
 		new_torque = new(T);
 
+		// calculate characteristics of the whole car
 		calculate_global_inertia_Z();
 		calculate_global_mass();
 
 		Load_module_obj->update_force(t, force_vector, Delta_x_vec); // TODO: ask Teo
 		Load_module_obj->update_torque(t, torque, Delta_x_vec); // TODO: ask Teo
+
 		// Compute weighted force sum TODO: Shubham
 		function_from_shubham(weighted_forceXY);
 
+		// initialize the linear solver
+		linear11dof_obj->initialize_solver(h_);
 
 		// start time iteration
 		T t = h_;
 		double eps = h_ / 100;
 
-		linear11dof_obj->solution_initialize(u_sol); // TODO: Shubham
 
 		// time iteration
 		while (std::abs(t - (tend_ + h_)) > eps) {
 
 			global_frame_solver();
 
-			// execute one time step of the linear solver
-			linear11dof_obj->solve_full_one_step(u_sol);
+			// translate 27 force vector + 3 torques into 11DOF
+			full_torque[2] = new_torque*;
+			Car_obj->construct_11DOF_vector();
+			
+			linear11dof_obj->update_step(force_vector_11dof, u_sol);
 		}
 
 		MKL_free(time_vec);
 		MKL_free(u_sol);
 		MKL_free(force_vector);
-		MKL_free(new_force_vector);
 		MKL_free(weighted_forceXY);
 		MKL_free(new_weighted_forceXY);
 
