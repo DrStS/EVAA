@@ -19,7 +19,9 @@
 template <typename T>
 class linear11dof {
 protected:
+	// main car object
 	Car<T>* car_;
+
 	// define constants
 	size_t alignment;
 	const int dim = 3;
@@ -27,17 +29,34 @@ protected:
 	const int dim_x_dim = dim * dim;
 	const int num_wheels_x_dim = num_tyre * dim;
 	const int DOF_diag = 9; // the diagonal elements from A
+
+	// time step related
 	T factor_h2;
 	T factor_h;
 	T h_;
+	
+	// DOF=11
 	size_t DOF;
-	size_t mat_len;
-	//// Solver type selection based on type of boundary condition
-	
 
-	T* u_n_p_1, * u_n_m_1, * u_n, * A, * B;
-	size_t* tyre_index_set;
+	// mat_len=121
+	size_t mat_len;
+
+	// solution in next timestep
+	T* u_n_p_1;
+
+	// solution in previous timestep
+	T* u_n_m_1; 
 	
+	// solution in current timestep
+	T* u_n;
+	
+	T*A, * B;
+
+	size_t* tyre_index_set;
+
+	/*
+	Debug only: Checks whether the matrix is SPD
+	*/
 	void check_status(lapack_int status) {
 		if (status == 1) {
 			std::cout << "Matrix non Positive Definite" << std::endl;
@@ -48,6 +67,11 @@ protected:
 			exit(5);
 		}
 	}
+	/*
+	Debug only: Outputs any vector
+	\param vect to be printed
+	\param count its length
+	*/
 	void write_vector(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
 		for (size_t i = 0; i < count; ++i) {
@@ -58,6 +82,11 @@ protected:
 		}
 	}
 
+	/*
+	Debug only: Outputs any square matrix
+	\param vect to be printed
+	\param count its size is count x count
+	*/
 	void write_matrix(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
 		for (size_t i = 0; i < count; ++i) {
@@ -72,6 +101,9 @@ protected:
 	}
 
 public:
+	/*
+	Constructor
+	*/
 	linear11dof(Car<T>* input_car){
 		car_ = input_car;
 		alignment = (car_)->alignment;
@@ -84,6 +116,10 @@ public:
 		B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
 		
 	}
+
+	/*
+	Intializes the solution vector in the timestep -1 (before the simulation starts)
+	*/
 	void initialize_solver(T h) {
 		h_ = h;
 		factor_h2 = (1 / (h_ * h_));
@@ -99,6 +135,11 @@ public:
 		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
 		
 	}
+	/*
+	Performs one timestep of the 11DOF solver
+	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+	\return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+	*/
 	void update_step(T* force, T* solution) {
 		// construct A
 		cblas_dcopy(mat_len, car_->M_linear, 1, A, 1);
@@ -113,6 +154,9 @@ public:
 		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and u_n_p_1 point to u_n_m_1 now
 		
 	}
+	/*
+	Destructor
+	*/
 	virtual ~linear11dof() {
 		mkl_free(A);
 		mkl_free(B);
@@ -122,6 +166,9 @@ public:
 	}
 };
 
+/*
+For testing purposes
+*/
 template <typename T>
 class linear11dof_full : public linear11dof<T> {
 public:

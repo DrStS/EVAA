@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 	anaysisTimer01.stop();
 	std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze).\n\n\n" << std::endl;
 	anaysisTimer01.start();
-	myComputeEngine->computeMKLlinear11dof();
+//	myComputeEngine->computeMKLlinear11dof();
 	anaysisTimer01.stop();
 	std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(computeMKLlinear11dof).\n\n\n" << std::endl;
     anaysisTimer01.start();
