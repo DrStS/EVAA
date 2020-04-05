@@ -1,0 +1,15 @@
+sudo: required
+dist: bionic
+services: docker
+before_script: cd latex
+script:
+- chmod +x latexdockercmd.sh
+- bash latexdockercmd.sh latexmk -pdf -interaction=nonstopmode -halt-on-error EVAADocumentation.tex
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file: EVAADocumentation.pdf
+  skip_cleanup: true
+  overwrite: true
+  on:
+  #  tags: true

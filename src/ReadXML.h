@@ -107,19 +107,19 @@ class ReadXML{
         Initializes the parser for global and car parameters
         \param filename
         */
-        void setFileName (const std::string & filename);
+        void setFileName (const std::string & filename); // not used
 
         /*
         Initializes the parser for environment parameters
         \param filename
         */
-        void setloadFileName(const std::string & filename);
+        void setloadFileName(const std::string & filename); // not used
 
         /*
         Read global and car parameters
         \return parameters struct with all parameters
         */
-        void ReadParameters(Simulation_Parameters& parameters);
+        void ReadParameters(Simulation_Parameters& parameters); 
 
         /*
         Read environment parameters
