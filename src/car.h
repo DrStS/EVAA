@@ -163,7 +163,7 @@ public:
 		initial_velocity_vec = (T*)mkl_malloc(DIM*vec_DIM * sizeof(T), alignment);// 27 dim
 		quad_angle_init = (T*)mkl_calloc(4, sizeof(T), alignment); // 4 dim
 		initial_angle = (T*)mkl_malloc(DIM * sizeof(T), alignment); // 3 dim
-		initial_angular_velocity = (T*)mkl_malloc(DIM * sizeof(T), alignment); // 3 dim
+		initial_angular_velocity = (T*)mkl_malloc((DIM+1) * sizeof(T), alignment); // 3 dim
 		
 
 
@@ -697,19 +697,19 @@ public:
 	void get_k_vec(T* k) {
 		if (k != NULL) {
 			// b=a, cblas_dcopy(n,a,inc,b,inc)
-			cblas_dcopy(DIM * vec_DIM, k_vec, 1, k, 1);
+			cblas_dcopy( 2 * num_wheels, k_vec, 1, k, 1);
 		}
 	}
 	void set_k_vec(const T* k) {
 		if (k != NULL) {
-			cblas_dcopy(DIM * vec_DIM, k, 1, k_vec, 1);
+			cblas_dcopy(2* num_wheels, k, 1, k_vec, 1);
 		}
 	}
 
 	void get_Mass_vec(T* M) {
 		if (M != NULL) {
 			// b=a, cblas_dcopy(n,a,inc,b,inc)
-			cblas_dcopy(DIM * vec_DIM, Mass_vec, 1, M, 1);
+			cblas_dcopy(vec_DIM, Mass_vec, 1, M, 1);
 		}
 	}
 	double get_Mass_vec_CG() const {
@@ -717,7 +717,7 @@ public:
 	}
 	void set_Mass_vec(const T* M) {
 		if (M != NULL) {
-			cblas_dcopy(DIM * vec_DIM, M, 1, Mass_vec, 1);
+			cblas_dcopy(vec_DIM, M, 1, Mass_vec, 1);
 		}
 	}
 	/*
