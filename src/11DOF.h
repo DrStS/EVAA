@@ -132,6 +132,7 @@ public:
 		int sol_size = (floor(tend_ / h_) + 1);
 		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
 		u_sol = (T*)mkl_calloc((sol_size+1) * (DOF), sizeof(T), alignment);
+		interpolation_enabled = params.interpolation;
 		
 		f_n_p_1[0] = load_param.external_force_body[2];
 		f_n_p_1[3] = load_param.external_force_wheel[2 * 3 + 2];
@@ -159,6 +160,11 @@ public:
 		double eps = h_ / 100;
 		T* solution_vect;
 		while (std::abs(t - (tend_ + h_)) > eps) {
+			if (interpolation_enabled) {
+				(car_)->update_lengths_11DOF();
+				(car_)->lookupStiffness->getStiffness((car_)->current_spring_length, (car_)->k_vec);
+				(car_)->update_K((car_)->k_vec);
+			}
 			solution_vect = u_sol + iter * (DOF);
 			update_step(f_n_p_1, solution_vect);
 			iter++;
@@ -176,4 +182,5 @@ private:
 	T* u_sol, *f_n_p_1;
 	T h_;
 	int condition_type;
+	bool interpolation_enabled;
 };
