@@ -7,7 +7,7 @@ function [t, y_return, y, metrics] = main_nasa_car(r1, r2, r3, r4, mass, mass_wh
     %% INITIALLIZATION
     [qc, pw1, pw2, pw3, pw4, pt1, pt2, pt3, pt4] = get_initial_positions(qc, r1, r2, r3, r4, pcc, initial_upper_spring_length, initial_lower_spring_length);
 
-%    [vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc] = Circular_path_initialization(pcc, pt1, pt2, pt3, pt4, vc);
+    [vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc] = Circular_path_initialization(pcc, pt1, pt2, pt3, pt4, vc);
 
     % computation of ri_tilda, ro_tilda
     r1_tilda = get_tilda(r1);

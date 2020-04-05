@@ -18,5 +18,6 @@ function [FR] = Circular_path(vt, mt, pt)
     
     FR = force_magnitude_tyre * force_direction_tyre;
     
+    
 end
 
