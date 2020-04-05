@@ -6,7 +6,7 @@
 template <class T>
 class Car {
 private:
-	void construct_11DOF_mass(T* Global_mass, T* Global_momemnt_Inertia, T* Mass_11DOF) {
+	void construct_11DOF_mass(T* Global_mass, T* Global_momemnt_Inertia) {
 		temp_linear[0] = Global_mass[0];
 		temp_linear[1] = Global_momemnt_Inertia[0];
 		temp_linear[2] = Global_momemnt_Inertia[4];
@@ -244,6 +244,20 @@ public:
 		current_spring_length[6] = params.initial_upper_spring_length[0];
 		current_spring_length[7] = params.initial_lower_spring_length[0];
 
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////// Interpolator Initialization///////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// read init corners vectors into matrix
+		Corners_init[0] = l_long[0]; // fl
+		Corners_init[4] = l_lat[0]; // fl
+		Corners_init[1] = l_long[1]; // fr
+		Corners_init[5] = -l_lat[1]; // fr
+		Corners_init[2] = -l_long[2]; // rl
+		Corners_init[6] = l_lat[2]; // rl
+		Corners_init[3] = -l_long[3]; // rr
+		Corners_init[7] = -l_lat[3]; // rr
+
+
 		// Filling the position vector with initial condition
 		// CG
 		cblas_dcopy(DIM, params.initial_pos_body, 1, initial_position, 1); // copy the center of mass position
@@ -288,10 +302,15 @@ public:
 			cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 26)
 		}
 		else {
-			/*Not implemented
-			compute positions of the wheel and tyre
-			*/
-			
+			T* W_fl = initial_position + 3;
+			T* W_fr = initial_position + 9;
+			T* W_rl = initial_position + 15;
+			T* W_rr = initial_position + 21;
+			T* T_fl = initial_position + 6;
+			T* T_fr = initial_position + 12;
+			T* T_rl = initial_position + 18;
+			T* T_rr = initial_position + 24;
+			get_length(Corners_init, current_spring_length, W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr);
 		}
 		// copy the initial position to the position vector
 		cblas_dcopy(DIM*vec_DIM, initial_position, 1, Position_vec, 1);
@@ -345,7 +364,7 @@ public:
 		Global assignments Done 
 		11 DOF assignments
 		*/
-		construct_11DOF_mass(Mass_vec, I_CG, M_linear);
+		construct_11DOF_mass(Mass_vec, I_CG);
 		construct_11DOF_vector(initial_position, initial_angle, u_prev_linear);
 		construct_11DOF_vector(initial_velocity_vec, initial_angular_velocity, velocity_current_linear);
 		
@@ -382,18 +401,7 @@ public:
 		*Angle_z = angle_CG[2];
 		*w_z = w_CG[2];
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////// Interpolator Initialization///////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// read init corners vectors into matrix
-		Corners_init[0] = l_long[0]; // fl
-		Corners_init[4] = l_lat[0]; // fl
-		Corners_init[1] = l_long[1]; // fr
-		Corners_init[5] = -l_lat[1]; // fr
-		Corners_init[2] = -l_long[2]; // rl
-		Corners_init[6] = l_lat[2]; // rl
-		Corners_init[3] = -l_long[3]; // rr
-		Corners_init[7] = -l_lat[3]; // rr
+		
 
 
 	}
@@ -496,7 +504,7 @@ public:
 		K[9 * DOF + 10] = -k_vect[7];
 
 		temp_linear[10] = k_vect[7];
-
+		
 		cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
 		mkl_dimatcopy('R', 'T', DOF, DOF, 1.0, K_trans, DOF, DOF); // get transpose of matrix
 		cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
@@ -532,28 +540,31 @@ public:
 		k_vect[6] = k_body_rr;
 		k_vect[7] = k_tyre_rr;
 	}
-	void get_length(
-		T* initial_orientation_,
-		const T* r1_,
-		const T* r2_,
-		const T* r3_,
-		const T* r4_,
-		const T* pcc_,
-		const T* initial_upper_spring_length_,
-		const T* initial_lower_spring_length_,
-		T* wheel_coordinate1_,
-		T* wheel_coordinate2_,
-		T* wheel_coordinate3_,
-		T* wheel_coordinate4_,
-		T* tyre_coordinate1_,
-		T* tyre_coordinate2_,
-		T* tyre_coordinate3_,
-		T* tyre_coordinate4_)
+	void get_length(T* Corners, T* curr_spring_len, T* W_fl, T* T_fl, T* W_fr, T* T_fr, T* W_rl, T* T_rl, T* W_rr, T* T_rr) {
+		// W_fl & T_fl
+		cblas_dcopy(DIM, Corners, 4, W_fl, 1);
+		W_fl[2] -= curr_spring_len[0];
+		cblas_dcopy(DIM, W_fl, 1, T_fl, 1);
+		T_fl[2] -= curr_spring_len[1];
 
-	{/*
-	 Not implemented
+		// W_fr & T_fr
+		cblas_dcopy(DIM, Corners + 1, 4, W_fr, 1);
+		W_fr[2] -= curr_spring_len[2];
+		cblas_dcopy(DIM, W_fr, 1, T_fr, 1);
+		T_fr[2] -= curr_spring_len[3];
 
-	 */}
+		// W_rl & T_rl
+		cblas_dcopy(DIM, Corners + 2, 4, W_rl, 1);
+		W_rl[2] -= curr_spring_len[4];
+		cblas_dcopy(DIM, W_rl, 1, T_rl, 1);
+		T_rl[2] -= curr_spring_len[5];
+
+		// W_rr & T_rr
+		cblas_dcopy(DIM, Corners + 3, 4, W_rr, 1);
+		W_rr[2] -= curr_spring_len[6];
+		cblas_dcopy(DIM, W_rr, 1, T_rr, 1);
+		T_rr[2] -= curr_spring_len[7];
+	}
 
 	inline void compute_dx(const T* current_length, T* dx) {
 		/*

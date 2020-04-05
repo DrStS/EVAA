@@ -563,7 +563,18 @@ void EVAAComputeEngine::computeMKLlinear11dof() {
 			std::cout << soln[i] << std::endl;
 		}
 		mkl_free(soln);
-		
+		/*floatEVAA* vect1 = (floatEVAA*)mkl_calloc(27, sizeof(floatEVAA), alignment);
+		floatEVAA* vect2 = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
+		floatEVAA* vect3 = (floatEVAA*)mkl_calloc(18, sizeof(floatEVAA), alignment);
+		for (int i = 0; i < 27; ++i) {
+			vect2[i] = rand();
+			vect3[i] = rand()/2.0;
+		}
+		Car1->populate_results(vect3, vect2, vect1);
+		MathLibrary::write_vector(vect1, 27);
+		MathLibrary::write_vector(vect2, 11);
+		MathLibrary::write_vector(vect3, 18);
+		exit(5);*/
 		delete Car1;
 	}
 	else {
@@ -762,23 +773,23 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 }
 
 
-void evaacomputeengine::computembd(void) {
-	size_t num_iter = _parameters.num_time_iter;
-	const int alignment = 64;
-	size_t solution_dim = _parameters.solution_dim;
-	floatevaa* soln = (floatevaa*)mkl_calloc(solution_dim, sizeof(floatevaa), alignment);
-	mbd_method<floatevaa> solver(_parameters, _load_module_parameter, lookupstiffness);
-	solver.solve(soln);
-	std::cout << "mbd: solution after " << num_iter << " timesteps" << std::endl;
-	solver.print_final_result(soln);
-	mkl_free(soln);
-}
-
+//void EVAAComputeEngine::computeMBD(void) {
+//	size_t num_iter = _parameters.num_time_iter;
+//	const int alignment = 64;
+//	size_t solution_dim = _parameters.solution_dim;
+//	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
+//	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
+//	solver.solve(soln);
+//	std::cout << "MBD: Solution after " << num_iter << " timesteps" << std::endl;
+//	solver.print_final_result(soln);
+//	mkl_free(soln);
+//}
+void EVAAComputeEngine::computeMBD(void) {}
 
 void EVAAComputeEngine::clean(void) {
 
 }
-
+/*
 void EVAAComputeEngine::computeALE(void) {
 
 	size_t num_iter = _parameters.num_time_iter;
@@ -797,3 +808,6 @@ void EVAAComputeEngine::computeALE(void) {
 	delete Car1;
 
 }
+
+*/
+void EVAAComputeEngine::computeALE(void) {}

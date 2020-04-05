@@ -132,7 +132,7 @@ public:
 		int sol_size = (floor(tend_ / h_) + 1);
 		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
 		u_sol = (T*)mkl_calloc((sol_size+1) * (DOF), sizeof(T), alignment);
-		
+
 		f_n_p_1[0] = load_param.external_force_body[2];
 		f_n_p_1[3] = load_param.external_force_wheel[2 * 3 + 2];
 		f_n_p_1[4] = load_param.external_force_tyre[2 * 3 + 2];
@@ -161,6 +161,7 @@ public:
 		while (std::abs(t - (tend_ + h_)) > eps) {
 			solution_vect = u_sol + iter * (DOF);
 			update_step(f_n_p_1, solution_vect);
+			params
 			iter++;
 			t += h_;
 		}
