@@ -38,16 +38,46 @@ private:
 		cblas_dcopy(DIM - 1, start_pointer, 1, current_ptr, 1);
 	}
 	/*
-	Calculates the values of Corners_current according to the current orientation
+	Construct corner initilizer
 	*/
-	void update_corners_11DOF()
+	void construct_corner(T* pos_CG, T* corners) {
+		corners[0] = pos_CG[0] + l_long[0]; // fl
+		corners[4] = pos_CG[1] + l_lat[0]; // fl
+		corners[8] = pos_CG[2];
+		corners[1] = pos_CG[0] + l_long[1]; // fr
+		corners[5] = pos_CG[1] - l_lat[1]; // fr
+		corners[9] = pos_CG[2];
+		corners[2] = pos_CG[0] - l_long[2]; // rl
+		corners[6] = pos_CG[1] + l_lat[2]; // rl
+		corners[8] = pos_CG[10];
+		corners[3] = pos_CG[0] - l_long[3]; // rr
+		corners[7] = pos_CG[0] - l_lat[3]; // rr
+		corners[11] = pos_CG[2];
+	}
+	/*
+	Calculates the values of Corners for general angles
+	*/
+	void update_corners_11DOF(T* angles, T* rotation_mat_buffer, T* initial_corners, T* updated_corners)
 	{
 		// zz, yy, xx
-		MathLibrary::get_rotation_matrix(0.0, u_current_linear[2], u_current_linear[1], Corners_rot);
+		MathLibrary::get_rotation_matrix(angles[2], angles[1], angles[0], rotation_mat_buffer);
 
 		// do rotation: rotationMat * r
 		//void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const double beta, double* c, const MKL_INT ldc);
-		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, DIM, num_wheels, DIM, 1, Corners_rot, DIM, Corners_init, num_wheels, 0, Corners_current, num_wheels);
+		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, DIM, num_wheels, DIM, 1, rotation_mat_buffer, DIM, initial_corners, num_wheels, 0, updated_corners, num_wheels);
+	}
+	/*
+	Calculates the values of Corners_current according to the current orientation
+	*/
+	void update_corners_11DOF() {
+		pos_buffer[0] = Position_vec_xy[0];
+		pos_buffer[1] = Position_vec_xy[1];
+		pos_buffer[2] = u_current_linear[0];
+		angle_buffer[0] = u_current_linear[1];
+		angle_buffer[1] = u_current_linear[2];
+		angle_buffer[3] = 0;
+		construct_corner(pos_buffer, Corners_init);
+		update_corners_11DOF(angle_buffer, Corners_rot, Corners_init, Corners_current);
 	}
 	void set_ALE2global(T* vect, T* global_vect) {
 #pragma loop(ivdep)
@@ -125,7 +155,7 @@ public:
 	////////////////////////////////// Interpolator Members ///////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	T *Corners_rot, *Corners_current, *Corners_init;
-
+	T* angle_buffer, *pos_buffer;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////// ALE Vectors ///////////////////////////////////////////////////////
@@ -137,6 +167,7 @@ public:
 	Constructor
 	*/
 	Car(const Simulation_Parameters &params, EVAAComputeStiffness* interpolator) {
+		std::cout << "I am the flying car" << std::endl;
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -196,6 +227,8 @@ public:
 		Corners_current = (T*)mkl_malloc(malloc_factor*num_tyre*DIM * sizeof(T), alignment); // 12 dim
 		Corners_rot = (T*)mkl_malloc(malloc_factor*DIM*DIM * sizeof(T), alignment); // 9 dim
 		Corners_init = (T*)mkl_malloc(malloc_factor*num_tyre*DIM * sizeof(T), alignment); // 12 dim
+		angle_buffer = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
+		pos_buffer = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////// ALE Buffer Allocation /////////////////////////////////////////////////////////////
@@ -273,25 +306,26 @@ public:
 		current_spring_length[6] = params.initial_upper_spring_length[0];
 		current_spring_length[7] = params.initial_lower_spring_length[0];
 
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////// Interpolator Initialization///////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// read init corners vectors into matrix
-		Corners_init[0] = l_long[0]; // fl
-		Corners_init[4] = l_lat[0]; // fl
-		Corners_init[1] = l_long[1]; // fr
-		Corners_init[5] = -l_lat[1]; // fr
-		Corners_init[2] = -l_long[2]; // rl
-		Corners_init[6] = l_lat[2]; // rl
-		Corners_init[3] = -l_long[3]; // rr
-		Corners_init[7] = -l_lat[3]; // rr
+		
 
 
 		// Filling the position vector with initial condition
 		// CG
 		cblas_dcopy(DIM, params.initial_pos_body, 1, initial_position, 1); // copy the center of mass position
 		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////// Interpolator Initialization///////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// read init corners vectors into matrix
 
+		construct_corner(initial_position, Corners_init); // only CG position is used to construct corners
+		cblas_dcopy(DIM, angle_CG, 1, angle_buffer, 1);
+		angle_buffer[2] = 0;
+		update_corners_11DOF(angle_buffer, Corners_rot, Corners_init, Corners_current);
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////// Remaining position initialization ////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		const T* xml_start;
 		T *position_start;
 		if (params.initial_leg_flag) {
@@ -339,11 +373,11 @@ public:
 			T* T_fr = initial_position + 12;
 			T* T_rl = initial_position + 18;
 			T* T_rr = initial_position + 24;
-			get_length(Corners_init, current_spring_length, W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr);
+			get_length(Corners_current, current_spring_length, W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr);
 		}
 		// copy the initial position to the position vector
 		cblas_dcopy(DIM*vec_DIM, initial_position, 1, Position_vec, 1);
-
+		
 		
 
 		// Initial Velocity (Reuse the pointers)
@@ -636,14 +670,14 @@ public:
 	*/
 	void update_lengths_11DOF() {
 		update_corners_11DOF();
-		current_spring_length[0] = spring_length[0] + Corners_current[8] + u_current_linear[0] - u_current_linear[3];
-		current_spring_length[1] = spring_length[1] + u_current_linear[3] - u_current_linear[4];
-		current_spring_length[2] = spring_length[2] + Corners_current[9] + u_current_linear[0] - u_current_linear[5];
-		current_spring_length[3] = spring_length[3] + u_current_linear[5] - u_current_linear[6];
-		current_spring_length[4] = spring_length[4] + Corners_current[10] + u_current_linear[0] - u_current_linear[7];
-		current_spring_length[5] = spring_length[5] + u_current_linear[7] - u_current_linear[8];
-		current_spring_length[6] = spring_length[6] + Corners_current[11] + u_current_linear[0] - u_current_linear[9];
-		current_spring_length[7] = spring_length[7] + u_current_linear[9] - u_current_linear[10];
+		current_spring_length[0] = Corners_current[8] - u_current_linear[3];
+		current_spring_length[1] = u_current_linear[3] - u_current_linear[4];
+		current_spring_length[2] = Corners_current[9] - u_current_linear[5];
+		current_spring_length[3] = u_current_linear[5] - u_current_linear[6];
+		current_spring_length[4] = Corners_current[10] - u_current_linear[7];
+		current_spring_length[5] = u_current_linear[7] - u_current_linear[8];
+		current_spring_length[6] = Corners_current[11] - u_current_linear[9];
+		current_spring_length[7] = u_current_linear[9] - u_current_linear[10];
 	}
 
 	/* Fills the global vector with all entries
@@ -665,7 +699,7 @@ public:
 		angle_CG[0] = u_current_linear[1];
 		angle_CG[1] = u_current_linear[2];
 		angle_CG[2] = *Angle_z;
-		w_CG[2] = w_z;
+		w_CG[2] = *w_z;
 		set_ALE2global(Velocity_vec_xy, Velocity_vec);
 	}
 
@@ -777,6 +811,7 @@ public:
 	}
 	
 	~Car() {
+		std::cout << "The car is not flying anymore" << std::endl;
 		mkl_free_buffers();
 		mkl_free(Position_vec); 
 		mkl_free(Velocity_vec);
@@ -822,6 +857,8 @@ public:
 		mkl_free(Corners_current); 
 		mkl_free(Corners_rot); 
 		mkl_free(Corners_init);
+		mkl_free(angle_buffer);
+		mkl_free(pos_buffer);
 	}
 
 	void test() {

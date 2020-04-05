@@ -152,7 +152,7 @@ public:
 		//initialize solution vector
 		int sol_size = (floor(tend_ / h_) + 1);
 		int force_dimensions = Car_obj->DIM * Car_obj->vec_DIM;
-		int centripetal_force_dimensions = 2;
+		int centripetal_force_dimensions = 3; // because update force needs it
 		int full_torque_dimensions = 3;
 		int num_springs = 2 * Car_obj->num_wheels;
 
@@ -163,7 +163,7 @@ public:
 		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), alignment);
 		centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), alignment);
-		new_centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), alignment);
+		new_centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), alignment);  // this was 2 dimensional allocation and update force updates 3 dimension on this
 		k_vect = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
 		Delta_x_vec = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
 
@@ -176,9 +176,6 @@ public:
 
 		// start time iteration
 		T t = h_;
-		Car_obj->compute_dx(Delta_x_vec);
-		Load_module_obj->update_force(t, force_vector, Delta_x_vec, centripetal_force);
-		Load_module_obj->update_torque(t, torque, Delta_x_vec);
 		
 		// initialize the linear solver
 		linear11dof_obj->initialize_solver(h_);
@@ -187,13 +184,22 @@ public:
 		// time iteration
 		double eps = h_ / 100;
 		while (std::abs(t - (tend_ + h_)) > eps) {
-
+			///// This has to be done at each time step//////
+			//////////// update force vector ///////////
+			Car_obj->compute_dx(Delta_x_vec);
+			Load_module_obj->update_force(t, force_vector, Delta_x_vec, centripetal_force);
+			Load_module_obj->update_torque(t, torque, Delta_x_vec);
+			// convert centrifugal force to centripetal (only for x, y direction)
+			cblas_dscal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
+			
 			global_frame_solver(t);
 
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
 			
 			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
+			Car_obj->update_lengths_11DOF();
+			
 
 			if (params.interpolation) {
 				Car_obj->update_lengths_11DOF();
@@ -207,7 +213,7 @@ public:
 			iter++;
 			
 		}
-		cblas_dcopy(DOF, u_sol + (iter - 1) * (DOF), 1, sol_vect, 1);
+		cblas_dcopy((Car_obj->vec_DIM * Car_obj->DIM), u_sol + (iter - 1) * (Car_obj->vec_DIM * Car_obj->DIM), 1, sol_vect, 1);
 		Car_obj->combine_results();
 
 

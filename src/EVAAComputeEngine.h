@@ -98,6 +98,7 @@ public:
 	*/
 	void computeALE(void);
 	void Car_test(void);
+	void computeALEtest(void);
 
 	// MKL
 /*	void computeMKLNasa(void);

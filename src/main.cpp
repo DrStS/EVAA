@@ -104,6 +104,7 @@ int main(int argc, char **argv) {
     myComputeEngine->computeALE();
     anaysisTimer01.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(computeALE).\n\n\n" << std::endl;
+
 	myComputeEngine->clean();
 	/*
 	myComputeEngine->computeMKLNasa_example();
