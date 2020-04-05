@@ -49,16 +49,16 @@ public:
 class EVAAComputeStiffness {
 private:
 	DFTaskPtr* task;									// Data Fitting task descriptor
-	MKL_INT nx;											// number of break points
+	MKL_INT nx;											// number of break points (data points in the grid)
 	MKL_INT xhint = DF_NON_UNIFORM_PARTITION;			// additional info about break points
-	MKL_INT ny;											// number of functions
+	MKL_INT ny;											// number of functions ( in our case 1 per task but 8 in total)
 	MKL_INT yhint = DF_NO_HINT;							// additional info about function
 	MKL_INT scoeffhint = DF_NO_HINT;					// additional info about spline coefficients
 	MKL_INT bc_type = DF_NO_BC;							// boundary conditions type
 	MKL_INT ic_type = DF_NO_IC;							// internal conditions type
 	MKL_INT rhint = DF_NO_HINT;							// interpolation results storage format
-	double* axis;										// array of break points
-	double* grid;										// function values
+	double* axis;										// array of break points (axis with length values of the grid points)
+	double* grid;										// function values 
 	double* ic = 0;										// internal conditions
 	double* bc = 0;										// boundary conditions
 	double* scoeff;										// array of spline coefficients
@@ -76,6 +76,7 @@ public:
 	~EVAAComputeStiffness();
 	/*
 	* \brief get stiffness value via linear interpolation
+	* length has to be of dim 8 and [fl_body, fl_tyre, fr_body, fr_tyre, rl_body, rl_tyre, rr_body, rr_tyre]
 	*/
 	void getStiffness(double* length, double* stiffness); // or double* x and calculate length
 	/*

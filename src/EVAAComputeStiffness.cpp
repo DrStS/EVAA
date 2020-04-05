@@ -39,8 +39,11 @@ double EVAAComputeGrid::responseFunction(const double a, const double b, const d
 	return c * length * length + b * length + a;
 }
 
+/*
+* build equidistant grid and the corresponding axis
+*/
 void EVAAComputeGrid::buildLinearGrid(double* grid, double* axis, int size, double l_min, double l_max, double* a, double b, double c, int k) {
-	double density = (l_max - l_min) / size;
+	double density = (l_max - l_min) / (size-1);
 	for (auto i = 0; i < size; i++) {
 		axis[i] = l_min + i * density;
 	}
@@ -51,6 +54,9 @@ void EVAAComputeGrid::buildLinearGrid(double* grid, double* axis, int size, doub
 	}
 }
 
+/*
+* build Chebyshev grid and the corresponding axis
+*/
 void EVAAComputeGrid::buildChebyshevGrid(double* grid, double* axis, int size, double l_min, double l_max, double* a, double b, double c, int k) {
 	for (auto i = 0; i < size; i++) {
 		axis[i] = (1 + cos((2 * i + 1) / (2 * size) * M_PI)) / 2 * (l_max - l_min) + l_min;
@@ -77,6 +83,9 @@ void EVAAComputeStiffness::getStiffness(double* length, double* stiffness) {
 	}
 }
 
+/*
+* \brief derivative from stifftness k after length
+*/
 void EVAAComputeStiffness::getDerivative(double* length, double* deriv) {
 	int err = 0;
 	MKL_INT ndorder = 2;                    // size of array describing derivative (dorder), which is definde two lines below
@@ -122,6 +131,10 @@ EVAAComputeStiffness::EVAAComputeStiffness(int size, double* a, double b, double
 		err = dfdConstruct1D(task[i], DF_PP_SPLINE, DF_METHOD_STD);
 		CheckDfError(err);
 	}
+	mkl_free(grid);
+	mkl_free(axis);
+	delete ic;
+	delete bc;
 }
 
 EVAAComputeStiffness::~EVAAComputeStiffness() {
@@ -131,10 +144,9 @@ EVAAComputeStiffness::~EVAAComputeStiffness() {
 	}
 
 	/* free used space */
-	MKL_free(task);
-	MKL_free(scoeff);
-	MKL_free(grid);
-	MKL_free(axis);
+	mkl_free(task);
+	mkl_free(scoeff);		
+	delete datahint;
 }
 
 
