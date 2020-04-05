@@ -1,7 +1,7 @@
 #include "profile_class.h"
 #include "MathLibrary.h"
 
-// ===============================   Circular class implementation ===================
+// ===============================   Circular class implementation ======================//
 Circular::Circular(double* Pos, double Rad) {
 	Name = "Circular";
 
@@ -145,3 +145,45 @@ void Circular::this_is_a_test_fn(std::string s) {
 	std::cout << "This is a test function I got " <<s<< std::endl;
 }
 // =============================== end of Circular class implementation ===================
+
+
+
+// ===============================   Nonfixed class implementation ======================//
+Nonfixed::Nonfixed(double* Pos, double Rad) {
+	Name = "Nonfixed";
+};
+
+Nonfixed::~Nonfixed() {
+}
+
+void Nonfixed::get_centrifugal_force(double* fr, double* v, double& m, double* p) {
+	// No external forces from a path are acting on the body
+	fr[0] = 0;
+	fr[1] = 0;
+	fr[2] = 0;
+}
+
+void Nonfixed::get_Profile_force(Car<double>* car1, double* f_vec, double* normal_ext) {
+	for (int i = 0; i < vec_DIM; ++i) {
+		f_vec[DIM * i + 0] = 0;
+		f_vec[DIM * i + 1] = 0;
+		f_vec[DIM * i + 2] = 0;
+	}
+
+}
+
+void Nonfixed::get_Profile_torque(Car<double>* Car1, double* Torque) {
+	Torque[0] = 0; // Torque on x direction
+	Torque[1] = 0; // Torque on y direction
+	Torque[2] = 0; // Torque on z direction
+}
+
+void Nonfixed::update_initial_condition(Car<double>* Car1) {
+	// don't change them
+}
+
+void Nonfixed::this_is_a_test_fn(std::string s) {
+	std::cout << "This is a test function I got " << s << std::endl;
+}
+// =============================== end of Nonfixed class implementation ===================
+

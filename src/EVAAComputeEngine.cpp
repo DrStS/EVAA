@@ -792,36 +792,42 @@ void EVAAComputeEngine::clean(void) {
 }
 
 void EVAAComputeEngine::computeALE(void) {
+	size_t num_iter = _parameters.num_time_iter;
+	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
+	size_t solution_dim = Car1->DIM * Car1->vec_DIM;
+	Profile* Road_Profile;
 	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {
-		size_t num_iter = _parameters.num_time_iter;
-		Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
-		size_t solution_dim = Car1->DIM * Car1->vec_DIM;
-		Profile* Road_Profile = new Circular(_load_module_parameter.profile_center,
+		Road_Profile = new Circular(_load_module_parameter.profile_center,
 			_load_module_parameter.profile_radius);
-		Road_Profile->update_initial_condition(Car1);
-
-		Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
-		linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
-		ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, lookupStiffness, _parameters);
-
-		floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), Car1->alignment);
-
-		Ale_sys->solve(soln);
-		std::cout << "ALE: Solution after " << num_iter << " timesteps, f =" << std::endl;
-		for (auto i = 0; i < solution_dim; ++i) {
-			std::cout << soln[i] << std::endl;
-		}
-		std::cout << std::endl;
-
-
-		delete Car1;
-		delete Load_module1;
-
-		mkl_free(soln);
+	}
+	else if (_load_module_parameter.boundary_condition_road == NONFIXED) {
+		Road_Profile = new Nonfixed(_load_module_parameter.profile_center,
+			_load_module_parameter.profile_radius);
 	}
 	else {
-		std::cout << "ALE will only work with a circular path, computation skipped" << std::endl;
+		std::cout << "ALE will only work with a circular pathor nonfixed boundaries, computation skipped" << std::endl;
 	}
+
+	Road_Profile->update_initial_condition(Car1);
+
+	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
+	linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
+	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, lookupStiffness, _parameters);
+
+	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), Car1->alignment);
+
+	Ale_sys->solve(soln);
+	std::cout << "ALE: Solution after " << num_iter << " timesteps, f =" << std::endl;
+	for (auto i = 0; i < solution_dim; ++i) {
+		std::cout << soln[i] << std::endl;
+	}
+	std::cout << std::endl;
+
+
+	delete Car1;
+	delete Load_module1;
+
+	mkl_free(soln);
 }
 
 void EVAAComputeEngine::computeALEtest(void) {
