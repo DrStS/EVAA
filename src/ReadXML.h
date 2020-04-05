@@ -11,7 +11,9 @@
 #include "EVAAComputeStiffness.h"
 #endif
 
-
+/*
+Holds all general simulation parameters and car specific parameters (such as geometry and initial conditions)
+*/
 struct Simulation_Parameters {int DOF; 
             double k_tyre[4]; double k_body[4]; 
             double c_tyre[4]; double c_body[4];
@@ -32,7 +34,9 @@ struct Simulation_Parameters {int DOF;
 			int solution_dim;
             };
 
-
+/*
+Environment parameters (road conditions and external force fields)
+*/
 struct Load_Params {
 	double external_force_body[3]; double external_force_wheel[12]; double external_force_tyre[12];
 	// circular profile params
@@ -44,31 +48,90 @@ struct Load_Params {
 
 enum boundary_condition_road{FIXED, NONFIXED, CIRCULAR};
 
+/*
+Solver for the MBD system
+*/
 enum solver {EXPLICIT_EULER, RUNGE_KUTTA_4, BROYDEN_EULER, BROYDEN_CN, BROYDEN_BDF2}; 
 
 
-
+/*
+Handles the XML parsers
+*/
 class ReadXML{
     private:
+        // filenames
         std::string _filename;
 		std::string _load_filename;
         std::string _lookup_filename;
+
+        // pointer to the file parsers
         std::auto_ptr<car_settings_t> settings;
 		std::auto_ptr<load_t> load_data;
         std::auto_ptr<lookup_handler_t> lookup_table;
+
+        /*
+        Read 4 legs which contain each 3 vectors
+        \param vec XML parser
+        \return storage all components in one vector with 12 elements [rr:XYZ,rl:XYZ,fl:XYZ,rl:XYZ]
+        */
         template<typename T> void readVectorLegs(double* storage, T vec);
+
+        /*
+        Read 4 legs which contain each 1 double
+        \param vec XML parser
+        \return storage all components in one vector with 4 elements [rr,rl,fl,rl]
+        */
         template<typename T> void readLegs(double* storage, T vec);
+
+        /*
+        Read a vector with 3 doubles
+        \param vec XML parser
+        \return storage all components in one vector with 3 elements [XYZ]
+        */
         template<typename T> void readVector(double* storage, T vec);
+
+
+        /*
+        Read a quaterion with 4 doubles
+        \param vec XML parser
+        \return storage all components in one vector with 4 elements [XYZW]
+        */
         template<typename T> void readangles(double* storage, T vec);
 
     public:
         ReadXML();
         ReadXML(const std::string & load_filename);
 		ReadXML(const std::string & filename, const std::string & load_filename);
+
+        /*
+        Initializes the parser for global and car parameters
+        \param filename
+        */
         void setFileName (const std::string & filename);
-		void setloadFileName(const std::string & filename);
+
+        /*
+        Initializes the parser for environment parameters
+        \param filename
+        */
+        void setloadFileName(const std::string & filename);
+
+        /*
+        Read global and car parameters
+        \return parameters struct with all parameters
+        */
         void ReadParameters(Simulation_Parameters& parameters);
+
+        /*
+        Read environment parameters
+        \return parameters with all parameters
+        */
         void ReadLoadParameters(Load_Params & parameters);
-        void ReadLookupParameters(EVAAComputeStiffness* lookupStiffness, Simulation_Parameters & parameters);
+
+        /*
+        Read lookup table parameters
+        \param parameters for global simulation parameters
+        \return lookupStiffness class instance of the lookup handler
+        */
+        void ReadLookupParameters(EVAAComputeStiffness** lookupStiffness, Simulation_Parameters & parameters);
 };
 
