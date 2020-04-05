@@ -5,7 +5,9 @@
 #include "MathLibrary.h"
 #include "ReadXML.h"
 
-
+/*
+Handles the whole MBD simulation (from the Matlab code)
+*/
 template <class T>
 class MBD_method
 {
@@ -21,11 +23,14 @@ private:
 	size_t solution_dim; /// this is by the formulation
 	std::string solver_name;
 	int used_solver;
+	
+	////////////////////////////// Environment conditions //////////////////////////////////////////////////////////////////
 	int boundary_conditions;
-	bool use_interpolation;
 	T radius_circular_path;
 	T* center_of_circle;
+
 	////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
+	bool use_interpolation;
 	T k_body_fl;
 	T k_tyre_fl;
 	T k_body_fr;
@@ -84,20 +89,28 @@ private:
 	T* upper_spring_stiffness, * lower_spring_stiffness, * upper_spring_damping, * lower_spring_damping;
 	T* upper_rotational_stiffness, * lower_rotational_stiffness;
 	T* vc, * vw1, * vw2, * vw3, * vw4, * vt1, * vt2, * vt3, * vt4; // velocity of the center of mass, wheel and tyre.
+
 	//////////////////////////	External Forces terms //////////////////////////////////////////////////////
 	T g;
 	T* FC;
 	T FT1, FT2, FT3, FT4;
 	T FW1, FW2, FW3, FW4;
 	T FR1, FR2, FR3, FR4;
+
 	//////////////////////////// Initial condition params //////////////////////////////////////////////////
 	T* initial_upper_spring_length, * initial_lower_spring_length, * initial_orientation, * initial_angular_velocity;
+
+
 	//////////////////////////// Arrays for intermediate steps /////////////////////////////////////////////
 	T* r1, * r2, * r3, * r4;
 	T* pcc; // position of center of mass
 	T* x_vector;
+
+
 	////////////////////////// Auxillary Parameters for Compute_f function //////////////////////////////////
 	T* r1_tilda, * r2_tilda, * r3_tilda, * r4_tilda, ** FW, * FT, * A_Ic, * A_rem;
+
+
 	/////////////////////////	Variables needed in compute_f function  /////////////////////////////////////
 	T* cf_C_cN, * cf_r_up1, * cf_r_up2, * cf_r_up3, * cf_r_up4, * cf_r_low1, * cf_r_low2, * cf_r_low3, * cf_r_low4;
 	T* cf_upper_normal1, * cf_upper_normal2, * cf_upper_normal3, * cf_upper_normal4, * cf_lower_normal1, * cf_lower_normal2, * cf_lower_normal3, * cf_lower_normal4, * cf_col_dat;
@@ -111,10 +124,15 @@ private:
 	T* cf_Hc, * cf_sum_torque_spring_car, * cf_Tc, * cf_wc_tilda;
 	T* cf_b_rem, * cf_Qc, * cf_qc_dot;
 	T* current_spring_lengths, * stiffness_vector;
+
+
 	////////////////////////// Lookup table ///////////////////////////////////////////
 	EVAAComputeStiffness* lookupStiffness;
 
-
+	/*
+	Calculate the positions of the tyres and wheels according to the initial orientation of the car
+	The legs always form a 90° angle to the car body, such that the rotational springs are at rest
+	*/
 	void get_initial_length(
 		T* initial_orientation_,
 		const T* r1_,
@@ -243,6 +261,9 @@ private:
 		mkl_free(C_Nc);
 	}
 
+	/*
+	For Debug purposes
+	*/
 	void write_matrix(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
 		for (size_t i = 0; i < count; ++i) {
@@ -256,6 +277,10 @@ private:
 		}
 		//exit(5);
 	}
+
+	/*
+	For Debug purposes
+	*/
 	void write_vector(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
 		for (size_t i = 0; i < count; ++i) {
@@ -269,6 +294,9 @@ private:
 
 
 public:
+	/*
+	Constructor
+	*/
 	MBD_method(const Simulation_Parameters& params, const Load_Params& load_params, EVAAComputeStiffness* interpolator) {
 
 		////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
@@ -511,6 +539,11 @@ public:
 		LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', this->DIM, A_Ic, this->DIM);
 	}
 
+	/*
+	Updates the velocity of the 4 wheels and tyres as well as the angular velocity, such that the car is already in the trajectory of the circle
+	overwrites the velocity in the tyres and wheels and the angular velocities
+	only keeps the tangential component of the velocity of the car body 
+	*/
 	void circular_path_initialization(T* vc, T* vw1, T* vw2, T* vw3, T* vw4, 
 		T* vt1, T* vt2, T* vt3, T* vt4, T* omega, T* pcc, 
 		T* pt1 , T* pt2, T* pt3, T* pt4, T &radius_param) {
@@ -564,7 +597,15 @@ public:
 
 	}
 
-	// prohibit any kind of motions on the tyres
+
+	/*
+	Fixes the tyres to their initial position
+	The forces acting on the tyres are now always zero
+	\param v is the velocity of the tyre
+	\param m is the mass of the tyre
+	\param p is the global position of the tyre
+	\result Fr The only force acting on the tyre
+	*/
 	void get_fixed_road_force(T* Fr1, T* Fr2, T* Fr3, T* Fr4) {
 		Fr1[0] = 0.0;
 		Fr1[1] = 0.0;
@@ -583,16 +624,23 @@ public:
 		Fr4[2] = 0.0;
 	}
 
-	// the force on the tyres is not affected, there is no road
+
+	/*
+	No interaction with the road, no additional forces on the tyres
+	\param v is the velocity of the tyre
+	\param m is the mass of the tyre
+	\param p is the global position of the tyre
+	\result Fr The only force acting on the tyre
+	*/
 	void get_nonfixed_road_force(T* Fr1, T* Fr2, T* Fr3, T* Fr4) {
 	}
 
-	// calculates the force in the tyre only with respect to its velocity, mass and position
-	// v is the velocity of the tyre
-	// m is the mass of the tyre
-	// p is the global position of the tyre
-	// the result is stored in Fr
-	// The rotation is always around the origin!
+	/* calculates the force in the tyre only with respect to its velocity, mass and position
+	\param v is the velocity of the tyre
+	\param m is the mass of the tyre
+	\param p is the global position of the tyre
+	\result Fr The only force acting on the tyre
+	*/
 	void get_circular_road_force(T* Fr, T* v, T &m, T* p) {
 
 		T *unit_y_vector, *velocity_direction_tyre;
@@ -631,7 +679,11 @@ public:
 	}
 
 
-
+	/*
+	Memory allocation of all the variables required in the solve function
+	To increase performance by removing repeting memory allocations
+	The same locations are overwritten at each timestep
+	*/
 	void compute_f_mem_alloc() {
 		// add to members
 
@@ -732,6 +784,10 @@ public:
 		stiffness_vector = (T*)mkl_calloc(8 * this->DIM, sizeof(T), this->alignment);
 
 	}
+
+	/*
+	Clean the memory allocated for the main solver
+	*/
 	void compute_f_clean() {
 		mkl_free(cf_C_cN);
 		mkl_free(cf_r_up1);
@@ -815,6 +871,13 @@ public:
 		mkl_free(stiffness_vector);
 	}
 
+	/*
+	Solver which is called at each time step
+	Computes the forces and torques on each point mass and computes the right hand side of the ODE
+	\param x_ current solution of the system
+	\param t_ current simulation time
+	\return f_ the load vector
+	*/
 	void compute_f3D_reduced(T* x_, T t_, T* f_) {
 		/*
 		Small performance gain might be possible by transforming C_cN to column major
@@ -1594,6 +1657,9 @@ public:
 
 	}
 
+	/*
+	Initializes the time iteration and handles the numerical scheme
+	*/
 	void solve(T* solution_vector) {
 		// From the formulation we have 61 dimensions in the solution vector
 		size_t solution_size = (this->num_iter + 1) * this->solution_dim;
@@ -1787,14 +1853,24 @@ public:
 		mkl_free(x_vector);
 	}
 
+	/*
+	Return the vector alignment (of the system)
+	*/
 	size_t get_alignment() {
 		return this->alignment;
 	}
 
+	/*
+	Returns the dimension of the solution vector (=61)
+	*/
 	size_t get_solution_dimension() {
 		return this->solution_dim;
 	}
 
+	/*
+	Beatiful output of the result
+	\param slm solution vector
+	*/
 	void print_final_result(T* sln) {
 		std::cout << "MBD: angular velocity w=\n\t["<<sln[0] << "\n\t " << -sln[2] << "\n\t " << sln[1] << "]" << std::endl;
 		std::cout << "MBD: car body velocity vc=\n\t[" << sln[3] << "\n\t " << -sln[5] << "\n\t " << sln[4] << "]" << std::endl;
@@ -1819,6 +1895,9 @@ public:
 
 	}
 
+	/*
+	Destructor
+	*/
 	~MBD_method() {
 
 		mkl_free(r1);

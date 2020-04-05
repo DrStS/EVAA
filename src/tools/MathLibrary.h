@@ -36,6 +36,10 @@
 #include <mkl.h>
 #endif
 
+
+/*
+Implements several useful math functions and solvers
+*/
 namespace MathLibrary {
    /***********************************************************************************************
 	* \brief Compute dense symmetrix matrix LU factorisation
@@ -68,6 +72,14 @@ namespace MathLibrary {
 	***********/
 	void printMKLInfo(void);
 	
+	/*
+	Replaces all values in an array which are below a threshold to a value
+	\param arr vector to be adapted
+	\param start index to start the update
+	\param end index to end the update
+	\param value to be written to the elements
+	\param tol threshold
+	*/
 	template <typename T>
 	void transmutate_elements(T* arr, size_t start, size_t end, T value, T tol) {
 		#pragma loop( ivdep )
@@ -78,6 +90,13 @@ namespace MathLibrary {
 		}
 	}
 
+	/*
+	Performs the elementwise multiplication of two vectors
+	\param v1 first vector
+	\param v2 second vector
+	\param dim length of the vector
+	\return result vector
+	*/
 	template <typename T>
 	void vector_elem_wise_product(T* v1, T* v2, T* result, size_t dim) {
 		#pragma loop( ivdep )
@@ -86,6 +105,13 @@ namespace MathLibrary {
 		}
 	}
 
+
+	/*
+	Creates a diagonal matrix with one same value on all diagonal entries (or overwrites the diagonal elements)
+	\param dim size of the matrix (dim x dim)
+	\param val value to be written to all diagonal´ntries
+	\return mat the diagonal matrix
+	*/
 	template <typename T>
 	void diagonal_matrix(T* mat, size_t dim, T val) {
 		#pragma loop( ivdep )
@@ -93,6 +119,10 @@ namespace MathLibrary {
 			mat[i*dim + i] = val;
 		}
 	}
+
+	/*
+	outputs the determinant
+	*/
 	template <typename T>
 	void check_status(T status) {
 		if (status == 1) {
@@ -105,6 +135,9 @@ namespace MathLibrary {
 		}
 	}
 
+	/*
+	Broken function (not safe to use)
+	*/
 	template <typename T>
 	void elementwise_inversion(T* vect, size_t dim) {
 		int alignment = 64;
@@ -117,6 +150,9 @@ namespace MathLibrary {
 		mkl_free(temp);
 	}
 
+	/*
+	Swaps the adresses of the elements a and b
+	*/
 	template <typename T>
 	void swap_address(T*& a, T*& b)
 	{
@@ -125,6 +161,12 @@ namespace MathLibrary {
 		b = c;
 	}
 
+	/*
+	Creates a diagonal matrix with diagonal entries from a vector(or overwrites the diagonal elements)
+	\param dim size of the matrix (dim x dim)
+	\param vector to be written to all diagonal entries
+	\return mat the diagonal matrix
+	*/
 	template <typename T>
 	void allocate_to_diagonal(T* matrix, T* vector, size_t dim) {
 		for (int i = 0; i < dim; ++i) {
@@ -132,6 +174,12 @@ namespace MathLibrary {
 		}
 	}
 
+	/*
+	Performs the cross product of two vectors of size 3
+	\param vect_A first vector
+	\param vect_B second vector
+	\return cross_P vect_A x vect_B
+	*/
 	template <typename T>
 	void crossProduct(const T* vect_A, const T* vect_B, T* cross_P)
 
@@ -141,6 +189,11 @@ namespace MathLibrary {
 		cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0];
 	}
 
+	/*
+	Converts quaternions to Euler angles from https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles 
+	\param q quaterion in format [XYZW]
+	\return E Euler angles in format [XYZ]
+	*/
 	template <typename T>
 	void ToEulerAngles(const T *q, T *E) {
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,6 +217,11 @@ namespace MathLibrary {
 		T cosy_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
 		E[2] = std::atan2(siny_cosp, cosy_cosp);
 	}
+
+	/*
+	Computes the rotation matrix out of 3 angle representation
+	\result R rotation matrix
+	*/
 	template <typename T>
 	void get_rotation_matrix(const T yaw, const T pitch,  const T roll, T* R) {
 		R[0] = (std::cos(yaw))*(std::cos(pitch));
@@ -177,6 +235,13 @@ namespace MathLibrary {
 		R[8] = (std::cos(pitch))*(std::cos(roll));
 	}
 
+	/*
+	Computes the angle between two vectors
+	\param v1 first vector
+	\param v2 second vector 
+	\param dim size of the vectors
+	\return angle in radians
+	*/
 	template <typename T>
 	T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim) {
 		T angle;
@@ -192,6 +257,12 @@ namespace MathLibrary {
 		angle = std::acosl(angle);
 		return angle;
 	}
+
+	/*
+	print a vector
+	\param vect the data
+	\param count its size
+	*/
 	template <typename T>
 	void write_vector(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
@@ -203,6 +274,12 @@ namespace MathLibrary {
 		}
 		//exit(5);
 	}
+
+	/*
+	print a matrix
+	\param vect the data
+	\param count its size=count x count
+	*/
 	template <typename T>
 	void write_matrix(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
@@ -218,6 +295,14 @@ namespace MathLibrary {
 		exit(5);
 	}
 
+	/*
+	Calculates the rotation quaternion between two angles
+	\param v1 first vector
+	\param v2 second vector
+	\param dim size of the vector
+	\return angle the angle between the two vectors (in radians)
+	\return rotation_axis unit axis
+	*/
 	template <typename T>
 	void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t dim_) {
 		T nrm_v1, nrm_v2, ra_nrm, q_nrm;
@@ -256,6 +341,15 @@ namespace MathLibrary {
 
 	}
 
+	/*
+	Calculates the rotation quaternion between two angles
+	\param v1 first vector
+	\param v2 second vector
+	\param dim size of the vector
+	\return angle the angle between the two vectors (in radians)
+	\return rotation_axis unit axis
+	\return q the quaternion
+	*/
 	template <typename T>
 	void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis, size_t dim_) {
 		get_quaternion(v1, v2, angle, rotation_axis, dim_);
@@ -266,6 +360,12 @@ namespace MathLibrary {
 		q_nrm = cblas_dnrm2(4, q, 1);
 		cblas_dscal(4, 1.0 / (q_nrm), q, 1);
 	}
+
+	/*
+	get the basis vectors connected to an orientation
+	\param initial_orientation the quaternion
+	\return transformed_basis the basis vectors in matrix form
+	*/
 	template <typename T>
 	void get_basis(const T* initial_orientation, T* transfrormed_basis) {
 		// quaternion initial_orientation yields basis(calculates basically the matrix rotation
@@ -306,6 +406,13 @@ namespace MathLibrary {
 		j = 2;
 		transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
 	}
+
+	/*
+	Performs the cross product in matrix form
+	a x b = a_tilda * b 
+	\param input_vector a 
+	\return tilda the matrix a_tilda
+	*/
 	template <typename T>
 	void get_tilda(const T* input_vector, T* tilda_output) {
 		/*
@@ -328,9 +435,21 @@ namespace MathLibrary {
 		tilda_output[8] = 0;
 	}
 
+	/*
+	Implements different numerical schemes
+	*/
 	template <typename T, class C>
 	class Solvers{
 	public:
+		/*
+		Implicit Euler with Broyden scheme
+		\param tol tolerance of the Broyden iteration
+		\param max_iter of the Broyden iteration
+		\param num_time_iter number of time steps to perform
+		\param dt timestep
+		\param x_previous previous solution
+		\return new solution 
+		*/
 		static void Broyden_Euler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
 			
 			size_t alignment = obj->get_alignment();
@@ -464,6 +583,15 @@ namespace MathLibrary {
 			MKL_free(x_new);
 		}
 
+		/*
+		Backward-Differences2 (BDF2) with Broyden scheme
+		\param tol tolerance of the Broyden iteration
+		\param max_iter of the Broyden iteration
+		\param num_time_iter number of time steps to perform
+		\param dt timestep
+		\param x_previous previous solution
+		\return new solution
+		*/
 		static void Broyden_PDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
 			size_t alignment = obj->get_alignment();
 			size_t x_len = obj->get_solution_dimension();
@@ -693,6 +821,15 @@ namespace MathLibrary {
 			MKL_free(x_new);
 		}
 
+		/*
+		Crank-Nicholson with Broyden scheme
+		\param tol tolerance of the Broyden iteration
+		\param max_iter of the Broyden iteration
+		\param num_time_iter number of time steps to perform
+		\param dt timestep
+		\param x_previous previous solution
+		\return new solution
+		*/
 		static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
 			/*
 			method requires that the object using this solver has following public member functions
@@ -845,6 +982,13 @@ namespace MathLibrary {
 			//std::cout << "Exiting Broyden!\n" << std::endl;
 		}
 
+		/*
+		explicit Runge-Kutta-4
+		\param num_time_iter number of time steps to perform
+		\param dt timestep
+		\param x_previous previous solution
+		\return new solution
+		*/
 		static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter){
 
 			size_t alignment = obj->get_alignment();
@@ -912,6 +1056,14 @@ namespace MathLibrary {
 			mkl_free(x);
 		}
 
+
+		/*
+		linear backward Euler
+		\param num_time_iter number of time steps to perform
+		\param dt timestep
+		\param x_previous previous solution
+		\return new solution
+		*/
 		static void Linear_Backward_Euler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
 			/*
 			This works for only symmetric positive definite A the provided matrix A would be overwritten and results stored in x
@@ -934,9 +1086,28 @@ namespace MathLibrary {
 			//LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF + 4, 1, A, DOF + 4, piv, u_n_p_1, 1);
 		}
 
+		/*
+		2nd order Stoermer-Verlet algorithm to update the position of one scalar
+		\param x position
+		\param v velocity
+		\param F force
+		\param delta_t timestep
+		\param mass
+		\return x position
+		*/
 		static void Stoermer_Verlet_Position(T& x, T& v, T& F, T& delta_t, T& mass) {
 			x += delta_t * v + delta_t * delta_t / (2 * mass) * F;
 		}
+
+		/*
+		2nd order Stoermer-Verlet algorithm to update the velocity of one scalar
+		\param v velocity
+		\param F force
+		\param F_new force at the following time step
+		\param delta_t timestep
+		\param mass
+		\return v velocity
+		*/
 		static void Stoermer_Verlet_Velocity(T& v, T& F, T& F_new, T& delta_t, T& mass) {
 			v += delta_t / (2 * mass) * (F + F_new);
 		}
