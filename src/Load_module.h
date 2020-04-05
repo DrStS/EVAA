@@ -24,11 +24,12 @@ private:
 public:
 	Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params load_param);
 	~Load_module();
-	void set_Profile(Profile* Profile_type);
-	void get_Profile(Profile* Profile_type);
+	void set_Profile(Profile* Profile_type); // not called
+	void get_Profile(Profile* Profile_type); // not called
 
 	/*
 	Calculates the internal forces under certain conditions
+	called in:  ALE.solve, global_frame_solver
 	\param time_t current simulation time
 	\param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
 	\return F_vec vector of forces in the car [GC:XYZ,W1:XYZ,T1:XYZ, ...]
@@ -38,6 +39,7 @@ public:
 
 	/*
 	Calculates the torque acting on the whole car
+	called in:  ALE.solve, global_frame_solver
 	\param time_t current simulation time
 	\param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
 	\return Torque acting on the total car system [XYZ]
@@ -45,7 +47,7 @@ public:
 	void update_torque(double time_t, double* Torque, double* Delta_x_vec);
 
 
-	void set_External_force(Load_Params load_param);
+	void set_External_force(Load_Params load_param); // in Load_module constructor commented
 
 
 	void test() {
