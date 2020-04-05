@@ -6,7 +6,7 @@ Circular::Circular(double* Pos, double Rad) {
 	Name = "Circular";
 
 	// Position
-	Position = (double*)mkl_calloc(DIM, sizeof(double), alignment);
+	Position = (double*)mkl_malloc(DIM * sizeof(double), alignment);
 	cblas_dcopy(3, Pos, 1, Position, 1);
 
 	Radius = Rad;
