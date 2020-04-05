@@ -196,11 +196,23 @@ public:
 
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
-			
+			/*if (iter==2){
+				MathLibrary::write_vector(Car_obj->u_current_linear, 11);
+				std::cout << "corners" << std::endl;
+				MathLibrary::write_vector(Car_obj->Corners_current, 12);
+			}*/
 			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
+			/*if (iter == 2) {
+				MathLibrary::write_vector(Delta_x_vec, 8);
+				MathLibrary::write_vector(force_vector, 27);
+				MathLibrary::write_vector(force_vector_11dof, 11);
+			}
 			Car_obj->update_lengths_11DOF();
-			
-
+			if (iter == 2) {
+				MathLibrary::write_vector(Car_obj->u_current_linear, 11);
+				exit(5);
+			}
+*/
 			if (params.interpolation) {
 				Car_obj->update_lengths_11DOF();
 				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);

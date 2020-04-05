@@ -133,6 +133,8 @@ public:
 		
 		cblas_dscal(DOF, -h_, u_n_m_1, 1);
 		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
+		/*std::cout << "inside the 11 dof" << std::endl;
+		MathLibrary::write_vector(u_n_m_1, 11);*/
 		
 	}
 	/*

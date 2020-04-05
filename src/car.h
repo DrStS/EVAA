@@ -49,9 +49,9 @@ private:
 		corners[9] = pos_CG[2];
 		corners[2] = pos_CG[0] - l_long[2]; // rl
 		corners[6] = pos_CG[1] + l_lat[2]; // rl
-		corners[8] = pos_CG[10];
+		corners[8] = pos_CG[2];
 		corners[3] = pos_CG[0] - l_long[3]; // rr
-		corners[7] = pos_CG[0] - l_lat[3]; // rr
+		corners[7] = pos_CG[1] - l_lat[3]; // rr
 		corners[11] = pos_CG[2];
 	}
 	/*
@@ -671,14 +671,14 @@ public:
 	*/
 	void update_lengths_11DOF() {
 		update_corners_11DOF();
-		current_spring_length[0] = Corners_current[8] - u_current_linear[3];
-		current_spring_length[1] = u_current_linear[3] - u_current_linear[4];
-		current_spring_length[2] = Corners_current[9] - u_current_linear[5];
-		current_spring_length[3] = u_current_linear[5] - u_current_linear[6];
-		current_spring_length[4] = Corners_current[10] - u_current_linear[7];
-		current_spring_length[5] = u_current_linear[7] - u_current_linear[8];
-		current_spring_length[6] = Corners_current[11] - u_current_linear[9];
-		current_spring_length[7] = u_current_linear[9] - u_current_linear[10];
+		current_spring_length[0] = std::abs(Corners_current[8] - u_current_linear[3]);
+		current_spring_length[1] = std::abs(u_current_linear[3] - u_current_linear[4]);
+		current_spring_length[2] = std::abs(Corners_current[9] - u_current_linear[5]);
+		current_spring_length[3] = std::abs(u_current_linear[5] - u_current_linear[6]);
+		current_spring_length[4] = std::abs(Corners_current[10] - u_current_linear[7]);
+		current_spring_length[5] = std::abs(u_current_linear[7] - u_current_linear[8]);
+		current_spring_length[6] = std::abs(Corners_current[11] - u_current_linear[9]);
+		current_spring_length[7] = std::abs(u_current_linear[9] - u_current_linear[10]);
 	}
 
 	/* Fills the global vector with all entries
@@ -812,11 +812,7 @@ public:
 	}
 	
 	~Car() {
-		std::cout << "The car is not flying anymore" << std::endl;
-
-		//test();
-
-		//mkl_free_buffers();
+		mkl_free_buffers();
 		mkl_free(Position_vec); 
 		Position_vec = nullptr;
 		mkl_free(Velocity_vec);
@@ -896,28 +892,5 @@ public:
 		angle_buffer = nullptr;
 		mkl_free(pos_buffer);
 		pos_buffer = nullptr;
-	}
-
-	void test() {
-		std::cout << "Test after initialization the car: \n\n";
-
-		std::cout << "Position_vec:\n";
-		MathLibrary::write_vector(Position_vec, 27);
-
-		std::cout << "Velocity_vec:\n";
-		MathLibrary::write_vector(Velocity_vec, 27);
-
-		std::cout << "Mass_vec:\n";
-		MathLibrary::write_vector(Mass_vec, 9);
-
-		std::cout << "angle_CG:\n";
-		MathLibrary::write_vector(angle_CG, 3);
-
-		std::cout << "w_CG:\n";
-		MathLibrary::write_vector(w_CG, 3);
-
-		std::cout << "I_CG:\n";
-		MathLibrary::write_vector(I_CG, 9);
-
 	}
 };
