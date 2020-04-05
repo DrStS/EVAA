@@ -111,18 +111,15 @@ EVAAComputeStiffness::EVAAComputeStiffness(int size, double* a, double b, double
 	for (auto i = 0; i < ny; i++) {
 		/***** Create Data Fitting task *****/
 		err = dfdNewTask1D(&task[i], nx, axis, xhint, 1, &grid[i * nx], yhint);
-		printf("new : %d\n", (int)err);
 		CheckDfError(err);
 
 		/***** Edit task parameters for look up interpolant *****/
 		err = dfdEditPPSpline1D(task[i], sorder, stype, bc_type, bc,
 			ic_type, ic, &scoeff[i * (nx - 1) * sorder], scoeffhint);
-		printf("edit : %d\n", (int)err);
 		CheckDfError(err);
 
 		/***** Construct linear spline using STD method *****/
 		err = dfdConstruct1D(task[i], DF_PP_SPLINE, DF_METHOD_STD);
-		printf("constr : %d\n", (int)err);
 		CheckDfError(err);
 	}
 }
