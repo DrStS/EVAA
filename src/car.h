@@ -775,7 +775,7 @@ public:
 	}
 	
 	~Car() {
-
+		mkl_free_buffers();
 		mkl_free(Position_vec); 
 		mkl_free(Velocity_vec);
 		mkl_free(Mass_vec);

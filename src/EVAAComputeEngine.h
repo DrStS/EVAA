@@ -92,6 +92,7 @@ public:
 
 	// Fancy solver ALE
 	void computeALE(void);
+	void Car_test(void);
 
 	// MKL
 /*	void computeMKLNasa(void);

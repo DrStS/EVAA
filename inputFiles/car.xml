@@ -29,7 +29,7 @@
         </TyreSprings>
       </Geometry>
       <Stiffness>        
-<!--          <Constant>
+          <Constant>
           <Tyre>
             <ReerRight>260e3</ReerRight>
             <ReerLeft>260e3</ReerLeft>
@@ -42,7 +42,7 @@
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
           </Body>
-        </Constant> -->
+        </Constant> 
         <LookupTable>
           <FilePath>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePath>
         </LookupTable>

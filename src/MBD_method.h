@@ -733,6 +733,7 @@ public:
 
 	}
 	void compute_f_clean() {
+		mkl_free_buffers();
 		mkl_free(cf_C_cN);
 		mkl_free(cf_r_up1);
 		mkl_free(cf_r_up2);
@@ -1820,7 +1821,7 @@ public:
 	}
 
 	~MBD_method() {
-
+		mkl_free_buffers();
 		mkl_free(r1);
 		mkl_free(r2);
 		mkl_free(r3);

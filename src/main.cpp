@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
     anaysisTimer01.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
     anaysisTimer01.start();
- //   myComputeEngine->computeALE();
+    myComputeEngine->computeALE();
     anaysisTimer01.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(computeALE).\n\n\n" << std::endl;
 	myComputeEngine->clean();
