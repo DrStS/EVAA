@@ -773,18 +773,19 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 }
 
 
-//void EVAAComputeEngine::computeMBD(void) {
-//	size_t num_iter = _parameters.num_time_iter;
-//	const int alignment = 64;
-//	size_t solution_dim = _parameters.solution_dim;
-//	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
-//	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
-//	solver.solve(soln);
-//	std::cout << "MBD: Solution after " << num_iter << " timesteps" << std::endl;
-//	solver.print_final_result(soln);
-//	mkl_free(soln);
-//}
-void EVAAComputeEngine::computeMBD(void) {}
+
+void EVAAComputeEngine::computeMBD(void) {
+	size_t num_iter = _parameters.num_time_iter;
+	const int alignment = 64;
+	size_t solution_dim = _parameters.solution_dim;
+	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
+	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
+	solver.solve(soln);
+	std::cout << "mbd: solution after " << num_iter << " timesteps" << std::endl;
+	solver.print_final_result(soln);
+	mkl_free(soln);
+}
+
 
 void EVAAComputeEngine::clean(void) {
 

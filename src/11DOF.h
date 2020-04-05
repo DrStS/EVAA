@@ -132,6 +132,9 @@ public:
 		int sol_size = (floor(tend_ / h_) + 1);
 		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
 		u_sol = (T*)mkl_calloc((sol_size+1) * (DOF), sizeof(T), alignment);
+		std::cout << "Sol size = " << sol_size << std::endl;
+
+		interpolation_enabled = params.interpolation;
 
 		f_n_p_1[0] = load_param.external_force_body[2];
 		f_n_p_1[3] = load_param.external_force_wheel[2 * 3 + 2];
@@ -157,15 +160,22 @@ public:
 		int iter = 1;
 		T t = h_;
 		double eps = h_ / 100;
-		T* solution_vect;
+		T* solution_vect = u_sol;
+		std::cout << "car alignment =" << car_->alignment << std::endl;
+		//cblas_dcopy(DOF, car_->u_prev_linear, 1, solution_vect, 1);
 		while (std::abs(t - (tend_ + h_)) > eps) {
-			solution_vect = u_sol + iter * (DOF);
-			update_step(f_n_p_1, solution_vect);
-			params
+			if (interpolation_enabled) {
+				(car_)->update_lengths_11DOF();
+				(car_)->lookupStiffness->getStiffness((car_)->current_spring_length, (car_)->k_vec);
+				(car_)->update_K((car_)->k_vec);
+			}
+			//solution_vect = u_sol + iter * (DOF);
+			update_step(f_n_p_1, sol_vect);
 			iter++;
 			t += h_;
 		}
-		cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
+		//cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
+		std::cout << "iter = " << iter << std::endl;
 	}
 	virtual ~linear11dof_full() {
 		mkl_free(u_sol);
@@ -177,4 +187,5 @@ private:
 	T* u_sol, *f_n_p_1;
 	T h_;
 	int condition_type;
+	bool interpolation_enabled;
 };
