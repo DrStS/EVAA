@@ -110,6 +110,9 @@ public:
 		Load_module_obj->update_force(t, force_vector, Delta_x_vec, new_centripetal_force);
 		Load_module_obj->update_torque(t, new_torque, Delta_x_vec);
 
+		cblas_dscal(2, -1, new_centripetal_force, 1);
+
+
 
 		// 1. Update global X,Y velocities
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[0], centripetal_force[0], new_centripetal_force[0], h_, global_mass);
@@ -175,11 +178,8 @@ public:
 			Load_module_obj->update_torque(t, torque, Delta_x_vec);
 			// convert centrifugal force to centripetal (only for x, y direction)
 			cblas_dscal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
-			/*MathLibrary::write_vector(force_vector, 27);
-			exit(5);*/
 
 			global_frame_solver(t);
-
 
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
@@ -212,6 +212,8 @@ public:
 			iter++;
 			
 		}
+
+
 		cblas_dcopy((Car_obj->vec_DIM * Car_obj->DIM), u_sol + (iter - 1) * (Car_obj->vec_DIM * Car_obj->DIM), 1, sol_vect, 1);
 		Car_obj->combine_results();
 

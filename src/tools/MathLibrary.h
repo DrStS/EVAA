@@ -1097,6 +1097,7 @@ namespace MathLibrary {
 		*/
 		static void Stoermer_Verlet_Position(T& x, T& v, T& F, T& delta_t, T& mass) {
 			x += delta_t * v + delta_t * delta_t / (2 * mass) * F;
+
 		}
 
 		/*
