@@ -755,4 +755,27 @@ public:
 		mkl_free(Corners_rot); 
 		mkl_free(Corners_init);
 	}
+
+	void test() {
+		std::cout << "Test after initialization the car: \n\n";
+
+		std::cout << "Position_vec:\n";
+		MathLibrary::write_vector(Position_vec, 27);
+
+		std::cout << "Velocity_vec:\n";
+		MathLibrary::write_vector(Velocity_vec, 27);
+
+		std::cout << "Mass_vec:\n";
+		MathLibrary::write_vector(Mass_vec, 9);
+
+		std::cout << "angle_CG:\n";
+		MathLibrary::write_vector(angle_CG, 3);
+
+		std::cout << "w_CG:\n";
+		MathLibrary::write_vector(w_CG, 3);
+
+		std::cout << "I_CG:\n";
+		MathLibrary::write_vector(I_CG, 9);
+
+	}
 };

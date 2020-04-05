@@ -35,6 +35,13 @@ public:
 
 		std::cout << "\n\nActive Profile test:\n";
 		Active_Profile->test();
+
+		std::cout << "\n\nCar test:\n";
+		Car_obj->test();
+
+
+
+
 	}
 };
 
