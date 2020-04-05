@@ -2,6 +2,7 @@
 #include <mkl.h>
 #include "ReadXML.h"
 #include "MathLibrary.h"
+#include <cmath>
 
 template <class T>
 class Car {
@@ -41,17 +42,20 @@ private:
 	Construct corner initilizer
 	*/
 	void construct_corner(T* pos_CG, T* corners) {
-		corners[0] = pos_CG[0] + l_long[0]; // fl
-		corners[4] = pos_CG[1] + l_lat[0]; // fl
+		T c, s;
+		c = std::cos(angle_CG[2]);
+		s = std::sin(angle_CG[2]);
+		corners[0] = pos_CG[0] + l_long[0] * c - l_lat[0] * s; // fl
+		corners[4] = pos_CG[1] + l_lat[0] * c + l_long[0]*s ; // fl
 		corners[8] = pos_CG[2];
-		corners[1] = pos_CG[0] + l_long[1]; // fr
-		corners[5] = pos_CG[1] - l_lat[1]; // fr
+		corners[1] = pos_CG[0] + l_long[1] * c + l_lat[1] * s; // fr
+		corners[5] = pos_CG[1] - l_lat[1] * c + l_long[1] * s; // fr
 		corners[9] = pos_CG[2];
-		corners[2] = pos_CG[0] - l_long[2]; // rl
-		corners[6] = pos_CG[1] + l_lat[2]; // rl
+		corners[2] = pos_CG[0] - l_long[2]*c - l_lat[2]*s; // rl
+		corners[6] = pos_CG[1] + l_lat[2]*c - l_long[2]*s; // rl
 		corners[8] = pos_CG[2];
-		corners[3] = pos_CG[0] - l_long[3]; // rr
-		corners[7] = pos_CG[1] - l_lat[3]; // rr
+		corners[3] = pos_CG[0] - l_long[3]*c + l_lat[3]*s; // rr
+		corners[7] = pos_CG[1] - l_lat[3]*c - l_long[3]*s; // rr
 		corners[11] = pos_CG[2];
 	}
 	/*
@@ -455,12 +459,10 @@ public:
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////// ALE Buffer Initialization /////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
 		construct_ALE_vectors(Position_vec, Position_vec_xy);
 		construct_ALE_vectors(Velocity_vec, Velocity_vec_xy);
 		*Angle_z = angle_CG[2];
 		*w_z = w_CG[2];
-
 		
 
 
@@ -830,6 +832,53 @@ public:
 	void set_I_body_yy(const T& I_body_yy_val) {
 		I_CG[4] = I_body_yy_val;
 	}
+	void do_ALE_update(T* change, T* global_vect, size_t dim, size_t incx) {
+#pragma loop(ivdep)
+		for (size_t i = 0; i < dim; ++i) {
+			global_vect[i*incx] += change[0];
+			global_vect[i*incx + 1] += change[1];
+		}
+	}
+	void get_ALE_change(T* current_ALE_vect, T* global_vect, T* change_vect) {
+		change_vect[0] = current_ALE_vect[0] - global_vect[0];
+		change_vect[1] = current_ALE_vect[1] - global_vect[1];
+	}
+	void get_vel_pos_change(T* velocity_change, T* position_change, T* angle_change) {
+		get_ALE_change(Position_vec_xy, Position_vec_prev_xy, position_change);
+		get_ALE_change(Velocity_vec_xy, Velocity_vec_prev_xy, velocity_change);
+	}
+	void apply_ALE_change() {
+		/*Now both vector are at current state. swap pointer and CG location in new previous will be updated and following will be obselete which */
+
+		T c, s;
+		c = std::cos(*Angle_z);
+		s = std::sin(*Angle_z);
+		Position_vec_xy[2] = Position_vec_xy[0] + l_long[0] * c - l_lat[0] * s; // fl
+		Position_vec_xy[3] = Position_vec_xy[1] + l_lat[0] * c + l_long[0] * s; // fl
+		Position_vec_xy[4] = Position_vec_xy[2]; // fl
+		Position_vec_xy[5] = Position_vec_xy[3]; // fl
+		Position_vec_xy[6] = Position_vec_xy[0] + l_long[1] * c + l_lat[1] * s; // fr
+		Position_vec_xy[7] = Position_vec_xy[1] - l_lat[1] * c + l_long[1] * s; // fr
+		Position_vec_xy[8] = Position_vec_xy[6]; // fl
+		Position_vec_xy[9] = Position_vec_xy[7]; // fl
+		Position_vec_xy[10] = Position_vec_xy[0] - l_long[2] * c - l_lat[2] * s; // rl
+		Position_vec_xy[11] = Position_vec_xy[1] + l_lat[2] * c - l_long[2] * s; // rl
+		Position_vec_xy[12] = Position_vec_xy[10]; // fl
+		Position_vec_xy[13] = Position_vec_xy[11]; // fl
+		Position_vec_xy[14] = Position_vec_xy[0] - l_long[3] * c + l_lat[3] * s; // rr
+		Position_vec_xy[15] = Position_vec_xy[1] - l_lat[3] * c - l_long[3] * s; // rr
+		Position_vec_xy[16] = Position_vec_xy[14]; // fl
+		Position_vec_xy[17] = Position_vec_xy[15]; // fl
+	}
+
+	void get_final_vel_pos_change(T* velocity_change, T* position_change) {
+		get_ALE_change(Position_vec_xy, Position_vec, position_change);
+		get_ALE_change(Velocity_vec_xy, Velocity_vec, velocity_change);
+	}
+	void apply_final_ALE_change(T* velocity_change, T* position_change) {
+		do_ALE_update(position_change, Position_vec);
+		do_ALE_update(velocity_change, Velocity_vec);
+	}
 	
 	~Car() {
 		mkl_free_buffers();
@@ -892,8 +941,10 @@ public:
 		//////////////////////////////////// ALE Vectors ///////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		mkl_free(Position_vec_xy);
+
 		Position_vec_xy = nullptr;
 		mkl_free(Velocity_vec_xy);
+
 		Velocity_vec_xy = nullptr;
 		delete Angle_z;
 		Angle_z = nullptr;

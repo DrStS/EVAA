@@ -64,6 +64,7 @@ private:
 	T* velXY_vec;
 	T* ang_velZ;
 
+
 	// quantities for the whole car
 	T global_inertia_Z;
 	T global_mass;
@@ -101,16 +102,6 @@ public:
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[0], Car_obj->Velocity_vec_xy[0], centripetal_force[0], h_, global_mass);
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[1], Car_obj->Velocity_vec_xy[1], centripetal_force[1], h_, global_mass); 
 		
-		
-		#pragma loop(ivdep)
-		for (size_t i = 1; i < Car_obj->vec_DIM; ++i) {
-			Car_obj->Position_vec_xy[2 * i] = Car_obj->Position_vec_xy[0];
-		}
-		#pragma loop(ivdep)
-		for (size_t i = 1; i < Car_obj->vec_DIM; ++i) {
-			Car_obj->Position_vec_xy[2 * i + 1] = Car_obj->Position_vec_xy[1];
-		}
-
 		// 4. Update Z-rotation
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(*Car_obj->Angle_z, *Car_obj->w_z, torque[2], h_, global_inertia_Z);
 
@@ -123,18 +114,13 @@ public:
 		// 1. Update global X,Y velocities
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[0], centripetal_force[0], new_centripetal_force[0], h_, global_mass);
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[1], centripetal_force[1], new_centripetal_force[1], h_, global_mass);
-		#pragma loop(ivdep)
-		for (size_t i = 1; i < Car_obj->vec_DIM; ++i) {
-			Car_obj->Velocity_vec_xy[2 * i] = Car_obj->Velocity_vec_xy[0];
-		}
-		#pragma loop(ivdep)
-		for (size_t i = 1; i < Car_obj->vec_DIM; ++i) {
-			Car_obj->Velocity_vec_xy[2 * i + 1] = Car_obj->Velocity_vec_xy[1];
-		}
+		
 
 		// 3. Update Z-angular velocities
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(*Car_obj->w_z, torque[2], new_torque[2], h_, global_inertia_Z);
 
+		/* Idea!! What if we do it at the end, since the displacement is a vector and by triangle rule sum of all should add up force is computed using on*/
+		Car_obj->apply_ALE_change();
 		// update forces and torque
 		centripetal_force[0] = new_centripetal_force[0];
 		centripetal_force[1] = new_centripetal_force[1];
@@ -165,7 +151,7 @@ public:
 		new_centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), alignment);  // this was 2 dimensional allocation and update force updates 3 dimension on this
 		k_vect = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
 		Delta_x_vec = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
-
+		
 		torque = new T[3];
 		new_torque = new T[3];
 		
@@ -236,7 +222,7 @@ public:
 		MKL_free(centripetal_force);
 		MKL_free(new_centripetal_force);
 		MKL_free(Delta_x_vec);
-
+		
 		delete[] torque;
 		delete[] new_torque;
 	}
