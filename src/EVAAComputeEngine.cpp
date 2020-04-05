@@ -823,6 +823,7 @@ void EVAAComputeEngine::computeALE(void) {
 		std::cout << soln[i] << std::endl;
 	}
 	std::cout << std::endl;
+	Ale_sys->print_final_results();
 
 
 	delete Car1;

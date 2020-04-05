@@ -117,6 +117,9 @@ void Load_module::get_Profile(Profile* Profile_type) {
 
 void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec, double* Normal_ext) {
 	Active_Profile->get_Profile_force(Car_obj, F_vec, Normal_ext);
+	/*
+	Modify the profile to know where the ground is and apply normal force accordingly
+	*/
 	
 
 	// F_Ti += -0.25 * N; [F[2], F[4], F[6], F[8]]
@@ -135,17 +138,22 @@ void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec
 	for (auto i = 0; i < (vec_DIM - 1); i += 2) {
 		// use the elastic forces at wheels
 		// F_CG += k_wi * delta_x_i
-		cblas_daxpy(DIM, k_vec[i], &Delta_x_vec[DIM * i], incx, F_vec, incx);
+		F_vec[2] += k_vec[i] * Delta_x_vec[i];
+		//cblas_daxpy(DIM, k_vec[i], &Delta_x_vec[DIM * i], incx, F_vec, incx);
 		// F_W_i += -k_wi * delta_x_i
-		cblas_daxpy(DIM, -k_vec[i], &Delta_x_vec[DIM * i], incx, &F_vec[DIM * (i + 1)], incx);
+		//cblas_daxpy(DIM, -k_vec[i], &Delta_x_vec[DIM * i], incx, &F_vec[DIM * (i + 1)], incx);
+		F_vec[DIM * (i + 1) + 2] -= k_vec[i] * Delta_x_vec[i];
 
 		// use the elastic forces at tyres
-		// F_W_i += -k_t_i * delta_x_{i+1}
-		cblas_daxpy(DIM, -k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], incx, &F_vec[DIM * (i + 1)], incx);
-		// F_T_i += k_t_i * delta_x_{i+1}
-		cblas_daxpy(DIM, k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], incx, &F_vec[DIM * (i + 2)], incx);
+		// F_W_i += k_t_i * delta_x_{i+1}
+		//cblas_daxpy(DIM, k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], incx, &F_vec[DIM * (i + 1)], incx);
+		F_vec[DIM * (i + 1) + 2] += k_vec[i + 1] * Delta_x_vec[(i + 1)];
+		// F_T_i += -k_t_i * delta_x_{i+1}
+		//cblas_daxpy(DIM, -k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], incx, &F_vec[DIM * (i + 2)], incx);
+		F_vec[DIM * (i + 2) + 2] -= k_vec[i + 1] * Delta_x_vec[(i + 1)];
 	}
 	// test add
+	cblas_daxpy(DIM, 1.0, External_force, incx, F_vec, incx);
 	
 }
 
