@@ -9,7 +9,7 @@ k_body_rl=16e3*0.82;
 k_tyre_rl=260e3;
 k_body_rr=16e3*0.82;
 k_tyre_rr=260e3;
-penalty = 1e4;
+penalty = 1e3;
 k_body_rot_fl = penalty;  % this is a penalty value->try it as high as possible and see how the convergence evolves
 k_body_rot_fr = penalty;
 k_body_rot_rl = penalty;
@@ -17,7 +17,7 @@ k_body_rot_rr = penalty;
 k_tyre_rot_fl = penalty;
 k_tyre_rot_fr = penalty;
 k_tyre_rot_rl = penalty;
-k_tyre_rot_rr = 1e4;  % 
+k_tyre_rot_rr = penalty;  % 
 c_body_fl=@(v)0*v;    % allow nonlinear damping 
 c_tyre_fl=@(v)0*v;
 c_body_fr=@(v)0*v;
@@ -65,8 +65,8 @@ mass_tyre = [mass_tyre_rr, mass_tyre_rl, mass_tyre_fl, mass_tyre_fr];           
 upper_spring_length = [0.2; 0.2; 0.2; 0.2];
 lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 
-initial_upper_spring_length = [0.24; 0.24; 0.16; 0.16];                 % PLAY AROUND 
-initial_lower_spring_length = [0.16; 0.16; 0.24; 0.24];
+initial_upper_spring_length = [0.2; 0.2; 0.2; 0.2];                 % PLAY AROUND 
+initial_lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 
 upper_spring_stiffness = [k_body_rr; k_body_rl; k_body_fl; k_body_fr];
 lower_spring_stiffness = [k_tyre_rr; k_tyre_rl; k_tyre_fl; k_tyre_fr];
@@ -99,7 +99,7 @@ initial_position = [5;0;0];                                             % of the
 visualize = false;
 
 % force parameters
-g = 0;               % there is no gravity in outer space! 
+g = 1;               % there is no gravity in outer space! 
 
 FC = [0; -mass*g; 0];    % external forces in y_direction
 
@@ -114,8 +114,8 @@ FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
 % simulation specifications 
-num_iter = 1000000;     % LENGTH OF THE SIMULATION
-delta_t = 1e-4;       % PLAY AROUND
+num_iter = 100000;     % LENGTH OF THE SIMULATION
+delta_t = 1e-3;       % PLAY AROUND
 tol = 1e-7;           % !!!! PLAY AROUND !!!!
 max_iter = 1000000;     % for Broyden´
  
@@ -151,8 +151,8 @@ FR4 = @(t, y, pcc, vt, vb, F) zeros(3,1);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
-solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
-% solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
+% solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol, metrics] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 
                 lower_spring_length, upper_spring_length, initial_lower_spring_length, initial_upper_spring_length, ...
