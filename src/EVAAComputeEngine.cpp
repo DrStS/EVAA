@@ -86,7 +86,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 	ReadXML reader(_xmlFileName, _xmlLoadFileName);
 	reader.ReadParameters(_parameters);
 	reader.ReadLoadParameters(_load_module_parameter);
-	reader.ReadLookupParameters(lookupStiffness, _parameters);
+	reader.ReadLookupParameters(&lookupStiffness, _parameters);
 	std::cout << "interpolation = " << _parameters.interpolation << std::endl;
 }
 
@@ -801,10 +801,11 @@ void EVAAComputeEngine::computeALE(void) {
 		_load_module_parameter.profile_radius);
 	Road_Profile->update_initial_condition(Car1);
 
-	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
+	/*Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
 	std::cout << "Load module initialized!\n";
+	Load_module1->test();*/
 
-	delete Load_module1;
+	//delete Load_module1;
 	delete Road_Profile;
 	delete Car1;
 
