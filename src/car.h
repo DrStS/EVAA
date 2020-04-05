@@ -233,9 +233,9 @@ public:
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////// ALE Buffer Allocation /////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Position_vec_xy = (T*)mkl_malloc((DIM - 1)*vec_DIM, alignment);
+		Position_vec_xy = (T*)mkl_malloc((DIM - 1) * vec_DIM * sizeof(T), alignment);
 		Angle_z = new T;
-		Velocity_vec_xy = (T*)mkl_malloc((DIM - 1)*vec_DIM, alignment);
+		Velocity_vec_xy = (T*)mkl_malloc((DIM - 1) * vec_DIM * sizeof(T), alignment);
 		w_z = new T;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -254,6 +254,7 @@ public:
 		l_lat[3] = params.l_lat[0];
 
 
+		/// Good indices???
 		I_CG[0] = params.I_body[0];
 		I_CG[1] = params.I_body[3];
 		I_CG[2] = params.I_body[4];
@@ -363,7 +364,7 @@ public:
 			xml_start = params.initial_pos_tyre + 0 * 3;
 			position_start += 6; // skip 3 for the wheel
 			cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 26)
-		}
+		} 
 		else {
 			T* W_fl = initial_position + 3;
 			T* W_fr = initial_position + 9;
@@ -813,9 +814,9 @@ public:
 	~Car() {
 		std::cout << "The car is not flying anymore" << std::endl;
 
-		test();
+		//test();
 
-		mkl_free_buffers();
+		//mkl_free_buffers();
 		mkl_free(Position_vec); 
 		Position_vec = nullptr;
 		mkl_free(Velocity_vec);
