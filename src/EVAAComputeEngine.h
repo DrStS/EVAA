@@ -87,10 +87,15 @@ public:
 	* \author Stefan Sicklinger
 	***********/
 
-	// MKL MBD solver
+
+	/*
+	Solve the MBD system
+	*/
 	void computeMBD(void);
 
-	// Fancy solver ALE
+	/*
+	Fancy solver ALE
+	*/
 	void computeALE(void);
 
 	// MKL
