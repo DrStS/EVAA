@@ -762,12 +762,12 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 }
 
 
-void evaacomputeengine::computembd(void) {
+void EVAAComputeEngine::computeMBD(void) {
 	size_t num_iter = _parameters.num_time_iter;
 	const int alignment = 64;
 	size_t solution_dim = _parameters.solution_dim;
-	floatevaa* soln = (floatevaa*)mkl_calloc(solution_dim, sizeof(floatevaa), alignment);
-	mbd_method<floatevaa> solver(_parameters, _load_module_parameter, lookupstiffness);
+	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
+	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
 	solver.solve(soln);
 	std::cout << "mbd: solution after " << num_iter << " timesteps" << std::endl;
 	solver.print_final_result(soln);
