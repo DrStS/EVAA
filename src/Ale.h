@@ -132,6 +132,7 @@ public:
 
 	}
 
+
 	/*
 	Executes the time iteration of the ALE solvers, switches from global position update to solving of the linear 11DOF system
 	*/
@@ -228,6 +229,7 @@ public:
 		delete[] torque;
 		delete[] new_torque;
 	}
+
 
 	/*
 	adds the contribution of the wheels and tyres to the inertia moment of the car
