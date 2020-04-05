@@ -146,10 +146,6 @@ EVAAComputeStiffness::~EVAAComputeStiffness() {
 	for (auto i = 0; i < ny; i++) {
 		dfDeleteTask(&task[i]);
 	}
-
-	/* free used space */
-	mkl_free(task);
-	task = nullptr;
 	mkl_free(scoeff);
 	scoeff = nullptr;
 	delete datahint;

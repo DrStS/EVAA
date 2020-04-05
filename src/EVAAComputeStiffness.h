@@ -48,7 +48,7 @@ public:
 
 class EVAAComputeStiffness {
 private:
-	DFTaskPtr* task;									// Data Fitting task descriptor
+	DFTaskPtr* task = nullptr;									// Data Fitting task descriptor
 	MKL_INT nx;											// number of break points (data points in the grid)
 	MKL_INT xhint = DF_NON_UNIFORM_PARTITION;			// additional info about break points
 	MKL_INT ny;											// number of functions ( in our case 1 per task but 8 in total)
@@ -59,10 +59,10 @@ private:
 	MKL_INT rhint = DF_NO_HINT;							// interpolation results storage format
 	double* axis;										// array of break points (axis with length values of the grid points)
 	double* grid;										// function values 
-	double* ic = 0;										// internal conditions
-	double* bc = 0;										// boundary conditions
-	double* scoeff;										// array of spline coefficients
-	double* datahint = 0;								// additional info about the structure
+	double* ic = nullptr;										// internal conditions
+	double* bc = nullptr;										// boundary conditions
+	double* scoeff = nullptr;										// array of spline coefficients
+	double* datahint = nullptr;								// additional info about the structure
 	MKL_INT stype;										// linear = DF_PP_DEFAULT, spline = DF_PP_NATURAL
 	MKL_INT sorder;										// linear = DF_PP_LINEAR, spline = DF_PP_CUBIC
 public:
