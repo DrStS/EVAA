@@ -92,7 +92,9 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 
 
 EVAAComputeEngine::~EVAAComputeEngine() {
-	delete lookupStiffness;
+	if (_parameters.interpolation) {
+		delete lookupStiffness;
+	}
 }
 
 void EVAAComputeEngine::prepare(void) {
