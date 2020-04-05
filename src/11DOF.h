@@ -50,7 +50,7 @@ protected:
 	// solution in current timestep
 	T* u_n;
 	
-	*A, * B;
+	T*A, * B;
 
 	size_t* tyre_index_set;
 

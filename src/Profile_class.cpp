@@ -23,6 +23,7 @@ Circular::Circular(double* Pos, double Rad) {
 
 Circular::~Circular() {
 	std::cout << "I am getting fucked in destruction of profile" << std::endl;
+	test();
 	mkl_free(Position);
 	mkl_free(unit_y_vector);
 	mkl_free(velocity_direction);
