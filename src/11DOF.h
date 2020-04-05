@@ -149,7 +149,7 @@ public:
 		cblas_daxpy(mat_len, factor_h, car_->D, 1, A, 1);
 		cblas_daxpy(mat_len, 1, car_->K, 1, A, 1);
 		cblas_dscal(DOF, -factor_h2, u_n_m_1, 1);
-
+		cblas_dscal(DOF, 0.0, force, 1);
 		MathLibrary::Solvers<T, linear11dof>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, DOF);
 		cblas_dcopy(DOF, u_n_p_1, 1, solution, 1);
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_1

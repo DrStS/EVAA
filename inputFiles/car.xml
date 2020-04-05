@@ -16,16 +16,16 @@
           <FrontRight>1.395</FrontRight>
         </LongitudinalReferenceToWheel>
         <SuspensionSprings>
-          <ReerRight>0.5</ReerRight>
-          <ReerLeft>0.5</ReerLeft>
-          <FrontLeft>0.5</FrontLeft>
-          <FrontRight>0.5</FrontRight>
+          <ReerRight>0.2</ReerRight>
+          <ReerLeft>0.2</ReerLeft>
+          <FrontLeft>0.2</FrontLeft>
+          <FrontRight>0.2</FrontRight>
         </SuspensionSprings>
         <TyreSprings>
-          <ReerRight>0.5</ReerRight>
-          <ReerLeft>0.5</ReerLeft>
-          <FrontLeft>0.5</FrontLeft>
-          <FrontRight>0.5</FrontRight>
+          <ReerRight>0.2</ReerRight>
+          <ReerLeft>0.2</ReerLeft>
+          <FrontLeft>0.2</FrontLeft>
+          <FrontRight>0.2</FrontRight>
         </TyreSprings>
       </Geometry>
       <Stiffness>        
@@ -223,7 +223,7 @@
   <SimulationParameters>
     <GeneralSettings>
       <TimestepSize>1e-3</TimestepSize>
-      <NumberOfIterations>100000</NumberOfIterations>
+      <NumberOfIterations>1000</NumberOfIterations>
       <Gravity>
         <x>0</x>
         <y>0</y>
@@ -231,7 +231,7 @@
       </Gravity>
     </GeneralSettings>
     <MultyBodyDynamics>
-      <Solver>RK4</Solver>
+      <Solver>Broyden_CN</Solver>
       <MaximalIterationNumber>10000</MaximalIterationNumber>
       <Tolerance>1e-7</Tolerance>
       <SolutionDimension>61</SolutionDimension>

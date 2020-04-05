@@ -94,7 +94,7 @@ private:
 		global_vect[2] = vect[0];
 #pragma loop(ivdep)
 		for (size_t i = 1; i < vec_DIM; ++i) {
-			global_vect[DIM*i + 2] = vect[(DIM - 1) + i];
+			global_vect[DIM*i + 2] += vect[(DIM - 1) + i];
 		}
 	}
 	

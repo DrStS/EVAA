@@ -564,19 +564,9 @@ void EVAAComputeEngine::computeMKLlinear11dof() {
 		for (auto i = 0; i < DOF; ++i) {
 			std::cout << soln[i] << std::endl;
 		}
+		/*std::string fname = "test_out";
+		fill_data(fname.c_str(), soln, 1, 11);*/
 		mkl_free(soln);
-		/*floatEVAA* vect1 = (floatEVAA*)mkl_calloc(27, sizeof(floatEVAA), alignment);
-		floatEVAA* vect2 = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
-		floatEVAA* vect3 = (floatEVAA*)mkl_calloc(18, sizeof(floatEVAA), alignment);
-		for (int i = 0; i < 27; ++i) {
-			vect2[i] = rand();
-			vect3[i] = rand()/2.0;
-		}
-		Car1->populate_results(vect3, vect2, vect1);
-		MathLibrary::write_vector(vect1, 27);
-		MathLibrary::write_vector(vect2, 11);
-		MathLibrary::write_vector(vect3, 18);
-		exit(5);*/
 		delete Car1;
 	}
 	else {
@@ -820,11 +810,7 @@ void EVAAComputeEngine::computeALE(void) {
 	floatEVAA* soln = (floatEVAA*)mkl_malloc(solution_dim * sizeof(floatEVAA), Car1->alignment);
 
 	Ale_sys->solve(soln);
-	std::cout << "ALE: Solution after " << num_iter << " timesteps, f =" << std::endl;
-	for (auto i = 0; i < solution_dim; ++i) {
-		std::cout << soln[i] << std::endl;
-	}
-	std::cout << std::endl;
+	
 	Ale_sys->print_final_results();
 
 
@@ -847,12 +833,5 @@ void EVAAComputeEngine::computeALEtest(void) {
 	delete Load_module1;
 	delete Road_Profile;
 	delete Car1;
-
-}
-
-
-void EVAAComputeEngine::Car_test(void) {
-
-	Car<floatEVAA> Car1(_parameters, lookupStiffness);
 
 }

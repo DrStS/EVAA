@@ -32,7 +32,7 @@
 #include "ALE.h"
 #include "11DOF.h"
 #include "EVAAComputeStiffness.h"
-#include "EVAAComputeStiffness.h"
+
 
 
 /********//**
