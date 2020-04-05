@@ -6,6 +6,12 @@
 template <class T>
 class Car {
 private:
+	/*
+	Create the diagonal mass matrix M_linear to solve the 11DOF system
+	\param Global_mass contains the masses of the 9 bodies (CG, 4 * W, 4 * T)
+	\param Global_moment_Inertia contains the tensor of inertia of the body
+	\param Mass_11DOF unused
+	*/
 	void construct_11DOF_mass(T* Global_mass, T* Global_momemnt_Inertia, T* Mass_11DOF) {
 		temp_linear[0] = Global_mass[0];
 		temp_linear[1] = Global_momemnt_Inertia[0];
@@ -13,7 +19,11 @@ private:
 		cblas_dcopy(vec_DIM - 1, Global_mass + 1, 1, temp_linear + 3, 1);
 		MathLibrary::allocate_to_diagonal(M_linear, temp_linear, DOF);
 	}
-	
+	/*
+	Copy all X and Y coordinates of the global vector to the local vector
+	\param Global_vector vector with coordinates [X,Y,Z,X,Y,Z,...]
+	\param local_vector vector with coordinates [X,Y,X,Y,...]
+	*/
 	void construct_ALE_vectors(T* Global_vector, T* local_vector) {
 		T* start_pointer, *current_ptr;
 		start_pointer = Global_vector; // copy x and y and move next
@@ -25,6 +35,9 @@ private:
 		}
 		cblas_dcopy(DIM - 1, start_pointer, 1, current_ptr, 1);
 	}
+	/*
+	Calculates the values of Corners_current according to the current orientation
+	*/
 	void update_corners_11DOF()
 	{
 		// zz, yy, xx
@@ -117,7 +130,9 @@ public:
 	T *Position_vec_xy, *Angle_z, *Velocity_vec_xy, *w_z;
 
 
-	
+	/*
+	Constructor
+	*/
 	Car(const Simulation_Parameters &params, EVAAComputeStiffness* interpolator) {
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
@@ -397,7 +412,9 @@ public:
 
 
 	}
-
+	/*
+	If forces and positiosn are negative, set them to zero, elsewise, keep them
+	*/
 	void apply_normal_force(T* force, T* u, size_t* index, size_t n) {
 		#pragma loop( ivdep )
 		for (int i = 0; i < n; ++i) {
@@ -408,12 +425,20 @@ public:
 			u[index[i]] = u[index[i]] > 0 ? u[index[i]] : 0;
 		}
 	}
+
+	/*
+	compute a reaction which is opposite to the internal force acting on the tyre
+	*/
 	void compute_normal_force(T* K, T* u, T* force, size_t* index, size_t dim, size_t n) {
 		#pragma loop( ivdep )
 		for (int i = 0; i < n; ++i) {
 			force[index[i]] = -K[index[i] * dim + index[i]] * u[index[i]];
 		}
 	}
+	/*
+	Calculate the entries of the stiffness matrix
+	\param k_vect vector with all spring stiffnesses (in Stefans order)
+	*/
 	void update_K(T* k_vect) {
 		cblas_dscal(DOF * DOF, 0.0, K, 1);
 
@@ -503,16 +528,26 @@ public:
 		MathLibrary::allocate_to_diagonal(K, temp_linear, DOF); // K = K + K'+ diag(K)
 	}
 
+	/*
+	Get the solution vector as required for the 11DOF system
+	\param Global_position in the format [GC:XYZ,W1:XYZ,T1:XYZ,W2:XYZ,T2:XYZ,...]
+	\param Global_angle with three angles [X,Y,Z]
+	\return Position_11dof in the format [GC:Y,angle:XY,W1:Y,T1:Y,W2:Y,T2:Y,...]
+	*/
 	void construct_11DOF_vector(T* Global_position, T* Global_angle, T* Position_11dof) {
 		Position_11dof[0] = Global_position[2]; // z coordinate of CG
 		Position_11dof[1] = Global_angle[0]; // x angle of the CG
 		Position_11dof[2] = Global_angle[1]; // y angle of the CG
-		// copy z coordinate in order wheel, tyre, wheel, tyre, wheel, tyre, ...
-		
-		cblas_dcopy(vec_DIM - 1, Global_position + 5, 3, Position_11dof + 3, 1); // this is wrong
-		
-	}
 
+		// copy y coordinate in order wheel, tyre, wheel, tyre, wheel, tyre, ...
+		cblas_dcopy(vec_DIM - 1, Global_position + 5, 3, Position_11dof + 3, 1);
+	}
+	/*
+	fill the vector with all stiffness with the constant values from the XML (if the lookup table is not used)
+	\param k_tyre_** stiffnesses of the lower springs
+	\param k_body_** stiffnesses of the upper springs
+	\return k_vect with all stiffnesses in Stefan's ordering
+	*/
 	void populate_K(T* k_vect, T k_body_fl, T k_tyre_fl, T k_body_fr,
 		T k_tyre_fr,
 		T k_body_rl,
@@ -532,6 +567,9 @@ public:
 		k_vect[6] = k_body_rr;
 		k_vect[7] = k_tyre_rr;
 	}
+	/*
+	compute the lengths of the springs
+	*/
 	void get_length(
 		T* initial_orientation_,
 		const T* r1_,
@@ -567,11 +605,16 @@ public:
 		// vdSub(n, a, b, y);  <---> y = a - b: 
 		vdSub(2 * (this->num_tyre), spring_length, current_length, dx);
 	}
-
+	/*
+	From the current elongations, calucale the difference to the rest position
+	\return length differences
+	*/
 	inline void compute_dx(T* dx) {
 		compute_dx(current_spring_length, dx);
 	}
-	// first updates the corner and afterwards compute the lengths;
+	/*
+	First updates the corner and afterwards compute the lengths of the springs
+	*/
 	void update_lengths_11DOF() {
 		update_corners_11DOF();
 		current_spring_length[0] = spring_length[0] + Corners_current[8] + u_current_linear[0] - u_current_linear[3];
@@ -584,6 +627,11 @@ public:
 		current_spring_length[7] = spring_length[7] + u_current_linear[9] - u_current_linear[10];
 	}
 
+	/* Fills the global vector with all entries
+	\param ALE_vectors contains X and Y components [GC:XY,W1:XY,T1:XY,W2:XY,T2:XY,...]
+	\param vector 11DOF contains Z components [GC:Z,W1:Z,T1:Z,W2:Z,T2:Z,...]
+	\return global_vector [GC:XYZ,W1:XYZ,T1:XYZ,W2:XYZ,T2:XYZ,...]
+	*/
 	void populate_results(T* ALE_vector, T * vector_11DOF, T* global_vector) {
 		set_ALE2global(ALE_vector, global_vector);
 		set_11DOF2global(vector_11DOF, global_vector);
@@ -672,10 +720,12 @@ public:
 			cblas_dcopy(DIM * vec_DIM, M, 1, Mass_vec, 1);
 		}
 	}
-
+	/*
+	 get distance vector from each important Point of the car (9: CG, 4*W_i, 4*T_i)
+	 \param Point_P, 
+	 \return each entry from Position_vec
+	*/
 	void get_dist_vector(T* Point_P, T* dist_vector) {
-		// get distance vector from each important Point of the car (9: CG, 4*W_i, 4*T_i)
-	// source: Point_P, dest: each entry from Position_vec
 		if (Point_P != NULL && dist_vector != NULL) {
 			for (auto i = 0; i < vec_DIM; ++i) {
 				cblas_dcopy(DIM, Point_P, incx, &dist_vector[DIM * i], incx);
@@ -754,5 +804,28 @@ public:
 		mkl_free(Corners_current); 
 		mkl_free(Corners_rot); 
 		mkl_free(Corners_init);
+	}
+
+	void test() {
+		std::cout << "Test after initialization the car: \n\n";
+
+		std::cout << "Position_vec:\n";
+		MathLibrary::write_vector(Position_vec, 27);
+
+		std::cout << "Velocity_vec:\n";
+		MathLibrary::write_vector(Velocity_vec, 27);
+
+		std::cout << "Mass_vec:\n";
+		MathLibrary::write_vector(Mass_vec, 9);
+
+		std::cout << "angle_CG:\n";
+		MathLibrary::write_vector(angle_CG, 3);
+
+		std::cout << "w_CG:\n";
+		MathLibrary::write_vector(w_CG, 3);
+
+		std::cout << "I_CG:\n";
+		MathLibrary::write_vector(I_CG, 9);
+
 	}
 };

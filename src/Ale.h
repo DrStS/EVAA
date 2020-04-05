@@ -5,6 +5,10 @@
 #include "EVAAComputeEngine.h"
 #include "11DOF.h"
 
+
+/*
+Implements the ALE method to extend the linear 11DOF system
+*/
 template <class T>
 class ALE {
 private:
@@ -17,9 +21,10 @@ private:
 	linear11dof<T>* linear11dof_obj;
 	EVAAComputeStiffness* interpolator;// interpolator member of EVAA
 	Simulation_Parameters params;
-
-	Load_Params load_param;
 	Profile* profile_obj;
+
+	// force and road parameters
+	Load_Params load_param;
 
 	// simulation parameters
 	int DOF;
@@ -28,31 +33,46 @@ private:
 
 	// time and solution vectors
 	T* time_vec;
-	T* u_sol, u_init;
+	T* u_sol;
 
 	// needed to solve the 11DOF system
 	T* force_vector_11dof;
+
+	// Spring stiffnesses in Stefan's ordering
 	T* k_vect;
 
-	// needed to apply the load module
+	// Contains the forces in the ordering [GC:XYZ,W1:XYZ,T1:XYZ, ...]
 	T* force_vector;
+
+	// Contains he torque in the form [XYZ]
 	T* full_torque;
+
+	// Contains the dx in the spring elongation in Stefan's ordering
 	T* Delta_x_vec;
 
-	// needed for position integrator
+	// global centripetal forces on the whole car [XYZ]
 	T* centripetal_force;
 	T* new_centripetal_force;
+
+	// global torque on the car [XYZ]
 	T* torque;
 	T* new_torque;
+
+	// global positions, velocities [XY] and angles [Z] of the center of mass of the car 
 	T* posXY_vec;
 	T* angleZ;
 	T* velXY_vec;
 	T* ang_velZ;
+
+	// quantities for the whole car
 	T global_inertia_Z;
 	T global_mass;
 
 
 public:
+	/*
+	Constructor
+	*/
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
 		linear11dof<T>* linear11dof_val,
@@ -72,6 +92,11 @@ public:
 		tend_ = params.num_time_iter * h_;
 	}
 
+	/*
+	Applies the Verlet_Stoermer algorithm to update the global XY position of the car and its Z orientation
+	Store the global coordinates in the VelocityXY and PositionXY from the car object
+	\param t current simulation time
+	*/
 	void global_frame_solver(T& t) {
 		// 2. Update global X,Y positions of the car
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[0], Car_obj->Velocity_vec_xy[0], centripetal_force[0], h_, global_mass);			;
@@ -119,6 +144,9 @@ public:
 
 	}
 
+	/*
+	Executes the time iteration of the ALE solvers, switches from global position update to solving of the linear 11DOF system
+	*/
 	void solve(T* sol_vect) {
 
 		//initialize solution vector
@@ -194,6 +222,9 @@ public:
 		delete[] new_torque;
 	}
 
+	/*
+	adds the contribution of the wheels and tyres to the inertia moment of the car
+	*/
 	void calculate_global_inertia_Z() {
 		// get the global inertia actiing in Z direction
 		global_inertia_Z = Car_obj->I_CG[8];
@@ -207,12 +238,18 @@ public:
 			(Car_obj->l_lat[3] * Car_obj->l_lat[3] + Car_obj->l_long[3] * Car_obj->l_long[3]);
 	}
 
+	/*
+	Sums up all the 9 masses
+	*/
 	void calculate_global_mass() {
 		global_mass = Car_obj->Mass_vec[0] + 
 			Car_obj->Mass_vec[1] + Car_obj->Mass_vec[2] + Car_obj->Mass_vec[3] + Car_obj->Mass_vec[4] + 
 			Car_obj->Mass_vec[5] + Car_obj->Mass_vec[6] + Car_obj->Mass_vec[7] + Car_obj->Mass_vec[8];
 	}
 
+	/*
+	Prints all positions and angles in the car object
+	*/
 	void print_final_results() {
 		T* sln = Car_obj->Position_vec;
 		std::cout << "ALE: orientation angles=\n\t[" << Car_obj->angle_CG[0] << "\n\t " << Car_obj->angle_CG[1] << "\n\t " << Car_obj->angle_CG[2] << "]" << std::endl;
