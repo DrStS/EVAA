@@ -68,7 +68,6 @@ private:
 	T global_inertia_Z;
 	T global_mass;
 
-
 public:
 	/*
 	Constructor
@@ -99,7 +98,7 @@ public:
 	*/
 	void global_frame_solver(T& t) {
 		// 2. Update global X,Y positions of the car
-		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[0], Car_obj->Velocity_vec_xy[0], centripetal_force[0], h_, global_mass);			;
+		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[0], Car_obj->Velocity_vec_xy[0], centripetal_force[0], h_, global_mass);
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->Position_vec_xy[1], Car_obj->Velocity_vec_xy[1], centripetal_force[1], h_, global_mass); 
 		
 		
@@ -172,8 +171,7 @@ public:
 		
 		// calculate characteristics of the whole car
 		calculate_global_inertia_Z();
-		calculate_global_mass();
-
+		global_mass = Car_obj->get_global_mass();
 		// start time iteration
 		T t = h_;
 		
@@ -191,8 +189,11 @@ public:
 			Load_module_obj->update_torque(t, torque, Delta_x_vec);
 			// convert centrifugal force to centripetal (only for x, y direction)
 			cblas_dscal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
-			
+			/*MathLibrary::write_vector(force_vector, 27);
+			exit(5);*/
+
 			global_frame_solver(t);
+
 
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
@@ -256,14 +257,7 @@ public:
 			(Car_obj->l_lat[3] * Car_obj->l_lat[3] + Car_obj->l_long[3] * Car_obj->l_long[3]);
 	}
 
-	/*
-	Sums up all the 9 masses
-	*/
-	void calculate_global_mass() {
-		global_mass = Car_obj->Mass_vec[0] + 
-			Car_obj->Mass_vec[1] + Car_obj->Mass_vec[2] + Car_obj->Mass_vec[3] + Car_obj->Mass_vec[4] + 
-			Car_obj->Mass_vec[5] + Car_obj->Mass_vec[6] + Car_obj->Mass_vec[7] + Car_obj->Mass_vec[8];
-	}
+
 
 	/*
 	Prints all positions and angles in the car object

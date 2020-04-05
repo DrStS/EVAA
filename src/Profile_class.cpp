@@ -18,7 +18,7 @@ Circular::Circular(double* Pos, double Rad) {
 	velocity_direction = (double*)mkl_calloc(DIM, sizeof(double), alignment);
 	Velocity_vec = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
 	Mass_vec = (double*)mkl_malloc(sizeof(double) * vec_DIM, alignment);
-	dist_car_center = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
+	dist_car_center = (double*)mkl_malloc(sizeof(double) * (DIM - 1) * vec_DIM, alignment);
 };
 
 Circular::~Circular() {
@@ -48,6 +48,42 @@ void Circular::set_Position(const double* pos) {
 	cblas_dcopy(DIM, pos, 1, Position, 1);
 }
 
+void Circular::get_centrifugal_force_ALE(double* fr, double* v, double& m, double* p) {
+	// REFACTOR TO GENERAL DIRECTIONS *
+
+	// Adapted for the 2D now!!!
+
+	// calculates the force in a body only with respect to its velocity, mass and Position
+	// v is the velocity of the body
+	// m is the mass of the body
+	// p is the global Position of the body
+	// fr - the centripetal force
+	// the rotation is always around the origin!
+
+	cblas_dcopy(DIM - 1, p, 1, fr, 1);
+
+	fr[2] = 0;		// path only in xy-plane
+
+	double inv_radius = 1.0 / cblas_dnrm2(DIM - 1, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered tyre
+
+	// Raffi: cblas_dscal(DIM, -inv_radius, fr, 1); - centripetal force 
+	cblas_dscal(DIM - 1, inv_radius, fr, 1); // centrifugal force
+
+	// MathLibrary::crossProduct(fr, unit_y_vector, velocity_direction);
+	// * REFACTOR TO GENERAL DIRECTIONS * this is only for z direction
+	velocity_direction[0] = fr[1];
+	velocity_direction[1] = -fr[0];	
+
+
+	const MKL_INT fucking_MKL_int_ddot = DIM - 1;
+	//double velocity_magnitude = cblas_ddot(fucking_MKL_int_ddot, v, incx, velocity_direction, incx);
+	double velocity_magnitude = cblas_dnrm2(DIM - 1, v, 1);
+
+	double force_magnitude = m * velocity_magnitude * velocity_magnitude * inv_radius;
+
+	cblas_dscal(DIM - 1, force_magnitude, fr, incx);
+}
+
 void Circular::get_centrifugal_force(double* fr, double* v, double& m, double* p) {
 	// calculates the force in a body only with respect to its velocity, mass and Position
 	// v is the velocity of the body
@@ -75,12 +111,15 @@ void Circular::get_centrifugal_force(double* fr, double* v, double& m, double* p
 }
 
 void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* normal_ext) {
+	// WRONG Implementation - suitable for 2D (BROKEN)
+	// REFACTOR (MAYBE another Profile class smth)
+
 	// out: f_vec = [f_cg, f_w1, f_t1, f_w2, f_t2, f_w3, f_t3, f_w4, f_t4] (centripetal components of the force)
 	// out: normal_ext - normal over the full body; updated in this function from the centripetal forces
 
 	// get distance vector between center of circle and the car = positions of points from the car vs center of circle, which is seen as 0
-	car1->get_dist_vector(Position, dist_car_center);
-	
+	car1->get_dist_vector_xy(Position, dist_car_center);
+
 	//// the distance to [cg<->center of circle] must be equal with the Radius of the circle - place an assert here!!!!
 	//if (abs(car1->get_dist_vector_abs_val(Position) - Radius * Radius) > 1e-12) {
 	//	std::cout << "\n\n error (in Circular.update_normal_force): the Radius of the circle is different than the distance  \\
@@ -88,7 +127,8 @@ void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* norma
 	//}
 
 	// vectors with velocities and masses
-	car1->get_Velocity_vec(Velocity_vec);
+	car1->get_Velocity_vec_xy(Velocity_vec);
+	Velocity_vec[2] = 0;
 	car1->get_Mass_vec(Mass_vec);
 
 	// compute each of the 9 centripetal forces
@@ -102,7 +142,39 @@ void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* norma
 	for (auto i = 1; i < vec_DIM; ++i) {
 		vdAdd(DIM, normal_ext, &f_vec[DIM * i], normal_ext);
 	}
-	
+
+}
+
+void Circular::get_Profile_force_ALE(Car<double>* car1, double* f_vec, double* normal_ext) {
+	// out: f_vec = [f_cg, f_w1, f_t1, f_w2, f_t2, f_w3, f_t3, f_w4, f_t4] (centripetal components of the force)
+	// out: normal_ext - normal over the full body; updated in this function from the centripetal forces
+
+	// get distance vector between center of circle and the car = positions of points from the car vs center of circle, which is seen as 0
+	car1->get_dist_vector_xy(Position, dist_car_center);
+
+	//// the distance to [cg<->center of circle] must be equal with the Radius of the circle - place an assert here!!!!
+	//if (abs(car1->get_dist_vector_abs_val(Position) - Radius * Radius) > 1e-12) {
+	//	std::cout << "\n\n error (in Circular.update_normal_force): the Radius of the circle is different than the distance  \\
+	//		between the car and center of the circle!!!!please take care!!!";
+	//}
+
+	// vectors with velocities and masses
+	car1->get_Velocity_vec_xy(Velocity_vec);
+
+	//std::cout << "Velocity vec: \n\n";
+	//MathLibrary::write_vector(Velocity_vec, 18);
+	car1->get_Mass_vec(Mass_vec);
+
+	// compute each of the 9 centripetal forces
+	for (int i = 0; i < vec_DIM; ++i) {
+		get_centrifugal_force_ALE(&f_vec[DIM * i], &Velocity_vec[(DIM - 1) * i], Mass_vec[i], &dist_car_center[(DIM - 1) * i]);
+		f_vec[DIM * i + 2] = 0; // z direction is 0 !!! Have to be generalized to general directions
+	}
+
+	// compute centripetal part of the global normal force 
+	double Mass = car1->get_global_mass();
+	get_centrifugal_force_ALE(normal_ext, Velocity_vec, Mass, dist_car_center);
+
 }
 
 void Circular::get_Profile_torque(Car<double>* Car1, double* Torque) {

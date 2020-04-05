@@ -22,6 +22,7 @@ public:
 	\return Normal_ext on the car as a whole [XYZ]
 	*/
 	virtual void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
+	virtual void get_Profile_force_ALE(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
 
 	/*
 	Get external torque acting on the car system
@@ -70,6 +71,7 @@ public:
 	void set_Radius(const double& Rad);
 	void set_Position(const double* Pos);
 	void get_centrifugal_force(double* Fr, double* v, double& m, double* p);
+	void get_centrifugal_force_ALE(double* Fr, double* v, double& m, double* p);
 
 	/*
 	Get external force acting on the car system
@@ -78,6 +80,7 @@ public:
 	\return Normal_ext on the car as a whole [XYZ]
 	*/
 	virtual void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext);
+	virtual void get_Profile_force_ALE(Car<double>* Car1, double* F_vec, double* Normal_ext);
 
 	/*
 	Get external torque acting on the car system

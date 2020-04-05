@@ -116,11 +116,10 @@ void Load_module::get_Profile(Profile* Profile_type) {
 }
 
 void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec, double* Normal_ext) {
-	Active_Profile->get_Profile_force(Car_obj, F_vec, Normal_ext);
+	Active_Profile->get_Profile_force_ALE(Car_obj, F_vec, Normal_ext);
 	/*
 	Modify the profile to know where the ground is and apply normal force accordingly
 	*/
-	
 
 	// F_Ti += -0.25 * N; [F[2], F[4], F[6], F[8]]
 	for (auto i = 2; i < vec_DIM; i += 2) {

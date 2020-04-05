@@ -705,20 +705,22 @@ public:
 	}
 
 	void get_Position_vec(T* Pos) {
-		if (Pos != NULL) {
-			cblas_dcopy(DIM * vec_DIM, Position_vec, 1, Pos, 1);
-		}
+		cblas_dcopy(DIM * vec_DIM, Position_vec, 1, Pos, 1);
 	}
-	void set_Position_vec(const T* Pos) {
-		if (Pos != NULL) {
-			cblas_dcopy(DIM * vec_DIM, Pos, 1, Position_vec, 1);
-		}
+	void set_Position_vec(const T* Pos) {		
+		cblas_dcopy(DIM * vec_DIM, Pos, 1, Position_vec, 1);
 	}
 	void get_Position_vec_CG(T* Pos_CG) {
-		if (Pos_CG != NULL) {
-			cblas_dcopy(DIM, Position_vec, 1, Pos_CG, 1);
-		}
+		cblas_dcopy(DIM, Position_vec, 1, Pos_CG, 1);
 	}
+
+	// Sums up all the 9 masses
+	inline double get_global_mass() {
+		return (Mass_vec[0] + // CG
+			Mass_vec[1] + Mass_vec[2] + Mass_vec[3] + Mass_vec[4] +
+			Mass_vec[5] + Mass_vec[6] + Mass_vec[7] + Mass_vec[8]);
+	}
+
 	void set_Position_vec_CG(const T* Pos_CG) {
 		if (Pos_CG != NULL) {
 			cblas_dcopy(DIM, Pos_CG, 1, Position_vec, 1);
@@ -731,6 +733,17 @@ public:
 			cblas_dcopy(DIM * vec_DIM, Velocity_vec, 1, Vel, 1);
 		}
 	}
+
+	void get_Velocity_vec_xy(T* Vel) {
+		// b=a, cblas_dcopy(n,a,inc,b,inc)
+		cblas_dcopy((DIM - 1) * vec_DIM, Velocity_vec_xy, 1, Vel, 1);
+	}
+
+	void get_Position_vec_xy(T* Vel) {
+		// b=a, cblas_dcopy(n,a,inc,b,inc)
+		cblas_dcopy((DIM - 1) * vec_DIM, Position_vec_xy, 1, Vel, 1);
+	}
+
 	void set_Velocity_vec(const T* Vel) {
 		if (Vel != NULL) {
 			cblas_dcopy(DIM * vec_DIM, Vel, 1, Velocity_vec, 1);
@@ -779,16 +792,23 @@ public:
 	 \param Point_P, 
 	 \return each entry from Position_vec
 	*/
-	void get_dist_vector(T* Point_P, T* dist_vector) {
-		if (Point_P != NULL && dist_vector != NULL) {
-			for (auto i = 0; i < vec_DIM; ++i) {
-				cblas_dcopy(DIM, Point_P, incx, &dist_vector[DIM * i], incx);
-			}
-			// y=a-b, vdSub(n,a,b,y)
-			vdSub(DIM * vec_DIM, Position_vec, dist_vector, dist_vector);
+
+	void get_dist_vector_xy(T* Point_P, T* dist_vector) {
+		for (auto i = 0; i < vec_DIM; ++i) {
+			cblas_dcopy(DIM-1, Point_P, incx, &dist_vector[(DIM-1) * i], incx);
 		}
-	
+		// y=a-b, vdSub(n,a,b,y)
+		vdSub((DIM-1) * vec_DIM, Position_vec_xy, dist_vector, dist_vector);
+	}
+
+	void get_dist_vector(T* Point_P, T* dist_vector) {	
+		for (auto i = 0; i < vec_DIM; ++i) {
+			cblas_dcopy(DIM, Point_P, incx, &dist_vector[DIM * i], incx);
+		}
+		// y=a-b, vdSub(n,a,b,y)
+		vdSub(DIM * vec_DIM, Position_vec, dist_vector, dist_vector);
 	} // 9 * 3 - from each important point to a fixed Point_P
+
 	void get_dist_vector_CG(T* Point_P, T* dist_vector) {
 		// get distance vector from Center of Gravity of the car to a Point P 
 		// source: Point_P, dest: CG
