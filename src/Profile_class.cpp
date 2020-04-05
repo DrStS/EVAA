@@ -93,7 +93,7 @@ void Circular::get_Profile_force(Car<double>* car1, double* f_vec, double* norma
 
 	// compute each of the 9 centripetal forces
 	for (int i = 0; i < vec_DIM; ++i) {
-		get_centrifugal_force(&f_vec[DIM * i], &Velocity_vec[DIM * i], *(Mass_vec + i), &dist_car_center[DIM * i]);
+		get_centrifugal_force(&f_vec[DIM * i], &Velocity_vec[DIM * i], Mass_vec[i], &dist_car_center[DIM * i]);
 	}
 
 	// compute centripetal part of the global normal force 

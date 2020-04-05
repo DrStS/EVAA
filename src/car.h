@@ -812,6 +812,9 @@ public:
 	
 	~Car() {
 		std::cout << "The car is not flying anymore" << std::endl;
+
+		test();
+
 		mkl_free_buffers();
 		mkl_free(Position_vec); 
 		Position_vec = nullptr;

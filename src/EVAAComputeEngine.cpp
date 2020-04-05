@@ -823,18 +823,19 @@ void EVAAComputeEngine::computeALE(void) {
 		std::cout << "ALE will only work with a circular path, computation skipped" << std::endl;
 	}
 }
+
 void EVAAComputeEngine::computeALEtest(void) {
 
 	size_t num_iter = _parameters.num_time_iter;
 	size_t solution_dim = _parameters.solution_dim;
 	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
-	Profile* Road_Profile = new Circular(_load_module_parameter.profile_center,
-		_load_module_parameter.profile_radius);
-	Road_Profile->update_initial_condition(Car1);
-	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
-	std::cout << "Load module initialized!\n";
-	delete Load_module1;
-	delete Road_Profile;
+	//Profile* Road_Profile = new Circular(_load_module_parameter.profile_center,
+	//	_load_module_parameter.profile_radius);
+	//Road_Profile->update_initial_condition(Car1);
+	//Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
+	//std::cout << "Load module initialized!\n";
+	//delete Load_module1;
+	//delete Road_Profile;
 	delete Car1;
 
 }
