@@ -814,51 +814,84 @@ public:
 		std::cout << "The car is not flying anymore" << std::endl;
 		mkl_free_buffers();
 		mkl_free(Position_vec); 
+		Position_vec = nullptr;
 		mkl_free(Velocity_vec);
+		Velocity_vec = nullptr;
 		mkl_free(Mass_vec);
+		Mass_vec = nullptr;
 		mkl_free(angle_CG);
+		angle_CG = nullptr;
 		mkl_free(w_CG);
+		w_CG = nullptr;
 		mkl_free(I_CG);
+		I_CG = nullptr;
 
 
 		// Initial Conditions of the car
 		mkl_free(initial_position);
-		mkl_free(initial_velocity_vec); 
+		initial_position = nullptr;
+		mkl_free(initial_velocity_vec);
+		initial_velocity_vec = nullptr;
 		mkl_free(initial_angle);
+		initial_angle = nullptr;
 		mkl_free(initial_angular_velocity);
+		initial_angular_velocity = nullptr;
 
 		
 		
 		mkl_free(quad_angle_init);
-		mkl_free(M_linear); 
+		quad_angle_init = nullptr;
+		mkl_free(M_linear);
+		M_linear = nullptr;
 		mkl_free(temp_linear); 
+		temp_linear = nullptr;
 		mkl_free(K);
+		K = nullptr;
 		mkl_free(K_trans);
+		K_trans = nullptr;
 		mkl_free(D);
+		D = nullptr;
 		mkl_free(spring_length); 
+		spring_length = nullptr;
 		mkl_free(current_spring_length);
+		current_spring_length = nullptr;
 		mkl_free(u_prev_linear); 
+		u_prev_linear = nullptr;
 		mkl_free(u_current_linear);
+		u_current_linear = nullptr;
 		mkl_free(k_vec); 
+		k_vec = nullptr;
 		mkl_free(l_lat); 
+		l_lat = nullptr;
 		mkl_free(l_long);
+		l_long = nullptr;
 		mkl_free(velocity_current_linear);
+		velocity_current_linear = nullptr;
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////// ALE Vectors ///////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		mkl_free(Position_vec_xy);
+		Position_vec_xy = nullptr;
 		mkl_free(Velocity_vec_xy);
+		Velocity_vec_xy = nullptr;
 		delete Angle_z;
+		Angle_z = nullptr;
 		delete w_z;
+		w_z = nullptr;
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////// Interpolator objects ///////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////
-		mkl_free(Corners_current); 
-		mkl_free(Corners_rot); 
+		mkl_free(Corners_current);
+		Corners_current = nullptr;
+		mkl_free(Corners_rot);
+		Corners_rot = nullptr;
 		mkl_free(Corners_init);
+		Corners_init = nullptr;
 		mkl_free(angle_buffer);
+		angle_buffer = nullptr;
 		mkl_free(pos_buffer);
+		pos_buffer = nullptr;
 	}
 
 	void test() {

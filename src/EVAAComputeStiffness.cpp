@@ -132,9 +132,13 @@ EVAAComputeStiffness::EVAAComputeStiffness(int size, double* a, double b, double
 		CheckDfError(err);
 	}
 	mkl_free(grid);
+	grid = nullptr;
 	mkl_free(axis);
+	axis = nullptr;
 	delete ic;
+	ic = nullptr;
 	delete bc;
+	bc = nullptr;
 }
 
 EVAAComputeStiffness::~EVAAComputeStiffness() {
@@ -145,8 +149,11 @@ EVAAComputeStiffness::~EVAAComputeStiffness() {
 
 	/* free used space */
 	mkl_free(task);
-	mkl_free(scoeff);		
+	task = nullptr;
+	mkl_free(scoeff);
+	scoeff = nullptr;
 	delete datahint;
+	datahint = nullptr;
 }
 
 

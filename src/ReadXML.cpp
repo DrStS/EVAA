@@ -218,5 +218,7 @@ void ReadXML::ReadLookupParameters(EVAAComputeStiffness** lookupStiffness, Simul
 		*lookupStiffness = new EVAAComputeStiffness(size, a, b, c, l_min, l_max, k, type, order);
 		parameters.interpolation = 1;  // to switch from constant to interpolation type
         delete[] a;
+		delete[] k_body;
+		delete[] k_tyre;
     }
 }

@@ -110,6 +110,7 @@ int main(int argc, char **argv) {
 	myComputeEngine->computeMKLNasa_example();
 	myComputeEngine->clean();
 	*/
+	delete myComputeEngine;
 	std::cout << "\nWe did a great job! Awesome!" << std::endl;
 #endif // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON
