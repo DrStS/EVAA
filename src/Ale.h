@@ -180,7 +180,7 @@ public:
 			
 		}
 		cblas_dcopy(DOF, u_sol + (iter - 1) * (DOF), 1, sol_vect, 1);
-
+		Car_obj->combine_results();
 
 
 		MKL_free(time_vec);

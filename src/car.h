@@ -13,17 +13,18 @@ private:
 		cblas_dcopy(vec_DIM - 1, Global_mass + 1, 1, temp_linear + 3, 1);
 		MathLibrary::allocate_to_diagonal(M_linear, temp_linear, DOF);
 	}
+	
 	void construct_ALE_vectors(T* Global_vector, T* local_vector) {
 		T* start_pointer, *current_ptr;
 		start_pointer = Global_vector; // copy x and y and move next
 		current_ptr = local_vector;
-		for (size_t i = 0; i < vec_DIM; ++i) {
+		for (size_t i = 0; i < vec_DIM - 1; ++i) {
 			cblas_dcopy(DIM - 1, start_pointer, 1, current_ptr, 1);
 			start_pointer += DIM;
 			current_ptr += DIM - 1;
 		}
+		cblas_dcopy(DIM - 1, start_pointer, 1, current_ptr, 1);
 	}
-	
 	void update_corners_11DOF()
 	{
 		// zz, yy, xx
@@ -33,7 +34,20 @@ private:
 		//void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const double beta, double* c, const MKL_INT ldc);
 		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, DIM, num_wheels, DIM, 1, Corners_rot, DIM, Corners_init, num_wheels, 0, Corners_current, num_wheels);
 	}
-
+	void set_ALE2global(T* vect, T* global_vect) {
+#pragma loop(ivdep)
+		for (size_t i = 0; i < vec_DIM; ++i) {
+			global_vect[DIM*i] = vect[(DIM - 1)*i];
+			global_vect[DIM*i + 1] = vect[(DIM - 1)*i + 1];
+		}
+	}
+	void set_11DOF2global(T* vect, T* global_vect) {
+		global_vect[2] = vect[0];
+#pragma loop(ivdep)
+		for (size_t i = 1; i < vec_DIM; ++i) {
+			global_vect[DIM*i + 2] = vect[(DIM - 1) + i];
+		}
+	}
 	
 public:
 	/*
@@ -119,22 +133,22 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////// Params for Global coordinate ////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Position_vec = (T*)mkl_malloc(DIM*vec_DIM * sizeof(T), alignment);
-		Velocity_vec = (T*)mkl_malloc(DIM*vec_DIM * sizeof(T), alignment);
-		Mass_vec = (T*)mkl_malloc(vec_DIM * sizeof(T), alignment);
-		angle_CG = (T*)mkl_malloc(DIM * sizeof(T), alignment);
-		w_CG = (T*)mkl_malloc(DIM * sizeof(T), alignment);
-		I_CG = (T*)mkl_malloc(DIM*DIM * sizeof(T), alignment);
+		Position_vec = (T*)mkl_malloc(DIM*vec_DIM * sizeof(T), alignment); //27 dim
+		Velocity_vec = (T*)mkl_malloc(DIM*vec_DIM * sizeof(T), alignment); //27 dim
+		Mass_vec = (T*)mkl_malloc(vec_DIM * sizeof(T), alignment); //9 dim
+		angle_CG = (T*)mkl_malloc(DIM * sizeof(T), alignment); //3 dim
+		w_CG = (T*)mkl_malloc(DIM * sizeof(T), alignment); //3 dim
+		I_CG = (T*)mkl_malloc(DIM*DIM * sizeof(T), alignment); //9 dim
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////// Initial Params for Global coordinate ////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		initial_position = (T*)mkl_malloc(DIM*vec_DIM * sizeof(T), alignment);
-		initial_velocity_vec = (T*)mkl_malloc(DIM*vec_DIM * sizeof(T), alignment);
-		quad_angle_init = (T*)mkl_calloc(4, sizeof(T), alignment);
-		initial_angle = (T*)mkl_malloc(DIM * sizeof(T), alignment);
-		initial_angular_velocity = (T*)mkl_malloc(DIM * sizeof(T), alignment);
+		initial_position = (T*)mkl_malloc(DIM*vec_DIM * sizeof(T), alignment); // 27 dim
+		initial_velocity_vec = (T*)mkl_malloc(DIM*vec_DIM * sizeof(T), alignment);// 27 dim
+		quad_angle_init = (T*)mkl_calloc(4, sizeof(T), alignment); // 4 dim
+		initial_angle = (T*)mkl_malloc(DIM * sizeof(T), alignment); // 3 dim
+		initial_angular_velocity = (T*)mkl_malloc(DIM * sizeof(T), alignment); // 3 dim
 		
 
 
@@ -142,26 +156,26 @@ public:
 		//////////////////////////////////// Params for 11 DOF system ////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		M_linear = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
-		temp_linear = (T*)mkl_calloc(DOF , sizeof(T), alignment);
-		K = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
-		K_trans = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
-		D = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment);
-		u_prev_linear = (T*)mkl_malloc(DOF*sizeof(T), alignment);
-		u_current_linear = (T*)mkl_malloc(DOF*sizeof(T), alignment);
-		velocity_current_linear = (T*)mkl_malloc(DOF * sizeof(T), alignment);
-		k_vec = (T*)mkl_malloc(num_wheels * 2 * sizeof(T), alignment);
-		l_lat = (T*)mkl_malloc(num_wheels * sizeof(T), alignment);
-		l_long = (T*)mkl_malloc(num_wheels * sizeof(T), alignment);
-		spring_length = (T*)mkl_malloc(2 * num_wheels * sizeof(T), alignment);
-		current_spring_length = (T*)mkl_malloc(2 * num_wheels * sizeof(T), alignment);
+		M_linear = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment); // 121 dim
+		temp_linear = (T*)mkl_calloc(DOF , sizeof(T), alignment);  // 11 dim
+		K = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment); // 121 dim
+		K_trans = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment); // 121 dim
+		D = (T*)mkl_calloc(DOF * DOF, sizeof(T), alignment); // 121 dim
+		u_prev_linear = (T*)mkl_malloc(DOF*sizeof(T), alignment); // 11 dim
+		u_current_linear = (T*)mkl_malloc(DOF*sizeof(T), alignment); // 11 dim
+		velocity_current_linear = (T*)mkl_malloc(DOF * sizeof(T), alignment); // 3 dim
+		k_vec = (T*)mkl_malloc(num_wheels * 2 * sizeof(T), alignment); // 4 dim
+		l_lat = (T*)mkl_malloc(num_wheels * sizeof(T), alignment); // 4 dim
+		l_long = (T*)mkl_malloc(num_wheels * sizeof(T), alignment); // 4 dim
+		spring_length = (T*)mkl_malloc(2 * num_wheels * sizeof(T), alignment); // 8 dim
+		current_spring_length = (T*)mkl_malloc(2 * num_wheels * sizeof(T), alignment); // 8 dim
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////// Memory allocation for interpolator /////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Corners_current = (T*)mkl_malloc(num_tyre*DIM * sizeof(T), alignment);
-		Corners_rot = (T*)mkl_malloc(DIM*DIM * sizeof(T), alignment);
-		Corners_init = (T*)mkl_malloc(num_tyre*DIM * sizeof(T), alignment);
+		Corners_current = (T*)mkl_malloc(num_tyre*DIM * sizeof(T), alignment); // 12 dim
+		Corners_rot = (T*)mkl_malloc(DIM*DIM * sizeof(T), alignment); // 9 dim
+		Corners_init = (T*)mkl_malloc(num_tyre*DIM * sizeof(T), alignment); // 12 dim
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,37 +255,37 @@ public:
 			// if prescribed initial position (add a check for consistency with spring lengths)
 			// W1 = W_fl
 			xml_start = params.initial_pos_wheel + 2 * 3;
-			position_start = initial_position + 3;
+			position_start = initial_position + 3; //(end at 5)
 			cblas_dcopy(DIM, xml_start, 1, position_start, 1);
 			// W2 = W_fr
 			xml_start = params.initial_pos_wheel + 3 * 3;
-			position_start += 6; // skip 3 for tyre
+			position_start += 6; // skip 3 for tyre (end at 11)
 			cblas_dcopy(DIM, xml_start, 1, position_start, 1);
 			// W3 = W_rl
 			xml_start = params.initial_pos_wheel + 1 * 3;
-			position_start += 6; // skip 3 for tyre
+			position_start += 6; // skip 3 for tyre (end at 17)
 			cblas_dcopy(DIM, xml_start, 1, position_start, 1);
 			// W2 = W_rr
 			xml_start = params.initial_pos_wheel + 0 * 3;
-			position_start += 6; // skip 3 for tyre
+			position_start += 6; // skip 3 for tyre (end at 23)
 			cblas_dcopy(DIM, xml_start, 1, position_start, 1);
 
 			// T1 = T_fl
 			xml_start = params.initial_pos_tyre + 2 * 3;
 			position_start = initial_position + 6; // skip 3 for center of mass and 3 for the wheel
-			cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+			cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 8)
 			// T2 = T_fr
 			xml_start = params.initial_pos_tyre + 3 * 3;
 			position_start += 6; // skip 3 for the wheel
-			cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+			cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 14)
 			// T3 = T_rl
 			xml_start = params.initial_pos_tyre + 1 * 3;
 			position_start += 6; // skip 3 for the wheel
-			cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+			cblas_dcopy(DIM, xml_start, 1, position_start, 1);// (end at 20)
 			// T4 = T_rr
 			xml_start = params.initial_pos_tyre + 0 * 3;
 			position_start += 6; // skip 3 for the wheel
-			cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+			cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 26)
 		}
 		else {
 			/*Not implemented
@@ -287,44 +301,44 @@ public:
 		// Initial Velocity (Reuse the pointers)
 		cblas_dcopy(DIM, params.initial_vel_body, 1, initial_velocity_vec, 1);
 		// W1 = W_fl
-		xml_start = params.initial_vel_body + 2 * 3;
+		xml_start = params.initial_vel_wheel + 2 * 3;
 		position_start = initial_velocity_vec + 3;
-		cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 5)
 		// W2 = W_fr
-		xml_start = params.initial_vel_body + 3 * 3;
+		xml_start = params.initial_vel_wheel + 3 * 3;
 		position_start += 6; // skip 3 for tyre
-		cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+		cblas_dcopy(DIM, xml_start, 1, position_start, 1);// (end at 11)
 		// W3 = W_rl
-		xml_start = params.initial_vel_body + 1 * 3;
+		xml_start = params.initial_vel_wheel + 1 * 3;
 		position_start += 6; // skip 3 for tyre
-		cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 17)
 		// W2 = W_rr
-		xml_start = params.initial_vel_body + 0 * 3;
+		xml_start = params.initial_vel_wheel + 0 * 3;
 		position_start += 6; // skip 3 for tyre
-		cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 23)
 
 		// T1 = T_fl
-		xml_start = params.initial_vel_body + 2 * 3;
+		xml_start = params.initial_vel_tyre + 2 * 3;
 		position_start = initial_velocity_vec + 6; // skip 3 for center of mass and 3 for the wheel
-		cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 8)
 		// T2 = T_fr
-		xml_start = params.initial_vel_body + 3 * 3;
+		xml_start = params.initial_vel_tyre + 3 * 3;
 		position_start += 6; // skip 3 for the wheel
-		cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+		cblas_dcopy(DIM, xml_start, 1, position_start, 1);// (end at 14)
 		// T3 = T_rl
-		xml_start = params.initial_vel_body + 1 * 3;
+		xml_start = params.initial_vel_tyre + 1 * 3;
 		position_start += 6; // skip 3 for the wheel
-		cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 20)
 		// T4 = T_rr
-		xml_start = params.initial_vel_body + 0 * 3;
+		xml_start = params.initial_vel_tyre + 0 * 3;
 		position_start += 6; // skip 3 for the wheel
-		cblas_dcopy(DIM, xml_start, 1, position_start, 1);
+		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 26)
 
 		// copy the initial position to the position vector
 		cblas_dcopy(DIM*vec_DIM, initial_velocity_vec, 1, Velocity_vec, 1);
 
 		// Initial Angular velocity
-		cblas_dcopy(DIM, params.initial_ang_vel_body, 1, initial_angular_velocity, 1);
+		cblas_dcopy(DIM, params.initial_ang_vel_body, 1, initial_angular_velocity, 1); 
 		cblas_dcopy(DIM, initial_angular_velocity, 1, w_CG, 1);
 		
 		/*
@@ -490,11 +504,13 @@ public:
 	}
 
 	void construct_11DOF_vector(T* Global_position, T* Global_angle, T* Position_11dof) {
-		Position_11dof[0] = Global_position[2]; // y coordinate of CG
+		Position_11dof[0] = Global_position[2]; // z coordinate of CG
 		Position_11dof[1] = Global_angle[0]; // x angle of the CG
 		Position_11dof[2] = Global_angle[1]; // y angle of the CG
-		// copy y coordinate in order wheel, tyre, wheel, tyre, wheel, tyre, ...
-		cblas_dcopy(vec_DIM - 1, Global_position + 5, 1, Position_11dof, 1);
+		// copy z coordinate in order wheel, tyre, wheel, tyre, wheel, tyre, ...
+		
+		cblas_dcopy(vec_DIM - 1, Global_position + 5, 3, Position_11dof + 3, 1); // this is wrong
+		
 	}
 
 	void populate_K(T* k_vect, T k_body_fl, T k_tyre_fl, T k_body_fr,
@@ -534,115 +550,10 @@ public:
 		T* tyre_coordinate3_,
 		T* tyre_coordinate4_)
 
-	{
-		/*
-		To reduce memory trace and better use cache this function is implemented in following fashion:
-		Original steps for computation of one component:
-														1.	qc = qc/norm(qc);
-														2.	C_Nc = get_basis(qc);
-														3.	global_y = C_Nc(:,2);
-														4.	global_y = -global_y / norm(global_y);
-														5.	global_r1 = pcc + C_Nc*r1;
-														6.	upper_global_spring_1 = upper_length(1)*global_y;
-														7.	lower_global_spring_1 = lower_length(1)*global_y;
-														8.	pw1 = global_r1 + upper_global_spring_1;
-														9.	pt1 = pw1 + lower_global_spring_1;
-		Modified steps for computation of one component:
-														1.	qc = qc/norm(qc);
-														2.	C_Nc = get_basis(qc);
-														3.	global_y = C_Nc(:,2);
-														4.	global_y = -global_y / norm(global_y);
-														5.	pw1 = pcc;
-														6.	pw1 = pw1 + C_Nc*r1;
-														7.	pw1 = pw1 + upper_length(1)*global_y;
-														8.	pt1 = pw1
-														8.	pt1	= pt1 + lower_length(1)*global_y;
-		*/
+	{/*
+	 Not implemented
 
-		T* global_y = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		T* C_Nc = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
-
-		//	1. qc = qc/norm(qc); This is in quaternions 
-		T nrm = cblas_dnrm2(this->NUM_LEGS, initial_orientation_, 1);
-		cblas_dscal(this->NUM_LEGS, 1.0 / nrm, initial_orientation_, 1);
-
-		// 2.	C_Nc = get_basis(qc);
-		MathLibrary::get_basis<T>(initial_orientation_, C_Nc);
-		// 3.	global_y = C_Nc(:,2);
-		cblas_dcopy(this->DIM, C_Nc + 1, this->DIM, global_y, 1);
-
-		// 4.	global_y = -global_y / norm(global_y);
-		nrm = cblas_dnrm2(this->DIM, global_y, 1);
-		cblas_dscal(this->DIM, -1.0 / nrm, global_y, 1);
-
-		/////////////////////////////////////////// Leg 1 ////////////////////////////////////////////////////////
-		// 5.	pw1 = pcc;
-		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate1_, 1);
-
-		// 6.	pw1 = pw1 + C_Nc*r1;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r1_, 1, 1, wheel_coordinate1_, 1);
-
-		// 7.	pw1 = pw1 + upper_length(1)*global_y;
-		cblas_daxpy(this->DIM, initial_upper_spring_length_[0], global_y, 1, wheel_coordinate1_, 1);
-
-		// 8.	pt1 = pw1
-		cblas_dcopy(this->DIM, wheel_coordinate1_, 1, tyre_coordinate1_, 1);
-
-		// 9.	pt1 = pw1 + lower_length(1)*global_y;
-		cblas_daxpy(this->DIM, initial_lower_spring_length_[0], global_y, 1, tyre_coordinate1_, 1);
-
-		/////////////////////////////////////////// Leg 2 ////////////////////////////////////////////////////////
-		// 5.	pw2 = pcc;
-		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate2_, 1);
-
-		// 6.	pw2 = pw2 + C_Nc*r2;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r2_, 1, 1, wheel_coordinate2_, 1);
-
-		// 7.	pw2 = pw2 + upper_length(2)*global_y;
-		cblas_daxpy(this->DIM, initial_upper_spring_length_[1], global_y, 1, wheel_coordinate2_, 1);
-
-		// 8.	pt2 = pw2
-		cblas_dcopy(this->DIM, wheel_coordinate2_, 1, tyre_coordinate2_, 1);
-
-		// 9.	pt2 = pw2 + lower_length(2)*global_y;
-		cblas_daxpy(this->DIM, initial_lower_spring_length_[1], global_y, 1, tyre_coordinate2_, 1);
-
-		/////////////////////////////////////////// Leg 3 ////////////////////////////////////////////////////////
-		// 5.	pw3 = pcc;
-		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate3_, 1);
-
-		// 6.	pw3 = pw3 + C_Nc*r3;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r3_, 1, 1, wheel_coordinate3_, 1);
-
-		// 7.	pw3 = pw3 + upper_length(3)*global_y;
-		cblas_daxpy(this->DIM, initial_upper_spring_length_[2], global_y, 1, wheel_coordinate3_, 1);
-
-		// 8.	pt3 = pw3
-		cblas_dcopy(this->DIM, wheel_coordinate3_, 1, tyre_coordinate3_, 1);
-
-		// 9.	pt3 = pw3 + lower_length(3)*global_y;
-		cblas_daxpy(this->DIM, initial_lower_spring_length_[2], global_y, 1, tyre_coordinate3_, 1);
-
-		/////////////////////////////////////////// Leg 4 ////////////////////////////////////////////////////////
-		// 5.	pw4 = pcc;
-		cblas_dcopy(this->DIM, pcc_, 1, wheel_coordinate4_, 1);
-
-		// 6.	pw4 = pw4 + C_Nc*r4;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, C_Nc, this->DIM, r4_, 1, 1, wheel_coordinate4_, 1);
-
-		// 7.	pw4 = pw4 + upper_length(4)*global_y;
-		cblas_daxpy(this->DIM, initial_upper_spring_length_[3], global_y, 1, wheel_coordinate4_, 1);
-
-		// 8.	pt4 = pw4
-		cblas_dcopy(this->DIM, wheel_coordinate4_, 1, tyre_coordinate4_, 1);
-
-		// 9.	pt4 = pw4 + lower_length(4)*global_y;
-		cblas_daxpy(this->DIM, initial_lower_spring_length_[3], global_y, 1, tyre_coordinate4_, 1);
-
-
-		mkl_free(global_y);
-		mkl_free(C_Nc);
-	}
+	 */}
 
 	inline void compute_dx(const T* current_length, T* dx) {
 		/*
@@ -674,25 +585,21 @@ public:
 	}
 
 	void populate_results(T* ALE_vector, T * vector_11DOF, T* global_vector) {
-		/*
-		Not implemented
-		assign the ALE components to x and y direction and 11 dof components to z direction
-		*/
-		global_vector[0] = ALE_vector[0];
-		global_vector[1] = ALE_vector[1];
-		global_vector[2] = vector_11DOF[0];
-		T* start_pos_global, *start_pos_11dof, *start_pos_ale;
-		start_pos_global = global_vector + 3;
-		start_pos_11dof = vector_11DOF + 3;
-		start_pos_ale = ALE_vector + 2;
-		for (size_t i = 0; i < vec_DIM - 1; ++i) {
-			start_pos_global[0] = start_pos_ale[0];
-			start_pos_global[1] = start_pos_ale[1];
-			start_pos_global[2] = start_pos_11dof[0];
-			start_pos_11dof += 1;
-			start_pos_ale += 2;
-			start_pos_global += 3;
-		}
+		set_ALE2global(ALE_vector, global_vector);
+		set_11DOF2global(vector_11DOF, global_vector);
+
+	}
+	
+
+	void combine_results() {
+		set_ALE2global(Position_vec_xy, Position_vec);
+		set_11DOF2global(u_current_linear, Position_vec);
+		// Angles manually
+		angle_CG[0] = u_current_linear[1];
+		angle_CG[1] = u_current_linear[2];
+		angle_CG[2] = *Angle_z;
+		w_CG[2] = w_z;
+		set_ALE2global(Velocity_vec_xy, Velocity_vec);
 	}
 
 	void get_Position_vec(T* Pos) {
@@ -799,6 +706,7 @@ public:
 	void set_I_body_yy(const T& I_body_yy_val) {
 		I_CG[4] = I_body_yy_val;
 	}
+	
 	~Car() {
 		std::cout << "Car destructor";
 
@@ -840,5 +748,11 @@ public:
 		mkl_free(Velocity_vec_xy);
 		delete Angle_z;
 		delete w_z;
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////// Interpolator objects ///////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////
+		mkl_free(Corners_current); 
+		mkl_free(Corners_rot); 
+		mkl_free(Corners_init);
 	}
 };
