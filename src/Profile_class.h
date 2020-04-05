@@ -37,9 +37,7 @@ public:
 	*/
 	virtual void update_initial_condition(Car<double>* Car1) { std::cout << "I am fucked" << std::endl; };
 
-	virtual void this_is_a_test_fn(std::string s) {};
 	virtual ~Profile() {};
-	virtual void test() {};
 };
 
 
@@ -95,14 +93,6 @@ public:
 	\param Car
 	*/
 	virtual void update_initial_condition(Car<double>* Car1);
-	virtual void this_is_a_test_fn(std::string s);
-	virtual void test() {
-		Position[2] -= 20;
-		std::cout << "Position:\n";
-		MathLibrary::write_vector(Position, 3);
-		std::cout << "Radius:\n";
-		MathLibrary::write_vector(&Radius, 1);
-	}
 };
 
 
@@ -139,7 +129,5 @@ public:
 	\param Car
 	*/
 	virtual void update_initial_condition(Car<double>* Car1);
-	virtual void this_is_a_test_fn(std::string s);
-	virtual void test() {};
 };
 
