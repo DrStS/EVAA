@@ -26,9 +26,28 @@ public:
 	~Load_module();
 	void set_Profile(Profile* Profile_type);
 	void get_Profile(Profile* Profile_type);
+
+	/*
+	Calculates the internal forces under certain conditions
+	\param time_t current simulation time
+	\param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
+	\return F_vec vector of forces in the car [GC:XYZ,W1:XYZ,T1:XYZ, ...]
+	\return Normal_ext external forces acting on the whole car system [XYZ]
+	*/
 	void update_force(double time_t, double* F_vec, double* Delta_x_vec, double* Normal_ext);
+
+	/*
+	Calculates the torque acting on the whole car
+	\param time_t current simulation time
+	\param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
+	\return Torque acting on the total car system [XYZ]
+	*/
 	void update_torque(double time_t, double* Torque, double* Delta_x_vec);
+
+
 	void set_External_force(Load_Params load_param);
+
+
 	void test() {
 		std::cout << "External force:\n";
 		MathLibrary::write_vector(External_force, 3);
