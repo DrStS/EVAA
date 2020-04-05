@@ -111,9 +111,11 @@ void Circular::get_Profile_torque(Car<double>* Car1, double* Torque) {
 
 void Circular::update_initial_condition(Car<double>* Car1){
 
+	const MKL_INT incx = 1;
+
 	double* perpendicular_dir = (double*)mkl_calloc(Car1->DIM, sizeof(double), Car1->alignment);
-	double* tangential_dir = (double*)mkl_calloc(Car1->alignment, sizeof(double), Car1->alignment);
-	double* radial_vector = (double*)mkl_calloc(Car1->alignment, sizeof(double), Car1->alignment);
+	double* tangential_dir = (double*)mkl_calloc(Car1->DIM, sizeof(double), Car1->alignment);
+	double* radial_vector = (double*)mkl_calloc(Car1->DIM, sizeof(double), Car1->alignment);
 	radial_vector[0] = Car1->Position_vec[0] - this->Position[0];
 	radial_vector[1] = Car1->Position_vec[1] - this->Position[1];
 	radial_vector[2] = 0;
@@ -125,7 +127,6 @@ void Circular::update_initial_condition(Car<double>* Car1){
 
 	double inv_radius = 1. / radius;
 
-	const MKL_INT incx = 1;
 	cblas_dscal(Car1->DIM, inv_radius, radial_vector, incx);
 	MathLibrary::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
 	double magnitude = cblas_ddot(Car1->DIM, Car1->Velocity_vec, incx, tangential_dir, incx);
