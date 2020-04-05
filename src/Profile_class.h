@@ -18,6 +18,7 @@ public:
 	virtual void update_initial_condition(Car<double>* Car1) { std::cout << "I am fucked" << std::endl; };
 	virtual void this_is_a_test_fn(std::string s) {};
 	virtual ~Profile() {};
+	virtual void test() {};
 };
 
 class Circular : public Profile {
@@ -45,4 +46,11 @@ public:
 	virtual void get_Profile_torque(Car<double>* Car1, double* Torque);
 	virtual void update_initial_condition(Car<double>* Car1);
 	virtual void this_is_a_test_fn(std::string s);
+	virtual void test() {
+		Position[2] -= 20;
+		std::cout << "Position:\n";
+		MathLibrary::write_vector(Position, 3);
+		std::cout << "Radius:\n";
+		MathLibrary::write_vector(&Radius, 1);
+	}
 };

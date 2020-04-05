@@ -821,9 +821,10 @@ void EVAAComputeEngine::computeALE(void) {
 
 	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
 	std::cout << "Load module initialized!\n";
+	Load_module1->test();
 
 	delete Load_module1;
 	delete Road_Profile;
-	delete Car1;
+	// delete Car1;
 
 }
