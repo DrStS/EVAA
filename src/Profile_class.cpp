@@ -22,8 +22,6 @@ Circular::Circular(double* Pos, double Rad) {
 };
 
 Circular::~Circular() {
-	std::cout << "I am getting fucked in destruction of profile" << std::endl;
-	test();
 	mkl_free(Position);
 	mkl_free(unit_y_vector);
 	mkl_free(velocity_direction);
@@ -213,9 +211,6 @@ void Circular::update_initial_condition(Car<double>* Car1){
 	MKL_free(radial_vector);
 }
 
-void Circular::this_is_a_test_fn(std::string s) {
-	std::cout << "This is a test function I got " <<s<< std::endl;
-}
 // =============================== end of Circular class implementation ===================
 
 
@@ -254,8 +249,5 @@ void Nonfixed::update_initial_condition(Car<double>* Car1) {
 	// don't change them
 }
 
-void Nonfixed::this_is_a_test_fn(std::string s) {
-	std::cout << "This is a test function I got " << s << std::endl;
-}
 // =============================== end of Nonfixed class implementation ===================
 
