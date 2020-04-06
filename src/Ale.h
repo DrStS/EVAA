@@ -200,7 +200,6 @@ public:
 			}
 */			Car_obj->update_lengths_11DOF();
 			if (params.interpolation) {
-				
 				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
@@ -214,7 +213,7 @@ public:
 
 		cblas_dcopy((Car_obj->vec_DIM * Car_obj->DIM), u_sol + (iter - 1) * (Car_obj->vec_DIM * Car_obj->DIM), 1, sol_vect, 1);
 		Car_obj->combine_results();
-
+		MathLibrary::write_vector(Car_obj->current_spring_length, 8);
 
 		MKL_free(time_vec);
 		MKL_free(u_sol);

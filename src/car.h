@@ -53,7 +53,7 @@ private:
 		corners[9] = pos_CG[2];
 		corners[2] = pos_CG[0] - l_long[2]*c - l_lat[2]*s; // rl
 		corners[6] = pos_CG[1] + l_lat[2]*c - l_long[2]*s; // rl
-		corners[8] = pos_CG[2];
+		corners[10] = pos_CG[2];
 		corners[3] = pos_CG[0] - l_long[3]*c + l_lat[3]*s; // rr
 		corners[7] = pos_CG[1] - l_lat[3]*c - l_long[3]*s; // rr
 		corners[11] = pos_CG[2];
@@ -76,10 +76,11 @@ private:
 	void update_corners_11DOF() {
 		pos_buffer[0] = Position_vec_xy[0];
 		pos_buffer[1] = Position_vec_xy[1];
-		pos_buffer[2] = u_current_linear[0];
-		angle_buffer[0] = u_current_linear[1];
-		angle_buffer[1] = u_current_linear[2];
+		pos_buffer[2] = Position_vec[2] + u_current_linear[0];
+		angle_buffer[0] = angle_CG[1] + u_current_linear[1];
+		angle_buffer[1] = angle_CG[2] + u_current_linear[2];
 		angle_buffer[3] = 0;
+		
 		construct_corner(pos_buffer, Corners_init);
 		update_corners_11DOF(angle_buffer, Corners_rot, Corners_init, Corners_current);
 	}
@@ -91,7 +92,7 @@ private:
 		}
 	}
 	void set_11DOF2global(T* vect, T* global_vect) {
-		global_vect[2] = vect[0];
+		global_vect[2] += vect[0];
 #pragma loop(ivdep)
 		for (size_t i = 1; i < vec_DIM; ++i) {
 			global_vect[DIM*i + 2] += vect[(DIM - 1) + i];
@@ -369,6 +370,7 @@ public:
 			xml_start = params.initial_pos_tyre + 0 * 3;
 			position_start += 6; // skip 3 for the wheel
 			cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 26)
+			cblas_dcopy(DIM*vec_DIM, initial_position, 1, Position_vec, 1);
 		} 
 		else {
 			T* W_fl = initial_position + 3;
@@ -380,9 +382,20 @@ public:
 			T* T_rl = initial_position + 18;
 			T* T_rr = initial_position + 24;
 			get_length(Corners_current, current_spring_length, W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr);
+			/* Update the mean position where changes are to be added*/
+			cblas_dcopy(DIM, initial_position, 1, Position_vec, 1);
+			W_fl = Position_vec + 3;
+			W_fr = Position_vec + 9;
+			W_rl = Position_vec + 15;
+			W_rr = Position_vec + 21;
+			T_fl = Position_vec + 6;
+			T_fr = Position_vec + 12;
+			T_rl = Position_vec + 18;
+			T_rr = Position_vec + 24;
+			get_length(Corners_current, spring_length, W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr);
 		}
-		// copy the initial position to the position vector
-		cblas_dcopy(DIM*vec_DIM, initial_position, 1, Position_vec, 1);
+		//// copy the initial position to the position vector
+		//cblas_dcopy(DIM*vec_DIM, initial_position, 1, Position_vec, 1);
 		
 		
 
@@ -688,14 +701,17 @@ public:
 	*/
 	void update_lengths_11DOF() {
 		update_corners_11DOF();
-		current_spring_length[0] = std::abs(Corners_current[8] - u_current_linear[3]);
-		current_spring_length[1] = std::abs(u_current_linear[3] - u_current_linear[4]);
-		current_spring_length[2] = std::abs(Corners_current[9] - u_current_linear[5]);
-		current_spring_length[3] = std::abs(u_current_linear[5] - u_current_linear[6]);
-		current_spring_length[4] = std::abs(Corners_current[10] - u_current_linear[7]);
-		current_spring_length[5] = std::abs(u_current_linear[7] - u_current_linear[8]);
-		current_spring_length[6] = std::abs(Corners_current[11] - u_current_linear[9]);
-		current_spring_length[7] = std::abs(u_current_linear[9] - u_current_linear[10]);
+		
+		current_spring_length[0] = std::abs(Corners_current[8] - (Position_vec[1*DIM + 2] - u_current_linear[3]));
+		current_spring_length[1] = std::abs((-u_current_linear[3] + Position_vec[1 * DIM + 2]) - (-u_current_linear[4] + Position_vec[2 * DIM + 2]));
+		current_spring_length[2] = std::abs(Corners_current[9] - (Position_vec[3 * DIM + 2] - u_current_linear[5]));
+		current_spring_length[3] = std::abs((-u_current_linear[5] + Position_vec[3 * DIM + 2]) - (-u_current_linear[6] + Position_vec[4 * DIM + 2]));
+		current_spring_length[4] = std::abs(Corners_current[10] - (Position_vec[5 * DIM + 2] - u_current_linear[7]));
+		current_spring_length[5] = std::abs((Position_vec[5 * DIM + 2] - u_current_linear[7]) - (Position_vec[6 * DIM + 2] - u_current_linear[8]));
+		current_spring_length[6] = std::abs(Corners_current[11] - (Position_vec[7 * DIM + 2] - u_current_linear[9]));
+		current_spring_length[7] = std::abs((-u_current_linear[9]+ Position_vec[7 * DIM + 2]) - (-u_current_linear[10] + Position_vec[8 * DIM + 2]));
+
+
 	}
 
 	/* Fills the global vector with all entries
