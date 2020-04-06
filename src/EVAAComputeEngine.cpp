@@ -796,6 +796,10 @@ void EVAAComputeEngine::computeALE(void) {
 		Road_Profile = new Nonfixed(_load_module_parameter.profile_center,
 			_load_module_parameter.profile_radius);
 	}
+	else if (_load_module_parameter.boundary_condition_road == FIXED) {
+		Road_Profile = new Fixed(_parameters.gravity[2], _load_module_parameter);
+		Road_Profile->set_fixed_index(Car1->tyre_index_set);
+	}
 	else {
 		std::cout << "ALE will only work with a circular pathor nonfixed boundaries, computation skipped" << std::endl;
 		exit(5);

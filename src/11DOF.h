@@ -100,6 +100,13 @@ protected:
 		}
 	}
 
+	void compute_normal_force(T* K, T* u, T* force, size_t* index, size_t dim, size_t n) {
+#pragma loop( ivdep )
+		for (int i = 0; i < n; ++i) {
+			force[index[i]] = -K[index[i] * dim + index[i]] * u[index[i]];
+		}
+	}
+
 public:
 	/*
 	Constructor
@@ -133,6 +140,7 @@ public:
 		
 		cblas_dscal(DOF, -h_, u_n_m_1, 1);
 		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
+		
 		/*std::cout << "inside the 11 dof" << std::endl;
 		MathLibrary::write_vector(u_n_m_1, 11);*/
 		
@@ -149,8 +157,10 @@ public:
 		cblas_daxpy(mat_len, factor_h, car_->D, 1, A, 1);
 		cblas_daxpy(mat_len, 1, car_->K, 1, A, 1);
 		cblas_dscal(DOF, -factor_h2, u_n_m_1, 1);
-		cblas_dscal(DOF, 0.0, force, 1);
+		//cblas_dscal(DOF, 0.0, force, 1);
 		MathLibrary::Solvers<T, linear11dof>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, DOF);
+		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
+		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
 		cblas_dcopy(DOF, u_n_p_1, 1, solution, 1);
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_1
 		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and u_n_p_1 point to u_n_m_1 now
@@ -194,6 +204,8 @@ public:
 		f_n_p_1[8] = load_param.external_force_tyre[1 * 3 + 2];
 		f_n_p_1[9] = load_param.external_force_wheel[0 * 3 + 2];
 		f_n_p_1[10] = load_param.external_force_tyre[0 * 3 + 2];
+		
+
 	}
 	void apply_boundary_condition(int s) {
 		condition_type = s;
@@ -220,6 +232,8 @@ public:
 			}
 			//solution_vect = u_sol + iter * (DOF);
 			update_step(f_n_p_1, sol_vect);
+			if (iter==2)
+			MathLibrary::write_vector(sol_vect, 11);
 			iter++;
 			t += h_;
 		}

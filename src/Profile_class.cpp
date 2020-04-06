@@ -22,8 +22,6 @@ Circular::Circular(double* Pos, double Rad) {
 };
 
 Circular::~Circular() {
-	std::cout << "I am getting fucked in destruction of profile" << std::endl;
-	test();
 	mkl_free(Position);
 	mkl_free(unit_y_vector);
 	mkl_free(velocity_direction);
@@ -213,11 +211,46 @@ void Circular::update_initial_condition(Car<double>* Car1){
 	MKL_free(radial_vector);
 }
 
-void Circular::this_is_a_test_fn(std::string s) {
-	std::cout << "This is a test function I got " <<s<< std::endl;
-}
 // =============================== end of Circular class implementation ===================
+// ===============================   Fixed class implementation ======================//
+Fixed::Fixed(const double& g, const Load_Params& load_param) {
+	Name = "fixed";
+	linear_idx = (size_t*)mkl_malloc(num_tyre * sizeof(size_t), alignment);
+	dx = (double*)mkl_malloc(sizeof(double) * num_tyre, alignment);
+	k_vec = (double*)mkl_malloc(sizeof(double) * num_tyre, alignment);
+	gravity = g;
+};
 
+void Fixed::get_Profile_force_ALE(Car<double>* Car1, double* F_vec, double* Normal_ext) {
+	if (index_set) {
+		Car1->get_k_vec_tyre(k_vec);
+		Car1->compute_dx_tyre(dx);
+		for (size_t i = 0; i < num_tyre; ++i) {
+			F_vec[linear_idx[i] * DIM + 2] = -k_vec[i] * dx[i];
+		}
+	}
+	else {
+		std::cout << "Please Provide Tire Index" << std::endl;
+		exit(2);
+	}
+}
+
+void Fixed::get_Profile_torque(Car<double>* Car1, double* Torque_vec) {
+	Torque_vec[2] = 0; // Torque on z direction
+}
+
+void Fixed::set_fixed_index(size_t* index) {
+	for (size_t i = 0; i < num_tyre; ++i) {
+		linear_idx[i] = index[i];
+	}
+	index_set = 1;
+}
+
+Fixed::~Fixed() {
+	mkl_free(linear_idx);
+	mkl_free(dx);
+	mkl_free(k_vec);
+}
 
 
 // ===============================   Nonfixed class implementation ======================//
@@ -254,8 +287,5 @@ void Nonfixed::update_initial_condition(Car<double>* Car1) {
 	// don't change them
 }
 
-void Nonfixed::this_is_a_test_fn(std::string s) {
-	std::cout << "This is a test function I got " << s << std::endl;
-}
 // =============================== end of Nonfixed class implementation ===================
 

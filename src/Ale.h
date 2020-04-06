@@ -132,6 +132,7 @@ public:
 
 	}
 
+
 	/*
 	Executes the time iteration of the ALE solvers, switches from global position update to solving of the linear 11DOF system
 	*/
@@ -183,11 +184,9 @@ public:
 
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
-			/*if (iter==2){
-				MathLibrary::write_vector(Car_obj->u_current_linear, 11);
-				std::cout << "corners" << std::endl;
-				MathLibrary::write_vector(Car_obj->Corners_current, 12);
-			}*/
+			if (iter==100){
+				//MathLibrary::write_vector(force_vector_11dof, 11);
+			}
 			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
 			/*if (iter == 2) {
 				MathLibrary::write_vector(Delta_x_vec, 8);
@@ -199,9 +198,9 @@ public:
 				MathLibrary::write_vector(Car_obj->u_current_linear, 11);
 				exit(5);
 			}
-*/
+*/			Car_obj->update_lengths_11DOF();
 			if (params.interpolation) {
-				Car_obj->update_lengths_11DOF();
+				
 				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
@@ -212,7 +211,6 @@ public:
 			iter++;
 			
 		}
-
 
 		cblas_dcopy((Car_obj->vec_DIM * Car_obj->DIM), u_sol + (iter - 1) * (Car_obj->vec_DIM * Car_obj->DIM), 1, sol_vect, 1);
 		Car_obj->combine_results();
@@ -228,6 +226,7 @@ public:
 		delete[] torque;
 		delete[] new_torque;
 	}
+
 
 	/*
 	adds the contribution of the wheels and tyres to the inertia moment of the car

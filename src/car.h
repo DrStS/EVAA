@@ -155,6 +155,7 @@ public:
 	T* u_prev_linear, *u_current_linear;
 	T* k_vec, *l_lat, *l_long;
 	T* velocity_current_linear;
+	size_t* tyre_index_set;
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////// Interpolator Members ///////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +225,7 @@ public:
 		l_long = (T*)mkl_malloc(malloc_factor*num_wheels * sizeof(T), alignment); // 4 dim
 		spring_length = (T*)mkl_malloc(malloc_factor * 2 * num_wheels * sizeof(T), alignment); // 8 dim
 		current_spring_length = (T*)mkl_malloc(malloc_factor * 2 * num_wheels * sizeof(T), alignment); // 8 dim
-
+		tyre_index_set = (size_t*)mkl_malloc(num_wheels * sizeof(size_t), alignment);
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////// Memory allocation for interpolator /////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -429,11 +430,20 @@ public:
 		cblas_dcopy(DIM, initial_angular_velocity, 1, w_CG, 1);
 		
 		/*
-		Global assignments Done 
-		11 DOF assignments
-		*/
+		Global assignments Done */
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////// 11 DOF Buffer Initialization //////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		construct_11DOF_mass(Mass_vec, I_CG);
-		construct_11DOF_vector(initial_position, initial_angle, u_prev_linear);
+		//compute_dx(u_prev_linear + 3);
+		//construct_11DOF_vector(initial_position, initial_angle, u_prev_linear);
+		compute_dx(u_prev_linear + 3);
+		cblas_dcopy(DOF, u_prev_linear, 1, u_current_linear, 1);
+		tyre_index_set[0] = 2;
+		tyre_index_set[1] = 4;
+		tyre_index_set[2] = 6;
+		tyre_index_set[3] = 8;
+		
 		construct_11DOF_vector(initial_velocity_vec, initial_angular_velocity, velocity_current_linear);
 		
 		/* This stays in the 11 DOF
@@ -668,6 +678,11 @@ public:
 	inline void compute_dx(T* dx) {
 		compute_dx(current_spring_length, dx);
 	}
+	inline void compute_dx_tyre(T* dx) {
+		cblas_dcopy(num_tyre, u_current_linear + 4, 2, dx, 1);
+		//cblas_daxpy(num_tyre, -1.0, u_current_linear + 4, 2, dx, 1);
+	}
+
 	/*
 	First updates the corner and afterwards compute the lengths of the springs
 	*/
@@ -691,7 +706,6 @@ public:
 	void populate_results(T* ALE_vector, T * vector_11DOF, T* global_vector) {
 		set_ALE2global(ALE_vector, global_vector);
 		set_11DOF2global(vector_11DOF, global_vector);
-
 	}
 	
 
@@ -769,6 +783,15 @@ public:
 			cblas_dcopy( 2 * num_wheels, k_vec, 1, k, 1);
 		}
 	}
+	void get_k_vec_tyre(T* k) {
+		// b=a, cblas_dcopy(n,a,inc,b,inc)
+		cblas_dcopy(num_wheels, k_vec + 1, 2, k, 1);
+	}
+	void get_k_vec_wheel(T* k) {
+		// b=a, cblas_dcopy(n,a,inc,b,inc)
+		cblas_dcopy(num_wheels, k_vec, 2, k, 1);
+	}
+
 	void set_k_vec(const T* k) {
 		if (k != NULL) {
 			cblas_dcopy(2* num_wheels, k, 1, k_vec, 1);
@@ -879,6 +902,7 @@ public:
 		do_ALE_update(position_change, Position_vec);
 		do_ALE_update(velocity_change, Velocity_vec);
 	}
+
 	
 	~Car() {
 		mkl_free_buffers();
@@ -936,6 +960,8 @@ public:
 		l_long = nullptr;
 		mkl_free(velocity_current_linear);
 		velocity_current_linear = nullptr;
+		mkl_free(tyre_index_set);
+		tyre_index_set = nullptr;
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////// ALE Vectors ///////////////////////////////////////////////////////

@@ -93,10 +93,10 @@
   <InitialConditions>
     <SpringElongation>
       <Body>
-        <ReerRight>0.2</ReerRight>
-        <ReerLeft>0.2</ReerLeft>
-        <FrontLeft>0.2</FrontLeft>
-        <FrontRight>0.2</FrontRight>
+        <ReerRight>0.24</ReerRight>
+        <ReerLeft>0.24</ReerLeft>
+        <FrontLeft>0.21</FrontLeft>
+        <FrontRight>0.21</FrontRight>
       </Body>
       <Tyre>
         <ReerRight>0.2</ReerRight>
@@ -177,22 +177,22 @@
       <ReerRight>
         <x>50</x>
         <y>0</y>
-        <z>0</z>
+        <z>-0.04</z>
       </ReerRight>
       <ReerLeft>
         <x>50</x>
         <y>0</y>
-        <z>0</z>
+        <z>-0.04</z>
       </ReerLeft>
       <FrontLeft>
         <x>50</x>
         <y>0</y>
-        <z>0</z>
+        <z>-0.01</z>
       </FrontLeft>
       <FrontRight>
         <x>50</x>
         <y>0</y>
-        <z>0</z>
+        <z>-0.01</z>
       </FrontRight>
     </UnsprungMass>
     <Tyre>
@@ -216,7 +216,7 @@
         <y>0</y>
         <z>0</z>
       </FrontRight>
-    </Tyre> -->
+    </Tyre>--> 
   </Position>
   </InitialConditions>
 
