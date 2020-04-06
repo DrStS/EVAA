@@ -191,7 +191,7 @@ public:
 		int sol_size = (floor(tend_ / h_) + 1);
 		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
 		u_sol = (T*)mkl_calloc((sol_size+1) * (DOF), sizeof(T), alignment);
-		std::cout << "Sol size = " << sol_size << std::endl;
+		
 
 		interpolation_enabled = params.interpolation;
 
@@ -222,7 +222,7 @@ public:
 		T t = h_;
 		double eps = h_ / 100;
 		T* solution_vect = u_sol;
-		std::cout << "car alignment =" << car_->alignment << std::endl;
+		
 		//cblas_dcopy(DOF, car_->u_prev_linear, 1, solution_vect, 1);
 		while (std::abs(t - (tend_ + h_)) > eps) {
 			if (interpolation_enabled) {
@@ -232,13 +232,12 @@ public:
 			}
 			//solution_vect = u_sol + iter * (DOF);
 			update_step(f_n_p_1, sol_vect);
-			if (iter==2)
-			MathLibrary::write_vector(sol_vect, 11);
+			
 			iter++;
 			t += h_;
 		}
 		//cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
-		std::cout << "iter = " << iter << std::endl;
+		
 	}
 	virtual ~linear11dof_full() {
 		mkl_free(u_sol);
