@@ -47,47 +47,25 @@ Corners = [ l_long_fl, l_long_fr, -l_long_rl, -l_long_rr;
 l_min = 0.05;
 l_max = 0.8;
 % grid size
+global size;
 size = 1000;
 % grid value allocation
-global k_grid1 k_grid2 k_grid3 k_grid4 k_grid5 k_grid6 k_grid7 k_grid8;
+global k_grid;
 global X;
 X = zeros(size, 1);
-k_grid1 = zeros(size,1);
-k_grid2 = zeros(size,1);
-k_grid3 = zeros(size,1);
-k_grid4 = zeros(size,1);
-k_grid5 = zeros(size,1);
-k_grid6 = zeros(size,1);
-k_grid7 = zeros(size,1);
-k_grid8 = zeros(size,1);
+k_grid = zeros(8*size,1);
 dl = (l_max-l_min)/(size-1);
 % k response function
 k = @(l,a)(c*l*l + b*l + a);
 % fill in grid values
 for i = 0:size-1
-    k_grid1(i+1)= k(l_min+i*dl, a(1));
     X(i+1) = l_min+i*dl;
 end
-for i = 0:size-1
-    k_grid2(i+1)= k(l_min+i*dl, a(2));
-end
-for i = 0:size-1
-    k_grid3(i+1)= k(l_min+i*dl, a(3));
-end
-for i = 0:size-1
-    k_grid4(i+1)= k(l_min+i*dl, a(4));
-end
-for i = 0:size-1
-    k_grid5(i+1)= k(l_min+i*dl, a(5));
-end
-for i = 0:size-1
-    k_grid6(i+1)= k(l_min+i*dl, a(6));
-end
-for i = 0:size-1
-    k_grid7(i+1)= k(l_min+i*dl, a(7));
-end
-for i = 0:size-1
-    k_grid8(i+1)= k(l_min+i*dl, a(8));
+for i = 1:8
+    for j = 1:size
+        k_grid((i-1)*size + j)= k(X(j), a(i));
+    end
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 steps = 1000;
@@ -152,21 +130,22 @@ function K = get_K(x)
     upper_rr = x(10);
     lower_rr = x(11);
     
-    global k_grid1 k_grid2 k_grid3 k_grid4 k_grid5 k_grid6 k_grid7 k_grid8;
+    global k_grid;
     global X;
-    global Corners
+    
+    global Corners size;
     R = get_R(x);
     currentCorners = R*Corners;
     
     % for spline interp3(X,Y,Z,k_grid,x(2),long_fl,x(3),'spline')
-    k_body_fl=interp1(X,k_grid1,0.5 + currentCorners(3,1) - upper_fl + car);
-    k_tyre_fl=interp1(X,k_grid2,0.5 + upper_fl - lower_fl);
-    k_body_fr=interp1(X,k_grid3,0.5 + currentCorners(3,2) - upper_fr + car);
-    k_tyre_fr=interp1(X,k_grid4,0.5 + upper_fr - lower_fr);
-    k_body_rl=interp1(X,k_grid5,0.5 + currentCorners(3,3) - upper_rl + car);
-    k_tyre_rl=interp1(X,k_grid6,0.5 + upper_rl -lower_rl);
-    k_body_rr=interp1(X,k_grid7,0.5 + currentCorners(3,4) - upper_rr + car);
-    k_tyre_rr=interp1(X,k_grid8,0.5 + upper_rr - lower_rr);
+    k_body_fl=interp1(X,k_grid(1:size),0.5 + currentCorners(3,1) - upper_fl + car);
+    k_tyre_fl=interp1(X,k_grid(size+1:2*size),0.5 + upper_fl - lower_fl);
+    k_body_fr=interp1(X,k_grid(2*size+1:3*size),0.5 + currentCorners(3,2) - upper_fr + car);
+    k_tyre_fr=interp1(X,k_grid(3*size+1:4*size),0.5 + upper_fr - lower_fr);
+    k_body_rl=interp1(X,k_grid(4*size+1:5*size),0.5 + currentCorners(3,3) - upper_rl + car);
+    k_tyre_rl=interp1(X,k_grid(5*size+1:6*size),0.5 + upper_rl -lower_rl);
+    k_body_rr=interp1(X,k_grid(6*size+1:7*size),0.5 + currentCorners(3,4) - upper_rr + car);
+    k_tyre_rr=interp1(X,k_grid(7*size+1:8*size),0.5 + upper_rr - lower_rr);
     
     K = [k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_fr+k_body_rl*l_lat_rl-k_body_rr*l_lat_rr, -k_body_fl*l_long_fl-k_body_fr*l_long_fr+k_body_rl*l_long_rl+k_body_rr*l_long_rr,  -k_body_fl, 0, -k_body_fr, 0, -k_body_rl, 0, -k_body_rr, 0;
    0, l_lat_fl*l_lat_fl*k_body_fl+l_lat_fr*l_lat_fr*k_body_fr+l_lat_rl*l_lat_rl*k_body_rl+l_lat_rr*l_lat_rr*k_body_rr, -l_long_fl*l_lat_fl*k_body_fl+l_lat_fr*l_long_fr*k_body_fr+l_long_rl*l_lat_rl*k_body_rl-l_long_rr*l_lat_rr*k_body_rr, -l_lat_fl*k_body_fl, 0, l_lat_fr*k_body_fr, 0, -l_lat_rl*k_body_rl, 0, l_lat_rr*k_body_rr, 0;
