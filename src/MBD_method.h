@@ -301,7 +301,6 @@ public:
 
 		////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
 		h = params.timestep;
-		std::cout << "h = " << h << std::endl;
 		num_iter = params.num_time_iter;
 		max_iter = params.max_num_iter;
 		tol = params.tolerance;

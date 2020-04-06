@@ -238,7 +238,26 @@ public:
 		}
 		//cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
 		
+	
 	}
+
+	/*
+	Prints all positions and angles in the car object
+	*/
+	void print_final_results(T* sln) {
+
+		std::cout << "linear11DOF: orientation angles=\n\t[" << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
+		std::cout << "linear11DOF: car body position pc=\n\t[" << sln[0] << "]" << std::endl;
+		std::cout << "linear11DOF: rear-right wheel position pw1=\n\t[" << sln[9] << "]" << std::endl;
+		std::cout << "linear11DOF: rear-left wheel position pw2=\n\t[" << sln[7] << "]" << std::endl;
+		std::cout << "linear11DOF: front-left wheel position pw3=\n\t[" << sln[3]  << "]" << std::endl;
+		std::cout << "linear11DOF: front-right wheel position pw4=\n\t[" << sln[5] << "]" << std::endl;
+		std::cout << "linear11DOF: rear-right tyre position pt1=\n\t[" << sln[10] << "]" << std::endl;
+		std::cout << "linear11DOF: rear-left tyre position pt2=\n\t[" << sln[8] << "]" << std::endl;
+		std::cout << "linear11DOF: front-left tyre position pt3=\n\t[" << sln[4] <<  "]" << std::endl;
+		std::cout << "linear11DOF: front-right tyre position pt4=\n\t[" << sln[6] << "]" << std::endl;
+	}
+
 	virtual ~linear11dof_full() {
 		mkl_free(u_sol);
 		mkl_free(f_n_p_1);

@@ -184,21 +184,9 @@ public:
 
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
-			if (iter==100){
-				//MathLibrary::write_vector(force_vector_11dof, 11);
-			}
+
 			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
-			/*if (iter == 2) {
-				MathLibrary::write_vector(Delta_x_vec, 8);
-				MathLibrary::write_vector(force_vector, 27);
-				MathLibrary::write_vector(force_vector_11dof, 11);
-			}
 			Car_obj->update_lengths_11DOF();
-			if (iter == 2) {
-				MathLibrary::write_vector(Car_obj->u_current_linear, 11);
-				exit(5);
-			}
-*/			Car_obj->update_lengths_11DOF();
 			if (params.interpolation) {
 				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);

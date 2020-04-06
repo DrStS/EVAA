@@ -508,6 +508,7 @@ public:
 			force[index[i]] = -K[index[i] * dim + index[i]] * u[index[i]];
 		}
 	}
+
 	/*
 	Calculate the entries of the stiffness matrix
 	\param k_vect vector with all spring stiffnesses (in Stefans order)
@@ -615,6 +616,7 @@ public:
 		// copy y coordinate in order wheel, tyre, wheel, tyre, wheel, tyre, ...
 		cblas_dcopy(vec_DIM - 1, Global_position + 5, 3, Position_11dof + 3, 1);
 	}
+
 	/*
 	fill the vector with all stiffness with the constant values from the XML (if the lookup table is not used)
 	\param k_tyre_** stiffnesses of the lower springs
@@ -676,7 +678,6 @@ public:
 
 		*/
 
-		// vdSub(n, a, b, y);  <---> y = a - b: 
 		vdSub(2 * (this->num_tyre), spring_length, current_length, dx);
 	}
 	/*
@@ -688,7 +689,6 @@ public:
 	}
 	inline void compute_dx_tyre(T* dx) {
 		cblas_dcopy(num_tyre, u_current_linear + 4, 2, dx, 1);
-		//cblas_daxpy(num_tyre, -1.0, u_current_linear + 4, 2, dx, 1);
 	}
 
 	/*
@@ -723,6 +723,7 @@ public:
 	void combine_results() {
 		set_ALE2global(Position_vec_xy, Position_vec);
 		set_11DOF2global(u_current_linear, Position_vec);
+
 		// Angles manually
 		angle_CG[0] = u_current_linear[1];
 		angle_CG[1] = u_current_linear[2];
@@ -756,18 +757,15 @@ public:
 
 	void get_Velocity_vec(T* Vel) {
 		if (Vel != NULL) {
-			// b=a, cblas_dcopy(n,a,inc,b,inc)
 			cblas_dcopy(DIM * vec_DIM, Velocity_vec, 1, Vel, 1);
 		}
 	}
 
 	void get_Velocity_vec_xy(T* Vel) {
-		// b=a, cblas_dcopy(n,a,inc,b,inc)
 		cblas_dcopy((DIM - 1) * vec_DIM, Velocity_vec_xy, 1, Vel, 1);
 	}
 
 	void get_Position_vec_xy(T* Vel) {
-		// b=a, cblas_dcopy(n,a,inc,b,inc)
 		cblas_dcopy((DIM - 1) * vec_DIM, Position_vec_xy, 1, Vel, 1);
 	}
 
@@ -778,7 +776,6 @@ public:
 	}
 	void get_Velocity_vec_CG(T* Vel_CG) {
 		if (Vel_CG != NULL) {
-			// b=a, cblas_dcopy(n,a,inc,b,inc)
 			cblas_dcopy(DIM, Velocity_vec, 1, Vel_CG, 1);
 		}
 	}
@@ -790,16 +787,13 @@ public:
 
 	void get_k_vec(T* k) {
 		if (k != NULL) {
-			// b=a, cblas_dcopy(n,a,inc,b,inc)
 			cblas_dcopy( 2 * num_wheels, k_vec, 1, k, 1);
 		}
 	}
 	void get_k_vec_tyre(T* k) {
-		// b=a, cblas_dcopy(n,a,inc,b,inc)
 		cblas_dcopy(num_wheels, k_vec + 1, 2, k, 1);
 	}
 	void get_k_vec_wheel(T* k) {
-		// b=a, cblas_dcopy(n,a,inc,b,inc)
 		cblas_dcopy(num_wheels, k_vec, 2, k, 1);
 	}
 
@@ -811,7 +805,6 @@ public:
 
 	void get_Mass_vec(T* M) {
 		if (M != NULL) {
-			// b=a, cblas_dcopy(n,a,inc,b,inc)
 			cblas_dcopy(vec_DIM, Mass_vec, 1, M, 1);
 		}
 	}
@@ -823,17 +816,16 @@ public:
 			cblas_dcopy(vec_DIM, M, 1, Mass_vec, 1);
 		}
 	}
+
 	/*
 	 get distance vector from each important Point of the car (9: CG, 4*W_i, 4*T_i)
 	 \param Point_P, 
 	 \return each entry from Position_vec
 	*/
-
 	void get_dist_vector_xy(T* Point_P, T* dist_vector) {
 		for (auto i = 0; i < vec_DIM; ++i) {
 			cblas_dcopy(DIM-1, Point_P, incx, &dist_vector[(DIM-1) * i], incx);
 		}
-		// y=a-b, vdSub(n,a,b,y)
 		vdSub((DIM-1) * vec_DIM, Position_vec_xy, dist_vector, dist_vector);
 	}
 
@@ -841,7 +833,6 @@ public:
 		for (auto i = 0; i < vec_DIM; ++i) {
 			cblas_dcopy(DIM, Point_P, incx, &dist_vector[DIM * i], incx);
 		}
-		// y=a-b, vdSub(n,a,b,y)
 		vdSub(DIM * vec_DIM, Position_vec, dist_vector, dist_vector);
 	} // 9 * 3 - from each important point to a fixed Point_P
 
@@ -849,7 +840,6 @@ public:
 		// get distance vector from Center of Gravity of the car to a Point P 
 		// source: Point_P, dest: CG
 		if (Point_P != NULL && dist_vector != NULL) {
-			// y=a-b, vdSub(n,a,b,y)
 			vdSub(DIM, Position_vec, Point_P, dist_vector);
 		}
 	} // 3 - from Center of Gravity of a fixed Point_P

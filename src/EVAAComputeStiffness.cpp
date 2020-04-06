@@ -102,6 +102,7 @@ void EVAAComputeStiffness::getDerivative(double* length, double* deriv) {
 		CheckDfError(err);
 	}
 }
+
 /*
 *	for linear interpolation:
 * 	type = DF_PP_DEFAULT, order = DF_PP_LINEAR
