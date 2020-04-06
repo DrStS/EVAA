@@ -34,6 +34,7 @@
 #include "EVAAComputeStiffness.h"
 
 
+
 /********//**
 * \brief Class ComputeEngine the core of STACCATO
 ***********/
@@ -97,7 +98,9 @@ public:
 	Fancy solver ALE
 	*/
 	void computeALE(void);
+
 	void Car_test(void);
+
 	void computeALEtest(void);
 
 	// MKL
@@ -117,3 +120,4 @@ private:
 	Load_Params _load_module_parameter;
 	EVAAComputeStiffness* lookupStiffness;
 };
+

@@ -87,7 +87,6 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 	reader.ReadParameters(_parameters);
 	reader.ReadLoadParameters(_load_module_parameter);
 	reader.ReadLookupParameters(&lookupStiffness, _parameters);
-	std::cout << "interpolation = " << _parameters.interpolation << std::endl;
 }
 
 
@@ -565,19 +564,9 @@ void EVAAComputeEngine::computeMKLlinear11dof() {
 		for (auto i = 0; i < DOF; ++i) {
 			std::cout << soln[i] << std::endl;
 		}
+		/*std::string fname = "test_out";
+		fill_data(fname.c_str(), soln, 1, 11);*/
 		mkl_free(soln);
-		/*floatEVAA* vect1 = (floatEVAA*)mkl_calloc(27, sizeof(floatEVAA), alignment);
-		floatEVAA* vect2 = (floatEVAA*)mkl_calloc(11, sizeof(floatEVAA), alignment);
-		floatEVAA* vect3 = (floatEVAA*)mkl_calloc(18, sizeof(floatEVAA), alignment);
-		for (int i = 0; i < 27; ++i) {
-			vect2[i] = rand();
-			vect3[i] = rand()/2.0;
-		}
-		Car1->populate_results(vect3, vect2, vect1);
-		MathLibrary::write_vector(vect1, 27);
-		MathLibrary::write_vector(vect2, 11);
-		MathLibrary::write_vector(vect3, 18);
-		exit(5);*/
 		delete Car1;
 	}
 	else {
@@ -807,6 +796,10 @@ void EVAAComputeEngine::computeALE(void) {
 		Road_Profile = new Nonfixed(_load_module_parameter.profile_center,
 			_load_module_parameter.profile_radius);
 	}
+	else if (_load_module_parameter.boundary_condition_road == FIXED) {
+		Road_Profile = new Fixed(_parameters.gravity[2], _load_module_parameter);
+		Road_Profile->set_fixed_index(Car1->tyre_index_set);
+	}
 	else {
 		std::cout << "ALE will only work with a circular pathor nonfixed boundaries, computation skipped" << std::endl;
 		exit(5);
@@ -821,11 +814,7 @@ void EVAAComputeEngine::computeALE(void) {
 	floatEVAA* soln = (floatEVAA*)mkl_malloc(solution_dim * sizeof(floatEVAA), Car1->alignment);
 
 	Ale_sys->solve(soln);
-	std::cout << "ALE: Solution after " << num_iter << " timesteps, f =" << std::endl;
-	for (auto i = 0; i < solution_dim; ++i) {
-		std::cout << soln[i] << std::endl;
-	}
-	std::cout << std::endl;
+	
 	Ale_sys->print_final_results();
 
 
@@ -848,12 +837,5 @@ void EVAAComputeEngine::computeALEtest(void) {
 	delete Load_module1;
 	delete Road_Profile;
 	delete Car1;
-
-}
-
-
-void EVAAComputeEngine::Car_test(void) {
-
-	Car<floatEVAA> Car1(_parameters, lookupStiffness);
 
 }

@@ -117,6 +117,7 @@ u_n_p_1_red=zeros(7,1);
 h=1/(1000);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 u_n=[u_init; zeros(dim_system-1,1)];
+u_n=[0;0;0; -0.04;0;-0.04;0;-0.01;0;-0.01;0];
 u_n_m_1=[u_init; zeros(dim_system-1,1)]-h*[du_init; zeros(dim_system-1,1)];
 u_n_red=[u_init; zeros(6,1)];
 u_n_m_1_red=[u_init; zeros(6,1)]-h*[du_init; zeros(6,1)];

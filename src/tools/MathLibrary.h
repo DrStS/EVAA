@@ -1097,6 +1097,7 @@ namespace MathLibrary {
 		*/
 		static void Stoermer_Verlet_Position(T& x, T& v, T& F, T& delta_t, T& mass) {
 			x += delta_t * v + delta_t * delta_t / (2 * mass) * F;
+
 		}
 
 		/*
@@ -1111,5 +1112,17 @@ namespace MathLibrary {
 		static void Stoermer_Verlet_Velocity(T& v, T& F, T& F_new, T& delta_t, T& mass) {
 			v += delta_t / (2 * mass) * (F + F_new);
 		}
+
+		static void Linear_BDF2(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
+			/*
+			This works for only symmetric positive definite A the provided matrix A would be overwritten and results stored in x
+			computes the backward euler step of following form
+			Ax = B*x_prev + C*x_prev_prev + b
+			A, B, C are coefficient of the euler formation matrix
+			not implemented
+			*/
+
+		}
+
    };
 } /* namespace Math */

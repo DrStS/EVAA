@@ -65,6 +65,7 @@ for i = 1:8
     for j = 1:size
         k_grid((i-1)*size + j)= k(X(j), a(i));
     end
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 steps = 1000;
@@ -131,6 +132,7 @@ function K = get_K(x)
     
     global k_grid;
     global X;
+    
     global Corners size;
     R = get_R(x);
     currentCorners = R*Corners;

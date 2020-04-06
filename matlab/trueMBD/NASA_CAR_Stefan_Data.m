@@ -9,7 +9,7 @@ k_body_rl=16e3*0.82;
 k_tyre_rl=260e3;
 k_body_rr=16e3*0.82;
 k_tyre_rr=260e3;
-penalty = 1e4;
+penalty = 1e3;
 k_body_rot_fl = penalty;  % this is a penalty value->try it as high as possible and see how the convergence evolves
 k_body_rot_fr = penalty;
 k_body_rot_rl = penalty;
@@ -17,7 +17,7 @@ k_body_rot_rr = penalty;
 k_tyre_rot_fl = penalty;
 k_tyre_rot_fr = penalty;
 k_tyre_rot_rl = penalty;
-k_tyre_rot_rr = 1e4;  % 
+k_tyre_rot_rr = penalty;  % 
 c_body_fl=@(v)0*v;    % allow nonlinear damping 
 c_tyre_fl=@(v)0*v;
 c_body_fr=@(v)0*v;
@@ -65,8 +65,8 @@ mass_tyre = [mass_tyre_rr, mass_tyre_rl, mass_tyre_fl, mass_tyre_fr];           
 upper_spring_length = [0.2; 0.2; 0.2; 0.2];
 lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 
-initial_upper_spring_length = [0.24; 0.24; 0.16; 0.16];                 % PLAY AROUND 
-initial_lower_spring_length = [0.16; 0.16; 0.24; 0.24];
+initial_upper_spring_length = [0.2; 0.2; 0.2; 0.2];                 % PLAY AROUND 
+initial_lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 
 upper_spring_stiffness = [k_body_rr; k_body_rl; k_body_fl; k_body_fr];
 lower_spring_stiffness = [k_tyre_rr; k_tyre_rl; k_tyre_fl; k_tyre_fr];
@@ -78,7 +78,7 @@ upper_rotational_stiffness = [k_body_rot_rr; k_body_rot_rl; k_body_rot_fl; k_bod
 lower_rotational_stiffness = [k_tyre_rot_rr; k_tyre_rot_rl; k_tyre_rot_fl; k_tyre_rot_fr];
 
 % initial velocities 
-vc = [0; 0; 0];       % car body
+vc = [0; 0; 3];       % car body
 
 vw1 = [0; 0; 0];    % wheel 
 vw2 = [0; 0; 0];    
@@ -94,7 +94,7 @@ vt4 = [0; 0; 0];
 wc = [0; 0; 0];
 
 initial_orientation = [0; 0; 0; 1];                                     % PLAY AROUND WITH IT initial orientation of the car body as quaternion
-initial_position = [5;0;0];                                             % of the center of mass
+initial_position = [50;0;0];                                             % of the center of mass
 
 visualize = false;
 
@@ -114,8 +114,8 @@ FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
 % simulation specifications 
-num_iter = 1000000;     % LENGTH OF THE SIMULATION
-delta_t = 1e-4;       % PLAY AROUND
+num_iter = 1000;     % LENGTH OF THE SIMULATION
+delta_t = 1e-3;       % PLAY AROUND
 tol = 1e-7;           % !!!! PLAY AROUND !!!!
 max_iter = 1000000;     % for Broyden´
  
@@ -134,24 +134,24 @@ d = -0.5;
 % FR4 = @(t, y, pcc, vt, vb, F) F;
 
 %fix the car on the ground (initial velocities very small) -> MOST SIMULATIONS WITH THIS 
-FR1 = @(t, y, pcc, vt, vb, F) zeros(3,1);
-FR2 = @(t, y, pcc, vt, vb, F) zeros(3,1);
-FR3 = @(t, y, pcc, vt, vb, F) zeros(3,1);
-FR4 = @(t, y, pcc, vt, vb, F) zeros(3,1);
+% FR1 = @(t, y, pcc, vt, vb, F) zeros(3,1);
+% FR2 = @(t, y, pcc, vt, vb, F) zeros(3,1);
+% FR3 = @(t, y, pcc, vt, vb, F) zeros(3,1);
+% FR4 = @(t, y, pcc, vt, vb, F) zeros(3,1);
 
-% FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
-% FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
-% FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
-% FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
+FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
+FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
+FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
+FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
 
 %PLAY AROUND; expect RK4 and BCN to work fine
 % Explicit solvers 
 % solver = @(f, t, x) explicit_solver(f, t, x);
-% solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
-solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+% solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol, metrics] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 

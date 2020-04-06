@@ -22,6 +22,7 @@ public:
 	\return Normal_ext on the car as a whole [XYZ]
 	*/
 	virtual void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
+	virtual void get_Profile_force_ALE(Car<double>* Car1, double* F_vec, double* Normal_ext) {};
 
 	/*
 	Get external torque acting on the car system
@@ -35,10 +36,9 @@ public:
 	\param Car
 	*/
 	virtual void update_initial_condition(Car<double>* Car1) { std::cout << "I am fucked" << std::endl; };
+	virtual void set_fixed_index(size_t* index) {};
 
-	virtual void this_is_a_test_fn(std::string s) {};
 	virtual ~Profile() {};
-	virtual void test() {};
 };
 
 
@@ -70,6 +70,7 @@ public:
 	void set_Radius(const double& Rad);
 	void set_Position(const double* Pos);
 	void get_centrifugal_force(double* Fr, double* v, double& m, double* p);
+	void get_centrifugal_force_ALE(double* Fr, double* v, double& m, double* p);
 
 	/*
 	Get external force acting on the car system
@@ -78,6 +79,7 @@ public:
 	\return Normal_ext on the car as a whole [XYZ]
 	*/
 	virtual void get_Profile_force(Car<double>* Car1, double* F_vec, double* Normal_ext);
+	virtual void get_Profile_force_ALE(Car<double>* Car1, double* F_vec, double* Normal_ext);
 
 	/*
 	Get external torque acting on the car system
@@ -92,17 +94,23 @@ public:
 	\param Car
 	*/
 	virtual void update_initial_condition(Car<double>* Car1);
-	virtual void this_is_a_test_fn(std::string s);
-	virtual void test() {
-		Position[2] -= 20;
-		std::cout << "Position:\n";
-		MathLibrary::write_vector(Position, 3);
-		std::cout << "Radius:\n";
-		MathLibrary::write_vector(&Radius, 1);
-	}
 };
 
-
+class Fixed : public Profile {
+public:
+	Fixed(const double& g, const Load_Params& load_param);
+	virtual void get_Profile_force_ALE(Car<double>* Car1, double* F_vec, double* Normal_ext);
+	virtual void get_Profile_torque(Car<double>* Car1, double* Torque_vec);
+	virtual void set_fixed_index(size_t* index);
+	~Fixed();
+private:
+	size_t* linear_idx;
+	double *k_vec, *dx;
+	double* external_force;
+	size_t num_tyre = 4;
+	bool index_set = 0;
+	double gravity;
+};
 
 /*
 Follow a circular road profile with radius R and center C
@@ -136,7 +144,5 @@ public:
 	\param Car
 	*/
 	virtual void update_initial_condition(Car<double>* Car1);
-	virtual void this_is_a_test_fn(std::string s);
-	virtual void test() {};
 };
 

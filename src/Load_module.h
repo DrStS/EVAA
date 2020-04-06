@@ -48,14 +48,5 @@ public:
 
 
 	void set_External_force(Load_Params load_param); // in Load_module constructor commented
-
-
-	void test() {
-		std::cout << "External force:\n";
-		MathLibrary::write_vector(External_force, 3);
-
-		std::cout << "\n\nActive Profile test:\n";
-		Active_Profile->test();
-	}
 };
 
