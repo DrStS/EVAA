@@ -64,7 +64,6 @@ Load_module::Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params l
 }
 
 Load_module::~Load_module() {
-	std::cout << "Load module destructor";
 	mkl_free(Normal_ext);
 	mkl_free(k_vec);
 	mkl_free(External_force);

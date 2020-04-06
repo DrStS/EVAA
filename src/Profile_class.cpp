@@ -1,6 +1,7 @@
 #include "profile_class.h"
 #include "MathLibrary.h"
 
+
 // ===============================   Circular class implementation ======================//
 Circular::Circular(double* Pos, double Rad) {
 	Name = "Circular";
@@ -181,6 +182,8 @@ void Circular::get_Profile_torque(Car<double>* Car1, double* Torque) {
 
 void Circular::update_initial_condition(Car<double>* Car1){
 
+	std::cout << "Update initial conditions to circular motion" << std::endl;
+
 	const MKL_INT incx = 1;
 
 	double* perpendicular_dir = (double*)mkl_calloc(Car1->DIM, sizeof(double), Car1->alignment);
@@ -211,8 +214,11 @@ void Circular::update_initial_condition(Car<double>* Car1){
 	MKL_free(radial_vector);
 }
 
-// =============================== end of Circular class implementation ===================
-// ===============================   Fixed class implementation ======================//
+// ============================ end of Circular class implementation ================== //
+
+
+
+// ===============================   Fixed class implementation ======================= //
 Fixed::Fixed(const double& g, const Load_Params& load_param) {
 	Name = "fixed";
 	linear_idx = (size_t*)mkl_malloc(num_tyre * sizeof(size_t), alignment);
@@ -253,7 +259,9 @@ Fixed::~Fixed() {
 }
 
 
-// ===============================   Nonfixed class implementation ======================//
+
+
+// =============================== Nonfixed class implementation ========================//
 Nonfixed::Nonfixed(double* Pos, double Rad) {
 	Name = "Nonfixed";
 };

@@ -35,7 +35,7 @@ public:
 	In case the initial conditions have to be specific to a road profile
 	\param Car
 	*/
-	virtual void update_initial_condition(Car<double>* Car1) { std::cout << "I am fucked" << std::endl; };
+	virtual void update_initial_condition(Car<double>* Car1) { std::cout << "No update of initial conditions" << std::endl; };
 	virtual void set_fixed_index(size_t* index) {};
 
 	virtual ~Profile() {};

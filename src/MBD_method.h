@@ -1871,7 +1871,7 @@ public:
 
 	/*
 	Beatiful output of the result
-	\param slm solution vector
+	\param sln solution vector
 	*/
 	void print_final_result(T* sln) {
 		std::cout << "MBD: angular velocity w=\n\t["<<sln[0] << "\n\t " << sln[2] << "\n\t " << sln[1] << "]" << std::endl;
@@ -1885,7 +1885,7 @@ public:
 		std::cout << "MBD: front-left tyre velocity vt3=\n\t[" << sln[24] << "\n\t " << sln[26] << "\n\t " << sln[25] << "]" << std::endl;
 		std::cout << "MBD: front-right tyre velocity vt4=\n\t[" << sln[27] << "\n\t " << sln[29] << "\n\t " << sln[28] << "]" << std::endl;
 		std::cout << "MBD: orientation q=\n\t[" << sln[30] << "\n\t " << sln[31] << "\n\t " << sln[32] << "\n\t " << sln[33] << "]" << std::endl;
-		std::cout << "MBD: car body position pc=\n\t[" << sln[34] << "\n\t " << -sln[5] << "\n\t " << sln[4] << "]" << std::endl;
+		std::cout << "MBD: car body position pc=\n\t[" << sln[34] << "\n\t " << sln[5] << "\n\t " << sln[4] << "]" << std::endl;
 		std::cout << "MBD: rear-right wheel position pw1=\n\t[" << sln[37] << "\n\t " << sln[39] << "\n\t " << sln[38] << "]" << std::endl;
 		std::cout << "MBD: rear-left wheel position pw2=\n\t[" << sln[40] << "\n\t " << sln[42] << "\n\t " << sln[41] << "]" << std::endl;
 		std::cout << "MBD: front-left wheel position pw3=\n\t[" << sln[43] << "\n\t " << sln[45] << "\n\t " << sln[44] << "]" << std::endl;

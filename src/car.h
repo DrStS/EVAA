@@ -22,6 +22,7 @@ private:
 		cblas_dcopy(vec_DIM - 1, Global_mass + 1, 1, temp_linear + 3, 1);
 		MathLibrary::allocate_to_diagonal(M_linear, temp_linear, DOF);
 	}
+	
 	/*
 	Copy all X and Y coordinates of the global vector to the local vector
 	\param Global_vector vector with coordinates [X,Y,Z,X,Y,Z,...]
@@ -38,6 +39,7 @@ private:
 		}
 		cblas_dcopy(DIM - 1, start_pointer, 1, current_ptr, 1);
 	}
+	
 	/*
 	Construct corner initilizer
 	*/
@@ -58,6 +60,7 @@ private:
 		corners[7] = pos_CG[1] - l_lat[3]*c - l_long[3]*s; // rr
 		corners[11] = pos_CG[2];
 	}
+
 	/*
 	Calculates the values of Corners for general angles
 	*/
@@ -70,6 +73,7 @@ private:
 		//void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const double beta, double* c, const MKL_INT ldc);
 		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, DIM, num_wheels, DIM, 1, rotation_mat_buffer, DIM, initial_corners, num_wheels, 0, updated_corners, num_wheels);
 	}
+
 	/*
 	Calculates the values of Corners_current according to the current orientation
 	*/
@@ -173,17 +177,17 @@ public:
 	Constructor
 	*/
 	Car(const Simulation_Parameters &params, EVAAComputeStiffness* interpolator) {
-		std::cout << "I am the flying car" << std::endl;
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 		lookupStiffness = interpolator;
 		DOF = params.DOF;
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////// System Mono ///////////////////////////////////////////////////////
 		///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////// Params for Global coordinate ////////////////////////////////////////////////////
@@ -195,24 +199,20 @@ public:
 		w_CG = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); //3 dim
 		I_CG = (T*)mkl_malloc(malloc_factor*DIM*DIM * sizeof(T), alignment); //9 dim
 
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////// Initial Params for Global coordinate ////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 		initial_position = (T*)mkl_malloc(malloc_factor*DIM*vec_DIM * sizeof(T), alignment); // 27 dim
 		initial_velocity_vec = (T*)mkl_malloc(malloc_factor*DIM*vec_DIM * sizeof(T), alignment);// 27 dim
 		quad_angle_init = (T*)mkl_calloc(malloc_factor * 4, sizeof(T), alignment); // 4 dim
 		initial_angle = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
 		initial_angular_velocity = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
 
-		
-
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////// Params for 11 DOF system ////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 		M_linear = (T*)mkl_calloc(malloc_factor*DOF * DOF, sizeof(T), alignment); // 121 dim
 		temp_linear = (T*)mkl_calloc(malloc_factor*DOF , sizeof(T), alignment);  // 11 dim
 		K = (T*)mkl_calloc(malloc_factor*DOF * DOF, sizeof(T), alignment); // 121 dim
@@ -227,6 +227,7 @@ public:
 		spring_length = (T*)mkl_malloc(malloc_factor * 2 * num_wheels * sizeof(T), alignment); // 8 dim
 		current_spring_length = (T*)mkl_malloc(malloc_factor * 2 * num_wheels * sizeof(T), alignment); // 8 dim
 		tyre_index_set = (size_t*)mkl_malloc(num_wheels * sizeof(size_t), alignment);
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////// Memory allocation for interpolator /////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,6 +237,7 @@ public:
 		angle_buffer = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
 		pos_buffer = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
 
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////// ALE Buffer Allocation /////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -244,11 +246,10 @@ public:
 		Velocity_vec_xy = (T*)mkl_malloc((DIM - 1) * vec_DIM * sizeof(T), alignment);
 		w_z = new T;
 
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		
 		l_long[0] = params.l_long[2];
 		l_long[1] = params.l_long[3];
 		l_long[2] = params.l_long[1];
@@ -294,7 +295,6 @@ public:
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////// Initial Iteration vector ////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 		// Initial Angles
 		quad_angle_init[0] = params.initial_angle[0];
 		quad_angle_init[1] = params.initial_angle[1];
@@ -312,8 +312,6 @@ public:
 		current_spring_length[5] = params.initial_lower_spring_length[1];
 		current_spring_length[6] = params.initial_upper_spring_length[0];
 		current_spring_length[7] = params.initial_lower_spring_length[0];
-
-		
 
 
 		// Filling the position vector with initial condition
@@ -397,8 +395,6 @@ public:
 		//// copy the initial position to the position vector
 		//cblas_dcopy(DIM*vec_DIM, initial_position, 1, Position_vec, 1);
 		
-		
-
 		// Initial Velocity (Reuse the pointers)
 		cblas_dcopy(DIM, params.initial_vel_body, 1, initial_velocity_vec, 1);
 		// W1 = W_fl
@@ -441,7 +437,8 @@ public:
 		// Initial Angular velocity
 		cblas_dcopy(DIM, params.initial_ang_vel_body, 1, initial_angular_velocity, 1); 
 		cblas_dcopy(DIM, initial_angular_velocity, 1, w_CG, 1);
-		
+
+
 		/*
 		Global assignments Done */
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -458,7 +455,6 @@ public:
 		tyre_index_set[3] = 8;
 		
 		construct_11DOF_vector(initial_velocity_vec, initial_angular_velocity, velocity_current_linear);
-		
 		/* This stays in the 11 DOF
 		cblas_dscal(DOF, -h_, u_n_m_1, 1);
 		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
@@ -487,7 +483,6 @@ public:
 		*Angle_z = angle_CG[2];
 		*w_z = w_CG[2];
 		
-
 
 	}
 	/*

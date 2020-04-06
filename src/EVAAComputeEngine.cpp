@@ -574,7 +574,6 @@ void EVAAComputeEngine::computeMKLlinear11dof() {
 	}
 }
 
-
 void EVAAComputeEngine::computeBlaze11DOF(void) {
 #ifdef USE_BLAZE
 
@@ -764,8 +763,6 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 #endif
 }
 
-
-
 void EVAAComputeEngine::computeMBD(void) {
 	size_t num_iter = _parameters.num_time_iter;
 	const int alignment = 64;
@@ -778,16 +775,17 @@ void EVAAComputeEngine::computeMBD(void) {
 	mkl_free(soln);
 }
 
-
 void EVAAComputeEngine::clean(void) {
 
 }
 
 void EVAAComputeEngine::computeALE(void) {
+
 	size_t num_iter = _parameters.num_time_iter;
 	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
 	size_t solution_dim = Car1->DIM * (size_t) Car1->vec_DIM;
 	Profile* Road_Profile;
+
 	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {
 		Road_Profile = new Circular(_load_module_parameter.profile_center,
 			_load_module_parameter.profile_radius);
@@ -805,11 +803,13 @@ void EVAAComputeEngine::computeALE(void) {
 		exit(5);
 	}
 
+
 	Road_Profile->update_initial_condition(Car1);
 
 	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
 	linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
 	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, lookupStiffness, _parameters);
+
 
 	floatEVAA* soln = (floatEVAA*)mkl_malloc(solution_dim * sizeof(floatEVAA), Car1->alignment);
 

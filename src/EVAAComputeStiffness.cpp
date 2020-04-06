@@ -75,6 +75,7 @@ void EVAAComputeStiffness::getStiffness(double* length, double* stiffness) {
 	int err = 0;
 	MKL_INT ndorder = 1;                    // size of array describing derivative (dorder), which is definde two lines below
 	MKL_INT dorder[1] = { 1 }; // only the values are computed
+
 	for (auto i = 0; i < ny; i++) {
 		err = dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
 			1, &length[i], DF_NO_HINT, ndorder,
@@ -83,6 +84,8 @@ void EVAAComputeStiffness::getStiffness(double* length, double* stiffness) {
 		CheckDfError(err);
 		CheckDfError(err);
 	}
+
+
 }
 
 /*
