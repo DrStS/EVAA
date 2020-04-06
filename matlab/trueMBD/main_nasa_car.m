@@ -86,7 +86,7 @@ function [t, y_return, y, metrics] = main_nasa_car(r1, r2, r3, r4, mass, mass_wh
     %% SOLVE PHASE              
     t = 0:delta_t:num_iter*delta_t;         
 
-    f = @(t,x) compute_f3D_reduced(x,t,aux_vals);
+    f = @(t,i,x) compute_f3D_reduced(x,t,i,aux_vals);
 
     tic;
     [t,y, metrics] = solver(f, t, x_vector);

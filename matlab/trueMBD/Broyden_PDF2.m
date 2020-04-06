@@ -15,14 +15,14 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
     x_previous = x_vector_new(n-1, :);
 
     % 1. Initialize guess from previous time step
-    f_old = f(t(n-1), x_previous');
+    f_old = f(t(n-1), n-1,x_previous');
     % in case the velocity is 0 add nuggets to avoid singular matrices
     f_old(abs(f_old) < 0.001) = 0.001*sign(f_old(abs(f_old) < 0.001));
     f_old(f_old==0) = (2*randi(2)-3)*0.001;
 
     % 2. Initial guess from Explicit Euler
     x = x_previous + delta_t * f_old';
-    f_new = f(t(n), x');
+    f_new = f(t(n), n, x');
 
     % Initial approximation of the Jacobian
     dx = x - x_previous;
@@ -46,7 +46,7 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
         x_new = (x' - J\F')';
 
         % Calculate new derivative
-        x_dot = f(t(n-1), x_new')';
+        x_dot = f(t(n-1), n-1, x_new')';
 
         F_new = x_new - x_previous - delta_t * x_dot;
 
@@ -68,14 +68,14 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
         x_previous_previous = x_vector_new(n-2, :);
         
         % 1. Initialize guess from previous time step
-        f_old = f(t(n-1), x_previous');
+        f_old = f(t(n-1), n-1,  x_previous');
         % in case the velocity is 0 add nuggets to avoid singular matrices
         f_old(abs(f_old) < 0.001) = 0.001*sign(f_old(abs(f_old) < 0.001));
         f_old(f_old==0) = (2*randi(2)-3)*0.001;
          
         % 2. Initial guess from Explicit Euler
         x = x_previous + delta_t * f_old';
-        f_new = f(t(n), x');
+        f_new = f(t(n), n, x');
         
         % Initial approximation of the Jacobian
         dx = x - x_previous;
@@ -99,7 +99,7 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
             x_new = (x' - J\F')';
             
             % Calculate new derivative
-            x_dot = f(t(n-1), x_new')';
+            x_dot = f(t(n-1), n-1, x_new')';
             
             F_new = x_new - 4/3 * x_previous + 1/3 * x_previous_previous - 2/3 * delta_t * x_dot;
             

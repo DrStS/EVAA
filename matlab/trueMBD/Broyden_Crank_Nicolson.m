@@ -12,7 +12,7 @@ function [t, x_vector_new, metrics] = Broyden_Crank_Nicolson(f, t, x_previous, t
        x_previous = x_vector_new(n-1, :);
 		
 		% 1. Initial guess using previous time step
-		f_old = f(t(n-1), x_previous');
+		f_old = f(t(n-1),n-1, x_previous');
 		% in case the velocity is 0 add nuggets to avoid singular matrices
         nuggets = 1e-3;
         %f_old(abs(f_old) < nuggets) = nuggets*sign(f_old(abs(f_old) < nuggets));
@@ -21,7 +21,7 @@ function [t, x_vector_new, metrics] = Broyden_Crank_Nicolson(f, t, x_previous, t
 	   
 		% 2. Initial guess from Explicit Euler
 		x = x_previous + delta_t * f_old';
-		f_new = f(t(n), x');
+		f_new = f(t(n),n, x');
 		
 		% Initial approximation of the Jacobian
 		dx = x - x_previous;
@@ -45,7 +45,7 @@ function [t, x_vector_new, metrics] = Broyden_Crank_Nicolson(f, t, x_previous, t
 			x_new = (x' - J\F')';
 			
 			% Calculate new derivative
-			x_dot = f(t(n-1), x_new')';
+			x_dot = f(t(n-1),n-1, x_new')';
 			
 			F_new = x_new - x_previous - delta_t * 0.5 * (x_dot + x_dot_previous);
 			

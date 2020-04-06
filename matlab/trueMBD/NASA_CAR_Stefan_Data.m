@@ -47,6 +47,12 @@ mass_tyre_rl=30;
 mass_wheel_rr=135/2;
 mass_tyre_rr=30;
 
+% simulation specifications 
+num_iter = 10000;     % LENGTH OF THE SIMULATION
+delta_t = 1e-3;       % PLAY AROUND
+tol = 1e-7;           % !!!! PLAY AROUND !!!!
+max_iter = 1000000;     % for Broyden´
+ 
 % Dimensions of the main car body (the center of rotation is at the origin)
 r1 = [-l_long_rr; 0  ;  l_lat_rr];
 r2 = [-l_long_rl; 0  ; -l_lat_rl];
@@ -77,24 +83,66 @@ lower_spring_damping = {c_tyre_rr, c_tyre_rl, c_tyre_fl, c_tyre_fr};
 upper_rotational_stiffness = [k_body_rot_rr; k_body_rot_rl; k_body_rot_fl; k_body_rot_fr];
 lower_rotational_stiffness = [k_tyre_rot_rr; k_tyre_rot_rl; k_tyre_rot_fl; k_tyre_rot_fr];
 
-% initial velocities 
-vc = [0; 0; 3];       % car body
+generate_from_trajectory = true;
 
-vw1 = [0; 0; 0];    % wheel 
-vw2 = [0; 0; 0];    
-vw3 = [0; 0; 0];    
-vw4 = [0; 0; 0];    
+F_tyre1 = 0;
+F_tyre2 = 0;
+F_tyre3 = 0;
+F_tyre4 = 0;
 
-vt1 = [0; 0; 0];    % tyres 
-vt2 = [0; 0; 0];    
-vt3 = [0; 0; 0];    
-vt4 = [0; 0; 0];    
+if generate_from_trajectory
+    
+    trajectory = generate_circular_trajectory(5, delta_t, 3, num_iter+1);
+    
+    [trajectory_t1, trajectory_t2, trajectory_t3, trajectory_t4, theta, vt1, vt2, vt3, vt4, vc, wc] ...
+        = compute_all_tyre_positions([-l_long_rr; l_lat_rr],...
+                                     [l_long_fl ; -l_lat_fl], ...
+                                     [-l_long_rl; -l_lat_rl],...
+                                     [l_long_fr ; l_lat_fr], trajectory, delta_t);
+                                 
+   [F_tyre1, ~] = get_forces_arbitrary_path(trajectory_t1, theta, mass_tyre(1), Ic(3,3), delta_t);
+   [F_tyre2, ~] = get_forces_arbitrary_path(trajectory_t2, theta, mass_tyre(2), Ic(3,3), delta_t);
+   [F_tyre3, ~] = get_forces_arbitrary_path(trajectory_t3, theta, mass_tyre(3), Ic(3,3), delta_t);
+   [F_tyre4, ~] = get_forces_arbitrary_path(trajectory_t4, theta, mass_tyre(4), Ic(3,3), delta_t);
 
-% initial angular velocities
-wc = [0; 0; 0];
+   % initial velocities
+    vc = [vc(1,1); 0; vc(2,1)];       % car body
 
-initial_orientation = [0; 0; 0; 1];                                     % PLAY AROUND WITH IT initial orientation of the car body as quaternion
-initial_position = [50;0;0];                                             % of the center of mass
+    vw1 = [vt1(1,1); 0; vt1(2,1)];    % wheel 
+    vw2 = [vt2(1,1); 0; vt2(2,1)];    
+    vw3 = [vt3(1,1); 0; vt3(2,1)];    
+    vw4 = [vt4(1,1); 0; vt4(2,1)];    
+
+    vt1 = [vt1(1,1); 0; vt1(2,1)];    % tyres 
+    vt2 = [vt2(1,1); 0; vt2(2,1)];    
+    vt3 = [vt3(1,1); 0; vt3(2,1)];    
+    vt4 = [vt4(1,1); 0; vt4(2,1)];    
+
+    % initial angular velocities
+    wc = [0; 0; wc(1)];
+
+    initial_orientation = get_quaternion([1;0;0], vc(:,1));                             
+    initial_position = [trajectory(1,1);0;trajectory(2,1)];          
+else
+    % initial velocities
+    vc = [0; 0; 3];       % car body
+
+    vw1 = [0; 0; 0];    % wheel 
+    vw2 = [0; 0; 0];    
+    vw3 = [0; 0; 0];    
+    vw4 = [0; 0; 0];    
+
+    vt1 = [0; 0; 0];    % tyres 
+    vt2 = [0; 0; 0];    
+    vt3 = [0; 0; 0];    
+    vt4 = [0; 0; 0];    
+
+    % initial angular velocities
+    wc = [0; 0; 0];
+
+    initial_orientation = [0; 0; 0; 1];                                     % PLAY AROUND WITH IT initial orientation of the car body as quaternion
+    initial_position = [50;0;0];                                             % of the center of mass
+end
 
 visualize = false;
 
@@ -113,45 +161,48 @@ FW2 = [0; -mass_wheel(2)*g; 0];
 FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
-% simulation specifications 
-num_iter = 1000;     % LENGTH OF THE SIMULATION
-delta_t = 1e-3;       % PLAY AROUND
-tol = 1e-7;           % !!!! PLAY AROUND !!!!
-max_iter = 1000000;     % for Broyden´
- 
+
 % road forces in y direction (as functions of time)
 %fancy road forces (do not work right now)
 d = -0.5;
-%FR1 = @(t, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(1), F, d, delta_t);        
-%FR2 = @(t, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(2), F, d, delta_t);
-%FR3 = @(t, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(3), F, d, delta_t);
-%FR4 = @(t, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(4), F, d, delta_t);
+%FR1 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(1), F, d, delta_t);        
+%FR2 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(2), F, d, delta_t);
+%FR3 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(3), F, d, delta_t);
+%FR4 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(4), F, d, delta_t);
 
 %the car is flying away 
 % FR1 = @(t, y, pcc, vt, vb, F) F;        
-% FR2 = @(t, y, pcc, vt, vb, F) F;
-% FR3 = @(t, y, pcc, vt, vb, F) F;
-% FR4 = @(t, y, pcc, vt, vb, F) F;
+% FR2 = @(t, i, y, pcc, vt, vb, F) F;
+% FR3 = @(t, i, y, pcc, vt, vb, F) F;
+% FR4 = @(t, i, y, pcc, vt, vb, F) F;
 
 %fix the car on the ground (initial velocities very small) -> MOST SIMULATIONS WITH THIS 
-% FR1 = @(t, y, pcc, vt, vb, F) zeros(3,1);
-% FR2 = @(t, y, pcc, vt, vb, F) zeros(3,1);
-% FR3 = @(t, y, pcc, vt, vb, F) zeros(3,1);
-% FR4 = @(t, y, pcc, vt, vb, F) zeros(3,1);
+% FR1 = @(t, i, y, pcc, vt, vb, F) zeros(3,1);
+% FR2 = @(t, i, y, pcc, vt, vb, F) zeros(3,1);
+% FR3 = @(t, i, y, pcc, vt, vb, F) zeros(3,1);
+% FR4 = @(t, i, y, pcc, vt, vb, F) zeros(3,1);
 
-FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
-FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
-FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
-FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
+FR1 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
+FR2 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
+FR3 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
+FR4 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
+
+if generate_from_trajectory
+    % arbitrary trajectory
+    FR1 = @(t, i, y, pcc, vt, vb, F) [F_tyre1(1,i); 0; F_tyre1(2,i)];        
+    FR2 = @(t, i, y, pcc, vt, vb, F) [F_tyre2(1,i); 0; F_tyre2(2,i)];
+    FR3 = @(t, i, y, pcc, vt, vb, F) [F_tyre3(1,i); 0; F_tyre3(2,i)];
+    FR4 = @(t, i, y, pcc, vt, vb, F) [F_tyre4(1,i); 0; F_tyre4(2,i)];
+end
 
 %PLAY AROUND; expect RK4 and BCN to work fine
 % Explicit solvers 
 % solver = @(f, t, x) explicit_solver(f, t, x);
-solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+% solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
-% solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol, metrics] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 
