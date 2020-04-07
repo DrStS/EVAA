@@ -11,8 +11,8 @@ function [t,x_vector_new, metrics] = Runge_Kutta_4(f, t, x_previous)
         delta_t = t(n) - t(n-1);
         t_prev = t(n-1);
         x_previous = x_vector_new(n-1, :);
-        k1 = delta_t * f(t_prev, n-1, x_previous')';
-        k2 = delta_t * f(t_prev + delta_t/2, n-1, x_previous' + k1'/2)';
+        k1 = delta_t * f(t_prev, n, x_previous')';
+        k2 = delta_t * f(t_prev + delta_t/2, n, x_previous' + k1'/2)';
         k3 = delta_t * f(t_prev + delta_t/2, n, x_previous' + k2'/2)';
         k4 = delta_t * f(t_prev + delta_t, n, x_previous' + k3')';
         

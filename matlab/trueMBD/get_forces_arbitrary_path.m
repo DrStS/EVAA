@@ -1,14 +1,20 @@
 function [F, T] = get_forces_arbitrary_path(pc, theta, mass, I, dt)
 % Returns the force F at all positions for an arbitrary path described in p
 %
-% v: all velocities [2, :]
-% w: all angular velocities [1, :]
+% pc: all XY-positions [2, :]
+% theta: all Z-angles [1, :]
 % mass: of the body
 % I: moment of inertia in Z direction
 % dt: timestep
 %
 % F: resultant force [2, :]
 % T: resultant torque [1, :]
+
+
+% TO NOTICE
+% MBD only needs the forces
+% ALE needs the forces and the torque 
+% (torque calculation is not checked, some errors might arise from that)
 
 % get the system size
 n = size(pc, 2);

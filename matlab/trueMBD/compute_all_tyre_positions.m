@@ -1,4 +1,4 @@
-function [pt1, pt2, pt3, pt4, theta, vt1, vt2, vt3, vt4, vc, w] = compute_all_tyre_positions(r1, r2, r3, r4, pc, dt)
+function [pt1, pt2, pt3, pt4, theta, vc, w] = compute_all_tyre_positions(r1, r2, r3, r4, pc, dt)
 % rr, rl, fl, fr
 %
 % pc: list of all XY coordinates along the trajectory [2,:]
@@ -7,13 +7,21 @@ function [pt1, pt2, pt3, pt4, theta, vt1, vt2, vt3, vt4, vc, w] = compute_all_ty
 %
 %
 % pt[1-4]: list of all positions of the tyres [2,:]
-% vt[1-4]: list of all velocities of the tyres [2,:] 
 % vc: velocity of the center of mass of the car
 % theta: orientation angle of the car
 % angular velocity: 
 % rear tyres: backward Euler to the previous position (second order?)
 % front tyres: forward Euler to the next position (second order?)
 % velocity magnitude from omega + velocity of the center of gravity
+
+
+% TO NOTICE: 
+% MBD only requires the values of pt1, pt2, pt3, pt4, theta(1), vc(:,1), w(1) 
+% -> NO NEED TO ITERATE OVER ALL TIMESTEPS for theta, vc, w
+%
+% ALE only requires the values of pt1(:,1), pt2(:,2), pt4(:,3), pt(:,4), theta, vc(:,1), w(1)
+% -> NO NEED TO ITERATE OVER ALL TIMESTEPS for pt1, pt2, pt3, pt4, vc, w
+% vc is still somehow required to get all theta
 
 
 % get the system size
@@ -31,11 +39,6 @@ pt3 = zeros(2, n);
 pt4 = zeros(2, n);
 
 theta = zeros(1, n);
-
-vt1 = zeros(2, n);
-vt2 = zeros(2, n);
-vt3 = zeros(2, n);
-vt4 = zeros(2, n);
 
 vc = zeros(2, n);
 
@@ -97,46 +100,18 @@ for i = 2 : n
         
 end
 
-
-
 % add dummy values at the end of the position vector (open end, probably
 % sub-optimal)
 theta = [theta, theta(end)];
 
 % initial angular velocity
-w(1) = (-1.5 * theta(1) + 2 * theta(2) - 0.5 * theta(3)) * inv_dt;
-
-% initial tyre velocities
-    vt1(1,1) = vc(1,1) - w(1) * r1(2);
-    vt1(2,1) = vc(2,1) + w(1) * r1(1);
-
-    vt2(1,1) = vc(1,1) - w(1) * r2(2);
-    vt2(2,1) = vc(2,1) + w(1) * r2(1);
-
-    vt3(1,1) = vc(1,1) - w(1) * r3(2);
-    vt3(2,1) = vc(2,1) + w(1) * r3(1);
-
-    vt4(1,1) = vc(1,1) - w(1) * r4(2);
-    vt4(2,1) = vc(2,1) + w(1) * r4(1);
+w(1) = -(-1.5 * theta(1) + 2 * theta(2) - 0.5 * theta(3)) * inv_dt;
 
 % update tyre velocities and angular velocity
 for i = 2 : n
     % angular velocity update
-    w(i) = (-0.5 * theta(i-1) + 0.5 * theta(i+1)) * inv_dt;
+    w(i) = -(-0.5 * theta(i-1) + 0.5 * theta(i+1)) * inv_dt;
     
-    % velocity update
-    vt1(1,i) = vc(1,i) - w(1) * r1(2);
-    vt1(2,i) = vc(2,i) + w(1) * r1(1);
-
-    vt2(1,i) = vc(1,i) - w(1) * r2(2);
-    vt2(2,i) = vc(2,i) + w(1) * r2(1);
-
-    vt3(1,i) = vc(1,i) - w(1) * r3(2);
-    vt3(2,i) = vc(2,i) + w(1) * r3(1);
-
-    vt4(1,i) = vc(1,i) - w(1) * r4(2);
-    vt4(2,i) = vc(2,i) + w(1) * r4(1);
-        
 end
 end
 

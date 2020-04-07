@@ -45,7 +45,7 @@ function [t, x_vector_new, metrics] = Broyden_Crank_Nicolson(f, t, x_previous, t
 			x_new = (x' - J\F')';
 			
 			% Calculate new derivative
-			x_dot = f(t(n-1),n-1, x_new')';
+			x_dot = f(t(n-1),n, x_new')';
 			
 			F_new = x_new - x_previous - delta_t * 0.5 * (x_dot + x_dot_previous);
 			

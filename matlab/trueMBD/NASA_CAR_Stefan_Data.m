@@ -18,14 +18,14 @@ k_tyre_rot_fl = penalty;
 k_tyre_rot_fr = penalty;
 k_tyre_rot_rl = penalty;
 k_tyre_rot_rr = penalty;  % 
-c_body_fl=@(v)0*v;    % allow nonlinear damping 
-c_tyre_fl=@(v)0*v;
-c_body_fr=@(v)0*v;
-c_tyre_fr=@(v)0*v;
-c_body_rl=@(v)0*v;
-c_tyre_rl=@(v)0*v;
-c_body_rr=@(v)0*v;
-c_tyre_rr=@(v)0*v;
+c_body_fl=@(v)0.1*k_body_fl*v;    % allow nonlinear damping 
+c_tyre_fl=@(v)0.1*k_tyre_fl*v;
+c_body_fr=@(v)0.1*k_body_fr*v;
+c_tyre_fr=@(v)0.1*k_tyre_fr*v;
+c_body_rl=@(v)0.1*k_body_rl*v;
+c_tyre_rl=@(v)0.1*k_tyre_rl*v;
+c_body_rr=@(v)0.1*k_body_rr*v;
+c_tyre_rr=@(v)0.1*k_tyre_rr*v;
 l_long_fl=1.395;
 l_long_fr=1.395;
 l_long_rl=1.596;
@@ -85,45 +85,54 @@ lower_rotational_stiffness = [k_tyre_rot_rr; k_tyre_rot_rl; k_tyre_rot_fl; k_tyr
 
 generate_from_trajectory = true;
 
-F_tyre1 = 0;
-F_tyre2 = 0;
-F_tyre3 = 0;
-F_tyre4 = 0;
+% allocalte memory
+F_tyre1 = zeros(3,num_iter+1);
+F_tyre2 = zeros(3,num_iter+1);
+F_tyre3 = zeros(3,num_iter+1);
+F_tyre4 = zeros(3,num_iter+1);
 
 if generate_from_trajectory
-    
+   
+    % create trajectory
     trajectory = generate_circular_trajectory(5, delta_t, 3, num_iter+1);
     
-    [trajectory_t1, trajectory_t2, trajectory_t3, trajectory_t4, theta, vt1, vt2, vt3, vt4, vc, wc] ...
+    % get the trajectoies of the tyres
+    [trajectory_t1, trajectory_t2, trajectory_t3, trajectory_t4, theta, vc, w] ...
         = compute_all_tyre_positions([-l_long_rr; l_lat_rr],...
-                                     [l_long_fl ; -l_lat_fl], ...
                                      [-l_long_rl; -l_lat_rl],...
+                                     [l_long_fl ; -l_lat_fl], ...
                                      [l_long_fr ; l_lat_fr], trajectory, delta_t);
-                                 
-   [F_tyre1, ~] = get_forces_arbitrary_path(trajectory_t1, theta, mass_tyre(1), Ic(3,3), delta_t);
-   [F_tyre2, ~] = get_forces_arbitrary_path(trajectory_t2, theta, mass_tyre(2), Ic(3,3), delta_t);
-   [F_tyre3, ~] = get_forces_arbitrary_path(trajectory_t3, theta, mass_tyre(3), Ic(3,3), delta_t);
-   [F_tyre4, ~] = get_forces_arbitrary_path(trajectory_t4, theta, mass_tyre(4), Ic(3,3), delta_t);
+   
+   % get the forces in the tyres
+   [F_tyre1_2D, ~] = get_forces_arbitrary_path(trajectory_t1, theta, mass_tyre(1), Ic(3,3), delta_t);
+   [F_tyre2_2D, ~] = get_forces_arbitrary_path(trajectory_t2, theta, mass_tyre(2), Ic(3,3), delta_t);
+   [F_tyre3_2D, ~] = get_forces_arbitrary_path(trajectory_t3, theta, mass_tyre(3), Ic(3,3), delta_t);
+   [F_tyre4_2D, ~] = get_forces_arbitrary_path(trajectory_t4, theta, mass_tyre(4), Ic(3,3), delta_t);
 
+   % map to MBD coordinates
+   F_tyre1(1, :) = F_tyre1_2D(1,:);
+   F_tyre2(1, :) = F_tyre2_2D(1,:);
+   F_tyre3(1, :) = F_tyre3_2D(1,:);
+   F_tyre4(1, :) = F_tyre4_2D(1,:);
+   
+   F_tyre1(3, :) = F_tyre1_2D(2,:);
+   F_tyre2(3, :) = F_tyre2_2D(2,:);
+   F_tyre3(3, :) = F_tyre3_2D(2,:);
+   F_tyre4(3, :) = F_tyre4_2D(2,:);
+   
    % initial velocities
     vc = [vc(1,1); 0; vc(2,1)];       % car body
 
-    vw1 = [vt1(1,1); 0; vt1(2,1)];    % wheel 
-    vw2 = [vt2(1,1); 0; vt2(2,1)];    
-    vw3 = [vt3(1,1); 0; vt3(2,1)];    
-    vw4 = [vt4(1,1); 0; vt4(2,1)];    
-
-    vt1 = [vt1(1,1); 0; vt1(2,1)];    % tyres 
-    vt2 = [vt2(1,1); 0; vt2(2,1)];    
-    vt3 = [vt3(1,1); 0; vt3(2,1)];    
-    vt4 = [vt4(1,1); 0; vt4(2,1)];    
+    [vt1, vt2, vt3, vt4] = get_initial_velocities(trajectory_t1, trajectory_t2, trajectory_t3, trajectory_t4, delta_t);
+    [vw1, vw2, vw3, vw4] = get_initial_velocities(trajectory_t1, trajectory_t2, trajectory_t3, trajectory_t4, delta_t);
 
     % initial angular velocities
-    wc = [0; 0; wc(1)];
+    wc = [0; w(1); 0];
 
-    initial_orientation = get_quaternion([1;0;0], vc(:,1));                             
-    initial_position = [trajectory(1,1);0;trajectory(2,1)];          
-else
+    initial_orientation = get_quaternion([1;0;0], vc);                             
+    initial_position = [trajectory(1,1); 0; trajectory(2,1)];  
+    
+else % OLD VERSION
     % initial velocities
     vc = [0; 0; 3];       % car body
 
@@ -140,8 +149,8 @@ else
     % initial angular velocities
     wc = [0; 0; 0];
 
-    initial_orientation = [0; 0; 0; 1];                                     % PLAY AROUND WITH IT initial orientation of the car body as quaternion
-    initial_position = [50;0;0];                                             % of the center of mass
+    initial_orientation = [0; -1; 0; 1];                                     % PLAY AROUND WITH IT initial orientation of the car body as quaternion
+    initial_position = [5;0;0];                                              % of the center of mass
 end
 
 visualize = false;
@@ -189,10 +198,10 @@ FR4 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
 
 if generate_from_trajectory
     % arbitrary trajectory
-    FR1 = @(t, i, y, pcc, vt, vb, F) [F_tyre1(1,i); 0; F_tyre1(2,i)];        
-    FR2 = @(t, i, y, pcc, vt, vb, F) [F_tyre2(1,i); 0; F_tyre2(2,i)];
-    FR3 = @(t, i, y, pcc, vt, vb, F) [F_tyre3(1,i); 0; F_tyre3(2,i)];
-    FR4 = @(t, i, y, pcc, vt, vb, F) [F_tyre4(1,i); 0; F_tyre4(2,i)];
+    FR1 = @(t, i, y, pcc, vt, vb, F) F_tyre1(:,i);        
+    FR2 = @(t, i, y, pcc, vt, vb, F) F_tyre2(:,i);
+    FR3 = @(t, i, y, pcc, vt, vb, F) F_tyre3(:,i);
+    FR4 = @(t, i, y, pcc, vt, vb, F) F_tyre4(:,i);
 end
 
 %PLAY AROUND; expect RK4 and BCN to work fine
@@ -204,11 +213,12 @@ end
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
 solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
+
 %% solving
 [t,y, y_sol, metrics] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 
                 lower_spring_length, upper_spring_length, initial_lower_spring_length, initial_upper_spring_length, ...
                 lower_spring_stiffness, upper_spring_stiffness, lower_spring_damping, upper_spring_damping, lower_rotational_stiffness, upper_rotational_stiffness, ...
-                vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4,...
+                vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4, ...
                 num_iter, delta_t, solver);
 
 %% visulalization
