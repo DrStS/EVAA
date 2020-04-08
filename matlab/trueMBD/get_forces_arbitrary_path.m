@@ -1,19 +1,19 @@
 function [F, T] = get_forces_arbitrary_path(pc, theta, mass, I, dt)
 % Returns the force F at all positions for an arbitrary path described in p
 %
-% pc: all XY-positions [2, :]
+% pc: all XY-positions [3, :]
 % theta: all Z-angles [1, :]
 % mass: of the body
 % I: moment of inertia in Z direction
 % dt: timestep
 %
-% F: resultant force [2, :]
+% F: resultant force [3, :]
 % T: resultant torque [1, :]
 
 
 % TO NOTICE
 % MBD only needs the forces
-% ALE needs the forces and the torque 
+% ALE needs the forces and the torque (we might even not need the torque at all) 
 % (torque calculation is not checked, some errors might arise from that)
 
 % get the system size
@@ -28,7 +28,7 @@ theta = [theta, theta(end)];
 
 
 % memory allocation
-F = zeros(2, n);
+F = zeros(3, n);
 
 T = zeros(1, n);
 
@@ -47,9 +47,10 @@ for i = 2 : n
     T(i) = (1 * theta(i-1) - 2 * theta(i) + 1 * theta(i+1)) * inv_dt_squared;
 end
 
-
+% only accelaration was calculated so far
 F = mass * F;
 T = I * T;
+
 
 end
 

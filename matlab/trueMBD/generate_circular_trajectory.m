@@ -3,9 +3,9 @@ function [trajectory] = generate_circular_trajectory(r, delta_t, v_init, n)
     
     x = linspace(0, total_distance, n);
     
-    trajectory = zeros(2,n);
+    trajectory = zeros(3,n);
     
     trajectory(1,:) = r * cos(x);
-    trajectory(2,:) = r * sin(x);
+    trajectory(3,:) = r * sin(x);
 
 end

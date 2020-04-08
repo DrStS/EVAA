@@ -6,9 +6,9 @@ function [trajectory] = generate_accelerated_car(acceleration, direction, delta_
 
     x = v_init * t + acceleration * t.^2 / 2;
     
-    trajectory = zeros(2,n);
+    trajectory = zeros(3,n);
     
     trajectory(1,:) = x * direction(1);
 
-    trajectory(2,:) = x * direction(2);    
+    trajectory(3,:) = x * direction(2);    
 end

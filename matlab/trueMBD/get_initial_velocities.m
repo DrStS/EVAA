@@ -8,8 +8,4 @@ function [vt1, vt2, vt3, vt4] = get_initial_velocities(pt1, pt2, pt3, pt4, dt)
     vt3 = (-1.5 * pt3(:,1) + 2 * pt3(:,2) - 0.5 * pt3(:,3)) * inv_dt;
     vt4 = (-1.5 * pt4(:,1) + 2 * pt4(:,2) - 0.5 * pt4(:,3)) * inv_dt;
 
-    vt1 = [vt1(1); 0; vt1(2)];
-    vt2 = [vt2(1); 0; vt2(2)];
-    vt3 = [vt3(1); 0; vt3(2)];
-    vt4 = [vt4(1); 0; vt4(2)];
 end

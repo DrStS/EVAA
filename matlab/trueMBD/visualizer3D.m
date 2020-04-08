@@ -1,9 +1,12 @@
-function [] = visualizer3D(y, delta_t, vel_norms)
-fig = figure();
+function [] = visualizer3D(fig, y, traj_1, traj_2, delta_t, vel_norms)
+
+set(0,'CurrentFigure',fig)
 set(fig,'units','normalized','outerpos',[0 0 1 1.2]);
 grid on
 
 num_iter = size(y,1) - 1;
+
+z_offset_tyre = y(1,34);
 
 vis_step = 200*max(1, round(1e-3/delta_t)); % visualization step
 
@@ -47,6 +50,7 @@ for i = 1 : vis_step : num_iter
 
     
     %% plot
+    set(0,'CurrentFigure',fig)
     subplot(1,2,1)
     %car body
     plot3(pcc(1), pcc(2), pcc(3),'gx');
@@ -89,7 +93,16 @@ for i = 1 : vis_step : num_iter
     plot3(  [pc4(1), pw4(1), pt4(1)],...
             [pc4(2), pw4(2), pt4(2)],...
             [pc4(3), pw4(3), pt4(3)],'r');
- 
+
+        % road
+        plot3(traj_1(1,1:vis_step:num_iter),...
+              traj_1(3,1:vis_step:num_iter),...
+              traj_2(2,1:vis_step:num_iter), 'b')
+
+          plot3(traj_2(1,1:vis_step:num_iter),...
+              traj_2(3,1:vis_step:num_iter),...
+              traj_2(2,1:vis_step:num_iter), 'b')
+
     xlabel('X')
     ylabel('Y')
     zlabel('Z')
@@ -138,6 +151,7 @@ for i = 1 : vis_step : num_iter
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%% THIRD: fixed proportion, update when necessary %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    min_z = min(min(pt1(3), pt2(3)), min(pt3(3), pt4(3)));
 
     if ( y(i, 5) + 2.5 > max_x ) 
         % update x-axis
@@ -191,11 +205,18 @@ for i = 1 : vis_step : num_iter
         min_y = max_y - fixed_range_y;
     end
     
-    axis([min_x, max_x, min_y, max_y, -0.4, -0.4 + fixed_range_z])
+    axis_min_z = min(min_z, -0.4);
+    axis([min_x, max_x, min_y, max_y, axis_min_z, axis_min_z + fixed_range_z])
 
     drawnow;
     
-        subplot(1,2,2)
+    
+    
+    
+    
+    
+    set(0,'CurrentFigure',fig)
+    subplot(1,2,2)
     %car body
     plot3(pcc(1), pcc(2), pcc(3),'gx');
      grid on
@@ -245,6 +266,11 @@ for i = 1 : vis_step : num_iter
     
     hold off
 
+    axis([y(i,5) - 2.5, y(i,5) + 2.5, ...
+          y(i,7) - 2.5, y(i,7) + 2.5, ...
+          min_z, min_z + 1])
+
+    
     drawnow
         
 end
