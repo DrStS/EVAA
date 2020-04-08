@@ -11,9 +11,10 @@ vis_step = 200*max(1, round(1e-3/delta_t)); % visualization step
 axis_update_step = 20 * vis_step;   
 
 % for option 3
-fixed_range_x = 10 + 0.5 * vel_norms(1); 
-fixed_range_y = 10 + 0.5 * vel_norms(1);
-fixed_range_z = 1 + 0.05 * vel_norms(1);
+scale_factor = 1.2;
+fixed_range_x = 10 + scale_factor * vel_norms(1); 
+fixed_range_y = 10 + scale_factor * vel_norms(1);
+fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(1);
 mid_x = y(1,5);
 mid_y = y(1,7);
 min_x = mid_x - fixed_range_x / 2;
@@ -137,30 +138,56 @@ for i = 1 : vis_step : num_iter
     %%%%%%%%%%% THIRD: fixed proportion, update when necessary %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    if ( y(i, 5) + 2.5 > max_x ) || ( y(i, 5) - 2.5 < min_x )
+    if ( y(i, 5) + 2.5 > max_x ) 
         % update x-axis
         mid_x = y(i,5);
-        fixed_range_x = 10 + 0.5 * vel_norms(i); 
-        fixed_range_y = 10 + 0.5 * vel_norms(i);
-        fixed_range_z = 1 + 0.05 * +vel_norms(i);
+        fixed_range_x = 10 + scale_factor * vel_norms(i); 
+        fixed_range_y = 10 + scale_factor * vel_norms(i);
+        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
         
-        min_x = mid_x - fixed_range_x / 2;
-        max_x = mid_x + fixed_range_x / 2;
+        min_x = mid_x - 2.5;
+        max_x = min_x + fixed_range_x;
         min_y = mid_y - fixed_range_y / 2;
         max_y = mid_y + fixed_range_y / 2;
     end
     
-    if (y(i, 7) + 2.5 > max_y ) || ( y(i, 7) - 2.5 < min_y )
+    if ( y(i, 5) - 2.5 < min_x )
         % update x-axis
+        mid_x = y(i,5);
+        fixed_range_x = 10 + scale_factor * vel_norms(i); 
+        fixed_range_y = 10 + scale_factor * vel_norms(i);
+        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        
+        max_x = mid_x + 2.5;
+        min_x = max_x - fixed_range_x;
+        min_y = mid_y - fixed_range_y / 2;
+        max_y = mid_y + fixed_range_y / 2;
+    end
+    
+    if (y(i, 7) + 2.5 > max_y ) 
+        % update y-axis
         mid_y = y(i,7);
-        fixed_range_x = 10 + 0.5 * vel_norms(i); 
-        fixed_range_y = 10 + 0.5 * vel_norms(i);
-        fixed_range_z = 1 + 0.05 * +vel_norms(i);
+        fixed_range_x = 10 + scale_factor * vel_norms(i); 
+        fixed_range_y = 10 + scale_factor * vel_norms(i);
+        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
         
         min_x = mid_x - fixed_range_x / 2;
         max_x = mid_x + fixed_range_x / 2;
-        min_y = mid_y - fixed_range_y / 2;
-        max_y = mid_y + fixed_range_y / 2;
+        min_y = mid_y - 2.5;
+        max_y = min_y + fixed_range_y;
+    end
+
+    if ( y(i, 7) - 2.5 < min_y )
+        % update y-axis
+        mid_y = y(i,7);
+        fixed_range_x = 10 + scale_factor * vel_norms(i); 
+        fixed_range_y = 10 + scale_factor * vel_norms(i);
+        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        
+        min_x = mid_x - fixed_range_x / 2;
+        max_x = mid_x + fixed_range_x / 2;
+        max_y = mid_y + 2.5;
+        min_y = max_y - fixed_range_y;
     end
     
     axis([min_x, max_x, min_y, max_y, -0.4, -0.4 + fixed_range_z])
