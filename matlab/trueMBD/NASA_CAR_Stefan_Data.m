@@ -91,10 +91,23 @@ F_tyre2 = zeros(3,num_iter+1);
 F_tyre3 = zeros(3,num_iter+1);
 F_tyre4 = zeros(3,num_iter+1);
 
+
 if generate_from_trajectory
-   
     % create trajectory
-    trajectory = generate_circular_trajectory(5, delta_t, 3, num_iter+1);
+%     v_init = 3;    
+%     radius = 5;
+ %   trajectory = generate_circular_trajectory(radius, delta_t, v_init, num_iter+1);
+    
+%    v_init = 3;    
+%    amplitude = 1;
+%    period = 20;
+%    trajectory = generate_drunk_car(amplitude, period, delta_t, v_init, num_iter + 1);
+    
+ 
+    acceleration = 3;
+    v_init = -0.1;
+    direction = [1;0];
+    trajectory = generate_accelerated_car(acceleration, direction, delta_t, v_init, num_iter + 1);
     
     % get the trajectoies of the tyres
     [trajectory_t1, trajectory_t2, trajectory_t3, trajectory_t4, theta, vc, w] ...
@@ -128,8 +141,10 @@ if generate_from_trajectory
 
     % initial angular velocities
     wc = [0; w(1); 0];
-
     initial_orientation = get_quaternion([1;0;0], vc);                             
+    if isnan(initial_orientation)
+        initial_orientation = [0; 0; 0; 1];
+    end
     initial_position = [trajectory(1,1); 0; trajectory(2,1)];  
     
 else % OLD VERSION
@@ -153,7 +168,7 @@ else % OLD VERSION
     initial_position = [5;0;0];                                              % of the center of mass
 end
 
-visualize = false;
+visualize = true;
 
 % force parameters
 g = 0;               % there is no gravity in outer space! 
@@ -207,11 +222,11 @@ end
 %PLAY AROUND; expect RK4 and BCN to work fine
 % Explicit solvers 
 % solver = @(f, t, x) explicit_solver(f, t, x);
-% solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
-solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+% solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 
 %% solving
@@ -247,7 +262,11 @@ error_plotter3D(solver, t, num_iter, y, y_sol, mass, mass_wheel, mass_tyre, Ic, 
                 upper_rotational_stiffness, lower_rotational_stiffness);
 
 if visualize
-    visualizer3D(y, delta_t);
+    vel_norms = zeros(1, length(t));
+    for i=1:length(t)
+        vel_norms(i) = norm(y_sol(i, 4:6));
+    end
+    visualizer3D(y, delta_t, vel_norms);
 end
 
 

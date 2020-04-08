@@ -70,17 +70,27 @@ end
     pt4(1,1) = pc(1,1) + r4(1) * c - r4(2) * s;
     pt4(2,1) = pc(2,1) + r4(1) * s + r4(2) * c;
 
+    
+
+    
 % update CG velocity, orientation and tyre positions
 for i = 2 : n
     % velocity update
     vc(:,i) = (-0.5 * pc(:,i-1) + 0.5 * pc(:,i+1)) * inv_dt;
     
     % angle update
-    if vc(2,i) >= 0
+    if norm(vc(:,i)) == 0
+        theta(i) = theta(i-1);
+    elseif vc(2,i) >= 0
         theta(i) = acos(vc(1,i) / norm(vc(:,i)));
     else
         theta(i) = -acos(vc(1,i) / norm(vc(:,i)));
-    end    
+    end 
+    
+    % case if there is a change in direction
+    if abs(theta(i) - theta(i-1)) > 1
+        theta(i) = theta(i) + pi;
+    end
 
     % tyre position update
     c = cos(theta(i));
@@ -99,6 +109,34 @@ for i = 2 : n
     pt4(2,i) = pc(2,i) + r4(1) * s + r4(2) * c;
         
 end
+
+% remove NaN if first theta is NaN -- think of a better way, it is quite
+% clumsy 
+if isnan(theta(1))
+    theta(1) = theta(2);
+        c = cos(theta(1));
+        s = sin(theta(1));
+
+        pt1(1,1) = pc(1,1) + r1(1) * c - r1(2) * s;
+        pt1(2,1) = pc(2,1) + r1(1) * s + r1(2) * c;
+
+        pt2(1,1) = pc(1,1) + r2(1) * c - r2(2) * s;
+        pt2(2,1) = pc(2,1) + r2(1) * s + r2(2) * c;
+
+        pt3(1,1) = pc(1,1) + r3(1) * c - r3(2) * s;
+        pt3(2,1) = pc(2,1) + r3(1) * s + r3(2) * c;
+
+        pt4(1,1) = pc(1,1) + r4(1) * c - r4(2) * s;
+        pt4(2,1) = pc(2,1) + r4(1) * s + r4(2) * c;
+end
+% what if there is no motion at all ? whole theta will be NaN. TODO
+
+
+
+
+
+% Part 2: angular velocity update (can probably removed, only the initial w
+% is required in MBD or ALE)
 
 % add dummy values at the end of the position vector (open end, probably
 % sub-optimal)
