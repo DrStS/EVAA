@@ -1,5 +1,6 @@
 function [] = visualizer3D(y, delta_t, vel_norms)
-figure()
+fig = figure();
+set(fig,'units','normalized','outerpos',[0 0 1 1.2]);
 grid on
 
 num_iter = size(y,1) - 1;
@@ -46,7 +47,7 @@ for i = 1 : vis_step : num_iter
 
     
     %% plot
-   
+    subplot(1,2,1)
     %car body
     plot3(pcc(1), pcc(2), pcc(3),'gx');
      grid on
@@ -193,6 +194,58 @@ for i = 1 : vis_step : num_iter
     axis([min_x, max_x, min_y, max_y, -0.4, -0.4 + fixed_range_z])
 
     drawnow;
+    
+        subplot(1,2,2)
+    %car body
+    plot3(pcc(1), pcc(2), pcc(3),'gx');
+     grid on
+     hold on
+    plot3(pc1(1), pc1(2), pc1(3),'gx');
+    plot3(pc2(1), pc2(2), pc2(3),'gx');
+    plot3(pc3(1), pc3(2), pc3(3),'gx');
+    plot3(pc4(1), pc4(2), pc4(3),'gx');
+    plot3(  [pc1(1), pcc(1), pc3(1), pc4(1), pcc(1), pc2(1), pc1(1), pc4(1)], ...
+            [pc1(2), pcc(2), pc3(2), pc4(2), pcc(2), pc2(2), pc1(2), pc4(2)], ...
+            [pc1(3), pcc(3), pc3(3), pc4(3), pcc(3), pc2(3), pc1(3), pc4(3)],'g');
+    plot3(  [pc2(1), pc3(1)], ...
+            [pc2(2), pc3(2)], ...
+            [pc2(3), pc3(3)],'g');
+
+    %legs
+    plot3(pw1(1), pw1(2), pw1(3),'ro');
+    plot3(pw2(1), pw2(2), pw2(3),'ro');
+    plot3(pw3(1), pw3(2), pw3(3),'ro');
+    plot3(pw4(1), pw4(2), pw4(3),'ro');
+
+    plot3(pt1(1), pt1(2), pt1(3),'ro');
+    plot3(pt2(1), pt2(2), pt2(3),'ro');
+    plot3(pt3(1), pt3(2), pt3(3),'ro');
+    plot3(pt4(1), pt4(2), pt4(3),'ro');
+
+    plot3(  [pc1(1), pw1(1), pt1(1)],...
+            [pc1(2), pw1(2), pt1(2)],...
+            [pc1(3), pw1(3), pt1(3)],'r');
+
+    plot3(  [pc2(1), pw2(1), pt2(1)],...
+            [pc2(2), pw2(2), pt2(2)],...
+            [pc2(3), pw2(3), pt2(3)],'r');
+
+    plot3(  [pc3(1), pw3(1), pt3(1)],...
+            [pc3(2), pw3(2), pt3(2)],...
+            [pc3(3), pw3(3), pt3(3)],'r');
+
+    plot3(  [pc4(1), pw4(1), pt4(1)],...
+            [pc4(2), pw4(2), pt4(2)],...
+            [pc4(3), pw4(3), pt4(3)],'r');
+ 
+    xlabel('X')
+    ylabel('Y')
+    zlabel('Z')
+
+    
+    hold off
+
+    drawnow
         
 end
 end
