@@ -57,7 +57,8 @@ private:
 	double* unit_y_vector;
 	double* velocity_direction; // arrow from center towards object
 
-	// distance vector between center of circle and the car = Positions of points from the car vs Center of Circle, which is seen as 0
+	// distance vector between center of circle and the car = 
+	//		Positions of points from the car vs Center of Circle, seen as 0
 	double* dist_car_center; // 3 x 9
 	double* Velocity_vec;
 	double* Mass_vec;

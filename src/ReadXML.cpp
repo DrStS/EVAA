@@ -45,7 +45,8 @@ ReadXML::ReadXML(const std::string& load_filename) :
 
 ReadXML::ReadXML(const std::string & filename, const std::string & load_filename) :
 	_filename(filename), _load_filename(load_filename),
-	settings(EVAA_settings(filename, xml_schema::flags::dont_validate)), load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
+	settings(EVAA_settings(filename, xml_schema::flags::dont_validate)), 
+    load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
 }
 
 void ReadXML::setFileName(const std::string & filename){
@@ -183,7 +184,8 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 }
 
 
-void ReadXML::ReadLookupParameters(EVAAComputeStiffness** lookupStiffness, Simulation_Parameters & parameters) {
+void ReadXML::ReadLookupParameters(EVAAComputeStiffness** lookupStiffness, 
+                                   Simulation_Parameters & parameters) {
     if (_lookup_filename == "NO_FILE_SPECIFIED") return;
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
     if (lookup_table->LookupTableGenerator().present()) {

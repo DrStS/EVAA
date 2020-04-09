@@ -169,9 +169,10 @@ namespace MathLibrary {
 	*/
 	template <typename T>
 	void allocate_to_diagonal(T* matrix, T* vector, size_t dim) {
-		for (int i = 0; i < dim; ++i) {
+		cblas_dcopy(dim, vector, 1, matrix, dim + 1);
+		/*for (int i = 0; i < dim; ++i) {
 			matrix[i*dim + i] = vector[i];
-		}
+		}*/
 	}
 
 	/*
@@ -186,6 +187,49 @@ namespace MathLibrary {
 	{
 		cross_P[0] = vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1];
 		cross_P[1] = vect_A[2] * vect_B[0] - vect_A[0] * vect_B[2];
+		cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0];
+	}
+
+	/*
+	Performs the cross product of a vector of size 3 with [0,0,1]
+	\param vect_A first vector; A = [x, y, z]
+	\return cross_P = vect_A x [0, 0, 1] = [y, -x, 0]
+	*/
+	template <typename T>
+	void crossProduct_unitvecZ(const T* vect_A, T* cross_P)
+
+	{
+		cross_P[0] = vect_A[1];
+		cross_P[1] = -vect_A[0];
+		cross_P[2] = 0;
+	}
+
+	/*
+	Performs the cross product of a vector of size 3 with [0,0,1]
+	ignoring the third component
+	\param vect_A first vector; A = [x, y, z]
+	\return cross_P = vect_A x [0, 0, 1] = [y, -x, 0] i.e. [y,-x]
+	*/
+	template <typename T>
+	void crossProduct_unitvecZ2D(const T* vect_A, T* cross_P)
+
+	{
+		cross_P[0] = vect_A[1];
+		cross_P[1] = -vect_A[0];
+	}
+
+	/*
+	Performs the cross product of 2 vector A and B with no component on Z direction
+	\param vect_A first vector; A = [xA, yA, 0]
+	\param vect_B second vector; B = [xB, yB, 0]
+	\return cross_P = vect_A x vect_B = [0, 0, xA * yB - xB * yA]
+	*/
+	template <typename T>
+	void crossProduct_unitvecXY(const T* vect_A, const T* vect_B, T* cross_P)
+
+	{
+		cross_P[0] = 0;
+		cross_P[1] = 0;
 		cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0];
 	}
 
@@ -292,7 +336,7 @@ namespace MathLibrary {
 			std::cout << "\n" << std::endl;
 			//printf("%1.15f\n", vect[i]);
 		}
-		exit(5);
+		//exit(5);
 	}
 
 	/*
@@ -1073,13 +1117,51 @@ namespace MathLibrary {
 			not implemented
 			*/
 			lapack_int status;
+			// get A=LL^T
 			status = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
 			//status = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF + 4, DOF + 4, A, DOF + 4, piv);
 			check_status<lapack_int>(status);
+			// u_n_p_1 += B * u_n
 			cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim, 1.0, B, dim, x_prev, 1, 0, x, 1);
-			// u_n_p_1 = -((1/(h*h))*M)*u_n_m_1 + u_n_p_1
+			// u_n_p_1 += C * u_n_m_1 <=> u_n_p_1 += ((1/(h*h))*M)*(-u_n_m_1)
 			cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim, 1.0, C, dim, x_prev_prev, 1, 1, x, 1);
-			// u_n_p_1 = f_n_p_1 + u_n_p_1
+			// u_n_p_1 += x <=> u_n_p_1 += f_n_p_1
+			cblas_daxpy(dim, 1, b, 1, x, 1);
+			// u_n_p_1=A\u_n_p_1
+			LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
+			//LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF + 4, 1, A, DOF + 4, piv, u_n_p_1, 1);
+		}
+
+		/*
+		linear backward Euler - C (Mass_matrix) diagonal matrix, considered as vector
+		\param num_time_iter number of time steps to perform
+		\param dt timestep
+		\param x_previous previous solution
+		\return new solution
+		*/
+		static void Linear_Backward_Euler_diag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
+			/*
+			This works for only symmetric positive definite A the provided matrix A would be overwritten and results stored in x
+			computes the backward euler step of following form
+			Ax = B*x_prev + C*x_prev_prev + b
+			A, B, C are coefficient of the euler formation matrix
+			not implemented
+			*/
+			lapack_int status;			
+			// get A=LL^T
+			status = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
+			//status = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF + 4, DOF + 4, A, DOF + 4, piv);
+			check_status<lapack_int>(status);
+			// u_n_p_1 += B * u_n
+			cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim, 1.0, B, dim, x_prev, 1, 0, x, 1);
+			
+			// u_n_p_1 += C * u_n_m_1 <=> u_n_p_1 += ((1/(h*h))*M)*(-u_n_m_1)
+			//cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim, 1.0, C, dim, x_prev_prev, 1, 1, x, 1);
+			double vec_tmp[11];
+			vdMul(dim, C, x_prev_prev, vec_tmp);
+			cblas_daxpy(dim, 1, vec_tmp, 1, x, 1);
+					
+			// u_n_p_1 += x <=> u_n_p_1 += f_n_p_1
 			cblas_daxpy(dim, 1, b, 1, x, 1);
 			// u_n_p_1=A\u_n_p_1
 			LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
