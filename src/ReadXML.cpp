@@ -8,10 +8,10 @@
 
 
 template<typename T> void ReadXML::readVectorLegs(double* storage, T vec){
-       readVector(storage, vec.ReerRight());
-       readVector(storage+3,vec.ReerLeft());
-       readVector(storage+6,vec.FrontLeft());
-       readVector(storage+9,vec.FrontRight());
+       readVector(storage, vec.FrontLeft());
+       readVector(storage+3,vec.FrontRight());
+       readVector(storage+6,vec.ReerLeft());
+       readVector(storage+9,vec.ReerRight());
  }
 template<typename T> void ReadXML::readVector(double* storage, T vec) {
     storage[0] = vec.x();
@@ -19,10 +19,10 @@ template<typename T> void ReadXML::readVector(double* storage, T vec) {
     storage[2] = vec.z();
 }
 template<typename T> void ReadXML::readLegs(double* storage, T vec) {
-    storage[0] = vec.ReerRight();
-    storage[1] = vec.ReerLeft();
-    storage[2] = vec.FrontLeft();
-    storage[3] = vec.FrontRight();
+    storage[0] = vec.FrontLeft();
+    storage[1] = vec.FrontRight();
+    storage[2] = vec.ReerLeft();
+    storage[3] = vec.ReerRight();
 }
 
 template<typename T> void ReadXML::readangles(double* storage, T vec) {
