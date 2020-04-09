@@ -139,8 +139,8 @@ if generate_from_trajectoryXYZ
    % initial velocities
     vc = vc(:,1);       % car body
 
-    [vt1, vt2, vt3, vt4] = get_initial_velocities(trajectoryXYZ_t1, trajectoryXYZ_t2, trajectoryXYZ_t3, trajectoryXYZ_t4, delta_t);
-    [vw1, vw2, vw3, vw4] = get_initial_velocities(trajectoryXYZ_t1, trajectoryXYZ_t2, trajectoryXYZ_t3, trajectoryXYZ_t4, delta_t);
+    [vt1, vt2, vt3, vt4] = get_all_path_velocities(trajectoryXYZ_t1, trajectoryXYZ_t2, trajectoryXYZ_t3, trajectoryXYZ_t4, delta_t);
+    [vw1, vw2, vw3, vw4] = get_all_path_velocities(trajectoryXYZ_t1, trajectoryXYZ_t2, trajectoryXYZ_t3, trajectoryXYZ_t4, delta_t);
 
     % initial angular velocities
     wc = [0; w(1); 0];
@@ -216,13 +216,13 @@ FW4 = [0; -mass_wheel(4)*g; 0];
 if generate_from_trajectoryXYZ
     % arbitrary trajectory
     FR1 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(1), ...
-                                        F, F_tyre1(:,i), trajectoryXYZ_t1(2,i), delta_t);        
+                                        F, F_tyre1(:,i), trajectoryXYZ_t1(2,i), vt1(:,i), delta_t);        
     FR2 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(2), ...
-                                        F, F_tyre2(:,i), trajectoryXYZ_t2(2,i), delta_t);
+                                        F, F_tyre2(:,i), trajectoryXYZ_t2(2,i), vt2(:,i), delta_t);
     FR3 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(3), ...
-                                        F, F_tyre3(:,i), trajectoryXYZ_t3(2,i), delta_t);
+                                        F, F_tyre3(:,i), trajectoryXYZ_t3(2,i), vt3(:,i), delta_t);
     FR4 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(4), ...
-                                        F, F_tyre4(:,i), trajectoryXYZ_t4(2,i), delta_t);
+                                        F, F_tyre4(:,i), trajectoryXYZ_t4(2,i), vt4(:,i), delta_t);
 end
 
 %PLAY AROUND; expect RK4 and BCN to work fine
@@ -239,7 +239,7 @@ solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 [t,y, y_sol, metrics] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 
                 lower_spring_length, upper_spring_length, initial_lower_spring_length, initial_upper_spring_length, ...
                 lower_spring_stiffness, upper_spring_stiffness, lower_spring_damping, upper_spring_damping, lower_rotational_stiffness, upper_rotational_stiffness, ...
-                vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4, ...
+                vc, vw1(:,1), vw2(:,1), vw3(:,1), vw4(:,1), vt1(:,1), vt2(:,1), vt3(:,1), vt4(:,1), wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4, ...
                 num_iter, delta_t, solver);
 
 %% visulalization
