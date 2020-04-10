@@ -20,8 +20,8 @@ err = [];
 dl = 0.01;
 
 % calc min and max length to evaluate (just for now)
-l_min = min(0.3 * L1,0.3 * L2);
-l_max = max(1.7 * L1,1.7 * L2);
+l_min = 0.05;
+l_max = 1.7;
 % grid size
 k_d = round((l_max - l_min)/dl);
 % grid value allocation
@@ -53,7 +53,7 @@ p1 = k1*u1 - k2*u2;
 p2 = -k1*u1+(k1+k2)*u2;
 
 %% Jacobian
-syms K k11 k12 k21 k22 K_symb
+syms K k11 k12 k21 k22 K_symb d1 d2
 % actuall derivative but sym cant be used as we get part of derivative out
 % of the spline
 %k11 = diff(p1, u1)+u1*deriv_dk(l1);
@@ -71,6 +71,9 @@ K_symb = [k11, k12;
 r_symb = [p1 - f1; 
      p2 - f2];
 
+dKdx_x_symb = [d1*(u1 - u2)	d1*(-u1 + u2);...
+    d1*(-u1 + u2)	d1*(u1 - u2) + d2*u2];
+
  
 %% Newton iteration
 u1 = 0;
@@ -83,12 +86,16 @@ l_1 = eval(l1);
 l_2 = eval(l2);
 k1 = fnval(k_spline,l_1);
 k2 = fnval(k_spline,l_2);
-
+K = eval(K_symb);
+r = eval(r_symb);
 while 1
    iter = iter + 1;
-   K = eval(K_symb)+[u(1),-u(1);u(2)-u(1),u(1)-u(2)]*fnval(k_der,l_1)+[0 -u(2); 0 u(2)]*fnval(k_der,l_2);
+   d1 = fnval(k_der, l_1);
+   d2 = fnval(k_der, l_2);
+   J = eval(dKdx_x_symb);
+   J = K + J;
    r = eval(r_symb);
-   Delta = -K\r;
+   Delta = -J\r;
    u = Delta + u;
    % update values
    u1 = u(1);
@@ -97,7 +104,8 @@ while 1
    l_2 = eval(l2);
    k1 = fnval(k_spline,l_1);
    k2 = fnval(k_spline,l_2);
-   
+   K = eval(K_symb);
+   r = eval(r_symb);
    err = [err, norm(r)];
    if (err(length(err)) < tol)
         break;
