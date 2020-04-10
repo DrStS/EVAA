@@ -8,13 +8,11 @@ Circular::Circular(double* Pos, double Rad) {
 
 	// Position
 	Position = (double*)mkl_malloc(DIM * sizeof(double), alignment);
-	cblas_dcopy(3, Pos, 1, Position, 1);
+	cblas_dcopy(DIM, Pos, 1, Position, 1);
 
 	Radius = Rad;
 
 	// auxiliary vectors
-	unit_y_vector = (double*)mkl_calloc(DIM, sizeof(double), alignment);
-	unit_y_vector[2] = 1.; // used in cross product (z direction is 0)
 	std::cout << "Radius = " << Radius << "\n";
 	velocity_direction = (double*)mkl_calloc(DIM, sizeof(double), alignment);
 	Velocity_vec = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
@@ -24,7 +22,6 @@ Circular::Circular(double* Pos, double Rad) {
 
 Circular::~Circular() {
 	mkl_free(Position);
-	mkl_free(unit_y_vector);
 	mkl_free(velocity_direction);
 	mkl_free(Velocity_vec);
 	mkl_free(Mass_vec);
@@ -55,17 +52,14 @@ void Circular::get_centrifugal_force_ALE(double* fr, double* v, double& m, doubl
 	// calculates the force in a body only with respect to its velocity, mass and Position
 	// v is the velocity of the body
 	// m is the mass of the body
-	// p is the global Position of the body
+	// p is the global Position of the body (arrow to the body)
 	// fr - the centripetal force
 	// the rotation is always around the origin!
 
 	cblas_dcopy(DIM - 1, p, 1, fr, 1);
 
-	fr[2] = 0;		// path only in xy-plane
+	double inv_radius = 1.0 / cblas_dnrm2(DIM - 1, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered body
 
-	double inv_radius = 1.0 / cblas_dnrm2(DIM - 1, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered tyre
-
-	// Raffi: cblas_dscal(DIM, -inv_radius, fr, 1); - centripetal force 
 	cblas_dscal(DIM - 1, inv_radius, fr, 1); // centrifugal force
 
 	// MathLibrary::crossProduct(fr, unit_y_vector, velocity_direction);
@@ -73,9 +67,8 @@ void Circular::get_centrifugal_force_ALE(double* fr, double* v, double& m, doubl
 	velocity_direction[0] = fr[1];
 	velocity_direction[1] = -fr[0];	
 
-
-	const MKL_INT fucking_MKL_int_ddot = DIM - 1;
-	//double velocity_magnitude = cblas_ddot(fucking_MKL_int_ddot, v, incx, velocity_direction, incx);
+	//const MKL_INT int_ddot = DIM - 1;
+	//double velocity_magnitude = cblas_ddot(int_ddot, v, incx, velocity_direction, incx);
 	double velocity_magnitude = cblas_dnrm2(DIM - 1, v, 1);
 
 	double force_magnitude = m * velocity_magnitude * velocity_magnitude * inv_radius;
@@ -95,14 +88,15 @@ void Circular::get_centrifugal_force(double* fr, double* v, double& m, double* p
 
 	fr[2] = 0;		// path only in xy-plane
 
-	double inv_radius = 1.0 / cblas_dnrm2(DIM, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered tyre
+	double inv_radius = 1.0 / cblas_dnrm2(DIM, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered body
 
 	// Raffi: cblas_dscal(DIM, -inv_radius, fr, 1); - centripetal force 
 	cblas_dscal(DIM, inv_radius, fr, 1); // centrifugal force
 
-	MathLibrary::crossProduct(fr, unit_y_vector, velocity_direction);
+	MathLibrary::crossProduct_unitvecZ(fr, velocity_direction);
 
-	double velocity_magnitude = cblas_ddot(DIM, v, incx, velocity_direction, incx);
+	 //double velocity_magnitude = cblas_ddot(DIM, v, incx, velocity_direction, incx);
+	double velocity_magnitude = cblas_dnrm2(DIM, v, 1);
 
 	double force_magnitude = m * velocity_magnitude * velocity_magnitude * inv_radius;
 
@@ -171,8 +165,7 @@ void Circular::get_Profile_force_ALE(Car<double>* car1, double* f_vec, double* n
 	}
 
 	// compute centripetal part of the global normal force 
-	double Mass = car1->get_global_mass();
-	get_centrifugal_force_ALE(normal_ext, Velocity_vec, Mass, dist_car_center);
+	get_centrifugal_force_ALE(normal_ext, Velocity_vec, *(car1->global_mass), dist_car_center);
 
 }
 
@@ -184,24 +177,24 @@ void Circular::update_initial_condition(Car<double>* Car1){
 
 	std::cout << "Update initial conditions to circular motion" << std::endl;
 
-	const MKL_INT incx = 1;
-
-	double* perpendicular_dir = (double*)mkl_calloc(Car1->DIM, sizeof(double), Car1->alignment);
-	double* tangential_dir = (double*)mkl_calloc(Car1->DIM, sizeof(double), Car1->alignment);
-	double* radial_vector = (double*)mkl_calloc(Car1->DIM, sizeof(double), Car1->alignment);
+	double* tangential_dir = (double*)mkl_malloc(Car1->DIM * sizeof(double), Car1->alignment);
+	double* radial_vector = (double*)mkl_malloc(Car1->DIM * sizeof(double), Car1->alignment);
 	radial_vector[0] = Car1->Position_vec[0] - this->Position[0];
 	radial_vector[1] = Car1->Position_vec[1] - this->Position[1];
 	radial_vector[2] = 0;
 
 	double radius = cblas_dnrm2(Car1->DIM, radial_vector, 1);
-	perpendicular_dir[2] = 1;
 	if (abs(radius - this->Radius) > 0.01)
-		std::cout << "Warning! the initial position of the car is not on the trajectory provided in the circular path. \n The expected radius is " << this->Radius << ", but the car is at an initial distance of " << radius << " from the center of the circle.\n The execution procedes with the current spatial configuration and with the current distance to the center of the circle." << std::endl;
+		std::cout << "Warning! the initial position of the car is not on the trajectory provided in \
+					the circular path. \n The expected radius is " 
+				  << this->Radius << ", but the car is at an initial distance of " << radius 
+				  << " from the center of the circle.\n The execution procedes with the current spatial "
+				  << "configuration and with the current distance to the center of the circle." << std::endl;
 
 	double inv_radius = 1. / radius;
 
 	cblas_dscal(Car1->DIM, inv_radius, radial_vector, incx);
-	MathLibrary::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
+	MathLibrary::crossProduct_unitvecZ(radial_vector, tangential_dir);
 	double magnitude = cblas_ddot(Car1->DIM, Car1->Velocity_vec, incx, tangential_dir, incx);
 	cblas_dcopy(Car1->DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
 	cblas_dscal(Car1->DIM, magnitude, Car1->Velocity_vec, incx);
@@ -209,7 +202,6 @@ void Circular::update_initial_condition(Car<double>* Car1){
 	MathLibrary::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
 	cblas_dscal(Car1->DIM, inv_radius * inv_radius, Car1->w_CG, 1);
 
-	MKL_free(perpendicular_dir);
 	MKL_free(tangential_dir);
 	MKL_free(radial_vector);
 }

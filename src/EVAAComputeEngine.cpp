@@ -66,6 +66,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 	_xmlLoadFileName = loadxml;
 
 	std::ifstream f(xmlFileName.c_str());
+	// Consider replace if with assert
 	if (f.good()) {
 		std::cout << "Read general simulation parameters and car input data at " << _xmlFileName << std::endl;
 	}
@@ -91,7 +92,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 
 
 EVAAComputeEngine::~EVAAComputeEngine() {
-	if (_parameters.interpolation) {
+	if ((_parameters.interpolation) && (lookupStiffness != nullptr)) {
 		delete lookupStiffness;
 	}
 }
@@ -784,25 +785,26 @@ void EVAAComputeEngine::computeALE(void) {
 
 	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
 
-	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {
+	switch (_load_module_parameter.boundary_condition_road)
+	{
+	case CIRCULAR:
 		Road_Profile = new Circular(_load_module_parameter.profile_center,
 			_load_module_parameter.profile_radius);
-	}
-	else if (_load_module_parameter.boundary_condition_road == NONFIXED) {
+		break;
+	case NONFIXED:
 		Road_Profile = new Nonfixed(_load_module_parameter.profile_center,
 			_load_module_parameter.profile_radius);
-	}
-	else if (_load_module_parameter.boundary_condition_road == FIXED) {
+		break;
+	case FIXED:
 		Road_Profile = new Fixed(_parameters.gravity[2], _load_module_parameter);
 		Road_Profile->set_fixed_index(Car1->tyre_index_set);
-	}
-	else {
-		std::cout << "ALE will only work with a circular path, fixed or nonfixed boundaries, computation skipped" << std::endl;
+		break;
+	default:
+		std::cout << "ALE will only work with a circular path, fixed or nonfixed boundaries, computation skipped!" << std::endl;
 		delete Car1;
 		exit(5);
+		break;
 	}
-
-	size_t solution_dim = Car1->DIM * (size_t)Car1->vec_DIM;
 
 	Road_Profile->update_initial_condition(Car1);
 
@@ -810,7 +812,7 @@ void EVAAComputeEngine::computeALE(void) {
 	linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
 	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, lookupStiffness, _parameters);
 
-
+	size_t solution_dim = Car1->DIM * (size_t)Car1->vec_DIM;
 	floatEVAA* soln = (floatEVAA*)mkl_malloc(solution_dim * sizeof(floatEVAA), Car1->alignment);
 
 	Ale_sys->solve(soln);

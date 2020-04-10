@@ -66,6 +66,7 @@
 
 
 int main(int argc, char **argv) {
+
 #ifdef EVAA_COMMANDLINE_ON
 	std::cout << "Hello EVAA is fired up!" << std::endl;
 	std::cout << "GIT: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
