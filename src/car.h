@@ -36,7 +36,7 @@ private:
 	/*
 	Construct corner initilizer
 	*/
-	void Car<T>::ConstructCorner(T* posCG, T* corners) {
+	void ConstructCorner(T* posCG, T* corners) {
 		T c = std::cos(angle_CG[2]);
 		T s = std::sin(angle_CG[2]);
 
@@ -91,8 +91,8 @@ private:
 	void ConvertALEToGlobal(T* vect, T* global_vect) {
 #pragma loop(ivdep)
 		for (size_t i = 0; i < Constants::VEC_DIM; ++i) {
-			global_vect[Constants::DIM*i] = vect[(Constants::DIM - 1)*i];
-			global_vect[Constants::DIM*i + 1] = vect[(Constants::DIM - 1)*i + 1];
+			global_vect[Constants::DIM * i] = vect[(Constants::DIM - 1) * i];
+			global_vect[Constants::DIM * i + 1] = vect[(Constants::DIM - 1) * i + 1];
 		}
 	}
 
@@ -120,7 +120,6 @@ public:
 	T4 = rear right tyre
 	*/
 
-	
 	T* Position_vec; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3 !!! Consider Constants::ALIGNMENT (3+1),(3+1),... 
 	T* Velocity_vec; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3
 	T* Mass_vec; // [CG,  W1, T1, W2, T2, W3, T3, W4, T4]    9 x 1
@@ -140,7 +139,7 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////// Members from 11 DOF system //////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
-	int DOF;
+	int DOF; // comes from xml (Consider extracting as constant, move to Constants.h)
 	EVAAComputeStiffness* lookupStiffness;
 	T k_body_fl;
 	T k_tyre_fl;
@@ -151,7 +150,6 @@ public:
 	T k_body_rr;
 	T k_tyre_rr;
 	
-	int i;
 	T *quad_angle_init;
 	T* M_linear, *temp_linear, *K, *K_trans, *D;
 	T *spring_length, *current_spring_length;
@@ -186,26 +184,29 @@ public:
 		///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+		const int positionAllocSize = Constants::DIM * Constants::VEC_DIM * sizeof(T); // 27 dimensions
+		const int pointAllocSize = Constants::VEC_DIM * sizeof(T); // 9 dimensions
+		const int dimAllocSize = Constants::DIM * sizeof(T); // 3 dimensions
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////// Params for Global coordinate ////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Position_vec = (T*)mkl_malloc(Constants::DIM * Constants::VEC_DIM * sizeof(T), Constants::ALIGNMENT); //27 Constants::DIM
-		Velocity_vec = (T*)mkl_malloc(Constants::DIM * Constants::VEC_DIM * sizeof(T), Constants::ALIGNMENT); //27 Constants::DIM
-		Mass_vec = (T*)mkl_malloc(Constants::VEC_DIM * sizeof(T), Constants::ALIGNMENT); //9 Constants::DIM
-		angle_CG = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT); //3 Constants::DIM
-		w_CG = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT); //3 Constants::DIM
-		I_CG = (T*)mkl_malloc(Constants::DIM * Constants::DIM * sizeof(T), Constants::ALIGNMENT); //9 Constants::DIM
+		Position_vec = (T*)mkl_malloc(positionAllocSize, Constants::ALIGNMENT); 
+		Velocity_vec = (T*)mkl_malloc(positionAllocSize, Constants::ALIGNMENT);
+		Mass_vec = (T*)mkl_malloc(pointAllocSize, Constants::ALIGNMENT);
+		angle_CG = (T*)mkl_malloc(dimAllocSize, Constants::ALIGNMENT);
+		w_CG = (T*)mkl_malloc(dimAllocSize, Constants::ALIGNMENT);
+		I_CG = (T*)mkl_malloc(Constants::DIM * Constants::DIM * sizeof(T), Constants::ALIGNMENT); // 9 Dimensions
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////// Initial Params for Global coordinate ////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		initial_position = (T*)mkl_malloc(Constants::DIM * Constants::VEC_DIM * sizeof(T), Constants::ALIGNMENT); // 27 Constants::DIM
-		initial_velocity_vec = (T*)mkl_malloc(Constants::DIM * Constants::VEC_DIM * sizeof(T), Constants::ALIGNMENT);// 27 Constants::DIM
+		initial_position = (T*)mkl_malloc(positionAllocSize, Constants::ALIGNMENT);
+		initial_velocity_vec = (T*)mkl_malloc(positionAllocSize, Constants::ALIGNMENT);
 		quad_angle_init = (T*)mkl_calloc(4, sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
-		initial_angle = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
-		initial_angular_velocity = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
+		initial_angle = (T*)mkl_malloc(dimAllocSize, Constants::ALIGNMENT); // 3 Constants::DIM
+		initial_angular_velocity = (T*)mkl_malloc(dimAllocSize, Constants::ALIGNMENT); // 3 Constants::DIM
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -229,19 +230,19 @@ public:
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////// Memory allocation for interpolator /////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Corners_current = (T*)mkl_malloc(Constants::NUM_LEGS * Constants::DIM * sizeof(T), Constants::ALIGNMENT); // 12 Constants::DIM
-		Corners_rot = (T*)mkl_malloc(Constants::DIM * Constants::DIM * sizeof(T), Constants::ALIGNMENT); // 9 Constants::DIM
-		Corners_init = (T*)mkl_malloc(Constants::NUM_LEGS * Constants::DIM * sizeof(T), Constants::ALIGNMENT); // 12 Constants::DIM
-		angle_buffer = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
-		pos_buffer = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
+		Corners_current = (T*)mkl_malloc(Constants::NUM_LEGS * dimAllocSize, Constants::ALIGNMENT); // 12 Constants::DIM
+		Corners_rot = (T*)mkl_malloc(Constants::DIM * dimAllocSize, Constants::ALIGNMENT); // 9 Constants::DIM
+		Corners_init = (T*)mkl_malloc(Constants::NUM_LEGS * dimAllocSize, Constants::ALIGNMENT); // 12 Constants::DIM
+		angle_buffer = (T*)mkl_malloc(dimAllocSize, Constants::ALIGNMENT); // 3 Constants::DIM
+		pos_buffer = (T*)mkl_malloc(dimAllocSize, Constants::ALIGNMENT); // 3 Constants::DIM
 
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////// ALE Buffer Allocation /////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Position_vec_xy = (T*)mkl_malloc((Constants::DIM - 1) * Constants::VEC_DIM * sizeof(T), Constants::ALIGNMENT);
+		Position_vec_xy = (T*)mkl_malloc((Constants::DIM - 1) * pointAllocSize, Constants::ALIGNMENT);
 		Angle_z = new T;
-		Velocity_vec_xy = (T*)mkl_malloc((Constants::DIM - 1) * Constants::VEC_DIM * sizeof(T), Constants::ALIGNMENT);
+		Velocity_vec_xy = (T*)mkl_malloc((Constants::DIM - 1) * pointAllocSize, Constants::ALIGNMENT);
 		w_z = new T;
 		global_mass = new T;
 
