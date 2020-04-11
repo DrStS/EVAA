@@ -5,8 +5,6 @@
 
 class Load_module {
 private:
-	// alignment and g are defined globally === REPLACE THEM!!!!
-	const int alignment = 64;
 	// MKL / vector constants:
 	const int DIM = 3, vec_DIM = 9, incx = 1; // consider mkl_DIM = 4 for efficiency!!!
 

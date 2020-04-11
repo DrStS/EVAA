@@ -7,17 +7,17 @@ Circular::Circular(double* Pos, double Rad) {
 	Name = "Circular";
 
 	// Position
-	Position = (double*)mkl_malloc(DIM * sizeof(double), alignment);
+	Position = (double*)mkl_malloc(DIM * sizeof(double), Constants::ALIGNMENT);
 	cblas_dcopy(DIM, Pos, 1, Position, 1);
 
 	Radius = Rad;
 
 	// auxiliary vectors
 	std::cout << "Radius = " << Radius << "\n";
-	velocity_direction = (double*)mkl_calloc(DIM, sizeof(double), alignment);
-	Velocity_vec = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, alignment);
-	Mass_vec = (double*)mkl_malloc(sizeof(double) * vec_DIM, alignment);
-	dist_car_center = (double*)mkl_malloc(sizeof(double) * (DIM - 1) * vec_DIM, alignment);
+	velocity_direction = (double*)mkl_calloc(DIM, sizeof(double), Constants::ALIGNMENT);
+	Velocity_vec = (double*)mkl_malloc(sizeof(double) * DIM * vec_DIM, Constants::ALIGNMENT);
+	Mass_vec = (double*)mkl_malloc(sizeof(double) * vec_DIM, Constants::ALIGNMENT);
+	dist_car_center = (double*)mkl_malloc(sizeof(double) * (DIM - 1) * vec_DIM, Constants::ALIGNMENT);
 };
 
 Circular::~Circular() {
@@ -166,7 +166,6 @@ void Circular::get_Profile_force_ALE(Car<double>* car1, double* f_vec, double* n
 
 	// compute centripetal part of the global normal force 
 	get_centrifugal_force_ALE(normal_ext, Velocity_vec, *(car1->global_mass), dist_car_center);
-
 }
 
 void Circular::get_Profile_torque(Car<double>* Car1, double* Torque) {
@@ -177,13 +176,13 @@ void Circular::update_initial_condition(Car<double>* Car1){
 
 	std::cout << "Update initial conditions to circular motion" << std::endl;
 
-	double* tangential_dir = (double*)mkl_malloc(Car1->DIM * sizeof(double), Car1->alignment);
-	double* radial_vector = (double*)mkl_malloc(Car1->DIM * sizeof(double), Car1->alignment);
+	double* tangential_dir = (double*)mkl_malloc(Constants::DIM * sizeof(double), Constants::ALIGNMENT);
+	double* radial_vector = (double*)mkl_malloc(Constants::DIM * sizeof(double), Constants::ALIGNMENT);
 	radial_vector[0] = Car1->Position_vec[0] - this->Position[0];
 	radial_vector[1] = Car1->Position_vec[1] - this->Position[1];
 	radial_vector[2] = 0;
 
-	double radius = cblas_dnrm2(Car1->DIM, radial_vector, 1);
+	double radius = cblas_dnrm2(Constants::DIM, radial_vector, 1);
 	if (abs(radius - this->Radius) > 0.01)
 		std::cout << "Warning! the initial position of the car is not on the trajectory provided in \
 					the circular path. \n The expected radius is " 
@@ -193,14 +192,14 @@ void Circular::update_initial_condition(Car<double>* Car1){
 
 	double inv_radius = 1. / radius;
 
-	cblas_dscal(Car1->DIM, inv_radius, radial_vector, incx);
+	cblas_dscal(Constants::DIM, inv_radius, radial_vector, incx);
 	MathLibrary::crossProduct_unitvecZ(radial_vector, tangential_dir);
-	double magnitude = cblas_ddot(Car1->DIM, Car1->Velocity_vec, incx, tangential_dir, incx);
-	cblas_dcopy(Car1->DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
-	cblas_dscal(Car1->DIM, magnitude, Car1->Velocity_vec, incx);
-	cblas_dscal(Car1->DIM, radius, radial_vector, incx);
+	double magnitude = cblas_ddot(Constants::DIM, Car1->Velocity_vec, incx, tangential_dir, incx);
+	cblas_dcopy(Constants::DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
+	cblas_dscal(Constants::DIM, magnitude, Car1->Velocity_vec, incx);
+	cblas_dscal(Constants::DIM, radius, radial_vector, incx);
 	MathLibrary::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
-	cblas_dscal(Car1->DIM, inv_radius * inv_radius, Car1->w_CG, 1);
+	cblas_dscal(Constants::DIM, inv_radius * inv_radius, Car1->w_CG, 1);
 
 	MKL_free(tangential_dir);
 	MKL_free(radial_vector);
@@ -213,9 +212,9 @@ void Circular::update_initial_condition(Car<double>* Car1){
 // ===============================   Fixed class implementation ======================= //
 Fixed::Fixed(const double& g, const Load_Params& load_param) {
 	Name = "fixed";
-	linear_idx = (size_t*)mkl_malloc(num_tyre * sizeof(size_t), alignment);
-	dx = (double*)mkl_malloc(sizeof(double) * num_tyre, alignment);
-	k_vec = (double*)mkl_malloc(sizeof(double) * num_tyre, alignment);
+	linear_idx = (size_t*)mkl_malloc(num_tyre * sizeof(size_t), Constants::ALIGNMENT);
+	dx = (double*)mkl_malloc(sizeof(double) * num_tyre, Constants::ALIGNMENT);
+	k_vec = (double*)mkl_malloc(sizeof(double) * num_tyre, Constants::ALIGNMENT);
 	gravity = g;
 };
 

@@ -3,7 +3,7 @@
 #include <iostream>
 #include "Load_module.h"
 #include "MathLibrary.h"
-#include "ReadXML.h"
+#include "Constants.h"
 
 #ifdef use_intel_mkl
 #include <mkl.h>
@@ -21,46 +21,46 @@ Load_module::Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params l
 	Car_obj = Car1;
 	
 	// auxiliary vectors
-	Normal_ext = (double*)mkl_malloc(sizeof(double) * Car1->DIM, alignment); // normal_force, with external forces
-	k_vec = (double*)mkl_malloc(sizeof(double) * (Car1->vec_DIM - 1), alignment); // k_vec; Car1->vec_DIM-1 = 8
+	Normal_ext = (double*)mkl_malloc(sizeof(double) * Constants::DIM, Constants::ALIGNMENT); // normal_force, with external forces
+	k_vec = (double*)mkl_malloc(sizeof(double) * (Constants::VEC_DIM - 1), Constants::ALIGNMENT); // k_vec; Constants::VEC_DIM-1 = 8
 
 	// read External_force
-	External_force = (double*)mkl_calloc((Car1->vec_DIM * Car1->DIM), sizeof(double), alignment); // 3 * 9 
+	External_force = (double*)mkl_calloc((Constants::VEC_DIM * Constants::DIM), sizeof(double), Constants::ALIGNMENT); // 3 * 9 
 	//set_External_force(load_param);
-	cblas_dcopy(Car1->DIM, load_param.external_force_body, 1, External_force, 1); // copy the center of mass position
+	cblas_dcopy(Constants::DIM, load_param.external_force_body, 1, External_force, 1); // copy the center of mass position
 	double* xml_start, * position_start;
 	xml_start = load_param.external_force_wheel + 2 * 3;
 	position_start = External_force + 3;
-	cblas_dcopy(Car1->DIM, xml_start, 1, position_start, 1);
+	cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 	// W2 = W_fr
 	xml_start = load_param.external_force_wheel + 3 * 3;
 	position_start += 6; // skip 3 for tyre
-	cblas_dcopy(Car1->DIM, xml_start, 1, position_start, 1);
+	cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 	// W3 = W_rl
 	xml_start = load_param.external_force_wheel + 1 * 3;
 	position_start += 6; // skip 3 for tyre
-	cblas_dcopy(Car1->DIM, xml_start, 1, position_start, 1);
+	cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 	// W2 = W_rr
 	xml_start = load_param.external_force_wheel + 0 * 3;
 	position_start += 6; // skip 3 for tyre
-	cblas_dcopy(Car1->DIM, xml_start, 1, position_start, 1);
+	cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 
 	// T1 = T_fl
 	xml_start = load_param.external_force_tyre + 2 * 3;
 	position_start = External_force + 6; // skip 3 for center of mass and 3 for the wheel
-	cblas_dcopy(Car1->DIM, xml_start, 1, position_start, 1);
+	cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 	// T2 = T_fr
 	xml_start = load_param.external_force_tyre + 3 * 3;
 	position_start += 6; // skip 3 for the wheel
-	cblas_dcopy(Car1->DIM, xml_start, 1, position_start, 1);
+	cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 	// T3 = T_rl
 	xml_start = load_param.external_force_tyre + 1 * 3;
 	position_start += 6; // skip 3 for the wheel
-	cblas_dcopy(Car1->DIM, xml_start, 1, position_start, 1);
+	cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 	// T4 = T_rr
 	xml_start = load_param.external_force_tyre + 0 * 3;
 	position_start += 6; // skip 3 for the wheel
-	cblas_dcopy(Car1->DIM, xml_start, 1, position_start, 1);
+	cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 }
 
 Load_module::~Load_module() {
@@ -115,9 +115,9 @@ void Load_module::get_Profile(Profile* Profile_type) {
 }
 
 void Load_module::update_force(double time_t, double* F_vec, double* Delta_x_vec, double* Normal_ext) {
-	cblas_dscal(Car_obj->DIM*Car_obj->vec_DIM, 0.0, F_vec, 1);
-	cblas_dscal(Car_obj->DIM, 0.0, Normal_ext, 1);
-	cblas_dscal(2*Car_obj->num_tyre, 0.0, Delta_x_vec, 1);
+	cblas_dscal(Constants::DIM*Constants::VEC_DIM, 0.0, F_vec, 1);
+	cblas_dscal(Constants::DIM, 0.0, Normal_ext, 1);
+	cblas_dscal(2 * Constants::NUM_LEGS, 0.0, Delta_x_vec, 1);
 	Active_Profile->get_Profile_force_ALE(Car_obj, F_vec, Normal_ext);
 	/*
 	Modify the profile to know where the ground is and apply normal force accordingly

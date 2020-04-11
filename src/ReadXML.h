@@ -132,6 +132,6 @@ class ReadXML{
         \param parameters for global simulation parameters
         \return lookupStiffness class instance of the lookup handler
         */
-        void ReadLookupParameters(EVAAComputeStiffness** lookupStiffness, Simulation_Parameters & parameters);
+        void ReadLookupParameters(EVAAComputeStiffness* &lookupStiffness, Simulation_Parameters & parameters);
 };
 

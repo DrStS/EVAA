@@ -23,16 +23,15 @@
 * \date 6/13/2019
 **************************************************************************************************/
 #pragma once
+#include <chrono>
 #include <string>
 #include <mkl.h>
-#include <chrono>
-#include "MathLibrary.h"
-#include "ReadXML.h"
-#include "MBD_method.h"
-#include "ALE.h"
-#include "11DOF.h"
-#include "EVAAComputeStiffness.h"
 
+#include "11DOF.h"
+#include "ALE.h"
+#include "EVAAComputeStiffness.h"
+#include "MathLibrary.h"
+#include "MBD_method.h"
 
 
 /********//**
@@ -42,23 +41,21 @@ class EVAAComputeEngine {
 
 public:
 	/***********************************************************************************************
-	* \brief Constructor
+	* \brief Reads parameters from XML files.
 	* \param[in] file name of xml file to call singelton constructor of metadatabase
 	* \author Stefan Sicklinger
 	***********/
-	EVAAComputeEngine(std::string _xmlFileName);
-
-	EVAAComputeEngine(std::string xmlFileName, std::string loadxml);
+	EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName);
 	/***********************************************************************************************
 	* \brief Destructor
 	* \author Stefan Sicklinger
 	***********/
 	~EVAAComputeEngine();
 	/***********************************************************************************************
-	* \brief prepare compute engine
+	* \brief print info
 	* \author Stefan Sicklinger
 	***********/
-	void prepare(void);
+	void printInfo(void);
 	/***********************************************************************************************
 	* \brief compute engine
 	* \author Stefan Sicklinger
@@ -99,25 +96,14 @@ public:
 	*/
 	void computeALE(void);
 
-	void Car_test(void);
-
+	// just for testing purposes
 	void computeALEtest(void);
 
-	// MKL
-/*	void computeMKLNasa(void);
-	void computeMKLNasa_example(void);
-*/
-	/***********************************************************************************************
-	* \brief clean compute engine free memory
-	* \author Stefan Sicklinger
-	***********/
-	void clean(void);
-
 private:
-	std::string _xmlFileName;
+	std::string _xmlCarFileName;
 	std::string _xmlLoadFileName;
 	Simulation_Parameters _parameters;
-	Load_Params _load_module_parameter;
-	EVAAComputeStiffness* lookupStiffness;
+	Load_Params _loadModuleParameter;
+	EVAAComputeStiffness* _lookupStiffness;
 };
 
