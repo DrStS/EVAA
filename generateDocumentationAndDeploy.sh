@@ -18,7 +18,7 @@ __AUTHOR__="Felix Sievers"
 # - DOXYFILE            : The Doxygen configuration file.
 # - GH_REPO_NAME        : The name of the repository.
 # - GH_REPO_REF         : The GitHub reference to the repository.
-# - GH_REPO_TOKEN       : Secure token to the github repository.
+# - GITHUB_TOKEN       : Secure token to the github repository.
 #
 # For information on how to encrypt variables for Travis CI please go to
 # https://docs.travis-ci.com/user/environment-variables/#Encrypted-Variables
@@ -94,7 +94,7 @@ if [ -d "html" ] && [ -f "html/index.html" ]; then
     # Force push to the remote gh-pages branch.
     # The ouput is redirected to /dev/null to hide any sensitive credential data
     # that might otherwise be exposed.
-    git push --force "https://${GH_REPO_TOKEN}@${GH_REPO_REF}" > /dev/null 2>&1
+    git push --force "https://${GITHUB_TOKEN}@${GH_REPO_REF}" > /dev/null 2>&1
 else
     echo '' >&2
     echo 'Warning: No documentation (html) files have been found!' >&2
