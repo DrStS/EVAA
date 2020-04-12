@@ -59,7 +59,18 @@ git config user.email "travis@travis-ci.org"
 # stayed the same and will only update the changed files. So the gh-pages branch
 # can be safely cleaned except for the index.htl, and it is sure that everything pushed later is the new
 # documentation.
-rm -rf !(index.html|_config.yml)
+if [ -d "html" ]; then
+	rm -rf html
+fi
+if [ -d "latex" ]; then
+	rm -rf latex
+fi
+if [ -f .nojekyll ]; then
+	rm -f .nojekyll
+fi
+if [ -f doygen.log ]; then
+	rm -f doygen.log
+fi
 
 # Need to create a .nojekyll file to allow filenames starting with an underscore
 # to be seen on the gh-pages site. Therefore creating an empty .nojekyll file.
