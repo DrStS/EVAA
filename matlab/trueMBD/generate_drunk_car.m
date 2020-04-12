@@ -13,5 +13,4 @@ function [trajectory] = generate_drunk_car(amplitude, period, position, directio
     trajectory(1,:) = position(1) + x * direction(1) - path_deviation * direction(2);
     trajectory(2,:) = position(2);
     trajectory(3,:) = position(3) + x * direction(2) + path_deviation * direction(1);  
-    
 end

@@ -110,12 +110,12 @@ if generate_from_trajectoryXYZ
 %    v_init = 3;    
 %    amplitude = 2;
 %    period = 20;
+
 %    initial_position = [10; 40; 20];
 %    initial_direction = [1;-1];
 %    trajectoryXYZ = generate_drunk_car(amplitude, period, initial_position, initial_direction, delta_t, v_init, num_iter + 1);
-    
- 
-    acceleration = 0;
+
+acceleration = 0;
     v_init = 3;
     initial_position = [10; 40; 20];
     initial_direction = [-1;0];

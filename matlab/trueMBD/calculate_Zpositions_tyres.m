@@ -51,7 +51,6 @@ function [pt_Z] = calculate_Zpositions_tyres(pc, r, z_offset)
        dist_outside = sqrt(dist_vec(1) * dist_vec(1) + dist_vec(3) * dist_vec(3));
 
        pt_Z(i) = (dist_inside * pc(2, j-dir) + dist_outside * pc(2, j)) / (dist_inside + dist_outside) + z_offset;
-       
     end
 end
 
