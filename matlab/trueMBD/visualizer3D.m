@@ -1,10 +1,32 @@
-function [] = visualizer3D(y, delta_t)
-figure()
+function [] = visualizer3D(fig, y, traj_1, traj_2, delta_t, vel_norms)
+
+set(0,'CurrentFigure',fig)
+set(fig,'units','normalized','outerpos',[0 0 1 1.2]);
 grid on
 
 num_iter = size(y,1) - 1;
 
+z_offset_tyre = y(1,34);
+
 vis_step = 200*max(1, round(1e-3/delta_t)); % visualization step
+
+% axis handler
+% for option 2
+axis_update_step = 20 * vis_step;   
+
+% for option 3
+scale_factor = 0.8;
+fixed_range_x = 10 + scale_factor * vel_norms(1); 
+fixed_range_y = 10 + scale_factor * vel_norms(1);
+fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(1);
+mid_x = y(1,5);
+mid_y = y(1,7);
+min_x = mid_x - fixed_range_x / 2;
+max_x = mid_x + fixed_range_x / 2;
+min_y = mid_y - fixed_range_y / 2;
+max_y = mid_y + fixed_range_y / 2;
+global_min_z = min(min(traj_1(2,:)), min(traj_2(2,:)));
+
 
 for i = 1 : vis_step : num_iter   
     
@@ -29,12 +51,177 @@ for i = 1 : vis_step : num_iter
 
     
     %% plot
-    hold off
-    
+    set(0,'CurrentFigure',fig)
+    subplot(1,2,1)
     %car body
     plot3(pcc(1), pcc(2), pcc(3),'gx');
-    grid on
-    hold on
+     grid on
+     hold on
+    plot3(pc1(1), pc1(2), pc1(3),'gx');
+    plot3(pc2(1), pc2(2), pc2(3),'gx');
+    plot3(pc3(1), pc3(2), pc3(3),'gx');
+    plot3(pc4(1), pc4(2), pc4(3),'gx');
+    plot3(  [pc1(1), pcc(1), pc3(1), pc4(1), pcc(1), pc2(1), pc1(1), pc4(1)], ...
+            [pc1(2), pcc(2), pc3(2), pc4(2), pcc(2), pc2(2), pc1(2), pc4(2)], ...
+            [pc1(3), pcc(3), pc3(3), pc4(3), pcc(3), pc2(3), pc1(3), pc4(3)],'g');
+    plot3(  [pc2(1), pc3(1)], ...
+            [pc2(2), pc3(2)], ...
+            [pc2(3), pc3(3)],'g');
+
+    %legs
+    plot3(pw1(1), pw1(2), pw1(3),'ro');
+    plot3(pw2(1), pw2(2), pw2(3),'ro');
+    plot3(pw3(1), pw3(2), pw3(3),'ro');
+    plot3(pw4(1), pw4(2), pw4(3),'ro');
+
+    plot3(pt1(1), pt1(2), pt1(3),'ro');
+    plot3(pt2(1), pt2(2), pt2(3),'ro');
+    plot3(pt3(1), pt3(2), pt3(3),'ro');
+    plot3(pt4(1), pt4(2), pt4(3),'ro');
+
+    plot3(  [pc1(1), pw1(1), pt1(1)],...
+            [pc1(2), pw1(2), pt1(2)],...
+            [pc1(3), pw1(3), pt1(3)],'r');
+
+    plot3(  [pc2(1), pw2(1), pt2(1)],...
+            [pc2(2), pw2(2), pt2(2)],...
+            [pc2(3), pw2(3), pt2(3)],'r');
+
+    plot3(  [pc3(1), pw3(1), pt3(1)],...
+            [pc3(2), pw3(2), pt3(2)],...
+            [pc3(3), pw3(3), pt3(3)],'r');
+
+    plot3(  [pc4(1), pw4(1), pt4(1)],...
+            [pc4(2), pw4(2), pt4(2)],...
+            [pc4(3), pw4(3), pt4(3)],'r');
+
+        % road
+        plot3(traj_1(1,1:vis_step:num_iter),...
+              traj_1(3,1:vis_step:num_iter),...
+              traj_2(2,1:vis_step:num_iter), 'b')
+
+          plot3(traj_2(1,1:vis_step:num_iter),...
+              traj_2(3,1:vis_step:num_iter),...
+              traj_2(2,1:vis_step:num_iter), 'b')
+
+    xlabel('X')
+    ylabel('Y')
+    zlabel('Z')
+
+    
+    hold off
+
+    %% axis
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%% FIRST: fixed proportion, no axis update %%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     range_x = max(y(:,5)) - min(y(:,5)) + 5;
+%     range_y = max(y(:,7)) - min(y(:,7)) + 5;
+%     range = max(range_x, range_y);
+%     
+%     mid_x = (max(y(:,5)) + min(y(:,5))) / 2;
+%     mid_y = (max(y(:,7)) + min(y(:,7))) / 2;
+%     
+%     min_x = mid_x - range / 2;
+%     max_x = mid_x + range / 2;
+%     min_y = mid_y - range / 2;
+%     max_y = mid_y + range / 2;
+%     axis([min_x, max_x, min_y, max_y, -0.4, max(y(:,6))+0.5])
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%% SECOND: axis update every 20 plots %%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     lower_i = max(floor(i / axis_update_step) * axis_update_step, 1);
+%     upper_i = min(ceil(i / axis_update_step) * axis_update_step, num_iter);
+% 
+%     range_x = max(y(lower_i:upper_i, 5)) - min(y(lower_i:upper_i, 5)) + 5;
+%     range_y = max(y(lower_i:upper_i, 7)) - min(y(lower_i:upper_i, 7)) + 5;
+%     range = max(range_x, range_y);
+% 
+%     mid_x = (max(y(lower_i:upper_i,5)) + min(y(lower_i:upper_i,5))) / 2;
+%     mid_y = (max(y(lower_i:upper_i,7)) + min(y(lower_i:upper_i,7))) / 2;
+% 
+%     min_x = mid_x - range / 2;
+%     max_x = mid_x + range / 2;
+%     min_y = mid_y - range / 2;
+%     max_y = mid_y + range / 2;
+%     
+%     axis([min_x, max_x, min_y, max_y, -0.4, max(y(:,6))+0.5])
+
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%% THIRD: fixed proportion, update when necessary %%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    min_z = min(min(pt1(3), pt2(3)), min(pt3(3), pt4(3)));
+
+    if ( y(i, 5) + 2.5 > max_x ) 
+        % update x-axis
+        mid_x = y(i,5);
+        fixed_range_x = 10 + scale_factor * vel_norms(i); 
+        fixed_range_y = 10 + scale_factor * vel_norms(i);
+        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        
+        min_x = mid_x - 2.5;
+        max_x = min_x + fixed_range_x;
+        min_y = mid_y - fixed_range_y / 2;
+        max_y = mid_y + fixed_range_y / 2;
+    end
+    
+    if ( y(i, 5) - 2.5 < min_x )
+        % update x-axis
+        mid_x = y(i,5);
+        fixed_range_x = 10 + scale_factor * vel_norms(i); 
+        fixed_range_y = 10 + scale_factor * vel_norms(i);
+        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        
+        max_x = mid_x + 2.5;
+        min_x = max_x - fixed_range_x;
+        min_y = mid_y - fixed_range_y / 2;
+        max_y = mid_y + fixed_range_y / 2;
+    end
+    
+    if (y(i, 7) + 2.5 > max_y ) 
+        % update y-axis
+        mid_y = y(i,7);
+        fixed_range_x = 10 + scale_factor * vel_norms(i); 
+        fixed_range_y = 10 + scale_factor * vel_norms(i);
+        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        
+        min_x = mid_x - fixed_range_x / 2;
+        max_x = mid_x + fixed_range_x / 2;
+        min_y = mid_y - 2.5;
+        max_y = min_y + fixed_range_y;
+    end
+
+    if ( y(i, 7) - 2.5 < min_y )
+        % update y-axis
+        mid_y = y(i,7);
+        fixed_range_x = 10 + scale_factor * vel_norms(i); 
+        fixed_range_y = 10 + scale_factor * vel_norms(i);
+        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        
+        min_x = mid_x - fixed_range_x / 2;
+        max_x = mid_x + fixed_range_x / 2;
+        max_y = mid_y + 2.5;
+        min_y = max_y - fixed_range_y;
+    end
+    
+    axis_min_z = max(global_min_z, min(traj_1(2,i), traj_2(2,i)) - fixed_range_z);
+    axis([min_x, max_x, min_y, max_y, axis_min_z - 0.1, axis_min_z + fixed_range_z])
+
+    drawnow;
+    
+    
+    
+    
+    
+    
+    set(0,'CurrentFigure',fig)
+    subplot(1,2,2)
+    %car body
+    plot3(pcc(1), pcc(2), pcc(3),'gx');
+     grid on
+     hold on
     plot3(pc1(1), pc1(2), pc1(3),'gx');
     plot3(pc2(1), pc2(2), pc2(3),'gx');
     plot3(pc3(1), pc3(2), pc3(3),'gx');
@@ -74,20 +261,18 @@ for i = 1 : vis_step : num_iter
             [pc4(3), pw4(3), pt4(3)],'r');
  
     xlabel('X')
-    ylabel('Z')
-    zlabel('Y')
+    ylabel('Y')
+    zlabel('Z')
+
     
-%   axis([min(y(:,5))-2.5, max(y(:,5))+2.5,...
-%       min(y(:,7))-2.5, max(y(:,7))+2.5,...
-%       min(y(:,6))-2.5, max(y(:,6))+2.5])
+    hold off
 
-      axis([min(y(:,5))-2.5, max(y(:,5))+2.5,...
-       min(y(:,7))-2.5, max(y(:,7))+2.5,...
-       -0.4, max(y(:,6))+0.5])
+    axis([y(i,5) - 2.5, y(i,5) + 2.5, ...
+          y(i,7) - 2.5, y(i,7) + 2.5, ...
+          min_z, min_z + 1])
 
-   
-%    view(90,0)
-    drawnow;
+    
+    drawnow
         
 end
 end

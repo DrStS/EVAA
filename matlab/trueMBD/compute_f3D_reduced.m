@@ -1,4 +1,4 @@
-function f = compute_f3D_reduced(x_vector,t,aux_vals)
+function f = compute_f3D_reduced(x_vector,t,i,aux_vals)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%                 Setup                  %%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -183,12 +183,13 @@ function f = compute_f3D_reduced(x_vector,t,aux_vals)
     local_FT2 = FT(:,2);
     local_FT3 = FT(:,3);
     local_FT4 = FT(:,4);
+
     
     % road forces on the tyre
-    local_FR1 = aux_vals.FR1(t, pt1, pcc, vt1, vc, lower_force1 + lower_dampf1 + local_FT1 + lower_rot_force1);      %in global basis
-    local_FR2 = aux_vals.FR2(t, pt2, pcc, vt2, vc, lower_force2 + lower_dampf2 + local_FT2 + lower_rot_force2);   
-    local_FR3 = aux_vals.FR3(t, pt3, pcc, vt3, vc, lower_force3 + lower_dampf3 + local_FT3 + lower_rot_force3); 
-    local_FR4 = aux_vals.FR4(t, pt4, pcc, vt4, vc, lower_force4 + lower_dampf4 + local_FT4 + lower_rot_force4); 
+    local_FR1 = aux_vals.FR1(t, i, pt1, pcc, vt1, vc, lower_force1 + lower_dampf1 + local_FT1 + lower_rot_force1);      %in global basis
+    local_FR2 = aux_vals.FR2(t, i, pt2, pcc, vt2, vc, lower_force2 + lower_dampf2 + local_FT2 + lower_rot_force2);   
+    local_FR3 = aux_vals.FR3(t, i, pt3, pcc, vt3, vc, lower_force3 + lower_dampf3 + local_FT3 + lower_rot_force3); 
+    local_FR4 = aux_vals.FR4(t, i, pt4, pcc, vt4, vc, lower_force4 + lower_dampf4 + local_FT4 + lower_rot_force4); 
 
 
     %% get H=I*w
