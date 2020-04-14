@@ -88,7 +88,7 @@ private:
 		pos_buffer[2] = Position_vec[2] + u_current_linear[0];
 		angle_buffer[0] = angle_CG[1] + u_current_linear[1];
 		angle_buffer[1] = angle_CG[2] + u_current_linear[2];
-		angle_buffer[3] = 0;
+		angle_buffer[2] = 0;
 		
 		construct_corner(pos_buffer, Corners_init);
 		update_corners_11DOF(angle_buffer, Corners_rot, Corners_init, Corners_current);

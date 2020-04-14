@@ -60,10 +60,8 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName) {
 	reader.ReadParameters(_parameters);
 }
 
-EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxml) {
-	// Intialize XML metadatabase singelton
-	_xmlFileName = xmlFileName;
-	_xmlLoadFileName = loadxml;
+EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxml) :
+_xmlFileName(xmlFileName), _xmlLoadFileName(loadxml), lookupStiffness(nullptr){
 
 	std::ifstream f(xmlFileName.c_str());
 	// Consider replace if with assert
@@ -87,14 +85,12 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 	ReadXML reader(_xmlFileName, _xmlLoadFileName);
 	reader.ReadParameters(_parameters);
 	reader.ReadLoadParameters(_load_module_parameter);
-	reader.ReadLookupParameters(&lookupStiffness, _parameters);
+	reader.ReadLookupParameters(lookupStiffness, _parameters);
 }
 
 
-EVAAComputeEngine::~EVAAComputeEngine() {
-	if ((_parameters.interpolation) && (lookupStiffness != nullptr)) {
-		delete lookupStiffness;
-	}
+EVAAComputeEngine::~EVAAComputeEngine() { 
+	delete lookupStiffness;
 }
 
 void EVAAComputeEngine::prepare(void) {

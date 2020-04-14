@@ -184,7 +184,7 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 }
 
 
-void ReadXML::ReadLookupParameters(EVAAComputeStiffness** lookupStiffness, 
+void ReadXML::ReadLookupParameters(EVAAComputeStiffness* &lookupStiffness, 
                                    Simulation_Parameters & parameters) {
     if (_lookup_filename == "NO_FILE_SPECIFIED") return;
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
@@ -219,7 +219,7 @@ void ReadXML::ReadLookupParameters(EVAAComputeStiffness** lookupStiffness,
 		a[6] = k_body[1];
 		a[7] = k_tyre[3];
 
-        *lookupStiffness = new EVAAComputeStiffness(size, a, b, c, l_min, l_max, k, type, order);
+        lookupStiffness = new EVAAComputeStiffness(size, a, b, c, l_min, l_max, k, type, order);
 		parameters.interpolation = 1;  // to switch from constant to interpolation type
         delete[] a;
 		delete[] k_body;
