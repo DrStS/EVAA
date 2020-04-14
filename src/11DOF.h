@@ -17,7 +17,7 @@
 #include "car.h"
 
 template <typename T>
-class linear11dof {
+class linear11dof_parent {
 protected:
 	// main car object
 	Car<T>* car_;
@@ -34,7 +34,7 @@ protected:
 	T factor_h2;
 	T factor_h;
 	T h_;
-	
+
 	// DOF=11
 	size_t DOF;
 
@@ -45,12 +45,12 @@ protected:
 	T* u_n_p_1;
 
 	// solution in previous timestep
-	T* u_n_m_1; 
-	
+	T* u_n_m_1;
+
 	// solution in current timestep
 	T* u_n;
-	
-	T*A, * B;
+
+	T*A, *B;
 
 	size_t* tyre_index_set;
 
@@ -111,23 +111,54 @@ public:
 	/*
 	Constructor
 	*/
-	linear11dof(Car<T>* input_car){
+	linear11dof_parent(Car<T>* input_car) {
 		car_ = input_car;
 		alignment = (car_)->alignment;
 		DOF = car_->DOF;
 		mat_len = (DOF) * (DOF);
-		u_n_m_1 = (T*)mkl_malloc(DOF*sizeof(T), alignment); // velocity
+		u_n_m_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment); // velocity
 		u_n = (T*)mkl_malloc(DOF * sizeof(T), alignment); // position
 		u_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
 		A = (T*)mkl_malloc(mat_len * sizeof(T), alignment);
 		B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
-		
+
 	}
 
 	/*
 	Intializes the solution vector in the timestep -1 (before the simulation starts)
 	*/
-	void initialize_solver(T h) {
+	virtual void initialize_solver(T h)=0; 
+	/*
+	Performs one timestep of the 11DOF solver
+	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+	\return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+	*/
+	virtual void update_step(T* force, T* solution)=0; 
+	/*
+	Destructor
+	*/
+	virtual ~linear11dof_parent() {
+		mkl_free(A);
+		mkl_free(B);
+		mkl_free(u_n);
+		mkl_free(u_n_m_1);
+		mkl_free(u_n_p_1);
+	}
+};
+
+template <typename T>
+class linear11dof : public linear11dof_parent<T>{
+	friend class linear11dof_bdf2;
+public:
+	/*
+	Constructor
+	*/
+	linear11dof(Car<T>* input_car): linear11dof_parent<T>(input_car){}
+
+	/*
+	Intializes the solution vector in the timestep -1 (before the simulation starts)
+	*/
+	virtual void initialize_solver(T h) {
 		h_ = h;
 		factor_h2 = (1 / (h_ * h_));
 		factor_h = (1 / (h_));
@@ -150,13 +181,14 @@ public:
 	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
 	\return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
 	*/
-	void update_step(T* force, T* solution) {
+	virtual void update_step(T* force, T* solution) {
 		// construct A
 		cblas_dcopy(mat_len, car_->M_linear, 1, A, 1);
 		cblas_dscal(mat_len, factor_h2, A, 1);
 		cblas_daxpy(mat_len, factor_h, car_->D, 1, A, 1);
 		cblas_daxpy(mat_len, 1, car_->K, 1, A, 1);
 		cblas_dscal(DOF, -factor_h2, u_n_m_1, 1);
+		//MathLibrary::write_vector(force, 11);
 		//cblas_dscal(DOF, 0.0, force, 1);
 		MathLibrary::Solvers<T, linear11dof>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, DOF);
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
@@ -169,14 +201,109 @@ public:
 	/*
 	Destructor
 	*/
-	virtual ~linear11dof() {
-		mkl_free(A);
-		mkl_free(B);
-		mkl_free(u_n);
-		mkl_free(u_n_m_1);
-		mkl_free(u_n_p_1);
-	}
+	virtual ~linear11dof() {}
 };
+
+//template <typename T>
+//class linear11dof_bdf2 : public linear11dof_parent<T> {
+//protected:
+//	T* C, *D, *E;
+//	T* u_n_m_2, *u_n_m_3;
+//	size_t time_step_count;
+//
+//
+//public:
+//	/*
+//	Constructor
+//	*/
+//	linear11dof_bdf2(Car<T>* input_car) : linear11dof_parent<T>(input_car) {
+//		C = (T*)mkl_calloc(mat_len,  sizeof(T), alignment);
+//		D = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
+//		E = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
+//		u_n_m_2 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
+//		u_n_m_3 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
+//	}
+//
+//	/*
+//	Intializes the solution vector in the timestep -1 (before the simulation starts)
+//	*/
+//	virtual void initialize_solver(T h) {
+//		linear11dof::initialize_solver(h);
+//	}
+//
+//	void initialize_solver_bdf2(T h) {
+//		h_ = h;
+//		factor_h2 = (1 / (h_ * h_));
+//		factor_h = (1 / (h_));
+//
+//		// B = (6/(h*h))*M + (2/h)*D
+//		cblas_dscal(mat_len, 0.0, B, 1);
+//		cblas_daxpy(mat_len, 6 * factor_h2, car_->M_linear, 1, B, 1);
+//		cblas_daxpy(mat_len, 2 * factor_h, car_->D, 1, B, 1);
+//
+//		// C = (-11/2)*(1/(h*h))*M + (-1/(2*h))*D
+//		cblas_daxpy(mat_len, (-11.0/2.0) * factor_h2, car_->M_linear, 1, C, 1);
+//		cblas_daxpy(mat_len, (-1.0/2.0) * factor_h, car_->D, 1, C, 1);
+//
+//		// D = (2/(h*h))*M
+//		cblas_daxpy(mat_len, 2.0 * factor_h2, car_->M_linear, 1, D, 1);
+//
+//		// E = (-1/4)*(1/(h*h))*M
+//		cblas_daxpy(mat_len, (-1.0/4.0) * factor_h2, car_->M_linear, 1, E, 1);
+//
+//		cblas_dcopy(DOF, car_->u_prev_linear, 1, u_n, 1);
+//		cblas_dcopy(DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
+//
+//		cblas_dscal(DOF, -h_, u_n_m_1, 1);
+//		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
+//		time_step_count = 0;
+//
+//	}
+//
+//	void first_two_steps(T* force, T* solution) {
+//		
+//		if (time_step_count == 0) {
+//			cblas_dcopy(DOF, u_n_m_1, 1, u_n_m_2, 1);
+//			linear11dof::update_step(T* force, T* solution);
+//			time_step_count += 1;
+//		}
+//		else if (time_step_count == 1) {
+//			cblas_dcopy(DOF, u_n_m_2, 1, u_n_m_3, 1);
+//			cblas_dcopy(DOF, u_n_m_1, 1, u_n_m_2, 1);
+//			linear11dof::update_step(T* force, T* solution);
+//			time_step_count += 1;
+//		}
+//		
+//	}
+//
+//	/*
+//	Performs one timestep of the 11DOF solver
+//	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+//	\return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+//	*/
+//	virtual void update_step(T* force, T* solution) {
+//		// construct A
+//		cblas_dcopy(mat_len, car_->M_linear, 1, A, 1);
+//		cblas_dscal(mat_len, factor_h2, A, 1);
+//		cblas_daxpy(mat_len, factor_h, car_->D, 1, A, 1);
+//		cblas_daxpy(mat_len, 1, car_->K, 1, A, 1);
+//		cblas_dscal(DOF, -factor_h2, u_n_m_1, 1);
+//		//cblas_dscal(DOF, 0.0, force, 1);
+//		MathLibrary::Solvers<T, linear11dof>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, DOF);
+//		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
+//		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
+//		cblas_dcopy(DOF, u_n_p_1, 1, solution, 1);
+//		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_1
+//		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and u_n_p_1 point to u_n_m_1 now
+//
+//	}
+//	/*
+//	Destructor
+//	*/
+//	virtual ~linear11dof_bdf2() {}
+//};
+
+
 
 /*
 For testing purposes
@@ -238,25 +365,22 @@ public:
 		}
 		//cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
 		
-	
 	}
 
-	/*
-	Prints all positions and angles in the car object
-	*/
 	void print_final_results(T* sln) {
 
 		std::cout << "linear11DOF: orientation angles=\n\t[" << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
 		std::cout << "linear11DOF: car body position pc=\n\t[" << sln[0] << "]" << std::endl;
 		std::cout << "linear11DOF: rear-right wheel position pw1=\n\t[" << sln[9] << "]" << std::endl;
 		std::cout << "linear11DOF: rear-left wheel position pw2=\n\t[" << sln[7] << "]" << std::endl;
-		std::cout << "linear11DOF: front-left wheel position pw3=\n\t[" << sln[3]  << "]" << std::endl;
+		std::cout << "linear11DOF: front-left wheel position pw3=\n\t[" << sln[3] << "]" << std::endl;
 		std::cout << "linear11DOF: front-right wheel position pw4=\n\t[" << sln[5] << "]" << std::endl;
 		std::cout << "linear11DOF: rear-right tyre position pt1=\n\t[" << sln[10] << "]" << std::endl;
 		std::cout << "linear11DOF: rear-left tyre position pt2=\n\t[" << sln[8] << "]" << std::endl;
-		std::cout << "linear11DOF: front-left tyre position pt3=\n\t[" << sln[4] <<  "]" << std::endl;
+		std::cout << "linear11DOF: front-left tyre position pt3=\n\t[" << sln[4] << "]" << std::endl;
 		std::cout << "linear11DOF: front-right tyre position pt4=\n\t[" << sln[6] << "]" << std::endl;
 	}
+
 
 	virtual ~linear11dof_full() {
 		mkl_free(u_sol);

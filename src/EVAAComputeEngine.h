@@ -102,7 +102,8 @@ public:
 	void Car_test(void);
 
 	void computeALEtest(void);
-
+	void compare_ALE_MBD(void);
+	void write_matrix(double* T, std::string fname, size_t rows, size_t cols);
 	// MKL
 /*	void computeMKLNasa(void);
 	void computeMKLNasa_example(void);

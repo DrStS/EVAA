@@ -131,13 +131,8 @@ public:
 		torque[2] = new_torque[2]; // z - component
 
 	}
-
-
-	/*
-	Executes the time iteration of the ALE solvers, switches from global position update to solving of the linear 11DOF system
-	*/
-	void solve(T* sol_vect) {
-
+	void solve(T* sol_vect, T* u_sol) {
+	
 		//initialize solution vector
 		int sol_size = (floor(tend_ / h_) + 1);
 		int force_dimensions = Car_obj->DIM * Car_obj->vec_DIM;
@@ -147,7 +142,6 @@ public:
 
 		// allocate memory
 		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
-		u_sol = (T*)mkl_calloc(sol_size * (Car_obj->vec_DIM * Car_obj->DIM), sizeof(T), alignment);
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
 		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), alignment);
 		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), alignment);
@@ -155,16 +149,16 @@ public:
 		new_centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), alignment);  // this was 2 dimensional allocation and update force updates 3 dimension on this
 		k_vect = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
 		Delta_x_vec = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
-		
+
 		torque = new T[3];
 		new_torque = new T[3];
-		
+
 		// calculate characteristics of the whole car
 		calculate_global_inertia_Z();
 		global_mass = Car_obj->get_global_mass();
 		// start time iteration
 		T t = h_;
-		
+
 		// initialize the linear solver
 		linear11dof_obj->initialize_solver(h_);
 		T* solution_vect;
@@ -179,38 +173,52 @@ public:
 			Load_module_obj->update_torque(t, torque, Delta_x_vec);
 			// convert centrifugal force to centripetal (only for x, y direction)
 			cblas_dscal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
-
+			if (iter == 100)
+			MathLibrary::write_vector(centripetal_force, centripetal_force_dimensions);
 			global_frame_solver(t);
 
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
 
 			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
-			Car_obj->update_lengths_11DOF();
+			//Car_obj->update_lengths_11DOF();
 			if (params.interpolation) {
 				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
 			solution_vect = u_sol + iter * (Car_obj->vec_DIM * Car_obj->DIM);
 			Car_obj->populate_results(Car_obj->Position_vec_xy, Car_obj->u_current_linear, solution_vect);
-			
+
 			t += h_;
 			iter++;
-			
+
 		}
 
 		cblas_dcopy((Car_obj->vec_DIM * Car_obj->DIM), u_sol + (iter - 1) * (Car_obj->vec_DIM * Car_obj->DIM), 1, sol_vect, 1);
 		Car_obj->combine_results();
 
 		MKL_free(time_vec);
-		MKL_free(u_sol);
+		
 		MKL_free(force_vector);
 		MKL_free(centripetal_force);
 		MKL_free(new_centripetal_force);
 		MKL_free(Delta_x_vec);
-		
+
 		delete[] torque;
 		delete[] new_torque;
+	
+	}
+
+
+
+	/*
+	Executes the time iteration of the ALE solvers, switches from global position update to solving of the linear 11DOF system
+	*/
+	void solve(T* sol_vect) {
+		int sol_size = (floor(tend_ / h_) + 1);
+		u_sol = (T*)mkl_calloc(sol_size * (Car_obj->vec_DIM * Car_obj->DIM), sizeof(T), alignment);
+		solve(sol_vect, u_sol);
+		MKL_free(u_sol);
 	}
 
 

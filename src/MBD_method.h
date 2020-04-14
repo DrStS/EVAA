@@ -1658,13 +1658,7 @@ public:
 
 	}
 
-	/*
-	Initializes the time iteration and handles the numerical scheme
-	*/
-	void solve(T* solution_vector) {
-		// From the formulation we have 61 dimensions in the solution vector
-		size_t solution_size = (this->num_iter + 1) * this->solution_dim;
-		T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), this->alignment);
+	void solve(T* solution_vector, T* complete_vector) {
 		x_vector = (T*)mkl_calloc(solution_dim, sizeof(T), this->alignment);
 		MathLibrary::get_tilda<T>(r1, r1_tilda);
 		MathLibrary::get_tilda<T>(r2, r2_tilda);
@@ -1732,7 +1726,7 @@ public:
 		get_initial_length(start_orient, r1, r2, r3, r4, pcc, initial_upper_spring_length, initial_lower_spring_length, pw1, pw2, pw3, pw4, pt1, pt2, pt3, pt4);
 
 		// overwrites the initial velocity values
-		if (boundary_conditions == CIRCULAR) 
+		if (boundary_conditions == CIRCULAR)
 			circular_path_initialization(vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, initial_angular_velocity, pcc, pt1, pt2, pt3, pt4, radius_circular_path);
 
 		i = 0;
@@ -1850,8 +1844,20 @@ public:
 		T* start = complete_vector + (this->num_iter) * this->solution_dim;
 		cblas_dcopy(this->solution_dim, start, 1, solution_vector, 1);
 		//	std::cout << "Solution copied!\n" << std::endl;
-		mkl_free(complete_vector);
+
 		mkl_free(x_vector);
+	}
+
+	/*
+	Initializes the time iteration and handles the numerical scheme
+	*/
+	void solve(T* solution_vector) {
+		// From the formulation we have 61 dimensions in the solution vector
+		size_t solution_size = (this->num_iter + 1) * this->solution_dim;
+		T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), this->alignment);
+		solve(solution_vector, complete_vector);
+		mkl_free(complete_vector);
+		
 	}
 
 	/*
@@ -1884,7 +1890,7 @@ public:
 		std::cout << "MBD: front-left tyre velocity vt3=\n\t[" << sln[24] << "\n\t " << sln[26] << "\n\t " << sln[25] << "]" << std::endl;
 		std::cout << "MBD: front-right tyre velocity vt4=\n\t[" << sln[27] << "\n\t " << sln[29] << "\n\t " << sln[28] << "]" << std::endl;
 		std::cout << "MBD: orientation q=\n\t[" << sln[30] << "\n\t " << sln[31] << "\n\t " << sln[32] << "\n\t " << sln[33] << "]" << std::endl;
-		std::cout << "MBD: car body position pc=\n\t[" << sln[34] << "\n\t " << sln[5] << "\n\t " << sln[4] << "]" << std::endl;
+		std::cout << "MBD: car body position pc=\n\t[" << sln[34] << "\n\t " << sln[36] << "\n\t " << sln[35] << "]" << std::endl;
 		std::cout << "MBD: rear-right wheel position pw1=\n\t[" << sln[37] << "\n\t " << sln[39] << "\n\t " << sln[38] << "]" << std::endl;
 		std::cout << "MBD: rear-left wheel position pw2=\n\t[" << sln[40] << "\n\t " << sln[42] << "\n\t " << sln[41] << "]" << std::endl;
 		std::cout << "MBD: front-left wheel position pw3=\n\t[" << sln[43] << "\n\t " << sln[45] << "\n\t " << sln[44] << "]" << std::endl;
