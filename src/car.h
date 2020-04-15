@@ -88,7 +88,7 @@ private:
 		pos_buffer[2] = Position_vec[2] + u_current_linear[0];
 		angle_buffer[0] = angle_CG[1] + u_current_linear[1];
 		angle_buffer[1] = angle_CG[2] + u_current_linear[2];
-		angle_buffer[3] = 0;
+		angle_buffer[2] = 0;
 		
 		construct_corner(pos_buffer, Corners_init);
 		update_corners_11DOF(angle_buffer, Corners_rot, Corners_init, Corners_current);
@@ -899,10 +899,10 @@ public:
 		change_vect[0] = current_ALE_vect[0] - global_vect[0];
 		change_vect[1] = current_ALE_vect[1] - global_vect[1];
 	}
-	void get_vel_pos_change(T* velocity_change, T* position_change, T* angle_change) {
-		get_ALE_change(Position_vec_xy, Position_vec_prev_xy, position_change);
-		get_ALE_change(Velocity_vec_xy, Velocity_vec_prev_xy, velocity_change);
-	}
+	//void get_vel_pos_change(T* velocity_change, T* position_change, T* angle_change) {
+	//	get_ALE_change(Position_vec_xy, Position_vec_prev_xy, position_change);
+	//	get_ALE_change(Velocity_vec_xy, Velocity_vec_prev_xy, velocity_change);
+	//}
 	void apply_ALE_change() {
 		/*Now both vector are at current state. swap pointer and CG location in new previous will be updated and following will be obselete which */
 
