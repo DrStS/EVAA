@@ -4,8 +4,8 @@ clear; clc; close all;
 a = 1;
 b = 2;
 c = 3;
-f1 = -1;
-f2 = -1;
+f1 = 1;
+f2 = 0;
 rhs = [f1;f2];
 L1 = 1;
 L2 = 1;
@@ -16,30 +16,43 @@ x_init = [0; 0];
 err = [];
 
 num_iter = 1000;
-delta_t = 5e-4; 
+delta_t = 1e-1; 
 t = 0:delta_t:num_iter*delta_t;
 
 m_1 = 1;
 m_2 = 1;
 M = diag([m_1,m_2]);
-M_div_h2 = M/delta_t^2;
+M_div_h2 = M/(delta_t^2);
 
 %%
 % evaluation density
-dl = 0.1;
+% evaluation density
+dl = 0.01;
+
 % calc min and max length to evaluate (just for now)
-l_min = min(0.3 * L1,0.3 * L2);
-l_max = max(1.7 * L1,1.7 * L2);
+l_min = -1;
+l_max = 3;
 % grid size
 k_d = round((l_max - l_min)/dl);
 % grid value allocation
 k_grid = zeros(k_d+1,1);
 % k response function
 k = @(l)(c*l*l + b*l + a);
-% fill in grid values
+% store x values
+x = zeros(k_d+1,1);
+% fill in grid values with chebyshev
+% for i = 0:k_d-1
+%     x(i+1) = (1+cos((2*i+1)/(2*k_d)*pi))/2*(l_max-l_min)+l_min;
+%     k_grid(i+1)= k(x(i+1));
+% end
 for i = 0:k_d
-        k_grid(i+1)= k(l_min+i*dl);
+    x(i+1) = i*dl+l_min;
+    k_grid(i+1)= k(x(i+1));
 end
+% grid spline
+k_spline = spline(x,k_grid);
+% grid derivative spline
+k_der = fnder(k_spline,1);
 
 %% init declare variables
 
@@ -53,7 +66,7 @@ p1 = k1*u1 - k2*u2;
 p2 = -k1*u1+(k1+k2)*u2;
 
 %% Jacobian
-syms K k11 k12 k21 k22 K_symb
+syms K k11 k12 k21 k22 K_symb d1 d2
 % actuall derivative but sym cant be used as we get part of derivative out
 % my function
 %k11 = diff(p1, u1)+u1*deriv_dk(l1);
@@ -65,70 +78,76 @@ k12 = diff(p1, u2);
 k21 = diff(p2, u1);
 k22 = diff(p2, u2);
 
-K_symb_1 = [k11, k12; 
+K_symb = [k11, k12; 
     k21, k22];
+
+dKdx_x_symb = [d1*(u1 - u2)	d1*(-u1 + u2);...
+    d1*(-u1 + u2)	d1*(u1 - u2) + d2*u2];
 
 f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
 
  
 %% Newton iteration
+%init variables for symb calc
 u1 = 0;
 u2 = 0;
 u = [u1; u2];
 Delta = [u1; u2];
 
 y = zeros(2, length(t));
-err = zeros(1,length(t));
-y(:,1) = u;
+err_arr = zeros(1,length(t));
+
+%init sol vecotr
+y(:,1) = u - 2 * delta_t;
 y(:,2) = u;
+iterations = [];
 
 % inital values
 l_1 = eval(l1);
 l_2 = eval(l2);
-k1 = interpolate(l_1,l_min,dl,k_grid);
-k2 = interpolate(l_2,l_min,dl,k_grid);
+k1 = fnval(k_spline,l_1);
+k2 = fnval(k_spline,l_2);
 
 for i = 2: length(t)-1
+    i
     y(:,i+1) = y(:,i);
-    K = eval(K_symb_1)+[y(1,i+1),-y(1,i+1);y(2,i+1)-y(1,i+1),y(1,i+1)-y(2,i+1)]*deriv_dk(l_1,l_min,dl,k_grid)+ [0 -y(2,i+1); 0 y(2,i+1)]*deriv_dk(l_2,l_min,dl,k_grid);
+    K = eval(K_symb);
     r = f_newton(y(:,i+1), y(:,i), y(:,i-1),K);
     
     iter = 0;
+    err = [];
     while 1
-        iter = iter + 1;
-        J = M_div_h2 + K;
-        Delta = -J\r;
-        y(:,i+1) = Delta + y(:,i+1);
-        % update values
-        l_1 = eval(l1);
-        l_2 = eval(l2);
-        k1 = interpolate(l_1,l_min,dl,k_grid);
-        k2 = interpolate(l_2,l_min,dl,k_grid);
-        K = eval(K_symb_1)+[y(1,i+1),-y(1,i+1);y(2,i+1)-y(1,i+1),y(1,i+1)-y(2,i+1)]*deriv_dk(l_1,l_min,dl,k_grid)+ [0 -y(2,i+1); 0 y(2,i+1)]*deriv_dk(l_2,l_min,dl,k_grid);
-        r = f_newton(y(:,i+1), y(:,i), y(:,i-1),K);
-        err(i) = norm(r);
-        if (err(i) < tol || iter == 10)
+       iter = iter + 1;
+       d1 = fnval(k_der, l_1);
+       d2 = fnval(k_der, l_2);
+       J = eval(dKdx_x_symb);
+       J = M_div_h2 + K + J;
+       Delta = -J\r;
+       y(:,i+1) = Delta + y(:,i+1);
+       % update values
+       u1 = y(1,i+1);
+       u2 = y(2,i+1);
+       l_1 = eval(l1);
+       l_2 = eval(l2);
+       k1 = fnval(k_spline,l_1);
+       k2 = fnval(k_spline,l_2);
+       K = eval(K_symb);
+       r = f_newton(y(:,i+1), y(:,i), y(:,i-1),K);
+       err = [err, norm(r)];
+       if (err(iter) < tol)
+           err_arr(i) = norm(r);
             break;
-        end
+       end
     end
+    figure;
+    semilogy(err);
+    order = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))))
+    iterations = [iterations, iter];
 end
-
-plot(t,y);
-plot(err);
-
-% interpolates k_grid to a certain value l
-function k = interpolate(l,l_min,dl,k_grid)
-    i_low = floor((l-l_min)/dl);
-    low = k_grid(i_low);
-    top = k_grid(ceil((l-l_min)/dl));
-
-    pr = (l-l_min-dl*i_low)/dl; % percentage from left to right
-    k = (1-pr)*low+pr*top;
-end
-
-% calculates the derivative at a certain position of the grid
-function dk = deriv_dk(l,l_min,dl,k_grid)
-    low = k_grid(floor((l-l_min)/dl));
-    top = k_grid(ceil((l-l_min)/dl));
-    dk = (top-low)/dl;
-end
+figure;
+title('newton iterations');
+plot(iterations);
+%plot(t,y);
+figure;
+title('error');
+semilogy(err_arr);

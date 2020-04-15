@@ -87,7 +87,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxm
 	ReadXML reader(_xmlFileName, _xmlLoadFileName);
 	reader.ReadParameters(_parameters);
 	reader.ReadLoadParameters(_load_module_parameter);
-	reader.ReadLookupParameters(&lookupStiffness, _parameters);
+	reader.ReadLookupParameters(&lookupStiffness, &lookupDamping, _parameters);
 }
 
 

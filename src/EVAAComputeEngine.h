@@ -31,7 +31,10 @@
 #include "MBD_method.h"
 #include "ALE.h"
 #include "11DOF.h"
-#include "EVAAComputeStiffness.h"
+#ifndef U_Lookup
+#define U_Lookup
+#include "EVAALookup.h"
+#endif
 
 
 
@@ -118,6 +121,7 @@ private:
 	std::string _xmlLoadFileName;
 	Simulation_Parameters _parameters;
 	Load_Params _load_module_parameter;
-	EVAAComputeStiffness* lookupStiffness;
+	EVAALookup* lookupStiffness;
+	EVAALookup* lookupDamping;
 };
 

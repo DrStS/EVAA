@@ -19,7 +19,7 @@ private:
 	Car<T>* Car_obj; // suppose Interpolation in the Car
 	Load_module* Load_module_obj; // needs Profile and Car
 	linear11dof<T>* linear11dof_obj;
-	EVAAComputeStiffness* interpolator;// interpolator member of EVAA
+	EVAALookup* interpolator;// interpolator member of EVAA
 	Simulation_Parameters params;
 	Profile* profile_obj;
 
@@ -76,7 +76,7 @@ public:
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
 		linear11dof<T>* linear11dof_val,
-		EVAAComputeStiffness* lookup_table,
+		EVAALookup* lookup_table,
 		Simulation_Parameters &params_val) {
 
 		Car_obj = Car_obj_val;
@@ -188,7 +188,7 @@ public:
 			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
 			Car_obj->update_lengths_11DOF();
 			if (params.interpolation) {
-				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
+				interpolator->getInterpolation(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
 			solution_vect = u_sol + iter * (Car_obj->vec_DIM * Car_obj->DIM);

@@ -1,5 +1,9 @@
+/***********************************************************************************************//**
+* \file 11DOF.h
+* This file holds the function declaration and definitions of the linear11dof and the linear11dof_full class.
+* \date 04/14/2020
+**************************************************************************************************/
 #pragma once
-
 #define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
 #include <crtdbg.h>
@@ -16,46 +20,39 @@
 #include "MathLibrary.h"
 #include "car.h"
 
+/**
+* \brief class to compute one timestep of the linear 11 dof system in small angle approximation
+*/
 template <typename T>
 class linear11dof {
 protected:
 	// main car object
-	Car<T>* car_;
+	Car<T>* car_;												/**< pointer to car instance with all important car parameter */
 
 	// define constants
-	size_t alignment;
-	const int dim = 3;
-	const size_t num_tyre = 4;
-	const int dim_x_dim = dim * dim;
-	const int num_wheels_x_dim = num_tyre * dim;
-	const int DOF_diag = 9; // the diagonal elements from A
+	size_t alignment;											/**< alignment for mkl malloc */
+	const int dim = 3;											/**< dimension of solution space */
+	const size_t num_tyre = 4;									/**< number of tyres */
+	const int dim_x_dim = dim * dim;							/**< number of elements of a matrix in solution space */
+	const int num_wheels_x_dim = num_tyre * dim;				/**< number of elements of a matrix regarding the wheels */
+	const int DOF_diag = 9;										/**< number of diagonal elements of A */
 
 	// time step related
-	T factor_h2;
-	T factor_h;
-	T h_;
+	T factor_h2;												/**< solution in next timestep */
+	T factor_h;													/**< solution in next timestep */
+	T h_;														/**< solution in next timestep */
+	size_t DOF;													/**< degrees of freedom; DOF=11 */
+	size_t mat_len;												/**< number of elements in an 11 dof matrix; mat_len=121 */
+	T* u_n_p_1;													/**< solution in next timestep */
+	T* u_n_m_1;													/**<  solution in previous timestep */
+	T* u_n;														/**< solution in current timestep */
 
-	// DOF=11
-	size_t DOF;
-
-	// mat_len=121
-	size_t mat_len;
-
-	// solution in next timestep
-	T* u_n_p_1;
-
-	// solution in previous timestep
-	T* u_n_m_1;
-
-	// solution in current timestep
-	T* u_n;
-
-	T* A, * B;
+	T* A, * B;													/**< pointer to matrices used for the backward euler */
 
 	size_t* tyre_index_set;
 
-	/*
-	Debug only: Checks whether the matrix is SPD
+	/**
+	* \brief Debug only: Checks whether the matrix is SPD
 	*/
 	void check_status(lapack_int status) {
 		if (status == 1) {
@@ -67,10 +64,11 @@ protected:
 			exit(6);
 		}
 	}
-	/*
-	Debug only: Outputs any vector
-	\param vect to be printed
-	\param count its length
+	/**
+	* \brief Debug only: Outputs any vector
+	*
+	* \param vect to be printed
+	* \param count its length
 	*/
 	void write_vector(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
@@ -82,10 +80,11 @@ protected:
 		}
 	}
 
-	/*
-	Debug only: Outputs any square matrix
-	\param vect to be printed
-	\param count its size is count x count
+	/**
+	* \brief Debug only: Outputs any square matrix
+	*
+	* \param vect to be printed
+	* \param count its size is count x count
 	*/
 	void write_matrix(T* vect, int count) {
 		std::cout << "Debug mode print" << std::endl;
@@ -231,7 +230,7 @@ public:
 		while (std::abs(t - (tend_ + h_)) > eps) {
 			if (interpolation_enabled) {
 				(car_)->update_lengths_11DOF();
-				(car_)->lookupStiffness->getStiffness((car_)->current_spring_length, (car_)->k_vec);
+				(car_)->lookupStiffness->getInterpolation((car_)->current_spring_length, (car_)->k_vec);
 				(car_)->update_K((car_)->k_vec);
 			}
 			//solution_vect = u_sol + iter * (DOF);

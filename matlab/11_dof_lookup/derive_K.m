@@ -1,25 +1,25 @@
 clear; clc; close all;
 %% make lookup
-%a = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3];
-a = [19; 26; 19; 26; 13; 26; 13; 26];
+a = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3];
+%a = [19; 26; 19; 26; 13; 26; 13; 26];
 b = 1.59;
 c = 1.2;
 
 global L1 L2 L3 L4 L5 L6 L7 L8
-L1 = 5;
-L2 = 5;
-L3 = 5;
-L4 = 5;
-L5 = 5;
-L6 = 5;
-L7 = 5;
-L8 = 5;
+L1 = 0;
+L2 = 0;
+L3 = 0;
+L4 = 0;
+L5 = 0;
+L6 = 0;
+L7 = 0;
+L8 = 0;
 
 %%
 global k_grid size_grid l_min l_max dl;
 % calc min and max length to evaluate (just for now)
-l_min = 4.5;
-l_max = 7;
+l_min = -1;
+l_max = 1;
 % grid size
 size_grid = 1000;
 % grid value allocation
@@ -96,12 +96,12 @@ dKcols_dk = [dK1_dk, dK2_dk, dK3_dk, dK4_dk, dK5_dk, dK6_dk, dK7_dk, dK8_dk, dK9
 
 %% parameters
 % time
-num_iter = 20;
+num_iter = 1000;
 delta_t = 1e-1; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
 
-tol = 1e-12;
+tol = 1e-9;
 y = zeros(11, length(t));
 order = zeros(length(t),1);
 err_arr = zeros(length(t),1);
@@ -165,28 +165,35 @@ for i = 1: length(t)-1
         K = get_K(u_n_p_1);
         r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
         err(iter) = norm(r);
-        if (iter == 10)
+        if (iter == 20)
             d = d + 1;
         end
-        if (err(iter) < tol || iter == 10)
+        if (err(iter) < tol || iter == 20)
             err_arr(i) = norm(r);
             break;
         end
     end
     
-    if (iter >3)
-        order(i) = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))));
-    end
+    %if (iter >3)
+        %order(i) = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))));
+    %end
+    order(i) = iter;
     
     u_n_m_1 = u_n;
     u_n = u_n_p_1;
     y(:,i+1) = u_n_p_1;
 end
 d
-order
+%order
 %plot(t,y(1,:));
-plot(t,y(4:11,:))
-%plot(err_arr);
+%plot(t,y(4:11,:))
+figure;
+plot(order);
+title('newton iterations');
+legend()
+figure;
+plot(err_arr);
+title('error');
 legend();
 
 function K = get_K(x)

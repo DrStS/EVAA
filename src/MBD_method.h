@@ -127,7 +127,7 @@ private:
 
 
 	////////////////////////// Lookup table ///////////////////////////////////////////
-	EVAAComputeStiffness* lookupStiffness;
+	EVAALookup* lookupStiffness;
 
 	/*
 	Calculate the positions of the tyres and wheels according to the initial orientation of the car
@@ -297,7 +297,7 @@ public:
 	/*
 	Constructor
 	*/
-	MBD_method(const Simulation_Parameters& params, const Load_Params& load_params, EVAAComputeStiffness* interpolator) {
+	MBD_method(const Simulation_Parameters& params, const Load_Params& load_params, EVAALookup* interpolator) {
 
 		////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
 		h = params.timestep;
@@ -1009,7 +1009,7 @@ public:
 			current_spring_lengths[6] = norm_r_up1;
 			current_spring_lengths[7] = norm_r_low1;
 			// calculate the new stiffnesses
-			lookupStiffness->getStiffness(current_spring_lengths, stiffness_vector);
+			lookupStiffness->getInterpolation(current_spring_lengths, stiffness_vector);
 
 			// overwrite stiffness values
 			upper_spring_stiffness[2] = stiffness_vector[0];

@@ -1,48 +1,56 @@
-/*  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
-*
-*  All rights reserved.
-*
-*  This file is part of EVAA.
-*
-*  EVAA is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  (at your option) any later version.
-*
-*  EVAA is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with EVAA.  If not, see http://www.gnu.org/licenses/.
-*/
+/***********************************************************************************************//**
+* \file EVAALookup.cpp
+* This file holds the function definitions of EVAALookup and EVAAComputeGrid.
+* \date 04/14/2020
+**************************************************************************************************/
+
 #pragma once
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
-#ifndef U_COMPSTIFF
-#define U_COMPSTIFF
-#include "EVAAComputeStiffness.h"
+#ifndef U_Lookup
+#define U_Lookup
+#include "EVAALookup.h"
 #endif
-
+/**
+* function returns a readable output for mkl errors
+*/
 void CheckDfError(int num);
 
 /*************************************************/
 /*			Functions for building a grid        */
 /*************************************************/
-double EVAAComputeGrid::responseFunction(const double a, const double b, const double c, const double length) {
+/**
+* \brief Function to feed values to the grid, used for the lookup table
+*
+* \return double y
+*/
+double EVAAComputeGrid::responseFunction(
+	const double a /**< [in] coefficient for const part */,
+	const double b /**< [in] coefficient for linear part*/,
+	const double c /**< [in] coefficient for quadratic part */,
+	const double length /**< [in] docs for input parameter v. */
+) {
 	return c * length * length + b * length + a;
-	// return a;
 }
 
-/*
-* build equidistant grid and the corresponding axis
+/**
+* \brief build equidistant grid and the corresponding axis
 */
-void EVAAComputeGrid::buildLinearGrid(double* grid, double* axis, int size, double l_min, double l_max, double* a, double b, double c, int k) {
-	double density = (l_max - l_min) / (size-1);
+void EVAAComputeGrid::buildLinearGrid(
+	double* grid /**< [out] pointer to grid of size size*k to store y values */,
+	double* axis /**< [out] pointer to axis of size size to write x value */,
+	int size /**< [in] size of one grid */,
+	double l_min /**< [in] min length of spring in lookup */,
+	double l_max /**< [in] max length of spring in lookup */,
+	double* a /**< [in] pointer to array of size k with constant coefficient for each spring */,
+	double b /**< [in] coefficient for linear part */,
+	double c /**< [in] coefficient for quadratic part */,
+	int k /**< [in] number of springs */
+) {
+	double density = (l_max - l_min) / (size - 1);
 	for (auto i = 0; i < size; i++) {
 		axis[i] = l_min + i * density;
 	}
@@ -53,10 +61,20 @@ void EVAAComputeGrid::buildLinearGrid(double* grid, double* axis, int size, doub
 	}
 }
 
-/*
-* build Chebyshev grid and the corresponding axis
+/**
+* \brief build Chebyshev grid and the corresponding axis
 */
-void EVAAComputeGrid::buildChebyshevGrid(double* grid, double* axis, int size, double l_min, double l_max, double* a, double b, double c, int k) {
+void EVAAComputeGrid::buildChebyshevGrid(
+	double* grid /**< [out] pointer to grid of size size*k to store y values */,
+	double* axis /**< [out] pointer to axis of size size to write x value */,
+	int size /**< [in] size of one grid */,
+	double l_min /**< [in] min length of spring in lookup */,
+	double l_max /**< [in] max length of spring in lookup */,
+	double* a /**< [in] pointer to array of size k with constant coefficient for each spring */,
+	double b /**< [in] coefficient for linear part */,
+	double c /**< [in] coefficient for quadratic part */,
+	int k /**< [in] number of springs */
+) {
 	for (auto i = 0; i < size; i++) {
 		axis[i] = (1 + cos((2 * i + 1) / (2 * size) * M_PI)) / 2 * (l_max - l_min) + l_min;
 	}
@@ -69,20 +87,25 @@ void EVAAComputeGrid::buildChebyshevGrid(double* grid, double* axis, int size, d
 
 
 /*************************************************/
-/*	Functions for EVAAComputeStiffness_Linear    */
+/*	Functions for EVAALookup    */
 /*************************************************/
-void EVAAComputeStiffness::getStiffness(double* length, double* stiffness) {
-	int err = 0;
-	MKL_INT ndorder = 1;                    // size of array describing derivative (dorder), which is definde two lines below
-	MKL_INT dorder[1] = { 1 }; // only the values are computed
+/**
+* \brief interpolates the ny = k grids ob the lookuptable
+* 
+* The lookup table has been generated in the initialisation of the object
+* this function uses the calculated coefficients to interpolate certain values
+*/
+void EVAALookup::getInterpolation(
+	double* length /**< [in] pointer to array of size k with lenght values of springs*/,
+	double* inter /**< [out] pointer to array of size k to store interpolation values*/
+) {
+	const MKL_INT ndorder = 1;						// size of array describing derivative (dorder), which is definde two lines below
+	const MKL_INT dorder[1] = { 1 };				// only the values are computed
 
 	for (auto i = 0; i < ny; i++) {
-		err = dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
+		dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
 			1, &length[i], DF_NO_HINT, ndorder,
-			dorder, datahint, &stiffness[i], rhint, 0);
-
-		CheckDfError(err);
-		CheckDfError(err);
+			dorder, datahint, &inter[i], rhint, 0);
 	}
 
 
@@ -90,27 +113,42 @@ void EVAAComputeStiffness::getStiffness(double* length, double* stiffness) {
 
 /*
 * \brief derivative from stifftness k after length
+*
+* The lookup table has been generated in the initialisation of the object
+* this function uses the calculated coefficients to interpolate certain values
 */
-void EVAAComputeStiffness::getDerivative(double* length, double* deriv) {
-	int err = 0;
-	MKL_INT ndorder = 2;                    // size of array describing derivative (dorder), which is definde two lines below
-	MKL_INT dorder[2] = { 0, 1 }; // only the derivative values are computed
+void EVAALookup::getDerivative(
+	double* length /**< [in] pointer to array of size k with lenght values of springs*/,
+	double* deriv /**< [out] pointer to array of size k to store values of the derivative*/
+) {
+	const MKL_INT ndorder = 2;						// size of array describing derivative (dorder), which is definde two lines below
+	const MKL_INT dorder[2] = { 0, 1 };				// only the derivative values are computed
 	for (auto i = 0; i < ny; i++) {
-		err = dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
+		dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
 			1, &length[i], DF_NO_HINT, ndorder,
 			dorder, datahint, &deriv[i], rhint, 0);
-		CheckDfError(err);
 	}
 }
 
-/*
+/**
+* \brief Constructor of lookup class
+*
 *	for linear interpolation:
 * 	type = DF_PP_DEFAULT, order = DF_PP_LINEAR
-*
 *	for spline interpolation:
 *	type = DF_PP_NATURAL, order = DF_PP_CUBIC
 */
-EVAAComputeStiffness::EVAAComputeStiffness(int size, double* a, double b, double c, double l_min, double l_max, int k, int type, int order) : nx(size), ny(k), sorder(order), stype(type) {
+EVAALookup::EVAALookup(
+	int size /**< [in] size of one grid */,
+	double* a /**< [in] pointer to array of size k with constant coefficient for each spring */,
+	double b /**< [in] coefficient for linear part of grid function */,
+	double c /**< [in] coefficient for quadratic part of grid function */,
+	double l_min /**< [in] min length of spring in lookup */,
+	double l_max  /**< [in] max length of spring in lookup */,
+	int k /**< [in] number of springs */,
+	int type /**< [in] int which corersponds to a certain type of interpolation */,
+	int order /**< [in] order of the interpolation: depends on type */
+) : nx(size), ny(k), sorder(order), stype(type) {
 	if (sorder == DF_PP_CUBIC) {
 		bc_type = DF_BC_FREE_END;
 	}
@@ -119,7 +157,7 @@ EVAAComputeStiffness::EVAAComputeStiffness(int size, double* a, double b, double
 	grid = (double*)mkl_calloc(nx * ny, sizeof(double), alignment);
 	axis = (double*)mkl_calloc(nx, sizeof(double), alignment);
 	scoeff = (double*)mkl_calloc(ny * (nx - 1) * sorder, sizeof(double), alignment);
-	
+
 	/* create grid */
 	EVAAComputeGrid::buildLinearGrid(grid, axis, nx, l_min, l_max, a, b, c, ny);
 
@@ -150,7 +188,12 @@ EVAAComputeStiffness::EVAAComputeStiffness(int size, double* a, double b, double
 	bc = nullptr;
 }
 
-EVAAComputeStiffness::~EVAAComputeStiffness() {
+/**
+* \brief Destructor of lookup class
+*
+* free all the allocated space
+*/
+EVAALookup::~EVAALookup() {
 	/***** Delete Data Fitting task *****/
 	for (auto i = 0; i < ny; i++) {
 		dfDeleteTask(&task[i]);
