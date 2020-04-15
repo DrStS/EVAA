@@ -6,9 +6,9 @@
 #include "IP_EVAA_XML.h"
 #include "LOAD_EVAA_XML.h"
 #include "LOOKUP_EVAA_XML.h"
-#ifndef U_COMPSTIFF
-#define U_COMPSTIFF
-#include "EVAAComputeStiffness.h"
+#ifndef U_Lookup
+#define U_Lookup
+#include "EVAALookup.h"
 #endif
 
 /*
@@ -132,6 +132,6 @@ class ReadXML{
         \param parameters for global simulation parameters
         \return lookupStiffness class instance of the lookup handler
         */
-        void ReadLookupParameters(EVAAComputeStiffness* &lookupStiffness, Simulation_Parameters & parameters);
+        void ReadLookupParameters(EVAALookup** lookupStiffness, EVAALookup** lookupDamping, Simulation_Parameters & parameters);
 };
 

@@ -140,7 +140,7 @@ public:
 	/////////////////////////////////// Members from 11 DOF system //////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	int DOF; // comes from xml (Consider extracting as constant, move to Constants.h)
-	EVAAComputeStiffness* lookupStiffness;
+	EVAALookup* lookupStiffness;
 	T k_body_fl;
 	T k_tyre_fl;
 	T k_body_fr;
@@ -172,7 +172,7 @@ public:
 	/*
 	Constructor
 	*/
-	Car(const Simulation_Parameters& params, EVAAComputeStiffness* interpolator) {
+	Car(const Simulation_Parameters& params, EVAALookup* interpolator) {
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -462,7 +462,7 @@ public:
 		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
 		*/
 		if (params.interpolation) {
-			lookupStiffness->getStiffness(current_spring_length, k_vec);
+			lookupStiffness->getInterpolation(current_spring_length, k_vec);
 		}
 		else {
 			k_body_fl = params.k_body[2];
@@ -891,11 +891,6 @@ public:
 		change_vect[0] = current_ALE_vect[0] - global_vect[0];
 		change_vect[1] = current_ALE_vect[1] - global_vect[1];
 	}
-
-	//void get_vel_pos_change(T* velocity_change, T* position_change, T* angle_change) {
-	//	get_ALE_change(Position_vec_xy, Position_vec_prev_xy, position_change);
-	//	get_ALE_change(Velocity_vec_xy, Velocity_vec_prev_xy, velocity_change);
-	//}
 
 	void apply_ALE_change() {
 		/*Now both vector are at current state. swap pointer and CG location in new previous will be updated and following will be obselete which */

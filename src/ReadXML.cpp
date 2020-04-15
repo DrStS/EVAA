@@ -1,3 +1,8 @@
+/***********************************************************************************************//**
+* \file ReadXML.cpp
+* This file holds the function definitions of ReadXML.
+* \date 04/14/2020
+**************************************************************************************************/
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,18 +11,28 @@
 
 #include "ReadXML.h"
 
-
+/**
+* \brief reads the vectors of the positions of the legs relative to the center of mass
+*/
 template<typename T> void ReadXML::readVectorLegs(double* storage, T vec){
        readVector(storage, vec.ReerRight());
        readVector(storage+3,vec.ReerLeft());
        readVector(storage+6,vec.FrontLeft());
        readVector(storage+9,vec.FrontRight());
  }
+
+/**
+* \brief reads a 3 dim vector
+*/
 template<typename T> void ReadXML::readVector(double* storage, T vec) {
     storage[0] = vec.x();
     storage[1] = vec.y();
     storage[2] = vec.z();
 }
+
+/**
+* \brief reads paramaters which are given for all the legs 
+*/
 template<typename T> void ReadXML::readLegs(double* storage, T vec) {
     storage[0] = vec.ReerRight();
     storage[1] = vec.ReerLeft();
@@ -25,6 +40,9 @@ template<typename T> void ReadXML::readLegs(double* storage, T vec) {
     storage[3] = vec.FrontRight();
 }
 
+/**
+* \brief reads quaternion?
+*/
 template<typename T> void ReadXML::readangles(double* storage, T vec) {
 	storage[0] = vec.x();
 	storage[1] = vec.y();
@@ -33,31 +51,57 @@ template<typename T> void ReadXML::readangles(double* storage, T vec) {
 }
 
 
+/**
+* \brief blank Constructor
+*/
 ReadXML::ReadXML(){
     _filename = "";
 	_load_filename = "";
 }
 
-ReadXML::ReadXML(const std::string& load_filename) :
+/**
+* \brief Constructor
+*/
+ReadXML::ReadXML(
+    const std::string& load_filename /**< [in] reference to the filename*/
+) :
     _load_filename(load_filename),
     load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
 }
 
-ReadXML::ReadXML(const std::string & filename, const std::string & load_filename) :
-	_filename(filename), _load_filename(load_filename),
+/**
+* \brief Constructor
+*/
+ReadXML::ReadXML(
+    const std::string & filename /**< [in] reference to the filename*/,
+    const std::string & load_filename /**< [in] reference to the load filename*/
+) :_filename(filename), _load_filename(load_filename),
 	settings(EVAA_settings(filename, xml_schema::flags::dont_validate)), 
     load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
 }
 
-void ReadXML::setFileName(const std::string & filename){
+/**
+* \brief setter for the Filename
+*/
+void ReadXML::setFileName(
+    const std::string & filename /**< [in] reference to the filename*/
+){
     _filename = filename;
 }
 
-void ReadXML::setloadFileName(const std::string & filename) {
+/**
+* \brief setter for the load Filename
+*/
+void ReadXML::setloadFileName(
+    const std::string & filename /**< [in] reference to the load filename*/
+) {
 	_load_filename = filename;
 }
 
-void ReadXML::ReadParameters(Simulation_Parameters & parameters){
+/**
+* \brief read car, initial and simulaiton parameter
+*/
+void ReadXML::ReadParameters(Simulation_Parameters & parameters /**< [out] reference to parameter to where everything gets stored*/){
 
     //--------------------------------------------------
     // Load car parameters
@@ -152,7 +196,10 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters){
     }
 }
 
-void ReadXML::ReadLoadParameters(Load_Params& parameters) {
+/**
+* \brief read boundary condition and forces on tyres, wheel and body
+*/
+void ReadXML::ReadLoadParameters(Load_Params& parameters /**< [out] reference to parameter*/) {
 
     //--------------------------------------------------
     // Load external parameters
@@ -184,8 +231,15 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters) {
 }
 
 
-void ReadXML::ReadLookupParameters(EVAAComputeStiffness* &lookupStiffness, 
-                                   Simulation_Parameters & parameters) {
+
+/**
+* \brief read and order params used for the loookup tables and generate the stiffness and damping loookup table
+*/
+void ReadXML::ReadLookupParameters(
+    EVAALookup** lookupStiffness /**< [out] pointer to the pointer to the stiffness lookup from the compute engine*/,
+    EVAALookup** lookupDamping /**< [out] pointer to the pointer to the damping lookup from the compute engine*/,
+    Simulation_Parameters & parameters /**< [in] reference to the parameters and to set set the interpolation tag*/
+) {
     if (_lookup_filename == "NO_FILE_SPECIFIED") return;
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
     if (lookup_table->LookupTableGenerator().present()) {
@@ -219,8 +273,15 @@ void ReadXML::ReadLookupParameters(EVAAComputeStiffness* &lookupStiffness,
 		a[6] = k_body[1];
 		a[7] = k_tyre[3];
 
-        lookupStiffness = new EVAAComputeStiffness(size, a, b, c, l_min, l_max, k, type, order);
+        *lookupStiffness = new EVAALookup(size, a, b, c, l_min, l_max, k, type, order);
 		parameters.interpolation = 1;  // to switch from constant to interpolation type
+
+        // damping is /100 from the stiffness for the start
+        for (auto j = 0; j < k; j++) {
+            a[j] /= 100;
+        }
+        *lookupDamping = new EVAALookup(size, a, b, c, l_min, l_max, k, type, order);
+
         delete[] a;
 		delete[] k_body;
 		delete[] k_tyre;

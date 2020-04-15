@@ -16,7 +16,7 @@ private:
 	Car<T>* Car_obj; // suppose Interpolation in the Car
 	Load_module* Load_module_obj; // needs Profile and Car
 	Linear11dof<T>* linear11dof_obj;
-	EVAAComputeStiffness* interpolator;// interpolator member of EVAA
+	EVAALookup* interpolator;// interpolator member of EVAA
 	Simulation_Parameters params;
 	Profile* profile_obj;
 
@@ -73,7 +73,7 @@ public:
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
 		Linear11dof<T>* linear11dof_val,
-		EVAAComputeStiffness* lookup_table,
+		EVAALookup* lookup_table,
 		Simulation_Parameters &params_val) {
 
 		Car_obj = Car_obj_val;
@@ -135,7 +135,7 @@ public:
 
 		//initialize solution vector
 		int sol_size = (floor(tend_ / h_) + 1);
-		int force_dimensions = Constants::DIM * Constants::VEC_DIM;
+		const int force_dimensions = Constants::DIM * Constants::VEC_DIM;
 		int centripetal_force_dimensions = 3; // because update force needs it
 		int full_torque_dimensions = 3;
 		const int num_springs = 2 * Constants::NUM_LEGS;
@@ -183,7 +183,7 @@ public:
 			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
 			Car_obj->update_lengths_11DOF();
 			if (params.interpolation) {
-				interpolator->getStiffness(Car_obj->current_spring_length, k_vect);
+				interpolator->getInterpolation(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
 			solution_vect = u_sol + iter * (Constants::VEC_DIM * Constants::DIM);

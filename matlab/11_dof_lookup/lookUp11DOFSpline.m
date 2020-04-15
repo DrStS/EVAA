@@ -139,7 +139,7 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 20;
+num_iter = 1000;
 delta_t = 1e-1; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
@@ -190,7 +190,7 @@ l7 = eval(l7_sym);
 l8 = eval(l8_sym);
 
 y(:,1) = u_n;
-u_n_m_1=u_n;
+u_n_m_1=u_n - 4 * delta_t;
 u_n_p_1=u_n;
 
 rhs =[1.1e3; zeros(10,1)];
@@ -200,9 +200,8 @@ M_div_h2 = M / (delta_t * delta_t);
 %% time steps
 
 f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
-
 %dKcols_dk = eval(dKcols_dk); % evaluate it numerically
-
+condition = [];
 d = 0;
 for i = 1: length(t)-1
     K = get_K();
@@ -243,11 +242,12 @@ for i = 1: length(t)-1
         l8 = eval(l8_sym);
         K = get_K();
         r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
+        %( M_div_h2 + K )\(2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs)-u_n_p_1
         err(iter) = norm(r);
-        if (iter == 10)
+        if (iter == 20)
             d = d + 1;
         end
-        if (err(iter) < tol || iter == 10)
+        if (err(iter) < tol || iter == 20)
             err_arr(i) = norm(r);
             break;
         end
@@ -255,18 +255,26 @@ for i = 1: length(t)-1
     
     if (iter >3)
         %order(i) = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))));
-        order(i) = iter;
     end
-    
+    figure;
+    semilogy(err);
+    order(i) = iter;
+    condition = [condition, cond(J)];
     u_n_m_1 = u_n;
     u_n = u_n_p_1;
     y(:,i+1) = u_n_p_1;
 end
 d
-order
+%order
 %plot(t,y(1,:));
-plot(t,y(4:11,:))
-%plot(err_arr);
+%plot(t,y(4:11,:))
+figure;
+plot(order);
+title('newton iterations');
+legend()
+figure;
+plot(err_arr);
+title('error');
 legend();
 
 function K = get_K()

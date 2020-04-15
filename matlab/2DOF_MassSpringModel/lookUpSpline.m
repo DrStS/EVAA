@@ -4,8 +4,8 @@ clear; clc; close all;
 a = 1;
 b = 2;
 c = 3;
-f1 = 1;
-f2 = 0;
+f1 = 0;
+f2 = 1;
 L1 = 1;
 L2 = 1;
 
@@ -25,17 +25,21 @@ l_max = 1.7;
 % grid size
 k_d = round((l_max - l_min)/dl);
 % grid value allocation
-k_grid = zeros(k_d,1);
+k_grid = zeros(k_d+1,1);
 % k response function
 k = @(l)(c*l*l + b*l + a);
 % store x values
-x = zeros(k_d,1);
+x = zeros(k_d+1,1);
 % fill in grid values with chebyshev
-for i = 0:k_d-1
-    x(i+1) = (1+cos((2*i+1)/(2*k_d)*pi))/2*(l_max-l_min)+l_min;
+%for i = 0:k_d-1
+%    x(i+1) = (1+cos((2*i+1)/(2*k_d)*pi))/2*(l_max-l_min)+l_min;
+%    k_grid(i+1)= k(x(i+1));
+%end
+for i = 0:k_d
+    x(i+1) = i*dl+l_min;
     k_grid(i+1)= k(x(i+1));
 end
-plot(x,k_grid);
+%plot(x,k_grid);
 % grid spline
 k_spline = spline(x,k_grid);
 % grid derivative spline
@@ -94,7 +98,6 @@ while 1
    d2 = fnval(k_der, l_2);
    J = eval(dKdx_x_symb);
    J = K + J;
-   r = eval(r_symb);
    Delta = -J\r;
    u = Delta + u;
    % update values
@@ -116,3 +119,6 @@ order = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end
 disp(u)
 disp(err(length(err)))
 ref = [ 0.2788; 0.1394]
+figure;
+semilogy(err)
+title('error');

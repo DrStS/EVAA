@@ -25,10 +25,6 @@
 
 #pragma once
 #include "AuxiliaryParameters.h"
-#ifndef U_COMPSTIFF
-#define U_COMPSTIFF
-#include "EVAAComputeStiffness.h"
-#endif
 #include <vector>
 #include <cmath>
 #include <iostream>

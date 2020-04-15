@@ -76,8 +76,8 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
 
 	ReadXML reader(_xmlCarFileName, _xmlLoadFileName);
 	reader.ReadParameters(_parameters);
-	reader.ReadLoadParameters(_loadModuleParameter);
-	reader.ReadLookupParameters(_lookupStiffness, _parameters);
+	reader.ReadLoadParameters(_load_module_parameter);
+	reader.ReadLookupParameters(&_lookupStiffness, &_lookupDamping, _parameters);
 }
 
 EVAAComputeEngine::~EVAAComputeEngine() {
