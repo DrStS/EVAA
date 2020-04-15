@@ -49,7 +49,8 @@ using Eigen::IOFormat;
 typedef double floatEVAA;
 
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) : 
-	_xmlCarFileName(xmlCarFileName), _xmlLoadFileName(xmlLoadFileName), _lookupStiffness(nullptr){
+	_xmlCarFileName(xmlCarFileName), _xmlLoadFileName(xmlLoadFileName), 
+	_lookupStiffness(nullptr) , _lookupDamping(nullptr) {
 
 	std::ifstream f(xmlCarFileName.c_str());
 	
@@ -76,7 +77,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
 
 	ReadXML reader(_xmlCarFileName, _xmlLoadFileName);
 	reader.ReadParameters(_parameters);
-	reader.ReadLoadParameters(_load_module_parameter);
+	reader.ReadLoadParameters(_loadModuleParameter);
 	reader.ReadLookupParameters(&_lookupStiffness, &_lookupDamping, _parameters);
 }
 
