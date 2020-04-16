@@ -49,9 +49,7 @@ protected:
 
 	// solution in current timestep
 	T* u_n;
-
 	T*A, *B;
-
 	size_t* tyre_index_set;
 
 	/*
@@ -64,7 +62,7 @@ protected:
 		}
 		else if (status == -1) {
 			std::cout << "Matrix contain illegal value" << std::endl;
-			exit(5);
+			exit(6);
 		}
 	}
 	/*
@@ -93,7 +91,7 @@ protected:
 			//std::cout << vect[i] << std::endl;
 			std::cout.precision(5);
 			for (size_t j = 0; j < count; ++j) {
-				std::cout << std::scientific << vect[i*count + j] << "  ";
+				std::cout << std::scientific << vect[i * count + j] << "  ";
 			}
 			std::cout << "\n" << std::endl;
 			//printf("%1.15f\n", vect[i]);
@@ -121,7 +119,6 @@ public:
 		u_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
 		A = (T*)mkl_malloc(mat_len * sizeof(T), alignment);
 		B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
-
 	}
 
 	/*
@@ -162,19 +159,17 @@ public:
 		h_ = h;
 		factor_h2 = (1 / (h_ * h_));
 		factor_h = (1 / (h_));
-		
+
 		// B=((2/(h*h))*M+(1/h)*D);
-		cblas_daxpy(mat_len, 2 * factor_h2, car_->M_linear, 1, B, 1);
+		cblas_daxpy(this->DOF, 2 * factor_h2, car_->M_linear, this->DOF + 1, B, this->DOF + 1);
 		cblas_daxpy(mat_len, factor_h, car_->D, 1, B, 1);
-		cblas_dcopy(DOF, car_->u_prev_linear, 1, u_n, 1);
-		cblas_dcopy(DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
 		
+		cblas_dcopy(DOF, car_->u_prev_linear, 1, u_n, 1);
+
+		// u_n_m_1 = u_n - h_ * velocity_current_linear
+		cblas_dcopy(DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
 		cblas_dscal(DOF, -h_, u_n_m_1, 1);
 		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
-		
-		/*std::cout << "inside the 11 dof" << std::endl;
-		MathLibrary::write_vector(u_n_m_1, 11);*/
-		
 	}
 	/*
 	Performs one timestep of the 11DOF solver
@@ -183,20 +178,26 @@ public:
 	*/
 	virtual void update_step(T* force, T* solution) {
 		// construct A
+		// A = M_linear (also acts as initialization of A)
 		cblas_dcopy(mat_len, car_->M_linear, 1, A, 1);
-		cblas_dscal(mat_len, factor_h2, A, 1);
+		// A = 1/h^2 * A => A = 1/h^2 * M
+		cblas_dscal(this->DOF, factor_h2, A, this->DOF + 1); // use the fact that M is diagonal
+		// A += 1/h * D => A = 1/h^2 * M + 1/h * D
 		cblas_daxpy(mat_len, factor_h, car_->D, 1, A, 1);
+		// A += K => A = 1/h^2 * M + 1/h * D + K
 		cblas_daxpy(mat_len, 1, car_->K, 1, A, 1);
+
+		// u_n_m_1 = -1/h^2 * u_n_m_1
 		cblas_dscal(DOF, -factor_h2, u_n_m_1, 1);
 		//MathLibrary::write_vector(force, 11);
 		//cblas_dscal(DOF, 0.0, force, 1);
 		MathLibrary::Solvers<T, linear11dof>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, DOF);
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
+		// solutio = solution[t_n] = u_n_p_1
 		cblas_dcopy(DOF, u_n_p_1, 1, solution, 1);
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_1
 		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and u_n_p_1 point to u_n_m_1 now
-		
 	}
 	/*
 	Destructor
@@ -311,14 +312,14 @@ For testing purposes
 template <typename T>
 class linear11dof_full : public linear11dof<T> {
 public:
-	linear11dof_full(const Simulation_Parameters& params, const Load_Params& load_param,  Car<T>* input_car):linear11dof<T>(input_car){
-		
+	linear11dof_full(const Simulation_Parameters& params, const Load_Params& load_param, Car<T>* input_car) :linear11dof<T>(input_car) {
+
 		h_ = params.timestep;
-		tend_ = params.num_time_iter*h_;
+		tend_ = params.num_time_iter * h_;
 		int sol_size = (floor(tend_ / h_) + 1);
 		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
-		u_sol = (T*)mkl_calloc((sol_size+1) * (DOF), sizeof(T), alignment);
-		
+		u_sol = (T*)mkl_calloc((sol_size + 1) * (DOF), sizeof(T), alignment);
+
 
 		interpolation_enabled = params.interpolation;
 
@@ -331,7 +332,7 @@ public:
 		f_n_p_1[8] = load_param.external_force_tyre[1 * 3 + 2];
 		f_n_p_1[9] = load_param.external_force_wheel[0 * 3 + 2];
 		f_n_p_1[10] = load_param.external_force_tyre[0 * 3 + 2];
-		
+
 
 	}
 	void apply_boundary_condition(int s) {
@@ -349,7 +350,7 @@ public:
 		T t = h_;
 		double eps = h_ / 100;
 		T* solution_vect = u_sol;
-		
+
 		//cblas_dcopy(DOF, car_->u_prev_linear, 1, solution_vect, 1);
 		while (std::abs(t - (tend_ + h_)) > eps) {
 			if (interpolation_enabled) {
@@ -359,12 +360,11 @@ public:
 			}
 			//solution_vect = u_sol + iter * (DOF);
 			update_step(f_n_p_1, sol_vect);
-			
+
 			iter++;
 			t += h_;
 		}
 		//cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
-		
 	}
 
 	void print_final_results(T* sln) {
@@ -389,7 +389,7 @@ public:
 
 private:
 	T tend_;
-	T* u_sol, *f_n_p_1;
+	T* u_sol, * f_n_p_1;
 	T h_;
 	int condition_type;
 	bool interpolation_enabled;

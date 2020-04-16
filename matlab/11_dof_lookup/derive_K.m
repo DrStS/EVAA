@@ -1,14 +1,25 @@
 clear; clc; close all;
 %% make lookup
-a = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3] ;
+%a = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3];
+a = [19; 26; 19; 26; 13; 26; 13; 26];
 b = 1.59;
 c = 1.2;
+
+global L1 L2 L3 L4 L5 L6 L7 L8
+L1 = 5;
+L2 = 5;
+L3 = 5;
+L4 = 5;
+L5 = 5;
+L6 = 5;
+L7 = 5;
+L8 = 5;
 
 %%
 global k_grid size_grid l_min l_max dl;
 % calc min and max length to evaluate (just for now)
-l_min = 0.05;
-l_max = 0.8;
+l_min = 4.5;
+l_max = 7;
 % grid size
 size_grid = 1000;
 % grid value allocation
@@ -85,8 +96,8 @@ dKcols_dk = [dK1_dk, dK2_dk, dK3_dk, dK4_dk, dK5_dk, dK6_dk, dK7_dk, dK8_dk, dK9
 
 %% parameters
 % time
-num_iter = 1000;
-delta_t = 1e-3; 
+num_iter = 20;
+delta_t = 1e-1; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
 
@@ -148,7 +159,6 @@ for i = 1: length(t)-1
         J = M_div_h2 + K + dKcols_dk * temp;
         
         Delta = -J\r;
-%         norm(J)
         u_n_p_1 = Delta + u_n_p_1; 
         
         % update values
@@ -180,43 +190,18 @@ plot(t,y(4:11,:))
 legend();
 
 function K = get_K(x)
-    global l_long_fl;
-    global l_long_fr;
-    global l_long_rl;
-    global l_long_rr;
-    global l_lat_fl;
-    global l_lat_fr;
-    global l_lat_rl;
-    global l_lat_rr;
-    car = x(1);
-    upper_fl = x(4);
-    lower_fl = x(5);
-    upper_fr = x(6);
-    lower_fr = x(7);
-    upper_rl = x(8);
-    lower_rl = x(9);
-    upper_rr = x(10);
-    lower_rr = x(11);
+    global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr;
     global k_spline1 k_spline2 k_spline3 k_spline4 k_spline5 k_spline6 k_spline7 k_spline8;
+    global L1 L2 L3 L4 L5 L6 L7 L8;
     
-    %global X k_grid size_grid;
-    %k_body_fl=interp1(X,k_grid(1:size_grid),0.5 - upper_fl + car);
-    %k_tyre_fl=interp1(X,k_grid(size_grid+1:2*size_grid),0.5 + upper_fl - lower_fl);
-    %k_body_fr=interp1(X,k_grid(2*size_grid+1:3*size_grid),0.5 - upper_fr + car);
-    %k_tyre_fr=interp1(X,k_grid(3*size_grid+1:4*size_grid),0.5 + upper_fr - lower_fr);
-    %k_body_rl=interp1(X,k_grid(4*size_grid+1:5*size_grid),0.5 - upper_rl + car);
-    %k_tyre_rl=interp1(X,k_grid(5*size_grid+1:6*size_grid),0.5 + upper_rl -lower_rl);
-    %k_body_rr=interp1(X,k_grid(6*size_grid+1:7*size_grid),0.5 - upper_rr + car);
-    %k_tyre_rr=interp1(X,k_grid(7*size_grid+1:8*size_grid),0.5 + upper_rr - lower_rr);
-    
-    k_body_fl=fnval(k_spline1,0.5 - upper_fl + car);
-    k_tyre_fl=fnval(k_spline2,0.5 + upper_fl - lower_fl);
-    k_body_fr=fnval(k_spline3,0.5 - upper_fr + car);
-    k_tyre_fr=fnval(k_spline4,0.5 + upper_fr - lower_fr);
-    k_body_rl=fnval(k_spline5,0.5 - upper_rl + car);
-    k_tyre_rl=fnval(k_spline6,0.5 + upper_rl -lower_rl);
-    k_body_rr=fnval(k_spline7,0.5 - upper_rr + car);
-    k_tyre_rr=fnval(k_spline8,0.5 + upper_rr - lower_rr);
+    k_body_fl=fnval(k_spline1, L1 + x(1) + l_lat_fl * x(2) - l_long_fl * x(3) - x(4));
+    k_tyre_fl=fnval(k_spline2, L2 + x(4)-x(5));
+    k_body_fr=fnval(k_spline3, L3 + x(1) - l_lat_fr * x(2) - l_long_fr * x(3) - x(6));
+    k_tyre_fr=fnval(k_spline4, L4 + x(6) - x(7));
+    k_body_rl=fnval(k_spline5, L5 + x(1) + l_lat_rl*x(2) + x(3)*l_long_rl - x(8));
+    k_tyre_rl=fnval(k_spline6, L6 + x(8) - x(9));
+    k_body_rr=fnval(k_spline7, L7 + x(1) - l_lat_rr * x(2) + l_long_rr*x(3) -x(10));
+    k_tyre_rr=fnval(k_spline8, L8 + x(10) - x(11));
     
     K = [k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_fr+k_body_rl*l_lat_rl-k_body_rr*l_lat_rr, -k_body_fl*l_long_fl-k_body_fr*l_long_fr+k_body_rl*l_long_rl+k_body_rr*l_long_rr,  -k_body_fl, 0, -k_body_fr, 0, -k_body_rl, 0, -k_body_rr, 0;
    0, l_lat_fl*l_lat_fl*k_body_fl+l_lat_fr*l_lat_fr*k_body_fr+l_lat_rl*l_lat_rl*k_body_rl+l_lat_rr*l_lat_rr*k_body_rr, -l_long_fl*l_lat_fl*k_body_fl+l_lat_fr*l_long_fr*k_body_fr+l_long_rl*l_lat_rl*k_body_rl-l_long_rr*l_lat_rr*k_body_rr, -l_lat_fl*k_body_fl, 0, l_lat_fr*k_body_fr, 0, -l_lat_rl*k_body_rl, 0, l_lat_rr*k_body_rr, 0;
@@ -234,50 +219,40 @@ end
 
 function dk = getdk_dx(x) % 8x11
     dk = zeros(8,11);
-    
-    car = x(1);
-    upper_fl = x(4);
-    lower_fl = x(5);
-    upper_fr = x(6);
-    lower_fr = x(7);
-    upper_rl = x(8);
-    lower_rl = x(9);
-    upper_rr = x(10);
-    lower_rr = x(11);
-    
-    %dk1_dl = deriv_dk(x(4)-x(5), 1);
-    %dk2_dl = deriv_dk(x(5), 2);
-    %dk3_dl = deriv_dk(x(6)-x(7), 3);
-    %dk4_dl = deriv_dk(x(7), 4);
-    %dk5_dl = deriv_dk(x(8)-x(9), 5);
-    %dk6_dl = deriv_dk(x(9), 6);
-    %dk7_dl = deriv_dk(x(10)-x(11), 7);
-    %dk8_dl = deriv_dk(x(11), 8);
-    
+    global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr;
     global k_der1 k_der2 k_der3 k_der4 k_der5 k_der6 k_der7 k_der8; 
+    global L1 L2 L3 L4 L5 L6 L7 L8;
     
-    dk1_dl = fnval(k_der1, 0.5 - upper_fl + car);
-    dk2_dl = fnval(k_der2, 0.5 + upper_fl - lower_fl);
-    dk3_dl = fnval(k_der3, 0.5 - upper_fr + car);
-    dk4_dl = fnval(k_der4, 0.5 + upper_fr - lower_fr);
-    dk5_dl = fnval(k_der5, 0.5 - upper_rl + car);
-    dk6_dl = fnval(k_der6, 0.5 + upper_rl -lower_rl);
-    dk7_dl = fnval(k_der7, 0.5 - upper_rr + car);
-    dk8_dl = fnval(k_der8, 0.5 + upper_rr - lower_rr);
+    dk1_dl = fnval(k_der1, L1 + x(1) + l_lat_fl * x(2) - l_long_fl * x(3) - x(4));
+    dk2_dl = fnval(k_der2, L2 + x(4)-x(5));
+    dk3_dl = fnval(k_der3, L3 + x(1) - l_lat_fr * x(2) - l_long_fr * x(3) - x(6));
+    dk4_dl = fnval(k_der4, L4 + x(6) - x(7));
+    dk5_dl = fnval(k_der5, L5 + x(1) + l_lat_rl*x(2) + x(3)*l_long_rl - x(8));
+    dk6_dl = fnval(k_der6, L6 + x(8) - x(9));
+    dk7_dl = fnval(k_der7, L7 + x(1) - l_lat_rr * x(2) + l_long_rr*x(3) -x(10));
+    dk8_dl = fnval(k_der8, L8 + x(10) - x(11));
     
     dk(1,1) = dk1_dl;
+    dk(1,2) = dk1_dl * l_lat_fl;
+    dk(1,3) = -dk1_dl * l_long_fl;
     dk(1,4) = -dk1_dl;
     dk(2,4) = dk2_dl;
     dk(2,5) = -dk2_dl;
     dk(3,1) = dk3_dl;
+    dk(3,2) = -dk3_dl * l_lat_fr;
+    dk(3,3) = -dk3_dl * l_long_fr;
     dk(3,6) = -dk3_dl;
     dk(4,6) = dk4_dl;
     dk(4,7) = -dk4_dl;
     dk(5,1) = dk5_dl;
+    dk(5,2) = +dk5_dl * l_lat_rl;
+    dk(5,3) = +dk5_dl * l_long_rl;
     dk(5,8) = -dk5_dl;
     dk(6,8) = dk6_dl;
     dk(6,9) = -dk6_dl;
     dk(7,1) = dk7_dl;
+    dk(7,2) = -dk7_dl * l_lat_rr;
+    dk(7,3) = +dk7_dl * l_long_rr;
     dk(7,10) = -dk7_dl;
     dk(8,10) = dk8_dl;
     dk(8,11) = -dk8_dl;

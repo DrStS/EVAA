@@ -15,12 +15,17 @@ private:
 	\param Global_moment_Inertia contains the tensor of inertia of the body
 	\param Mass_11DOF unused
 	*/
-	void construct_11DOF_mass(T* Global_mass, T* Global_momemnt_Inertia) {
-		temp_linear[0] = Global_mass[0];
-		temp_linear[1] = Global_momemnt_Inertia[0];
-		temp_linear[2] = Global_momemnt_Inertia[4];
+	void construct_11DOF_mass(T* Global_mass, T* Global_moment_Inertia) {
+		/*temp_linear[0] = Global_mass[0];
+		temp_linear[1] = Global_moment_Inertia[0];
+		temp_linear[2] = Global_moment_Inertia[4];
 		cblas_dcopy(vec_DIM - 1, Global_mass + 1, 1, temp_linear + 3, 1);
-		MathLibrary::allocate_to_diagonal(M_linear, temp_linear, DOF);
+		MathLibrary::allocate_to_diagonal(M_linear, temp_linear, DOF);*/
+		
+		M_linear[0] = Global_mass[0];
+		M_linear[this->DOF + 1] = Global_moment_Inertia[0];
+		M_linear[2 * this->DOF + 2] = Global_moment_Inertia[4];
+		cblas_dcopy(this->DOF - 3, Global_mass + 1, 1, M_linear + 3 * this->DOF + 3, this->DOF + 1); // M_linear - diagonal matrix
 	}
 	
 	/*
@@ -83,7 +88,7 @@ private:
 		pos_buffer[2] = Position_vec[2] + u_current_linear[0];
 		angle_buffer[0] = angle_CG[1] + u_current_linear[1];
 		angle_buffer[1] = angle_CG[2] + u_current_linear[2];
-		angle_buffer[3] = 0;
+		angle_buffer[2] = 0;
 		
 		construct_corner(pos_buffer, Corners_init);
 		update_corners_11DOF(angle_buffer, Corners_rot, Corners_init, Corners_current);
@@ -127,6 +132,7 @@ public:
 	T* Position_vec; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3 !!! Consider alignment (3+1),(3+1),... 
 	T* Velocity_vec; // [CG, W1, T1, W2, T2, W3, T3, W4, T4] 9 x 3
 	T* Mass_vec; // [CG,  W1, T1, W2, T2, W3, T3, W4, T4]     9
+	T* global_mass;
 	T* angle_CG; // [x, y, z]
 	T* w_CG; // [x, y, z]
 	T* I_CG; // [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izz]
@@ -176,7 +182,7 @@ public:
 	/*
 	Constructor
 	*/
-	Car(const Simulation_Parameters &params, EVAAComputeStiffness* interpolator) {
+	Car(const Simulation_Parameters& params, EVAAComputeStiffness* interpolator) {
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,38 +198,38 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////// Params for Global coordinate ////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Position_vec = (T*)mkl_malloc(malloc_factor*DIM*vec_DIM * sizeof(T), alignment); //27 dim
-		Velocity_vec = (T*)mkl_malloc(malloc_factor*DIM*vec_DIM * sizeof(T), alignment); //27 dim
-		Mass_vec = (T*)mkl_malloc(malloc_factor*vec_DIM * sizeof(T), alignment); //9 dim
-		angle_CG = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); //3 dim
-		w_CG = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); //3 dim
-		I_CG = (T*)mkl_malloc(malloc_factor*DIM*DIM * sizeof(T), alignment); //9 dim
+		Position_vec = (T*)mkl_malloc(malloc_factor * DIM * vec_DIM * sizeof(T), alignment); //27 dim
+		Velocity_vec = (T*)mkl_malloc(malloc_factor * DIM * vec_DIM * sizeof(T), alignment); //27 dim
+		Mass_vec = (T*)mkl_malloc(malloc_factor * vec_DIM * sizeof(T), alignment); //9 dim
+		angle_CG = (T*)mkl_malloc(malloc_factor * DIM * sizeof(T), alignment); //3 dim
+		w_CG = (T*)mkl_malloc(malloc_factor * DIM * sizeof(T), alignment); //3 dim
+		I_CG = (T*)mkl_malloc(malloc_factor * DIM * DIM * sizeof(T), alignment); //9 dim
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////// Initial Params for Global coordinate ////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		initial_position = (T*)mkl_malloc(malloc_factor*DIM*vec_DIM * sizeof(T), alignment); // 27 dim
-		initial_velocity_vec = (T*)mkl_malloc(malloc_factor*DIM*vec_DIM * sizeof(T), alignment);// 27 dim
+		initial_position = (T*)mkl_malloc(malloc_factor * DIM * vec_DIM * sizeof(T), alignment); // 27 dim
+		initial_velocity_vec = (T*)mkl_malloc(malloc_factor * DIM * vec_DIM * sizeof(T), alignment);// 27 dim
 		quad_angle_init = (T*)mkl_calloc(malloc_factor * 4, sizeof(T), alignment); // 4 dim
-		initial_angle = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
-		initial_angular_velocity = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
+		initial_angle = (T*)mkl_malloc(malloc_factor * DIM * sizeof(T), alignment); // 3 dim
+		initial_angular_velocity = (T*)mkl_malloc(malloc_factor * DIM * sizeof(T), alignment); // 3 dim
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////// Params for 11 DOF system ////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		M_linear = (T*)mkl_calloc(malloc_factor*DOF * DOF, sizeof(T), alignment); // 121 dim
-		temp_linear = (T*)mkl_calloc(malloc_factor*DOF , sizeof(T), alignment);  // 11 dim
-		K = (T*)mkl_calloc(malloc_factor*DOF * DOF, sizeof(T), alignment); // 121 dim
-		K_trans = (T*)mkl_calloc(malloc_factor*DOF * DOF, sizeof(T), alignment); // 121 dim
-		D = (T*)mkl_calloc(malloc_factor*DOF * DOF, sizeof(T), alignment); // 121 dim
-		u_prev_linear = (T*)mkl_malloc(malloc_factor*DOF*sizeof(T), alignment); // 11 dim
-		u_current_linear = (T*)mkl_malloc(malloc_factor*DOF*sizeof(T), alignment); // 11 dim
-		velocity_current_linear = (T*)mkl_malloc(malloc_factor*DOF * sizeof(T), alignment); // 3 dim
-		k_vec = (T*)mkl_malloc(malloc_factor*num_wheels * 2 * sizeof(T), alignment); // 4 dim
-		l_lat = (T*)mkl_malloc(malloc_factor*num_wheels * sizeof(T), alignment); // 4 dim
-		l_long = (T*)mkl_malloc(malloc_factor*num_wheels * sizeof(T), alignment); // 4 dim
+		M_linear = (T*)mkl_calloc(malloc_factor * DOF * DOF, sizeof(T), alignment); // 121 dim
+		temp_linear = (T*)mkl_malloc(malloc_factor * DOF * sizeof(T), alignment);  // 11 dim
+		K = (T*)mkl_calloc(malloc_factor * DOF * DOF, sizeof(T), alignment); // 121 dim
+		K_trans = (T*)mkl_malloc(malloc_factor * DOF * DOF * sizeof(T), alignment); // 121 dim
+		D = (T*)mkl_calloc(malloc_factor * DOF * DOF, sizeof(T), alignment); // 121 dim
+		u_prev_linear = (T*)mkl_malloc(malloc_factor * DOF * sizeof(T), alignment); // 11 dim
+		u_current_linear = (T*)mkl_malloc(malloc_factor * DOF * sizeof(T), alignment); // 11 dim
+		velocity_current_linear = (T*)mkl_malloc(malloc_factor * DOF * sizeof(T), alignment); // 3 dim
+		k_vec = (T*)mkl_malloc(malloc_factor * num_wheels * 2 * sizeof(T), alignment); // 4 dim
+		l_lat = (T*)mkl_malloc(malloc_factor * num_wheels * sizeof(T), alignment); // 4 dim
+		l_long = (T*)mkl_malloc(malloc_factor * num_wheels * sizeof(T), alignment); // 4 dim
 		spring_length = (T*)mkl_malloc(malloc_factor * 2 * num_wheels * sizeof(T), alignment); // 8 dim
 		current_spring_length = (T*)mkl_malloc(malloc_factor * 2 * num_wheels * sizeof(T), alignment); // 8 dim
 		tyre_index_set = (size_t*)mkl_malloc(num_wheels * sizeof(size_t), alignment);
@@ -231,11 +237,11 @@ public:
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////// Memory allocation for interpolator /////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Corners_current = (T*)mkl_malloc(malloc_factor*num_tyre*DIM * sizeof(T), alignment); // 12 dim
-		Corners_rot = (T*)mkl_malloc(malloc_factor*DIM*DIM * sizeof(T), alignment); // 9 dim
-		Corners_init = (T*)mkl_malloc(malloc_factor*num_tyre*DIM * sizeof(T), alignment); // 12 dim
-		angle_buffer = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
-		pos_buffer = (T*)mkl_malloc(malloc_factor*DIM * sizeof(T), alignment); // 3 dim
+		Corners_current = (T*)mkl_malloc(malloc_factor * num_tyre * DIM * sizeof(T), alignment); // 12 dim
+		Corners_rot = (T*)mkl_malloc(malloc_factor * DIM * DIM * sizeof(T), alignment); // 9 dim
+		Corners_init = (T*)mkl_malloc(malloc_factor * num_tyre * DIM * sizeof(T), alignment); // 12 dim
+		angle_buffer = (T*)mkl_malloc(malloc_factor * DIM * sizeof(T), alignment); // 3 dim
+		pos_buffer = (T*)mkl_malloc(malloc_factor * DIM * sizeof(T), alignment); // 3 dim
 
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,6 +251,7 @@ public:
 		Angle_z = new T;
 		Velocity_vec_xy = (T*)mkl_malloc((DIM - 1) * vec_DIM * sizeof(T), alignment);
 		w_z = new T;
+		global_mass = new T;
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -254,14 +261,14 @@ public:
 		l_long[1] = params.l_long[3];
 		l_long[2] = params.l_long[1];
 		l_long[3] = params.l_long[0];
-		
+
 		l_lat[0] = params.l_lat[2];
 		l_lat[1] = params.l_lat[3];
 		l_lat[2] = params.l_lat[1];
 		l_lat[3] = params.l_lat[0];
 
 
-		/// Good indices???
+		//
 		I_CG[0] = params.I_body[0];
 		I_CG[1] = params.I_body[3];
 		I_CG[2] = params.I_body[4];
@@ -271,7 +278,7 @@ public:
 		I_CG[6] = params.I_body[4];
 		I_CG[7] = params.I_body[5];
 		I_CG[8] = params.I_body[2];
-		
+
 		Mass_vec[0] = params.mass_body;
 		Mass_vec[1] = params.mass_wheel[2];
 		Mass_vec[2] = params.mass_tyre[2];
@@ -281,7 +288,9 @@ public:
 		Mass_vec[6] = params.mass_tyre[1];
 		Mass_vec[7] = params.mass_wheel[0];
 		Mass_vec[8] = params.mass_tyre[0];
-		
+		*global_mass = get_global_mass();
+		//*global_mass = 0;
+
 		spring_length[0] = params.upper_spring_length[2];
 		spring_length[1] = params.lower_spring_length[2];
 		spring_length[2] = params.upper_spring_length[3];
@@ -296,13 +305,14 @@ public:
 		////////////////////////////////////// Initial Iteration vector ////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initial Angles
-		quad_angle_init[0] = params.initial_angle[0];
+		/*quad_angle_init[0] = params.initial_angle[0];
 		quad_angle_init[1] = params.initial_angle[1];
 		quad_angle_init[2] = params.initial_angle[2];
-		quad_angle_init[3] = params.initial_angle[3];
+		quad_angle_init[3] = params.initial_angle[3];*/
+		cblas_dcopy(4, params.initial_angle, 1, quad_angle_init, 1);
 		MathLibrary::ToEulerAngles<T>(quad_angle_init, initial_angle);
 		cblas_dcopy(DIM, initial_angle, 1, angle_CG, 1);
-		
+
 		// Spring lengths
 		current_spring_length[0] = params.initial_upper_spring_length[2];
 		current_spring_length[1] = params.initial_lower_spring_length[2];
@@ -317,7 +327,7 @@ public:
 		// Filling the position vector with initial condition
 		// CG
 		cblas_dcopy(DIM, params.initial_pos_body, 1, initial_position, 1); // copy the center of mass position
-		
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////// Interpolator Initialization///////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -332,7 +342,7 @@ public:
 		/////////////////////////////////////////////////// Remaining position initialization ////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		const T* xml_start;
-		T *position_start;
+		T* position_start;
 		if (params.initial_leg_flag) {
 			// if prescribed initial position (add a check for consistency with spring lengths)
 			// W1 = W_fl
@@ -368,8 +378,8 @@ public:
 			xml_start = params.initial_pos_tyre + 0 * 3;
 			position_start += 6; // skip 3 for the wheel
 			cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 26)
-			cblas_dcopy(DIM*vec_DIM, initial_position, 1, Position_vec, 1);
-		} 
+			cblas_dcopy(DIM * vec_DIM, initial_position, 1, Position_vec, 1);
+		}
 		else {
 			T* W_fl = initial_position + 3;
 			T* W_fr = initial_position + 9;
@@ -394,7 +404,7 @@ public:
 		}
 		//// copy the initial position to the position vector
 		//cblas_dcopy(DIM*vec_DIM, initial_position, 1, Position_vec, 1);
-		
+
 		// Initial Velocity (Reuse the pointers)
 		cblas_dcopy(DIM, params.initial_vel_body, 1, initial_velocity_vec, 1);
 		// W1 = W_fl
@@ -432,10 +442,10 @@ public:
 		cblas_dcopy(DIM, xml_start, 1, position_start, 1); // (end at 26)
 
 		// copy the initial position to the position vector
-		cblas_dcopy(DIM*vec_DIM, initial_velocity_vec, 1, Velocity_vec, 1);
+		cblas_dcopy(DIM * vec_DIM, initial_velocity_vec, 1, Velocity_vec, 1);
 
 		// Initial Angular velocity
-		cblas_dcopy(DIM, params.initial_ang_vel_body, 1, initial_angular_velocity, 1); 
+		cblas_dcopy(DIM, params.initial_ang_vel_body, 1, initial_angular_velocity, 1);
 		cblas_dcopy(DIM, initial_angular_velocity, 1, w_CG, 1);
 
 
@@ -453,7 +463,7 @@ public:
 		tyre_index_set[1] = 4;
 		tyre_index_set[2] = 6;
 		tyre_index_set[3] = 8;
-		
+
 		construct_11DOF_vector(initial_velocity_vec, initial_angular_velocity, velocity_current_linear);
 		/* This stays in the 11 DOF
 		cblas_dscal(DOF, -h_, u_n_m_1, 1);
@@ -482,7 +492,7 @@ public:
 		construct_ALE_vectors(Velocity_vec, Velocity_vec_xy);
 		*Angle_z = angle_CG[2];
 		*w_z = w_CG[2];
-		
+
 
 	}
 	/*
@@ -514,7 +524,8 @@ public:
 	\param k_vect vector with all spring stiffnesses (in Stefans order)
 	*/
 	void update_K(T* k_vect) {
-		cblas_dscal(DOF * DOF, 0.0, K, 1);
+		// K = 0
+		//cblas_dscal(DOF * DOF, 0.0, K, 1); // by copying upper to lower, we avoid reinitialization with 0
 
 		temp_linear[0] = k_vect[0] + k_vect[2] + k_vect[4] + k_vect[6];
 		K[1] = k_vect[0] * l_lat[0] - k_vect[2] * l_lat[1] + k_vect[4] * l_lat[2] - k_vect[6] * l_lat[3];
@@ -596,10 +607,20 @@ public:
 
 		temp_linear[10] = k_vect[7];
 		
-		cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
+
+		// symmetrize K
+		//cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
+		LAPACKE_dlacpy(LAPACK_ROW_MAJOR, 'U', DOF, DOF, K, DOF, K_trans, DOF);
+
 		mkl_dimatcopy('R', 'T', DOF, DOF, 1.0, K_trans, DOF, DOF); // get transpose of matrix
-		cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
+		
+		LAPACKE_dlacpy(LAPACK_ROW_MAJOR, 'L', DOF, DOF, K_trans, DOF, K, DOF); // copy lower triangular in the orig matrix
+		//cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
+
+		// add the diagonal to K
 		MathLibrary::allocate_to_diagonal(K, temp_linear, DOF); // K = K + K'+ diag(K)
+
+
 	}
 
 	/*
@@ -681,7 +702,7 @@ public:
 		vdSub(2 * (this->num_tyre), spring_length, current_length, dx);
 	}
 	/*
-	From the current elongations, calucale the difference to the rest position
+	From the current elongations, calculate the differences to the rest positions
 	\return length differences
 	*/
 	inline void compute_dx(T* dx) {
@@ -697,15 +718,46 @@ public:
 	void update_lengths_11DOF() {
 		update_corners_11DOF();
 		
-		current_spring_length[0] = std::abs(Corners_current[8] - (Position_vec[1*DIM + 2] - u_current_linear[3]));
-		current_spring_length[1] = std::abs((-u_current_linear[3] + Position_vec[1 * DIM + 2]) - (-u_current_linear[4] + Position_vec[2 * DIM + 2]));
-		current_spring_length[2] = std::abs(Corners_current[9] - (Position_vec[3 * DIM + 2] - u_current_linear[5]));
-		current_spring_length[3] = std::abs((-u_current_linear[5] + Position_vec[3 * DIM + 2]) - (-u_current_linear[6] + Position_vec[4 * DIM + 2]));
-		current_spring_length[4] = std::abs(Corners_current[10] - (Position_vec[5 * DIM + 2] - u_current_linear[7]));
-		current_spring_length[5] = std::abs((Position_vec[5 * DIM + 2] - u_current_linear[7]) - (Position_vec[6 * DIM + 2] - u_current_linear[8]));
-		current_spring_length[6] = std::abs(Corners_current[11] - (Position_vec[7 * DIM + 2] - u_current_linear[9]));
-		current_spring_length[7] = std::abs((-u_current_linear[9]+ Position_vec[7 * DIM + 2]) - (-u_current_linear[10] + Position_vec[8 * DIM + 2]));
+		// after establishing the order of tyres & wheels, fix this.
+		// With the current formulation, improvement:
+		//	- current_spring_length[0,2,4,6] = Corners_current[8,9,10,11] + (u_current_linear[3,5,7,9] - Position_vec[1*DIM+2,3*DIM+2,5*DIM+2,7*DIM+2])
+		//	- current_spring_length[1,3,5,7] = (Position_vec[1*DIM+2,3*DIM+2,5*DIM+2,7*DIM+2] - u_current_linear[3,5,7,9]) + (u_current_linear[4,6,8,10] - Position_vec[2*DIM+2,4*DIM+2,6*DIM+2,8*DIM+2])
+		//  - current_spring_length = abs(current_spring_length)
 
+		// current_spring_length[:] = u_current_linear[3:10]
+		cblas_dcopy(8, u_current_linear + 3, 1, current_spring_length, 1);
+
+		// current_spring_length[:] -= Position_vec[..3..] -> in 3rd dimension =>
+		//		=> current_spring_length[:] = u_current_linear[3:10] - Position_vec[5,8,11,...,26]
+		cblas_daxpy(8, -1, Position_vec + (1 * DIM + 2), DIM, current_spring_length, 1);
+
+		// subtract even indices from odd indices in current_spring_length: current_spring_length[1,3,5,7] -= current_spring_length[0,2,4,6]
+		cblas_daxpy(4, -1, current_spring_length, 2, current_spring_length + 1, 2);
+		
+		// add Corners_current to even indices: current_spring_length[0,2,4,6] += Corners_current[8,9,10,11]
+		cblas_daxpy(4, 1, Corners_current + 8, 1, current_spring_length, 2);
+
+		// get absolute value for each element of the vector
+		vdAbs(8, current_spring_length, current_spring_length);
+
+		//std::cout << " Current spring length blas: \n\n";
+		//for (auto i = 0; i < 8; ++i)
+		//	std::cout << current_spring_length[i] << "\t ";
+
+	/*	current_spring_length[0] = std::abs(Corners_current[8]									- (-u_current_linear[3] + Position_vec[1 * DIM + 2]));
+		current_spring_length[1] = std::abs((-u_current_linear[3] + Position_vec[1 * DIM + 2])  - (-u_current_linear[4] + Position_vec[2 * DIM + 2]));
+		current_spring_length[2] = std::abs(Corners_current[9]									- (-u_current_linear[5] + Position_vec[3 * DIM + 2]));
+		current_spring_length[3] = std::abs((-u_current_linear[5] + Position_vec[3 * DIM + 2])  - (-u_current_linear[6] + Position_vec[4 * DIM + 2]));
+		current_spring_length[4] = std::abs(Corners_current[10]									- (-u_current_linear[7] + Position_vec[5 * DIM + 2]));
+		current_spring_length[5] = std::abs((-u_current_linear[7] + Position_vec[5 * DIM + 2])  - (-u_current_linear[8] + Position_vec[6 * DIM + 2]));
+		current_spring_length[6] = std::abs(Corners_current[11]			 					    - (-u_current_linear[9] + Position_vec[7 * DIM + 2]));
+		current_spring_length[7] = std::abs((-u_current_linear[9] + Position_vec[7 * DIM + 2])  - (-u_current_linear[10] + Position_vec[8 * DIM + 2]));*/
+
+		//std::cout << " \n\n Current spring length classic: \n\n";
+		//for (auto i = 0; i < 8; ++i)
+		//	std::cout << current_spring_length[i] << "\t ";
+
+		//exit(11);
 
 	}
 
@@ -750,15 +802,11 @@ public:
 	}
 
 	void set_Position_vec_CG(const T* Pos_CG) {
-		if (Pos_CG != NULL) {
-			cblas_dcopy(DIM, Pos_CG, 1, Position_vec, 1);
-		}
+		cblas_dcopy(DIM, Pos_CG, 1, Position_vec, 1);
 	}
 
 	void get_Velocity_vec(T* Vel) {
-		if (Vel != NULL) {
-			cblas_dcopy(DIM * vec_DIM, Velocity_vec, 1, Vel, 1);
-		}
+		cblas_dcopy(DIM * vec_DIM, Velocity_vec, 1, Vel, 1);	
 	}
 
 	void get_Velocity_vec_xy(T* Vel) {
@@ -770,25 +818,17 @@ public:
 	}
 
 	void set_Velocity_vec(const T* Vel) {
-		if (Vel != NULL) {
-			cblas_dcopy(DIM * vec_DIM, Vel, 1, Velocity_vec, 1);
-		}
+		cblas_dcopy(DIM * vec_DIM, Vel, 1, Velocity_vec, 1);
 	}
 	void get_Velocity_vec_CG(T* Vel_CG) {
-		if (Vel_CG != NULL) {
-			cblas_dcopy(DIM, Velocity_vec, 1, Vel_CG, 1);
-		}
+		cblas_dcopy(DIM, Velocity_vec, 1, Vel_CG, 1);
 	}
 	void set_Velocity_vec_CG(const T* Vel_CG) {
-		if (Vel_CG != NULL) {
-			cblas_dcopy(DIM, Vel_CG, 1, Velocity_vec, 1);
-		}
+		cblas_dcopy(DIM, Vel_CG, 1, Velocity_vec, 1);
 	}
 
 	void get_k_vec(T* k) {
-		if (k != NULL) {
-			cblas_dcopy( 2 * num_wheels, k_vec, 1, k, 1);
-		}
+		cblas_dcopy(2 * num_wheels, k_vec, 1, k, 1);
 	}
 	void get_k_vec_tyre(T* k) {
 		cblas_dcopy(num_wheels, k_vec + 1, 2, k, 1);
@@ -798,23 +838,17 @@ public:
 	}
 
 	void set_k_vec(const T* k) {
-		if (k != NULL) {
-			cblas_dcopy(2* num_wheels, k, 1, k_vec, 1);
-		}
+		cblas_dcopy(2 * num_wheels, k, 1, k_vec, 1);
 	}
 
 	void get_Mass_vec(T* M) {
-		if (M != NULL) {
-			cblas_dcopy(vec_DIM, Mass_vec, 1, M, 1);
-		}
+		cblas_dcopy(vec_DIM, Mass_vec, 1, M, 1);
 	}
 	double get_Mass_vec_CG() const {
 		return Mass_vec[0];
 	}
 	void set_Mass_vec(const T* M) {
-		if (M != NULL) {
-			cblas_dcopy(vec_DIM, M, 1, Mass_vec, 1);
-		}
+		cblas_dcopy(vec_DIM, M, 1, Mass_vec, 1);
 	}
 
 	/*
@@ -839,9 +873,7 @@ public:
 	void get_dist_vector_CG(T* Point_P, T* dist_vector) {
 		// get distance vector from Center of Gravity of the car to a Point P 
 		// source: Point_P, dest: CG
-		if (Point_P != NULL && dist_vector != NULL) {
-			vdSub(DIM, Position_vec, Point_P, dist_vector);
-		}
+		vdSub(DIM, Position_vec, Point_P, dist_vector);
 	} // 3 - from Center of Gravity of a fixed Point_P
 
 	double get_I_body_xx() const {
@@ -867,32 +899,50 @@ public:
 		change_vect[0] = current_ALE_vect[0] - global_vect[0];
 		change_vect[1] = current_ALE_vect[1] - global_vect[1];
 	}
-	void get_vel_pos_change(T* velocity_change, T* position_change, T* angle_change) {
-		get_ALE_change(Position_vec_xy, Position_vec_prev_xy, position_change);
-		get_ALE_change(Velocity_vec_xy, Velocity_vec_prev_xy, velocity_change);
-	}
+	//void get_vel_pos_change(T* velocity_change, T* position_change, T* angle_change) {
+	//	get_ALE_change(Position_vec_xy, Position_vec_prev_xy, position_change);
+	//	get_ALE_change(Velocity_vec_xy, Velocity_vec_prev_xy, velocity_change);
+	//}
 	void apply_ALE_change() {
 		/*Now both vector are at current state. swap pointer and CG location in new previous will be updated and following will be obselete which */
 
-		T c, s;
-		c = std::cos(*Angle_z);
-		s = std::sin(*Angle_z);
+		T c = std::cos(*Angle_z);
+		T s = std::sin(*Angle_z);
+		
 		Position_vec_xy[2] = Position_vec_xy[0] + l_long[0] * c - l_lat[0] * s; // fl
 		Position_vec_xy[3] = Position_vec_xy[1] + l_lat[0] * c + l_long[0] * s; // fl
-		Position_vec_xy[4] = Position_vec_xy[2]; // fl
-		Position_vec_xy[5] = Position_vec_xy[3]; // fl
+		
 		Position_vec_xy[6] = Position_vec_xy[0] + l_long[1] * c + l_lat[1] * s; // fr
 		Position_vec_xy[7] = Position_vec_xy[1] - l_lat[1] * c + l_long[1] * s; // fr
-		Position_vec_xy[8] = Position_vec_xy[6]; // fl
-		Position_vec_xy[9] = Position_vec_xy[7]; // fl
+		
 		Position_vec_xy[10] = Position_vec_xy[0] - l_long[2] * c - l_lat[2] * s; // rl
 		Position_vec_xy[11] = Position_vec_xy[1] + l_lat[2] * c - l_long[2] * s; // rl
-		Position_vec_xy[12] = Position_vec_xy[10]; // fl
-		Position_vec_xy[13] = Position_vec_xy[11]; // fl
+		
 		Position_vec_xy[14] = Position_vec_xy[0] - l_long[3] * c + l_lat[3] * s; // rr
 		Position_vec_xy[15] = Position_vec_xy[1] - l_lat[3] * c - l_long[3] * s; // rr
-		Position_vec_xy[16] = Position_vec_xy[14]; // fl
-		Position_vec_xy[17] = Position_vec_xy[15]; // fl
+
+		// copy values
+		//Position_vec_xy[4] = Position_vec_xy[2]; // fl
+		//Position_vec_xy[5] = Position_vec_xy[3]; // fl
+		//
+		//Position_vec_xy[8] = Position_vec_xy[6]; // fl
+		//Position_vec_xy[9] = Position_vec_xy[7]; // fl
+		//
+		//Position_vec_xy[12] = Position_vec_xy[10]; // fl
+		//Position_vec_xy[13] = Position_vec_xy[11]; // fl
+		//
+		//Position_vec_xy[16] = Position_vec_xy[14]; // fl
+		//Position_vec_xy[17] = Position_vec_xy[15]; // fl
+
+		//std::cout << "\n\n orig: " << Position_vec_xy[4] << "\t" << Position_vec_xy[5] << "\t"
+		//	<< Position_vec_xy[8] << "\t" << Position_vec_xy[9] << "\t"
+		//	<< Position_vec_xy[12] << "\t" << Position_vec_xy[13] << "\t"
+		//	<< Position_vec_xy[16] << "\t" << Position_vec_xy[17] << "\t";
+
+	    // Position_vec_xy[4,5,8,9,12,13,16,17] = Position_vec_xy[2,3,6,7,10,11,14,15]
+		cblas_dcopy(this->num_tyre, Position_vec_xy + 2, 4, Position_vec_xy + 4, 4);
+		cblas_dcopy(this->num_tyre, Position_vec_xy + 3, 4, Position_vec_xy + 5, 4);
+
 	}
 
 	void get_final_vel_pos_change(T* velocity_change, T* position_change) {
@@ -907,6 +957,7 @@ public:
 	
 	~Car() {
 		mkl_free_buffers();
+
 		mkl_free(Position_vec); 
 		Position_vec = nullptr;
 		mkl_free(Velocity_vec);
@@ -930,8 +981,6 @@ public:
 		initial_angle = nullptr;
 		mkl_free(initial_angular_velocity);
 		initial_angular_velocity = nullptr;
-
-		
 		
 		mkl_free(quad_angle_init);
 		quad_angle_init = nullptr;
@@ -968,15 +1017,18 @@ public:
 		//////////////////////////////////// ALE Vectors ///////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		mkl_free(Position_vec_xy);
-
 		Position_vec_xy = nullptr;
-		mkl_free(Velocity_vec_xy);
 
+		mkl_free(Velocity_vec_xy);
 		Velocity_vec_xy = nullptr;
+
 		delete Angle_z;
 		Angle_z = nullptr;
 		delete w_z;
 		w_z = nullptr;
+		delete global_mass;
+		global_mass = nullptr;
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////// Interpolator objects ///////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////
