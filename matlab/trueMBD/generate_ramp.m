@@ -1,4 +1,4 @@
-function [trajectory] = generate_ramp(length_ramp, layout, position, direction, delta_t, v_init, n)
+function [trajectory] = generate_ramp(pre_path, length_ramp, layout, position, direction, jump, delta_t, v_init, n)
 % always have 10m straight line at the beginning (so that the car is not tilted) 
 
     direction = direction / norm(direction);
@@ -14,10 +14,14 @@ function [trajectory] = generate_ramp(length_ramp, layout, position, direction, 
 
     trajectory(3,:) = position(3) + x * direction(2);    
 
-    %ramp between 10 and 10+length
-    for i = ceil(10 / dx)+1:floor((10+length_ramp) / dx) 
-        trajectory(2,i) = position(2) + layout(x(i) - 10);
+    %ramp between pre_path and pre_path+length
+    for i = ceil(pre_path / dx)+1:floor((pre_path+length_ramp) / dx) 
+        trajectory(2,i) = position(2) + layout(x(i) - pre_path);
     end
+      
+    trajectory(2,i:end) = trajectory(2,i) + jump;
+
+
     
 end
 

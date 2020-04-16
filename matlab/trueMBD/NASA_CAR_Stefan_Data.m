@@ -6,15 +6,11 @@ k_body_fl=28e3*0.69;
 k_tyre_fl=260e3;
 k_body_fr=28e3*0.69;
 k_tyre_fr=260e3;
-k_body_rr=28e3*0.69;
-k_tyre_rr=260e3;
-k_body_rl=28e3*0.69;
+k_body_rl=16e3*0.82;
 k_tyre_rl=260e3;
-% k_body_rl=16e3*0.82;
-% k_tyre_rl=260e3;
-% k_body_rr=16e3*0.82;
-% k_tyre_rr=260e3;
-penalty = 1e4;
+k_body_rr=16e3*0.82;
+k_tyre_rr=260e3;
+penalty = 1e5;
 k_body_rot_fl = penalty;  % this is a penalty value->try it as high as possible and see how the convergence evolves
 k_body_rot_fr = penalty;
 k_body_rot_rl = penalty;
@@ -47,17 +43,13 @@ mass_wheel_fl=145/2;
 mass_tyre_fl=30;
 mass_wheel_fr=145/2;
 mass_tyre_fr=30;
-mass_wheel_rl=145/2;
+mass_wheel_rl=135/2;
 mass_tyre_rl=30;
-mass_wheel_rr=145/2;
+mass_wheel_rr=135/2;
 mass_tyre_rr=30;
-% mass_wheel_rl=135/2;
-% mass_tyre_rl=30;
-% mass_wheel_rr=135/2;
-% mass_tyre_rr=30;
 
 % simulation specifications 
-num_iter = 100000;     % LENGTH OF THE SIMULATION
+num_iter = 10000;     % LENGTH OF THE SIMULATION
 delta_t = 1e-3;       % PLAY AROUND
 tol = 1e-7;           % !!!! PLAY AROUND !!!!
 max_iter = 1000000;     % for Broyden
@@ -77,7 +69,7 @@ mass_wheel = [mass_wheel_rr, mass_wheel_rl, mass_wheel_fl, mass_wheel_fr];
 % tyre parameters (provided as vectors [right-back, left-back, left-front, right_front])
 mass_tyre = [mass_tyre_rr, mass_tyre_rl, mass_tyre_fl, mass_tyre_fr];                   % do not put to zero to avoid singularities, Dirichlet condition are enforced via a force vector
 
-upper_spring_length = [ 0.695; 0.695; 0.695; 0.695];
+upper_spring_length = [ 0.7889; 0.7889; 0.7069; 0.7069];
 lower_spring_length = [ 0.3; 0.3; 0.3; 0.3];
 
 initial_upper_spring_length = [0.4470; 0.4470; 0.4470; 0.4470];                 % PLAY AROUND 
@@ -115,19 +107,23 @@ if generate_from_trajectoryXYZ
 %    initial_direction = [1;-1];
 %    trajectoryXYZ = generate_drunk_car(amplitude, period, initial_position, initial_direction, delta_t, v_init, num_iter + 1);
 
-acceleration = 0;
-    v_init = 3;
+%     acceleration = 2;
+%     v_init = 0.1;
+%     initial_position = [10; 40; 20];
+%     initial_direction = [1;0];
+%     trajectoryXYZ = generate_accelerated_car(acceleration, initial_position, initial_direction, delta_t, v_init, num_iter + 1);
+
+    ramp_length = 60;
+    pre_path = 10;
+    layout = @(X)0.001 * X^2;
     initial_position = [10; 40; 20];
     initial_direction = [-1;0];
-    trajectoryXYZ = generate_accelerated_car(acceleration, initial_position, initial_direction, delta_t, v_init, num_iter + 1);
-
-%     ramp_length = 60;
-%     layout = @(X)0.000 * X^2;
-%     initial_position = [10; 40; 20];
-%     initial_direction = [-1;0];
-%     v_init = 30;
-%     trajectoryXYZ = generate_ramp(ramp_length, layout, initial_position, initial_direction, delta_t, v_init, num_iter + 1);
+    jump = 0;
+    v_init = 10;
+    trajectoryXYZ = generate_ramp(pre_path, ramp_length, layout, initial_position, initial_direction, jump, delta_t, v_init, num_iter + 1);
     
+%    [trajectoryXYZ, num_iter] = generate_fancy_road(delta_t);
+
     % get the trajectories of the tyres
     [trajectoryXYZ_t1, trajectoryXYZ_t2, trajectoryXYZ_t3, trajectoryXYZ_t4, theta, vc, w] ...
         = compute_all_tyre_positions([-l_long_rr; l_lat_rr],...
@@ -227,14 +223,14 @@ FW4 = [0; -mass_wheel(4)*g; 0];
 
 if generate_from_trajectoryXYZ
     % arbitrary trajectory
-    FR1 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(1), ...
-                                        F, F_tyre1, trajectoryXYZ_t1, vt1, i, delta_t);        
-    FR2 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(2), ...
-                                        F, F_tyre2, trajectoryXYZ_t2, vt2, i, delta_t);
-    FR3 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(3), ...
-                                        F, F_tyre3, trajectoryXYZ_t3, vt3, i, delta_t);
-    FR4 = @(t, i, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(4), ...
-                                        F, F_tyre4, trajectoryXYZ_t4, vt4, i, delta_t);
+    FR1 = @(t, i, y, pcc, vt, vb, F) ...
+        flying_car_road_forces(mass_tyre(1), F, 1, F_tyre1, trajectoryXYZ_t1, vt1, i, delta_t);        
+    FR2 = @(t, i, y, pcc, vt, vb, F) ...
+        flying_car_road_forces(mass_tyre(2), F, 2, F_tyre2, trajectoryXYZ_t2, vt2, i, delta_t);
+    FR3 = @(t, i, y, pcc, vt, vb, F) ...
+        flying_car_road_forces(mass_tyre(3), F, 3, F_tyre3, trajectoryXYZ_t3, vt3, i, delta_t);
+    FR4 = @(t, i, y, pcc, vt, vb, F) ...
+        flying_car_road_forces(mass_tyre(4), F, 4, F_tyre4, trajectoryXYZ_t4, vt4, i, delta_t);
 end
 
 %PLAY AROUND; expect RK4 and BCN to work fine

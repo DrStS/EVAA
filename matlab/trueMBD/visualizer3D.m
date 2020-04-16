@@ -6,9 +6,8 @@ grid on
 
 num_iter = size(y,1) - 1;
 
-z_offset_tyre = y(1,34);
-
-vis_step = 200*max(1, round(1e-3/delta_t)); % visualization step
+frames_per_second = 4.4;   % change this to what your graphic card is able
+vis_step = ceil(1 / (delta_t * frames_per_second)); % visualization step
 
 % axis handler
 % for option 2
@@ -18,7 +17,7 @@ axis_update_step = 20 * vis_step;
 scale_factor = 0.8;
 fixed_range_x = 10 + scale_factor * vel_norms(1); 
 fixed_range_y = 10 + scale_factor * vel_norms(1);
-fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(1);
+fixed_range_z = 10 + scale_factor * vel_norms(1);
 mid_x = y(1,5);
 mid_y = y(1,7);
 min_x = mid_x - fixed_range_x / 2;
@@ -27,7 +26,7 @@ min_y = mid_y - fixed_range_y / 2;
 max_y = mid_y + fixed_range_y / 2;
 global_min_z = min(min(traj_1(2,:)), min(traj_2(2,:)));
 
-
+tic
 for i = 1 : vis_step : num_iter   
     
     %% get components
@@ -107,7 +106,8 @@ for i = 1 : vis_step : num_iter
     xlabel('X')
     ylabel('Y')
     zlabel('Z')
-
+    altstring=['altitude=',num2str(pcc(3),3),'m'];
+    title(altstring)
     
     hold off
 
@@ -159,7 +159,7 @@ for i = 1 : vis_step : num_iter
         mid_x = y(i,5);
         fixed_range_x = 10 + scale_factor * vel_norms(i); 
         fixed_range_y = 10 + scale_factor * vel_norms(i);
-        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        fixed_range_z = 10 + scale_factor * vel_norms(i);
         
         min_x = mid_x - 2.5;
         max_x = min_x + fixed_range_x;
@@ -172,7 +172,7 @@ for i = 1 : vis_step : num_iter
         mid_x = y(i,5);
         fixed_range_x = 10 + scale_factor * vel_norms(i); 
         fixed_range_y = 10 + scale_factor * vel_norms(i);
-        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        fixed_range_z = 10 + scale_factor * vel_norms(i);
         
         max_x = mid_x + 2.5;
         min_x = max_x - fixed_range_x;
@@ -185,7 +185,7 @@ for i = 1 : vis_step : num_iter
         mid_y = y(i,7);
         fixed_range_x = 10 + scale_factor * vel_norms(i); 
         fixed_range_y = 10 + scale_factor * vel_norms(i);
-        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        fixed_range_z = 10 + scale_factor * vel_norms(i);
         
         min_x = mid_x - fixed_range_x / 2;
         max_x = mid_x + fixed_range_x / 2;
@@ -198,7 +198,7 @@ for i = 1 : vis_step : num_iter
         mid_y = y(i,7);
         fixed_range_x = 10 + scale_factor * vel_norms(i); 
         fixed_range_y = 10 + scale_factor * vel_norms(i);
-        fixed_range_z = 1 + 0.1 * scale_factor * vel_norms(i);
+        fixed_range_z = 10 + scale_factor * vel_norms(i);
         
         min_x = mid_x - fixed_range_x / 2;
         max_x = mid_x + fixed_range_x / 2;
@@ -207,7 +207,7 @@ for i = 1 : vis_step : num_iter
     end
     
     axis_min_z = max(global_min_z, min(traj_1(2,i), traj_2(2,i)) - fixed_range_z);
-    axis([min_x, max_x, min_y, max_y, axis_min_z - 0.1, axis_min_z + fixed_range_z])
+    axis([min_x, max_x, min_y, max_y, axis_min_z-1, axis_min_z + fixed_range_z])
 
     drawnow;
     
@@ -218,6 +218,7 @@ for i = 1 : vis_step : num_iter
     
     set(0,'CurrentFigure',fig)
     subplot(1,2,2)
+    
     %car body
     plot3(pcc(1), pcc(2), pcc(3),'gx');
      grid on
@@ -263,6 +264,8 @@ for i = 1 : vis_step : num_iter
     xlabel('X')
     ylabel('Y')
     zlabel('Z')
+    velstring = ['speed=',num2str(vel_norms(i)*3.6,3),'km/h'];
+    title(velstring)
 
     
     hold off
@@ -275,4 +278,9 @@ for i = 1 : vis_step : num_iter
     drawnow
         
 end
+vis_time = toc;
+showed_frames = floor(num_iter / vis_step);
+calculated_frame_rate = showed_frames / vis_time;
+vis_string = ['Visualisation took ', num2str(vis_time,4),'sec with a frame rate of ',num2str(calculated_frame_rate,3),' frames/sec.'];
+disp(vis_string);
 end

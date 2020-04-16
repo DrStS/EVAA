@@ -1,6 +1,11 @@
 function [t,x_vector_new, metrics] = Runge_Kutta_4(f, t, x_previous)
     metrics = 0;
-    
+
+    global previous_solution_vector previous_force_vector internal_tyre_forces
+
+    previous_force_vector = zeros(3,4);
+    internal_tyre_forces = zeros(3,4);
+
     %initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
     
@@ -11,7 +16,13 @@ function [t,x_vector_new, metrics] = Runge_Kutta_4(f, t, x_previous)
         delta_t = t(n) - t(n-1);
         t_prev = t(n-1);
         x_previous = x_vector_new(n-1, :);
+
+        previous_solution_vector = x_previous;
+        
         k1 = delta_t * f(t_prev, n, x_previous')';
+
+        previous_force_vector = internal_tyre_forces;
+
         k2 = delta_t * f(t_prev + delta_t/2, n, x_previous' + k1'/2)';
         k3 = delta_t * f(t_prev + delta_t/2, n, x_previous' + k2'/2)';
         k4 = delta_t * f(t_prev + delta_t, n, x_previous' + k3')';

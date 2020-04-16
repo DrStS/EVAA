@@ -1,6 +1,12 @@
 function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
 % implementation of the previous difference formula (also called BDF in
 % older literature)
+
+    global previous_solution_vector previous_force_vector internal_tyre_forces
+
+    previous_force_vector = zeros(3,4);
+    internal_tyre_forces = zeros(3,4);
+
     % Initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
     metrics = zeros(length(t), 2); %first component: number of iteration to convergence, second component: condition of the Jacobian
@@ -14,8 +20,12 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
 
     x_previous = x_vector_new(n-1, :);
 
-    % 1. Initialize guess from previous time step
-    f_old = f(t(n-1), n-1,x_previous');
+    previous_solution_vector = x_previous;
+
+    % 1. Initial guess using previous time step
+    f_old = f(t(n-1), n, x_previous');
+    previous_force_vector = internal_tyre_forces;
+
     % in case the velocity is 0 add nuggets to avoid singular matrices
     f_old(abs(f_old) < 0.001) = 0.001*sign(f_old(abs(f_old) < 0.001));
     f_old(f_old==0) = (2*randi(2)-3)*0.001;
@@ -67,8 +77,12 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
         x_previous = x_vector_new(n-1, :);
         x_previous_previous = x_vector_new(n-2, :);
         
-        % 1. Initialize guess from previous time step
-        f_old = f(t(n-1), n-1,  x_previous');
+        previous_solution_vector = x_previous;
+        
+		% 1. Initial guess using previous time step
+		f_old = f(t(n-1), n, x_previous');
+        previous_force_vector = internal_tyre_forces;
+
         % in case the velocity is 0 add nuggets to avoid singular matrices
         f_old(abs(f_old) < 0.001) = 0.001*sign(f_old(abs(f_old) < 0.001));
         f_old(f_old==0) = (2*randi(2)-3)*0.001;
@@ -116,8 +130,8 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
             dispstr = ['Maximum number of iteration ', num2str(max_iter),' reached! Current accuracy: ', num2str(norm(F))];
             disp(dispstr)
         end
-        timestr = ['Time iteration ', num2str(n), ' required ', num2str(i), ' steps to solution'];
-        disp(timestr);        
+%         timestr = ['Time iteration ', num2str(n), ' required ', num2str(i), ' steps to solution'];
+%         disp(timestr);        
 
         if (mod(n, dt_inv)==0)
             timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n+1))];
