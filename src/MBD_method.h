@@ -383,11 +383,10 @@ public:
 		///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-<<<<<<< HEAD
-		r1 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		r2 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		r3 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		r4 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		r_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		r_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		r_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		r_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		Ic = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		mass_wheel = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
 		mass_tyre = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
@@ -404,87 +403,29 @@ public:
 		upper_spring_damping = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
 		lower_spring_damping = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
 		vc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vw1 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vw2 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vw3 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vw4 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vt1 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vt2 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vt3 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vt4 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vw_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vw_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vw_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vw_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vt_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vt_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vt_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vt_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		pcc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		FC = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		r1_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		r2_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		r3_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		r4_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		r_fl_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		r_fr_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		r_rl_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		r_rr_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		FW = (T**)mkl_calloc((Constants::NUM_LEGS), sizeof(T*), Constants::ALIGNMENT);
 		FT = (T*)mkl_calloc((Constants::NUM_LEGS), sizeof(T*), Constants::ALIGNMENT);
 		A_Ic = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		A_rem = (T*)mkl_calloc(9 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		center_of_circle = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 
-
-		i = 0;
-		r1[i] = -l_long_rr; r2[i] = -l_long_rl; r3[i] = l_long_fl; r4[i] = l_long_fr;
-		Ic[i * Constants::DIM + i] = I_body_xx;
-		mass_wheel[i] = mass_wheel_rr;
-		mass_tyre[i] = mass_tyre_rr;
-		upper_spring_length[i] = upper_spring_length_rr;
-		lower_spring_length[i] = lower_spring_length_rr;
-		upper_spring_stiffness[i] = k_body_rr;
-		lower_spring_stiffness[i] = k_tyre_rr;
-		upper_rotational_stiffness[i] = k_body_rot_rr;
-		lower_rotational_stiffness[i] = k_tyre_rot_rr;
-		FT1 = -mass_tyre[i] * g;
-		FW1 = -mass_wheel[i] * g;
-		upper_spring_damping[i] = c_body_rr;
-		lower_spring_damping[i] = c_tyre_rr;
-=======
-		r_fl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		r_fr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		r_rl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		r_rr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		Ic = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
-		mass_wheel = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		mass_tyre = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		upper_spring_length = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		lower_spring_length = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		upper_spring_stiffness = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		lower_spring_stiffness = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		upper_rotational_stiffness = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		lower_rotational_stiffness = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		initial_upper_spring_length = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		initial_lower_spring_length = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		initial_orientation = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		initial_angular_velocity = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		upper_spring_damping = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		lower_spring_damping = (T*)mkl_calloc(this->NUM_LEGS, sizeof(T), this->alignment);
-		vc = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		vw_fl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		vw_fr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		vw_rl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		vw_rr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		vt_fl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		vt_fr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		vt_rl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		vt_rr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		pcc = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		FC = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		r_fl_tilda = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
-		r_fr_tilda = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
-		r_rl_tilda = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
-		r_rr_tilda = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
-		FW = (T**)mkl_calloc((this->NUM_LEGS), sizeof(T*), this->alignment);
-		FT = (T*)mkl_calloc((this->NUM_LEGS), sizeof(T*), this->alignment);
-		A_Ic = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
-		A_rem = (T*)mkl_calloc(9 * this->DIM, sizeof(T), this->alignment);
-		center_of_circle = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-
-
 		i = 0;
 		r_fl[i] = -l_long_fl; r_fr[i] = -l_long_fr; r_rl[i] = l_long_fl; r_rr[i] = l_long_rr;
-		Ic[i * DIM + i] = I_body_xx;
+		Ic[i * Constants::DIM + i] = I_body_xx;
 		mass_wheel[i] = mass_wheel_fl;
 		mass_tyre[i] = mass_tyre_fl;
 		upper_spring_length[i] = upper_spring_length_fl;
@@ -497,7 +438,7 @@ public:
 		FW_fl = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_fl;
 		lower_spring_damping[i] = c_tyre_fl;
->>>>>>> refactor_MBD
+
 		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
 		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
 		initial_orientation[i] = params.initial_angle[i];
@@ -515,12 +456,8 @@ public:
 		center_of_circle[i] = load_params.profile_center[i];
 
 		i = 1;
-<<<<<<< HEAD
-		r1[i] = 0; r2[i] = 0; r3[i] = 0; r4[i] = 0;
-		Ic[i * Constants::DIM + i] = I_body_zz;
-=======
 		r_fl[i] = l_lat_fl; r_fr[i] = -l_lat_fr; r_rl[i] = -l_lat_fl; r_rr[i] = l_lat_rr;
-		Ic[i * DIM + i] = I_body_yy;
+		Ic[i * Constants::DIM + i] = I_body_yy;
 		mass_wheel[i] = mass_wheel_fr;
 		mass_tyre[i] = mass_tyre_fr;
 		upper_spring_length[i] = upper_spring_length_fr;
@@ -551,8 +488,7 @@ public:
 
 		i = 2;
 		r_fl[i] = 0; r_fr[i] = 0; r_rl[i] = 0; r_rr[i] = 0;
-		Ic[i * DIM + i] = I_body_zz;
->>>>>>> refactor_MBD
+		Ic[i * Constants::DIM + i] = I_body_zz;
 		mass_wheel[i] = mass_wheel_rl;
 		mass_tyre[i] = mass_tyre_rl;
 		upper_spring_length[i] = upper_spring_length_rl;
@@ -568,49 +504,6 @@ public:
 		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
 		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
 		initial_orientation[i] = params.initial_angle[i];
-<<<<<<< HEAD
-		vc[i] = params.initial_vel_body[i+1];
-		vw1[i] = params.initial_vel_wheel[i+1];
-		vw2[i] = params.initial_vel_wheel[i+1 + 3];
-		vw3[i] = params.initial_vel_wheel[i+1 + 6];
-		vw4[i] = params.initial_vel_wheel[i+1 + 9];
-		vt1[i] = params.initial_vel_tyre[i+1];
-		vt2[i] = params.initial_vel_tyre[i+1 + 3];
-		vt3[i] = params.initial_vel_tyre[i+1 + 6];
-		vt4[i] = params.initial_vel_tyre[i+1 + 9];
-		pcc[i] = params.initial_pos_body[i+1];
-		FC[i] = -mass * g;
-		center_of_circle[i] = load_params.profile_center[i+1];
-
-		i = 2;
-		r1[i] = l_lat_rr; r2[i] = -l_lat_rl; r3[i] = -l_lat_fl; r4[i] = l_lat_fr;
-		Ic[i * Constants::DIM + i] = I_body_yy;
-		mass_wheel[i] = mass_wheel_fl;
-		mass_tyre[i] = mass_tyre_fl;
-		upper_spring_length[i] = upper_spring_length_fl;
-		lower_spring_length[i] = lower_spring_length_fl;
-		upper_spring_stiffness[i] = k_body_fl;
-		lower_spring_stiffness[i] = k_tyre_fl;
-		upper_rotational_stiffness[i] = k_body_rot_fl;
-		lower_rotational_stiffness[i] = k_tyre_rot_fl;
-		FT3 = -mass_tyre[i] * g;
-		FW3 = -mass_wheel[i] * g;
-		upper_spring_damping[i] = c_body_fl;
-		lower_spring_damping[i] = c_tyre_fl;
-		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
-		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
-		initial_orientation[i] = params.initial_angle[i];
-		vc[i] = params.initial_vel_body[i-1];
-		vw1[i] = params.initial_vel_wheel[i-1];
-		vw2[i] = params.initial_vel_wheel[i-1 + 3];
-		vw3[i] = params.initial_vel_wheel[i-1 + 6];
-		vw4[i] = params.initial_vel_wheel[i-1 + 9];
-		vt1[i] = params.initial_vel_tyre[i-1];
-		vt2[i] = params.initial_vel_tyre[i-1 + 3];
-		vt3[i] = params.initial_vel_tyre[i-1 + 6];
-		vt4[i] = params.initial_vel_tyre[i-1 + 9];
-		pcc[i] = params.initial_pos_body[i-1];
-=======
 		vc[i] = params.initial_vel_body[i];
 		vw_fl[i] = params.initial_vel_wheel[i];
 		vw_fr[i] = params.initial_vel_wheel[i + 3];
@@ -621,7 +514,6 @@ public:
 		vt_rl[i] = params.initial_vel_tyre[i + 6];
 		vt_rr[i] = params.initial_vel_tyre[i + 9];
 		pcc[i] = params.initial_pos_body[i];
->>>>>>> refactor_MBD
 		FC[i] = 0;
 		center_of_circle[i] = load_params.profile_center[i];
 
@@ -652,17 +544,11 @@ public:
 	overwrites the velocity in the tyres and wheels and the angular velocities
 	only keeps the tangential component of the velocity of the car body 
 	*/
-<<<<<<< HEAD
-	void circular_path_initialization(T* vc, T* vw1, T* vw2, T* vw3, T* vw4, 
-		T* vt1, T* vt2, T* vt3, T* vt4, T* omega, T* pcc, 
-		T* pt1 , T* pt2, T* pt3, T* pt4, T &radius_param) {
-		const MKL_INT dim = Constants::DIM;
-=======
 	void circular_path_initialization(T* vc, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr, 
 		T* vt_fl, T* vt_fr, T* vt_rl, T* vt_rr, T* omega, T* pcc, 
 		T* pt_fl , T* pt_fr, T* pt_rl, T* pt_rr, T &radius_param) {
-		const MKL_INT dim = this->DIM;
->>>>>>> refactor_MBD
+
+		const MKL_INT dim = Constants::DIM;
 		const MKL_INT incx = 1;
  
 		vc[2] = 0;
@@ -705,18 +591,10 @@ public:
 		MathLibrary::crossProduct(omega, pt_rl, vt_rl);
 		MathLibrary::crossProduct(omega, pt_rr, vt_rr);
 
-<<<<<<< HEAD
-		cblas_dcopy(Constants::DIM, vt1, 1, vw1, 1);
-		cblas_dcopy(Constants::DIM, vt2, 1, vw2, 1);
-		cblas_dcopy(Constants::DIM, vt3, 1, vw3, 1);
-		cblas_dcopy(Constants::DIM, vt4, 1, vw4, 1);
-=======
-		cblas_dcopy(this->DIM, vt_fl, 1, vw_fl, 1);
-		cblas_dcopy(this->DIM, vt_fr, 1, vw_fr, 1);
-		cblas_dcopy(this->DIM, vt_rl, 1, vw_rl, 1);
-		cblas_dcopy(this->DIM, vt_rr, 1, vw_rr, 1);
->>>>>>> refactor_MBD
-
+		cblas_dcopy(Constants::DIM, vt_fl, 1, vw_fl, 1);
+		cblas_dcopy(Constants::DIM, vt_fr, 1, vw_fr, 1);
+		cblas_dcopy(Constants::DIM, vt_rl, 1, vw_rl, 1);
+		cblas_dcopy(Constants::DIM, vt_rr, 1, vw_rr, 1);
 	}
 
 
@@ -768,13 +646,8 @@ public:
 		T *unit_z_vector, *velocity_direction_tyre;
 		T velocity_magnitude_tyre, inv_radius, force_magnitude_tyre;
 
-<<<<<<< HEAD
-		unit_y_vector = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		unit_z_vector = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		velocity_direction_tyre = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-=======
-		unit_z_vector = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		velocity_direction_tyre = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
->>>>>>> refactor_MBD
 
 
 		const MKL_INT mkl_DIM = Constants::DIM;
@@ -815,129 +688,44 @@ public:
 		// add to members
 
 
-<<<<<<< HEAD
 		cf_C_cN = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_r_up1 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_r_up2 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_r_up3 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);	
-		cf_r_up4 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_r_low1 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_r_low2 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_r_low3 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_r_low4 = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_r_up_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_r_up_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_r_up_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);	
+		cf_r_up_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_r_low_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_r_low_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_r_low_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_r_low_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 
-		cf_upper_normal1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_normal2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_normal3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_normal4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_normal1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_normal2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_normal3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_normal4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_normal_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_normal_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_normal_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_normal_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_normal_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_normal_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_normal_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_normal_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		cf_col_dat = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 
-		cf_upper_force1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_force2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_force3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_force4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_force1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_force2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_force3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_force4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 
-		cf_upper_dampf1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_dampf2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_dampf3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_dampf4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_dampf1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_dampf2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_dampf3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_dampf4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_dampf_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_dampf_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_dampf_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_dampf_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_dampf_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_dampf_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_dampf_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_dampf_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		cf_temp = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-
-		cf_upper_angle1 = new T;
-		cf_upper_angle2 = new T;
-		cf_upper_angle3 = new T;
-		cf_upper_angle4 = new T;
-		cf_lower_angle1 = new T;
-		cf_lower_angle2 = new T;
-		cf_lower_angle3 = new T;
-		cf_lower_angle4 = new T;
-
-		cf_upper_S1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_S2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_S3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_S4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_S1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_S2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_S3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_S4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-
-		cf_lower_rot_force1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_rot_force2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_rot_force3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_lower_rot_force4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_rot_force1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_rot_force2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_rot_force3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_upper_rot_force4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_car_rot_force1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_car_rot_force2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_car_rot_force3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_car_rot_force4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_sum_car_force1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_sum_car_force2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_sum_car_force3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_sum_car_force4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-
-		cf_local_FR1 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_local_FR2 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_local_FR3 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		cf_local_FR4 = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-
-		cf_Hc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_sum_torque_spring_car = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_Tc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_wc_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-=======
-		cf_C_cN = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
-		cf_r_up_fl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		cf_r_up_fr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		cf_r_up_rl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);	
-		cf_r_up_rr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		cf_r_low_fl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		cf_r_low_fr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		cf_r_low_rl = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		cf_r_low_rr = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-
-		cf_upper_normal_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_normal_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_normal_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_normal_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_normal_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_normal_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_normal_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_normal_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_col_dat = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-
-		cf_upper_force_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_force_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_force_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_force_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_force_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_force_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_force_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_force_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-
-		cf_upper_dampf_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_dampf_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_dampf_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_dampf_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_dampf_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_dampf_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_dampf_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_dampf_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_temp = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
 
 		cf_upper_angle_fl = new T;
 		cf_upper_angle_fr = new T;
@@ -948,42 +736,42 @@ public:
 		cf_lower_angle_rl = new T;
 		cf_lower_angle_rr = new T;
 
-		cf_upper_S_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_S_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_S_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_S_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_S_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_S_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_S_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_S_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
+		cf_upper_S_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_S_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_S_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_S_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_S_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_S_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_S_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_S_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 
-		cf_lower_rot_force_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_rot_force_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_rot_force_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_lower_rot_force_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_rot_force_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_rot_force_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_rot_force_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_upper_rot_force_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_car_rot_force_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_car_rot_force_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_car_rot_force_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_car_rot_force_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_sum_car_force_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_sum_car_force_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_sum_car_force_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_sum_car_force_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
+		cf_lower_rot_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_rot_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_rot_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_lower_rot_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_rot_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_rot_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_rot_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_upper_rot_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_car_rot_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_car_rot_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_car_rot_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_car_rot_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_sum_car_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_sum_car_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_sum_car_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_sum_car_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 
-		cf_local_FR_fl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_local_FR_fr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_local_FR_rl = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
-		cf_local_FR_rr = (T*)mkl_calloc((this->DIM), sizeof(T), this->alignment);
+		cf_local_FR_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_local_FR_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_local_FR_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		cf_local_FR_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 
-		cf_Hc = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		cf_sum_torque_spring_car = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		cf_Tc = (T*)mkl_calloc(this->DIM, sizeof(T), this->alignment);
-		cf_wc_tilda = (T*)mkl_calloc((this->DIM) * (this->DIM), sizeof(T), this->alignment);
->>>>>>> refactor_MBD
+		cf_Hc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_sum_torque_spring_car = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_Tc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		cf_wc_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+
 		cf_Tc[0] = 0.0;
 		cf_Tc[1] = 0.0;
 		cf_Tc[2] = 0.0;
@@ -1099,59 +887,31 @@ public:
 		*/
 		// Aliasing for readability
 		T* wc_ = x_;
-<<<<<<< HEAD
 		T* vc_ = x_ + Constants::DIM;
-		T* vw1_ = x_ + 2 * Constants::DIM;
-		T* vw2_ = x_ + 3 * Constants::DIM;
-		T* vw3_ = x_ + 4 * Constants::DIM;
-		T* vw4_ = x_ + 5 * Constants::DIM;
-		T* vt1_ = x_ + 6 * Constants::DIM;
-		T* vt2_ = x_ + 7 * Constants::DIM;
-		T* vt3_ = x_ + 8 * Constants::DIM;
-		T* vt4_ = x_ + 9 * Constants::DIM;
+		T* vw_fl_ = x_ + 2 * Constants::DIM;
+		T* vw_fr_ = x_ + 3 * Constants::DIM;
+		T* vw_rl_ = x_ + 4 * Constants::DIM;
+		T* vw_rr_ = x_ + 5 * Constants::DIM;
+		T* vt_fl_ = x_ + 6 * Constants::DIM;
+		T* vt_fr_ = x_ + 7 * Constants::DIM;
+		T* vt_rl_ = x_ + 8 * Constants::DIM;
+		T* vt_rr_ = x_ + 9 * Constants::DIM;
 		T* qc_ = x_ + 10 * Constants::DIM;
 		T* pcc_ = x_ + 10 * Constants::DIM + Constants::NUM_LEGS;
-		T* pw1_ = x_ + 11 * Constants::DIM + Constants::NUM_LEGS;
-		T* pw2_ = x_ + 12 * Constants::DIM + Constants::NUM_LEGS;
-		T* pw3_ = x_ + 13 * Constants::DIM + Constants::NUM_LEGS;
-		T* pw4_ = x_ + 14 * Constants::DIM + Constants::NUM_LEGS;
-		T* pt1_ = x_ + 15 * Constants::DIM + Constants::NUM_LEGS;
-		T* pt2_ = x_ + 16 * Constants::DIM + Constants::NUM_LEGS;
-		T* pt3_ = x_ + 17 * Constants::DIM + Constants::NUM_LEGS;
-		T* pt4_ = x_ + 18 * Constants::DIM + Constants::NUM_LEGS;
-		T inv_norm_r_up1, inv_norm_r_up2, inv_norm_r_up3, inv_norm_r_up4;
-		T inv_norm_r_low1, inv_norm_r_low2, inv_norm_r_low3, inv_norm_r_low4;
-		T norm_r_up1, norm_r_up2, norm_r_up3, norm_r_up4;
-		T norm_r_low1, norm_r_low2, norm_r_low3, norm_r_low4;
-		//write_vector(r1, Constants::DIM);
-		//write_matrix(r1_tilda, Constants::DIM);
-=======
-		T* vc_ = x_ + this->DIM;
-		T* vw_fl_ = x_ + 2 * this->DIM;
-		T* vw_fr_ = x_ + 3 * this->DIM;
-		T* vw_rl_ = x_ + 4 * this->DIM;
-		T* vw_rr_ = x_ + 5 * this->DIM;
-		T* vt_fl_ = x_ + 6 * this->DIM;
-		T* vt_fr_ = x_ + 7 * this->DIM;
-		T* vt_rl_ = x_ + 8 * this->DIM;
-		T* vt_rr_ = x_ + 9 * this->DIM;
-		T* qc_ = x_ + 10 * this->DIM;
-		T* pcc_ = x_ + 10 * this->DIM + this->NUM_LEGS;
-		T* pw_fl_ = x_ + 11 * this->DIM + this->NUM_LEGS;
-		T* pw_fr_ = x_ + 12 * this->DIM + this->NUM_LEGS;
-		T* pw_rl_ = x_ + 13 * this->DIM + this->NUM_LEGS;
-		T* pw_rr_ = x_ + 14 * this->DIM + this->NUM_LEGS;
-		T* pt_fl_ = x_ + 15 * this->DIM + this->NUM_LEGS;
-		T* pt_fr_ = x_ + 16 * this->DIM + this->NUM_LEGS;
-		T* pt_rl_ = x_ + 17 * this->DIM + this->NUM_LEGS;
-		T* pt_rr_ = x_ + 18 * this->DIM + this->NUM_LEGS;
+		T* pw_fl_ = x_ + 11 * Constants::DIM + Constants::NUM_LEGS;
+		T* pw_fr_ = x_ + 12 * Constants::DIM + Constants::NUM_LEGS;
+		T* pw_rl_ = x_ + 13 * Constants::DIM + Constants::NUM_LEGS;
+		T* pw_rr_ = x_ + 14 * Constants::DIM + Constants::NUM_LEGS;
+		T* pt_fl_ = x_ + 15 * Constants::DIM + Constants::NUM_LEGS;
+		T* pt_fr_ = x_ + 16 * Constants::DIM + Constants::NUM_LEGS;
+		T* pt_rl_ = x_ + 17 * Constants::DIM + Constants::NUM_LEGS;
+		T* pt_rr_ = x_ + 18 * Constants::DIM + Constants::NUM_LEGS;
 		T inv_norm_r_up_fl, inv_norm_r_up_fr, inv_norm_r_up_rl, inv_norm_r_up_rr;
 		T inv_norm_r_low_fl, inv_norm_r_low_fr, inv_norm_r_low_rl, inv_norm_r_low_rr;
 		T norm_r_up_fl, norm_r_up_fr, norm_r_up_rl, norm_r_up_rr;
 		T norm_r_low_fl, norm_r_low_fr, norm_r_low_rl, norm_r_low_rr;
-		//write_vector(r_fl, this->DIM);
-		//write_matrix(r_fl_tilda, this->DIM);
->>>>>>> refactor_MBD
+		//write_vector(r_fl, Constants::DIM);
+		//write_matrix(r_fl_tilda, Constants::DIM);
 		/*
 		/////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////                 Basis        //////////////////////////////////
@@ -1184,101 +944,53 @@ public:
 			r_low3 = pw3 - pt3;
 			r_low4 = pw4 - pt4;
 		*/
-		// r_up1
-<<<<<<< HEAD
-		cblas_dcopy(Constants::DIM, pcc_, 1, cf_r_up1, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r1, 1, 1, cf_r_up1, 1);
-		cblas_daxpy(Constants::DIM, -1.0, pw1_, 1, cf_r_up1, 1);
-
-		// r_up2
-		cblas_dcopy(Constants::DIM, pcc_, 1, cf_r_up2, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r2, 1, 1, cf_r_up2, 1);
-		cblas_daxpy(Constants::DIM, -1.0, pw2_, 1, cf_r_up2, 1);
-		// r_up3
-		cblas_dcopy(Constants::DIM, pcc_, 1, cf_r_up3, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r3, 1, 1, cf_r_up3, 1);
-		cblas_daxpy(Constants::DIM, -1.0, pw3_, 1, cf_r_up3, 1);
-		// r_up4
-		cblas_dcopy(Constants::DIM, pcc_, 1, cf_r_up4, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r4, 1, 1, cf_r_up4, 1);
-		cblas_daxpy(Constants::DIM, -1.0, pw4_, 1, cf_r_up4, 1);
-		
-		// r_low1
-		cblas_dcopy(Constants::DIM, pw1_, 1, cf_r_low1, 1);
-		cblas_daxpy(Constants::DIM, -1.0, pt1_, 1, cf_r_low1, 1);
-
-		// r_low2
-		cblas_dcopy(Constants::DIM, pw2_, 1, cf_r_low2, 1);
-		cblas_daxpy(Constants::DIM, -1.0, pt2_, 1, cf_r_low2, 1);
-
-		// r_low3
-		cblas_dcopy(Constants::DIM, pw3_, 1, cf_r_low3, 1);
-		cblas_daxpy(Constants::DIM, -1.0, pt3_, 1, cf_r_low3, 1);
-		// r_low4
-		cblas_dcopy(Constants::DIM, pw4_, 1, cf_r_low4, 1);
-		cblas_daxpy(Constants::DIM, -1.0, pt4_, 1, cf_r_low4, 1);
-
-		/* Compute spring lengths and their inverses */
-		norm_r_up1 = cblas_dnrm2(Constants::DIM, cf_r_up1, 1);
-		norm_r_up2 = cblas_dnrm2(Constants::DIM, cf_r_up2, 1);
-		norm_r_up3 = cblas_dnrm2(Constants::DIM, cf_r_up3, 1);
-		norm_r_up4 = cblas_dnrm2(Constants::DIM, cf_r_up4, 1);
-=======
-		cblas_dcopy(this->DIM, pcc_, 1, cf_r_up_fl, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, cf_C_cN, this->DIM, this->r_fl, 1, 1, cf_r_up_fl, 1);
-		cblas_daxpy(this->DIM, -1.0, pw_fl_, 1, cf_r_up_fl, 1);
+		cblas_dcopy(Constants::DIM, pcc_, 1, cf_r_up_fl, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r_fl, 1, 1, cf_r_up_fl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, pw_fl_, 1, cf_r_up_fl, 1);
 
 		// r_up_fr
-		cblas_dcopy(this->DIM, pcc_, 1, cf_r_up_fr, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, cf_C_cN, this->DIM, this->r_fr, 1, 1, cf_r_up_fr, 1);
-		cblas_daxpy(this->DIM, -1.0, pw_fr_, 1, cf_r_up_fr, 1);
+		cblas_dcopy(Constants::DIM, pcc_, 1, cf_r_up_fr, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r_fr, 1, 1, cf_r_up_fr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, pw_fr_, 1, cf_r_up_fr, 1);
 		// r_up_rl
-		cblas_dcopy(this->DIM, pcc_, 1, cf_r_up_rl, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, cf_C_cN, this->DIM, this->r_rl, 1, 1, cf_r_up_rl, 1);
-		cblas_daxpy(this->DIM, -1.0, pw_rl_, 1, cf_r_up_rl, 1);
+		cblas_dcopy(Constants::DIM, pcc_, 1, cf_r_up_rl, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r_rl, 1, 1, cf_r_up_rl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, pw_rl_, 1, cf_r_up_rl, 1);
 		// r_up4
-		cblas_dcopy(this->DIM, pcc_, 1, cf_r_up_rr, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1, cf_C_cN, this->DIM, this->r_rr, 1, 1, cf_r_up_rr, 1);
-		cblas_daxpy(this->DIM, -1.0, pw_rr_, 1, cf_r_up_rr, 1);
+		cblas_dcopy(Constants::DIM, pcc_, 1, cf_r_up_rr, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r_rr, 1, 1, cf_r_up_rr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, pw_rr_, 1, cf_r_up_rr, 1);
 		
 		// r_low1
-		cblas_dcopy(this->DIM, pw_fl_, 1, cf_r_low_fl, 1);
-		cblas_daxpy(this->DIM, -1.0, pt_fl_, 1, cf_r_low_fl, 1);
+		cblas_dcopy(Constants::DIM, pw_fl_, 1, cf_r_low_fl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, pt_fl_, 1, cf_r_low_fl, 1);
 
 		// r_low2
-		cblas_dcopy(this->DIM, pw_fr_, 1, cf_r_low_fr, 1);
-		cblas_daxpy(this->DIM, -1.0, pt_fr_, 1, cf_r_low_fr, 1);
+		cblas_dcopy(Constants::DIM, pw_fr_, 1, cf_r_low_fr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, pt_fr_, 1, cf_r_low_fr, 1);
 
 		// r_low3
-		cblas_dcopy(this->DIM, pw_rl_, 1, cf_r_low_rl, 1);
-		cblas_daxpy(this->DIM, -1.0, pt_rl_, 1, cf_r_low_rl, 1);
+		cblas_dcopy(Constants::DIM, pw_rl_, 1, cf_r_low_rl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, pt_rl_, 1, cf_r_low_rl, 1);
 		// r_low4
-		cblas_dcopy(this->DIM, pw_rr_, 1, cf_r_low_rr, 1);
-		cblas_daxpy(this->DIM, -1.0, pt_rr_, 1, cf_r_low_rr, 1);
+		cblas_dcopy(Constants::DIM, pw_rr_, 1, cf_r_low_rr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, pt_rr_, 1, cf_r_low_rr, 1);
 
 		/* Compute spring lengths and their inverses */
-		norm_r_up_fl = cblas_dnrm2(this->DIM, cf_r_up_fl, 1);
-		norm_r_up_fr = cblas_dnrm2(this->DIM, cf_r_up_fr, 1);
-		norm_r_up_rl = cblas_dnrm2(this->DIM, cf_r_up_rl, 1);
-		norm_r_up_rr = cblas_dnrm2(this->DIM, cf_r_up_rr, 1);
->>>>>>> refactor_MBD
+		norm_r_up_fl = cblas_dnrm2(Constants::DIM, cf_r_up_fl, 1);
+		norm_r_up_fr = cblas_dnrm2(Constants::DIM, cf_r_up_fr, 1);
+		norm_r_up_rl = cblas_dnrm2(Constants::DIM, cf_r_up_rl, 1);
+		norm_r_up_rr = cblas_dnrm2(Constants::DIM, cf_r_up_rr, 1);
 
 		inv_norm_r_up_fl = 1.0 / norm_r_up_fl;
 		inv_norm_r_up_fr = 1.0 / norm_r_up_fr;
 		inv_norm_r_up_rl = 1.0 / norm_r_up_rl;
 		inv_norm_r_up_rr = 1.0 / norm_r_up_rr;
 
-<<<<<<< HEAD
-		norm_r_low1 = cblas_dnrm2(Constants::DIM, cf_r_low1, 1);
-		norm_r_low2 = cblas_dnrm2(Constants::DIM, cf_r_low2, 1);
-		norm_r_low3 = cblas_dnrm2(Constants::DIM, cf_r_low3, 1);
-		norm_r_low4 = cblas_dnrm2(Constants::DIM, cf_r_low4, 1);
-=======
-		norm_r_low_fl = cblas_dnrm2(this->DIM, cf_r_low_fl, 1);
-		norm_r_low_fr = cblas_dnrm2(this->DIM, cf_r_low_fr, 1);
-		norm_r_low_rl = cblas_dnrm2(this->DIM, cf_r_low_rl, 1);
-		norm_r_low_rr = cblas_dnrm2(this->DIM, cf_r_low_rr, 1);
->>>>>>> refactor_MBD
+		norm_r_low_fl = cblas_dnrm2(Constants::DIM, cf_r_low_fl, 1);
+		norm_r_low_fr = cblas_dnrm2(Constants::DIM, cf_r_low_fr, 1);
+		norm_r_low_rl = cblas_dnrm2(Constants::DIM, cf_r_low_rl, 1);
+		norm_r_low_rr = cblas_dnrm2(Constants::DIM, cf_r_low_rr, 1);
 
 		inv_norm_r_low_fl = 1.0 / norm_r_low_fl;
 		inv_norm_r_low_fr = 1.0 / norm_r_low_fr;
@@ -1328,27 +1040,15 @@ public:
 
 		cblas_dcopy(Constants::DIM, cf_C_cN + 1, Constants::DIM, cf_col_dat, 1);
 
-<<<<<<< HEAD
-		MathLibrary::get_quaternion<T>(cf_r_up1, cf_col_dat, cf_upper_angle1, cf_upper_normal1, Constants::DIM);
-		MathLibrary::get_quaternion<T>(cf_r_up2, cf_col_dat, cf_upper_angle2, cf_upper_normal2, Constants::DIM);
-		MathLibrary::get_quaternion<T>(cf_r_up3, cf_col_dat, cf_upper_angle3, cf_upper_normal3, Constants::DIM);
-		MathLibrary::get_quaternion<T>(cf_r_up4, cf_col_dat, cf_upper_angle4, cf_upper_normal4, Constants::DIM);
+		MathLibrary::get_quaternion<T>(cf_r_up_fl, cf_col_dat, cf_upper_angle_fl, cf_upper_normal_fl, Constants::DIM);
+		MathLibrary::get_quaternion<T>(cf_r_up_fr, cf_col_dat, cf_upper_angle_fr, cf_upper_normal_fr, Constants::DIM);
+		MathLibrary::get_quaternion<T>(cf_r_up_rl, cf_col_dat, cf_upper_angle_rl, cf_upper_normal_rl, Constants::DIM);
+		MathLibrary::get_quaternion<T>(cf_r_up_rr, cf_col_dat, cf_upper_angle_rr, cf_upper_normal_rr, Constants::DIM);
 
-		MathLibrary::get_quaternion(cf_r_low1, cf_r_up1, cf_lower_angle1, cf_lower_normal1, Constants::DIM);
-		MathLibrary::get_quaternion(cf_r_low2, cf_r_up2, cf_lower_angle2, cf_lower_normal2, Constants::DIM);
-		MathLibrary::get_quaternion(cf_r_low3, cf_r_up3, cf_lower_angle3, cf_lower_normal3, Constants::DIM);
-		MathLibrary::get_quaternion(cf_r_low4, cf_r_up4, cf_lower_angle4, cf_lower_normal4, Constants::DIM);
-=======
-		MathLibrary::get_quaternion<T>(cf_r_up_fl, cf_col_dat, cf_upper_angle_fl, cf_upper_normal_fl, this->DIM);
-		MathLibrary::get_quaternion<T>(cf_r_up_fr, cf_col_dat, cf_upper_angle_fr, cf_upper_normal_fr, this->DIM);
-		MathLibrary::get_quaternion<T>(cf_r_up_rl, cf_col_dat, cf_upper_angle_rl, cf_upper_normal_rl, this->DIM);
-		MathLibrary::get_quaternion<T>(cf_r_up_rr, cf_col_dat, cf_upper_angle_rr, cf_upper_normal_rr, this->DIM);
-
-		MathLibrary::get_quaternion(cf_r_low_fl, cf_r_up_fl, cf_lower_angle_fl, cf_lower_normal_fl, this->DIM);
-		MathLibrary::get_quaternion(cf_r_low_fr, cf_r_up_fr, cf_lower_angle_fr, cf_lower_normal_fr, this->DIM);
-		MathLibrary::get_quaternion(cf_r_low_rl, cf_r_up_rl, cf_lower_angle_rl, cf_lower_normal_rl, this->DIM);
-		MathLibrary::get_quaternion(cf_r_low_rr, cf_r_up_rr, cf_lower_angle_rr, cf_lower_normal_rr, this->DIM);
->>>>>>> refactor_MBD
+		MathLibrary::get_quaternion(cf_r_low_fl, cf_r_up_fl, cf_lower_angle_fl, cf_lower_normal_fl, Constants::DIM);
+		MathLibrary::get_quaternion(cf_r_low_fr, cf_r_up_fr, cf_lower_angle_fr, cf_lower_normal_fr, Constants::DIM);
+		MathLibrary::get_quaternion(cf_r_low_rl, cf_r_up_rl, cf_lower_angle_rl, cf_lower_normal_rl, Constants::DIM);
+		MathLibrary::get_quaternion(cf_r_low_rr, cf_r_up_rr, cf_lower_angle_rr, cf_lower_normal_rr, Constants::DIM);
 
 
 		/*
@@ -1370,60 +1070,31 @@ public:
 		*/
 
 		T scale;
-
-<<<<<<< HEAD
-		cblas_dcopy(Constants::DIM, cf_r_up1, 1, cf_upper_force1, 1);
-		scale = this->upper_spring_stiffness[0] * (1.0 - this->upper_spring_length[0] * inv_norm_r_up1);
-		cblas_dscal(Constants::DIM, scale, cf_upper_force1, 1);
-		cblas_dcopy(Constants::DIM, cf_r_up2, 1, cf_upper_force2, 1);
-		scale = this->upper_spring_stiffness[1] * (1.0 - this->upper_spring_length[1] * inv_norm_r_up2);
-		cblas_dscal(Constants::DIM, scale, cf_upper_force2, 1);
-		cblas_dcopy(Constants::DIM, cf_r_up3, 1, cf_upper_force3, 1);
-		scale = this->upper_spring_stiffness[2] * (1.0 - this->upper_spring_length[2] * inv_norm_r_up3);
-		cblas_dscal(Constants::DIM, scale, cf_upper_force3, 1);
-		cblas_dcopy(Constants::DIM, cf_r_up4, 1, cf_upper_force4, 1);
-		scale = this->upper_spring_stiffness[3] * (1.0 - this->upper_spring_length[3] * inv_norm_r_up4);
-		cblas_dscal(Constants::DIM, scale, cf_upper_force4, 1);
-
-		cblas_dcopy(Constants::DIM, cf_r_low1, 1, cf_lower_force1, 1);
-		scale = this->lower_spring_stiffness[0] * (1.0 - this->lower_spring_length[0] * inv_norm_r_low1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_force1, 1);
-		cblas_dcopy(Constants::DIM, cf_r_low2, 1, cf_lower_force2, 1);
-		scale = this->lower_spring_stiffness[1] * (1.0 - this->lower_spring_length[1] * inv_norm_r_low2);
-		cblas_dscal(Constants::DIM, scale, cf_lower_force2, 1);
-		cblas_dcopy(Constants::DIM, cf_r_low3, 1, cf_lower_force3, 1);
-		scale = this->lower_spring_stiffness[2] * (1.0 - this->lower_spring_length[2] * inv_norm_r_low3);
-		cblas_dscal(Constants::DIM, scale, cf_lower_force3, 1);
-		cblas_dcopy(Constants::DIM, cf_r_low4, 1, cf_lower_force4, 1);
-		scale = this->lower_spring_stiffness[3] * (1.0 - this->lower_spring_length[3] * inv_norm_r_low4);
-		cblas_dscal(Constants::DIM, scale, cf_lower_force4, 1);
-=======
-		cblas_dcopy(this->DIM, cf_r_up_fl, 1, cf_upper_force_fl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_up_fl, 1, cf_upper_force_fl, 1);
 		scale = this->upper_spring_stiffness[0] * (1.0 - this->upper_spring_length[0] * inv_norm_r_up_fl);
-		cblas_dscal(this->DIM, scale, cf_upper_force_fl, 1);
-		cblas_dcopy(this->DIM, cf_r_up_fr, 1, cf_upper_force_fr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_force_fl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_up_fr, 1, cf_upper_force_fr, 1);
 		scale = this->upper_spring_stiffness[1] * (1.0 - this->upper_spring_length[1] * inv_norm_r_up_fr);
-		cblas_dscal(this->DIM, scale, cf_upper_force_fr, 1);
-		cblas_dcopy(this->DIM, cf_r_up_rl, 1, cf_upper_force_rl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_force_fr, 1);
+		cblas_dcopy(Constants::DIM, cf_r_up_rl, 1, cf_upper_force_rl, 1);
 		scale = this->upper_spring_stiffness[2] * (1.0 - this->upper_spring_length[2] * inv_norm_r_up_rl);
-		cblas_dscal(this->DIM, scale, cf_upper_force_rl, 1);
-		cblas_dcopy(this->DIM, cf_r_up_rr, 1, cf_upper_force_rr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_force_rl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_up_rr, 1, cf_upper_force_rr, 1);
 		scale = this->upper_spring_stiffness[3] * (1.0 - this->upper_spring_length[3] * inv_norm_r_up_rr);
-		cblas_dscal(this->DIM, scale, cf_upper_force_rr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_force_rr, 1);
 
-		cblas_dcopy(this->DIM, cf_r_low_fl, 1, cf_lower_force_fl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_low_fl, 1, cf_lower_force_fl, 1);
 		scale = this->lower_spring_stiffness[0] * (1.0 - this->lower_spring_length[0] * inv_norm_r_low_fl);
-		cblas_dscal(this->DIM, scale, cf_lower_force_fl, 1);
-		cblas_dcopy(this->DIM, cf_r_low_fr, 1, cf_lower_force_fr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_force_fl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_low_fr, 1, cf_lower_force_fr, 1);
 		scale = this->lower_spring_stiffness[1] * (1.0 - this->lower_spring_length[1] * inv_norm_r_low_fr);
-		cblas_dscal(this->DIM, scale, cf_lower_force_fr, 1);
-		cblas_dcopy(this->DIM, cf_r_low_rl, 1, cf_lower_force_rl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_force_fr, 1);
+		cblas_dcopy(Constants::DIM, cf_r_low_rl, 1, cf_lower_force_rl, 1);
 		scale = this->lower_spring_stiffness[2] * (1.0 - this->lower_spring_length[2] * inv_norm_r_low_rl);
-		cblas_dscal(this->DIM, scale, cf_lower_force_rl, 1);
-		cblas_dcopy(this->DIM, cf_r_low_rr, 1, cf_lower_force_rr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_force_rl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_low_rr, 1, cf_lower_force_rr, 1);
 		scale = this->lower_spring_stiffness[3] * (1.0 - this->lower_spring_length[3] * inv_norm_r_low_rr);
-		cblas_dscal(this->DIM, scale, cf_lower_force_rr, 1);
->>>>>>> refactor_MBD
+		cblas_dscal(Constants::DIM, scale, cf_lower_force_rr, 1);
 
 		/*
 		calculate forces from damping effects
@@ -1452,235 +1123,119 @@ public:
 
 		//// upper_dampf1
 		// compute: vc - C_cN' * (r1_tilda * wc))
-<<<<<<< HEAD
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r1_tilda, Constants::DIM, wc_, 1, 0.0, cf_temp, 1);
-		cblas_dcopy(Constants::DIM, vc_, 1, cf_upper_dampf1, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf1, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_fl_tilda, Constants::DIM, wc_, 1, 0.0, cf_temp, 1);
+		cblas_dcopy(Constants::DIM, vc_, 1, cf_upper_dampf_fl, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf_fl, 1);
 		// dot((vc - C_cN' * (r1_tilda * wc)), r_up1)
 		//std::cout << cblas_ddot(Constants::DIM, upper_dampf1, 1, r_up1, 1) << std::endl;
 		//std::cout << MathLibrary::dot_product<T>(upper_dampf1, r_up1, Constants::DIM) << std::endl;
-		scale = cblas_ddot(mkl_DIM, cf_upper_dampf1, mkl_incx, cf_r_up1, mkl_incy);
+		scale = cblas_ddot(mkl_DIM, cf_upper_dampf_fl, mkl_incx, cf_r_up_fl, mkl_incy);
 		//scale = MathLibrary::dot_product<T>(upper_dampf1, r_up1, Constants::DIM);
 
 		// dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1)
-		scale -= cblas_ddot(mkl_DIM, vw1_, mkl_incx, cf_r_up1, mkl_incx);
+		scale -= cblas_ddot(mkl_DIM, vw_fl_, mkl_incx, cf_r_up_fl, mkl_incx);
 		//scale -= MathLibrary::dot_product<T>(vw1_, r_up1, Constants::DIM);
 		// (dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1))* inv_norm_r_up1 * inv_norm_r_up1
-		scale = scale * inv_norm_r_up1 * inv_norm_r_up1 * this->upper_spring_damping[0];
-		cblas_dcopy(Constants::DIM, cf_r_up1, 1, cf_upper_dampf1, 1);
-		cblas_dscal(Constants::DIM, scale, cf_upper_dampf1, 1);
-
-
-		//// upper_dampf2
-		// compute: vc - C_cN' * (r2_tilda * wc))
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r2_tilda, Constants::DIM, wc_, 1, 0.0, cf_temp, 1);
-		cblas_dcopy(Constants::DIM, vc_, 1, cf_upper_dampf2, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf2, 1);
-		// dot((vc - C_cN' * (r2_tilda * wc)), r_up2)
-		scale = cblas_ddot(mkl_DIM, cf_upper_dampf2, mkl_incx, cf_r_up2, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(upper_dampf2, r_up2, Constants::DIM);
-		// dot((vc - C_cN' * (r2_tilda * wc)), r_up2) - dot(vw2, r_up2)
-		scale -= cblas_ddot(mkl_DIM, vw2_, mkl_incx, cf_r_up2, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vw2_, r_up2, Constants::DIM);
-		// (dot((vc - C_cN' * (r2_tilda * wc)), r_up2) - dot(vw2, r_up2))* inv_norm_r_up2 * inv_norm_r_up2
-		scale = scale * inv_norm_r_up2 * inv_norm_r_up2 * this->upper_spring_damping[1];
-		cblas_dcopy(Constants::DIM, cf_r_up2, 1, cf_upper_dampf2, 1);
-		cblas_dscal(Constants::DIM, scale, cf_upper_dampf2, 1);
-
-		//// upper_dampf3
-		// compute: vc - C_cN' * (r3_tilda * wc))
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r3_tilda, Constants::DIM, wc_, 1, 0.0, cf_temp, 1);
-		cblas_dcopy(Constants::DIM, vc_, 1, cf_upper_dampf3, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf3, 1);
-		// dot((vc - C_cN' * (r3_tilda * wc)), r_up3)
-		scale = cblas_ddot(mkl_DIM, cf_upper_dampf3, mkl_incx, cf_r_up3, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(upper_dampf3, r_up3, Constants::DIM);
-		// dot((vc - C_cN' * (r3_tilda * wc)), r_up3) - dot(vw3, r_up3)
-		scale -= cblas_ddot(mkl_DIM, vw3_, mkl_incx, cf_r_up3, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vw3_, r_up3, Constants::DIM);
-		// (dot((vc - C_cN' * (r3_tilda * wc)), r_up3) - dot(vw3, r_up3))* inv_norm_r_up3 * inv_norm_r_up3
-		scale = scale * inv_norm_r_up3 * inv_norm_r_up3 * this->upper_spring_damping[2];
-		cblas_dcopy(Constants::DIM, cf_r_up3, 1, cf_upper_dampf3, 1);
-		cblas_dscal(Constants::DIM, scale, cf_upper_dampf3, 1);
-
-		//// upper_dampf4
-		// compute: vc - C_cN' * (r4_tilda * wc))
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r4_tilda, Constants::DIM, wc_, 1, 0.0, cf_temp, 1);
-		cblas_dcopy(Constants::DIM, vc_, 1, cf_upper_dampf4, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf4, 1);
-		// dot((vc - C_cN' * (r4_tilda * wc)), r_up4)
-		scale = cblas_ddot(mkl_DIM, cf_upper_dampf4, mkl_incx, cf_r_up4, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(upper_dampf4, r_up4, Constants::DIM);
-		// dot((vc - C_cN' * (r4_tilda * wc)), r_up4) - dot(vw4, r_up4)
-		scale -= cblas_ddot(mkl_DIM, vw4_, mkl_incx, cf_r_up4, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(r_up4, vw4_, Constants::DIM);
-		// (dot((vc - C_cN' * (r4_tilda * wc)), r_up4) - dot(vw4, r_up4))* inv_norm_r_up4 * inv_norm_r_up4
-		scale = scale * inv_norm_r_up4 * inv_norm_r_up4 * this->upper_spring_damping[3];
-		cblas_dcopy(Constants::DIM, cf_r_up4, 1, cf_upper_dampf4, 1);
-		cblas_dscal(Constants::DIM, scale, cf_upper_dampf4, 1);
-
-		//// lower_dampf1
-		// dot(vw1, r_low1)
-		scale = cblas_ddot(mkl_DIM, vw1_, mkl_incx, cf_r_low1, mkl_incy);
-		/*scale = MathLibrary::dot_product<T>(vw1_, r_low1, Constants::DIM);*/
-		// (dot(vw1, r_low1) - dot(vt1, r_low1))
-		scale -= cblas_ddot(mkl_DIM, vt1_, mkl_incx, cf_r_low1, mkl_incx);
-		//scale -= MathLibrary::dot_product<T>(vt1_, r_low1, Constants::DIM);
-		//(dot(vw1, r_low1) - dot(vt1, r_low1)) * inv_norm_r_low1 * inv_norm_r_low1
-		scale = scale * inv_norm_r_low1 * inv_norm_r_low1 * this->lower_spring_damping[0];
-		cblas_dcopy(Constants::DIM, cf_r_low1, 1, cf_lower_dampf1, 1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_dampf1, 1);
-
-		//// lower_dampf2
-		// dot(vw2, r_low2)
-		scale = cblas_ddot(mkl_DIM, vw2_, mkl_incx, cf_r_low2, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(vw2_, r_low2, Constants::DIM);
-		// (dot(vw2, r_low2) - dot(vt2, r_low2))
-		scale -= cblas_ddot(mkl_DIM, vt2_, mkl_incx, cf_r_low2, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vt2_, r_low2, Constants::DIM);
-		//(dot(vw2, r_low2) - dot(vt2, r_low2)) * inv_norm_r_low2 * inv_norm_r_low2
-		scale = scale * inv_norm_r_low2 * inv_norm_r_low2 * this->lower_spring_damping[1];
-		cblas_dcopy(Constants::DIM, cf_r_low2, 1, cf_lower_dampf2, 1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_dampf2, 1);
-
-		//// lower_dampf3
-		// dot(vw3, r_low3)
-		scale = cblas_ddot(mkl_DIM, vw3_, mkl_incx, cf_r_low3, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(vw3_, r_low3, Constants::DIM);
-		// (dot(vw3, r_low3) - dot(vt3, r_low3))
-		scale -= cblas_ddot(mkl_DIM, vt3_, mkl_incx, cf_r_low3, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vt3_, r_low3, Constants::DIM);
-		//(dot(vw3, r_low3) - dot(vt3, r_low3)) * inv_norm_r_low3 * inv_norm_r_low3
-		scale = scale * inv_norm_r_low3 * inv_norm_r_low3 * this->lower_spring_damping[2];
-		cblas_dcopy(Constants::DIM, cf_r_low3, 1, cf_lower_dampf3, 1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_dampf3, 1);
-
-		//// lower_dampf4
-		// dot(vw4, r_low4)
-		scale = cblas_ddot(mkl_DIM, vw4_, mkl_incx, cf_r_low4, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(vw4_, r_low4, Constants::DIM);
-		// (dot(vw4, r_low4) - dot(vt4, r_low4))
-		scale -= cblas_ddot(mkl_DIM, vt4_, mkl_incx, cf_r_low4, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vt4_, r_low4, Constants::DIM);
-		//(dot(vw4, r_low4) - dot(vt4, r_low4)) * inv_norm_r_low4 * inv_norm_r_low4
-		scale = scale * inv_norm_r_low4 * inv_norm_r_low4 * this->lower_spring_damping[3];
-		cblas_dcopy(Constants::DIM, cf_r_low4, 1, cf_lower_dampf4, 1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_dampf4, 1);
-=======
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1.0, this->r_fl_tilda, this->DIM, wc_, 1, 0.0, cf_temp, 1);
-		cblas_dcopy(this->DIM, vc_, 1, cf_upper_dampf_fl, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, -1.0, cf_C_cN, this->DIM, cf_temp, 1, 1.0, cf_upper_dampf_fl, 1);
-		// dot((vc - C_cN' * (r1_tilda * wc)), r_up1)
-		//std::cout << cblas_ddot(this->DIM, upper_dampf1, 1, r_up1, 1) << std::endl;
-		//std::cout << MathLibrary::dot_product<T>(upper_dampf1, r_up1, this->DIM) << std::endl;
-		scale = cblas_ddot(mkl_DIM, cf_upper_dampf_fl, mkl_incx, cf_r_up_fl, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(upper_dampf1, r_up1, this->DIM);
-
-		// dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1)
-		scale -= cblas_ddot(mkl_DIM, vw_fl_, mkl_incx, cf_r_up_fl, mkl_incx);
-		//scale -= MathLibrary::dot_product<T>(vw1_, r_up1, this->DIM);
-		// (dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1))* inv_norm_r_up1 * inv_norm_r_up1
 		scale = scale * inv_norm_r_up_fl * inv_norm_r_up_fl * this->upper_spring_damping[0];
-		cblas_dcopy(this->DIM, cf_r_up_fl, 1, cf_upper_dampf_fl, 1);
-		cblas_dscal(this->DIM, scale, cf_upper_dampf_fl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_up_fl, 1, cf_upper_dampf_fl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_dampf_fl, 1);
 
 
 		//// upper_dampf_fr
 		// compute: vc - C_cN' * (r_fr_tilda * wc))
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1.0, this->r_fr_tilda, this->DIM, wc_, 1, 0.0, cf_temp, 1);
-		cblas_dcopy(this->DIM, vc_, 1, cf_upper_dampf_fr, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, -1.0, cf_C_cN, this->DIM, cf_temp, 1, 1.0, cf_upper_dampf_fr, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_fr_tilda, Constants::DIM, wc_, 1, 0.0, cf_temp, 1);
+		cblas_dcopy(Constants::DIM, vc_, 1, cf_upper_dampf_fr, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf_fr, 1);
 		// dot((vc - C_cN' * (r_fr_tilda * wc)), r_up_fr)
 		scale = cblas_ddot(mkl_DIM, cf_upper_dampf_fr, mkl_incx, cf_r_up_fr, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(upper_dampf_fr, r_up_fr, this->DIM);
+		//scale = MathLibrary::dot_product<T>(upper_dampf_fr, r_up_fr, Constants::DIM);
 		// dot((vc - C_cN' * (r_fr_tilda * wc)), r_up_fr) - dot(vw_fr, r_up_fr)
 		scale -= cblas_ddot(mkl_DIM, vw_fr_, mkl_incx, cf_r_up_fr, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vw_fr_, r_up_fr, this->DIM);
+		//scale -= MathLibrary::dot_product<T>(vw_fr_, r_up_fr, Constants::DIM);
 		// (dot((vc - C_cN' * (r_fr_tilda * wc)), r_up_fr) - dot(vw_fr, r_up_fr))* inv_norm_r_up_fr * inv_norm_r_up_fr
 		scale = scale * inv_norm_r_up_fr * inv_norm_r_up_fr * this->upper_spring_damping[1];
-		cblas_dcopy(this->DIM, cf_r_up_fr, 1, cf_upper_dampf_fr, 1);
-		cblas_dscal(this->DIM, scale, cf_upper_dampf_fr, 1);
+		cblas_dcopy(Constants::DIM, cf_r_up_fr, 1, cf_upper_dampf_fr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_dampf_fr, 1);
 
 		//// upper_dampf3
 		// compute: vc - C_cN' * (r3_tilda * wc))
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1.0, this->r_rl_tilda, this->DIM, wc_, 1, 0.0, cf_temp, 1);
-		cblas_dcopy(this->DIM, vc_, 1, cf_upper_dampf_rl, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, -1.0, cf_C_cN, this->DIM, cf_temp, 1, 1.0, cf_upper_dampf_rl, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_rl_tilda, Constants::DIM, wc_, 1, 0.0, cf_temp, 1);
+		cblas_dcopy(Constants::DIM, vc_, 1, cf_upper_dampf_rl, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf_rl, 1);
 		// dot((vc - C_cN' * (r_rl_tilda * wc)), r_up_rl)
 		scale = cblas_ddot(mkl_DIM, cf_upper_dampf_rl, mkl_incx, cf_r_up_rl, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(upper_dampf_rl, r_up_rl, this->DIM);
+		//scale = MathLibrary::dot_product<T>(upper_dampf_rl, r_up_rl, Constants::DIM);
 		// dot((vc - C_cN' * (r_rl_tilda * wc)), r_up_rl) - dot(vw_rl, r_up_rl)
 		scale -= cblas_ddot(mkl_DIM, vw_rl_, mkl_incx, cf_r_up_rl, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vw_rl_, r_up_rl, this->DIM);
+		//scale -= MathLibrary::dot_product<T>(vw_rl_, r_up_rl, Constants::DIM);
 		// (dot((vc - C_cN' * (r_rl_tilda * wc)), r_up_rl) - dot(vw_rl, r_up_rl))* inv_norm_r_up_rl * inv_norm_r_up_rl
 		scale = scale * inv_norm_r_up_rl * inv_norm_r_up_rl * this->upper_spring_damping[2];
-		cblas_dcopy(this->DIM, cf_r_up_rl, 1, cf_upper_dampf_rl, 1);
-		cblas_dscal(this->DIM, scale, cf_upper_dampf_rl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_up_rl, 1, cf_upper_dampf_rl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_dampf_rl, 1);
 
 		//// upper_dampf4
 		// compute: vc - C_cN' * (r4_tilda * wc))
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1.0, this->r_rr_tilda, this->DIM, wc_, 1, 0.0, cf_temp, 1);
-		cblas_dcopy(this->DIM, vc_, 1, cf_upper_dampf_rr, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, -1.0, cf_C_cN, this->DIM, cf_temp, 1, 1.0, cf_upper_dampf_rr, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_rr_tilda, Constants::DIM, wc_, 1, 0.0, cf_temp, 1);
+		cblas_dcopy(Constants::DIM, vc_, 1, cf_upper_dampf_rr, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf_rr, 1);
 		// dot((vc - C_cN' * (r4_tilda * wc)), r_up4)
 		scale = cblas_ddot(mkl_DIM, cf_upper_dampf_rr, mkl_incx, cf_r_up_rr, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(upper_dampf4, r_up4, this->DIM);
+		//scale = MathLibrary::dot_product<T>(upper_dampf4, r_up4, Constants::DIM);
 		// dot((vc - C_cN' * (r4_tilda * wc)), r_up4) - dot(vw4, r_up4)
 		scale -= cblas_ddot(mkl_DIM, vw_rr_, mkl_incx, cf_r_up_rr, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(r_up4, vw4_, this->DIM);
+		//scale -= MathLibrary::dot_product<T>(r_up4, vw4_, Constants::DIM);
 		// (dot((vc - C_cN' * (r4_tilda * wc)), r_up4) - dot(vw4, r_up4))* inv_norm_r_up4 * inv_norm_r_up4
 		scale = scale * inv_norm_r_up_rr * inv_norm_r_up_rr * this->upper_spring_damping[3];
-		cblas_dcopy(this->DIM, cf_r_up_rr, 1, cf_upper_dampf_rr, 1);
-		cblas_dscal(this->DIM, scale, cf_upper_dampf_rr, 1);
+		cblas_dcopy(Constants::DIM, cf_r_up_rr, 1, cf_upper_dampf_rr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_dampf_rr, 1);
 
 		//// lower_dampf1
 		// dot(vw1, r_low1)
 		scale = cblas_ddot(mkl_DIM, vw_fl_, mkl_incx, cf_r_low_fl, mkl_incy);
-		/*scale = MathLibrary::dot_product<T>(vw1_, r_low1, this->DIM);*/
+		/*scale = MathLibrary::dot_product<T>(vw1_, r_low1, Constants::DIM);*/
 		// (dot(vw1, r_low1) - dot(vt1, r_low1))
 		scale -= cblas_ddot(mkl_DIM, vt_fl_, mkl_incx, cf_r_low_fl, mkl_incx);
-		//scale -= MathLibrary::dot_product<T>(vt1_, r_low1, this->DIM);
+		//scale -= MathLibrary::dot_product<T>(vt1_, r_low1, Constants::DIM);
 		//(dot(vw1, r_low1) - dot(vt1, r_low1)) * inv_norm_r_low1 * inv_norm_r_low1
 		scale = scale * inv_norm_r_low_fl * inv_norm_r_low_fl * this->lower_spring_damping[0];
-		cblas_dcopy(this->DIM, cf_r_low_fl, 1, cf_lower_dampf_fl, 1);
-		cblas_dscal(this->DIM, scale, cf_lower_dampf_fl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_low_fl, 1, cf_lower_dampf_fl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_dampf_fl, 1);
 
 		//// lower_dampf2
 		// dot(vw2, r_low2)
 		scale = cblas_ddot(mkl_DIM, vw_fr_, mkl_incx, cf_r_low_fr, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(vw2_, r_low2, this->DIM);
+		//scale = MathLibrary::dot_product<T>(vw2_, r_low2, Constants::DIM);
 		// (dot(vw2, r_low2) - dot(vt2, r_low2))
 		scale -= cblas_ddot(mkl_DIM, vt_fr_, mkl_incx, cf_r_low_fr, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vt2_, r_low2, this->DIM);
+		//scale -= MathLibrary::dot_product<T>(vt2_, r_low2, Constants::DIM);
 		//(dot(vw2, r_low2) - dot(vt2, r_low2)) * inv_norm_r_low2 * inv_norm_r_low2
 		scale = scale * inv_norm_r_low_fr * inv_norm_r_low_fr * this->lower_spring_damping[1];
-		cblas_dcopy(this->DIM, cf_r_low_fr, 1, cf_lower_dampf_fr, 1);
-		cblas_dscal(this->DIM, scale, cf_lower_dampf_fr, 1);
+		cblas_dcopy(Constants::DIM, cf_r_low_fr, 1, cf_lower_dampf_fr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_dampf_fr, 1);
 
 		//// lower_dampf3
 		// dot(vw3, r_low3)
 		scale = cblas_ddot(mkl_DIM, vw_rl_, mkl_incx, cf_r_low_rl, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(vw_rl_, r_low_rl, this->DIM);
+		//scale = MathLibrary::dot_product<T>(vw_rl_, r_low_rl, Constants::DIM);
 		// (dot(vw_rl, r_low_rl) - dot(vt_rl, r_low_rl))
 		scale -= cblas_ddot(mkl_DIM, vt_rl_, mkl_incx, cf_r_low_rl, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vt_rl_, r_low_rl, this->DIM);
+		//scale -= MathLibrary::dot_product<T>(vt_rl_, r_low_rl, Constants::DIM);
 		//(dot(vw_rl, r_low_rl) - dot(vt_rl, r_low_rl)) * inv_norm_r_low_rl * inv_norm_r_low_rl
 		scale = scale * inv_norm_r_low_rl * inv_norm_r_low_rl * this->lower_spring_damping[2];
-		cblas_dcopy(this->DIM, cf_r_low_rl, 1, cf_lower_dampf_rl, 1);
-		cblas_dscal(this->DIM, scale, cf_lower_dampf_rl, 1);
+		cblas_dcopy(Constants::DIM, cf_r_low_rl, 1, cf_lower_dampf_rl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_dampf_rl, 1);
 
 		//// lower_dampf4
 		// dot(vw4, r_low4)
 		scale = cblas_ddot(mkl_DIM, vw_rr_, mkl_incx, cf_r_low_rr, mkl_incy);
-		//scale = MathLibrary::dot_product<T>(vw4_, r_low4, this->DIM);
+		//scale = MathLibrary::dot_product<T>(vw4_, r_low4, Constants::DIM);
 		// (dot(vw4, r_low4) - dot(vt4, r_low4))
 		scale -= cblas_ddot(mkl_DIM, vt_rr_, mkl_incx, cf_r_low_rr, mkl_incy);
-		//scale -= MathLibrary::dot_product<T>(vt4_, r_low4, this->DIM);
+		//scale -= MathLibrary::dot_product<T>(vt4_, r_low4, Constants::DIM);
 		//(dot(vw4, r_low4) - dot(vt4, r_low4)) * inv_norm_r_low4 * inv_norm_r_low4
 		scale = scale * inv_norm_r_low_rr * inv_norm_r_low_rr * this->lower_spring_damping[3];
-		cblas_dcopy(this->DIM, cf_r_low_rr, 1, cf_lower_dampf_rr, 1);
-		cblas_dscal(this->DIM, scale, cf_lower_dampf_rr, 1);
->>>>>>> refactor_MBD
+		cblas_dcopy(Constants::DIM, cf_r_low_rr, 1, cf_lower_dampf_rr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_dampf_rr, 1);
 
 		/*
 		torque from the rotational spring
@@ -1698,87 +1253,45 @@ public:
 
 
 		// upper_S1 = upper_rotational_stiffness(1) * upper_angle1 * upper_normal1;
-<<<<<<< HEAD
-		scale = (this->upper_rotational_stiffness[0]) * (*cf_upper_angle1);
-		cblas_dcopy(Constants::DIM, cf_upper_normal1, 1, cf_upper_S1, 1);
-		cblas_dscal(Constants::DIM, scale, cf_upper_S1, 1);
-
-
-		// upper_S2 = upper_rotational_stiffness(2) * upper_angle2 * upper_normal2;
-		scale = (this->upper_rotational_stiffness[1]) * (*cf_upper_angle2);
-		cblas_dcopy(Constants::DIM, cf_upper_normal2, 1, cf_upper_S2, 1);
-		cblas_dscal(Constants::DIM, scale, cf_upper_S2, 1);
-
-		// upper_S3 = upper_rotational_stiffness(3) * upper_angle3 * upper_normal3;
-		scale = (this->upper_rotational_stiffness[2]) * (*cf_upper_angle3);
-		cblas_dcopy(Constants::DIM, cf_upper_normal3, 1, cf_upper_S3, 1);
-		cblas_dscal(Constants::DIM, scale, cf_upper_S3, 1);
-
-		// upper_S4 = upper_rotational_stiffness(4) * upper_angle4 * upper_normal4;
-		scale = (this->upper_rotational_stiffness[3]) * (*cf_upper_angle4);
-		cblas_dcopy(Constants::DIM, cf_upper_normal4, 1, cf_upper_S4, 1);
-		cblas_dscal(Constants::DIM, scale, cf_upper_S4, 1);
-
-		// lower_S1 = lower_rotational_stiffness(1) * lower_angle1 * lower_normal1
-		scale = (this->lower_rotational_stiffness[0]) * (*cf_lower_angle1);
-		cblas_dcopy(Constants::DIM, cf_lower_normal1, 1, cf_lower_S1, 1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_S1, 1);
-
-		// lower_S2 = lower_rotational_stiffness(2) * lower_angle2 * lower_normal2
-		scale = (this->lower_rotational_stiffness[1]) * (*cf_lower_angle2);
-		cblas_dcopy(Constants::DIM, cf_lower_normal2, 1, cf_lower_S2, 1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_S2, 1);
-
-		// lower_S3 = lower_rotational_stiffness(3) * lower_angle3 * lower_normal3
-		scale = (this->lower_rotational_stiffness[2]) * (*cf_lower_angle3);
-		cblas_dcopy(Constants::DIM, cf_lower_normal3, 1, cf_lower_S3, 1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_S3, 1);
-
-		// lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4
-		scale = (this->lower_rotational_stiffness[3]) * (*cf_lower_angle4);
-		cblas_dcopy(Constants::DIM, cf_lower_normal4, 1, cf_lower_S4, 1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_S4, 1);
-=======
 		scale = (this->upper_rotational_stiffness[0]) * (*cf_upper_angle_fl);
-		cblas_dcopy(this->DIM, cf_upper_normal_fl, 1, cf_upper_S_fl, 1);
-		cblas_dscal(this->DIM, scale, cf_upper_S_fl, 1);
+		cblas_dcopy(Constants::DIM, cf_upper_normal_fl, 1, cf_upper_S_fl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_S_fl, 1);
 
 
 		// upper_S2 = upper_rotational_stiffness(2) * upper_angle2 * upper_normal2;
 		scale = (this->upper_rotational_stiffness[1]) * (*cf_upper_angle_fr);
-		cblas_dcopy(this->DIM, cf_upper_normal_fr, 1, cf_upper_S_fr, 1);
-		cblas_dscal(this->DIM, scale, cf_upper_S_fr, 1);
+		cblas_dcopy(Constants::DIM, cf_upper_normal_fr, 1, cf_upper_S_fr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_S_fr, 1);
 
 		// upper_S3 = upper_rotational_stiffness(3) * upper_angle3 * upper_normal3;
 		scale = (this->upper_rotational_stiffness[2]) * (*cf_upper_angle_rl);
-		cblas_dcopy(this->DIM, cf_upper_normal_rl, 1, cf_upper_S_rl, 1);
-		cblas_dscal(this->DIM, scale, cf_upper_S_rl, 1);
+		cblas_dcopy(Constants::DIM, cf_upper_normal_rl, 1, cf_upper_S_rl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_S_rl, 1);
 
 		// upper_S4 = upper_rotational_stiffness(4) * upper_angle4 * upper_normal4;
 		scale = (this->upper_rotational_stiffness[3]) * (*cf_upper_angle_rr);
-		cblas_dcopy(this->DIM, cf_upper_normal_rr, 1, cf_upper_S_rr, 1);
-		cblas_dscal(this->DIM, scale, cf_upper_S_rr, 1);
+		cblas_dcopy(Constants::DIM, cf_upper_normal_rr, 1, cf_upper_S_rr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_upper_S_rr, 1);
 
 		// lower_S1 = lower_rotational_stiffness(1) * lower_angle1 * lower_normal1
 		scale = (this->lower_rotational_stiffness[0]) * (*cf_lower_angle_fl);
-		cblas_dcopy(this->DIM, cf_lower_normal_fl, 1, cf_lower_S_fl, 1);
-		cblas_dscal(this->DIM, scale, cf_lower_S_fl, 1);
+		cblas_dcopy(Constants::DIM, cf_lower_normal_fl, 1, cf_lower_S_fl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_S_fl, 1);
 
 		// lower_S2 = lower_rotational_stiffness(2) * lower_angle2 * lower_normal2
 		scale = (this->lower_rotational_stiffness[1]) * (*cf_lower_angle_fr);
-		cblas_dcopy(this->DIM, cf_lower_normal_fr, 1, cf_lower_S_fr, 1);
-		cblas_dscal(this->DIM, scale, cf_lower_S_fr, 1);
+		cblas_dcopy(Constants::DIM, cf_lower_normal_fr, 1, cf_lower_S_fr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_S_fr, 1);
 
 		// lower_S3 = lower_rotational_stiffness(3) * lower_angle3 * lower_normal3
 		scale = (this->lower_rotational_stiffness[2]) * (*cf_lower_angle_rl);
-		cblas_dcopy(this->DIM, cf_lower_normal_rl, 1, cf_lower_S_rl, 1);
-		cblas_dscal(this->DIM, scale, cf_lower_S_rl, 1);
+		cblas_dcopy(Constants::DIM, cf_lower_normal_rl, 1, cf_lower_S_rl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_S_rl, 1);
 
 		// lower_S_rr = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4
 		scale = (this->lower_rotational_stiffness[3]) * (*cf_lower_angle_rr);
-		cblas_dcopy(this->DIM, cf_lower_normal_rr, 1, cf_lower_S_rr, 1);
-		cblas_dscal(this->DIM, scale, cf_lower_S_rr, 1);
->>>>>>> refactor_MBD
+		cblas_dcopy(Constants::DIM, cf_lower_normal_rr, 1, cf_lower_S_rr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_S_rr, 1);
 
 		/*
 		calculate the effect of the rotational springs (in global basis)
@@ -1805,181 +1318,92 @@ public:
 
 		T scale_u_fl, scale_u_fr, scale_u_rl, scale_u_rr;
 		// lower_rot_force1 = -cross( lower_S1, r_low1) / (r_low1'*r_low1);
-<<<<<<< HEAD
-		scale = -1.0 / cblas_ddot(mkl_DIM, cf_r_low1, mkl_incx, cf_r_low1, mkl_incy);
-		//scale = -1.0 / MathLibrary::dot_product<T>(r_low1, r_low1, Constants::DIM);
-		MathLibrary::crossProduct(cf_lower_S1, cf_r_low1, cf_lower_rot_force1);
-		cblas_dscal(Constants::DIM, scale, cf_lower_rot_force1, 1);
-
-		// lower_rot_force2 = -cross( lower_S2, r_low2) / (r_low2'*r_low2);
-		scale = -1.0 / cblas_ddot(mkl_DIM, cf_r_low2, mkl_incx, cf_r_low2, mkl_incy);
-		//scale = -1.0 / MathLibrary::dot_product<T>(r_low2, r_low2, Constants::DIM);
-		MathLibrary::crossProduct(cf_lower_S2, cf_r_low2, cf_lower_rot_force2);
-		cblas_dscal(Constants::DIM, scale, cf_lower_rot_force2, 1);
-
-		// lower_rot_force3 = -cross( lower_S3, r_low3) / (r_low3'*r_low3);
-		scale = -1.0 / cblas_ddot(mkl_DIM, cf_r_low3, mkl_incx, cf_r_low3, mkl_incy);
-		//scale = -1.0 / MathLibrary::dot_product<T>(r_low3, r_low3, Constants::DIM);
-		MathLibrary::crossProduct(cf_lower_S3, cf_r_low3, cf_lower_rot_force3);
-		cblas_dscal(Constants::DIM, scale, cf_lower_rot_force3, 1);
-
-		// lower_rot_force4 = -cross( lower_S4, r_low4) / (r_low4'*r_low4);
-		scale = -1.0 / cblas_ddot(mkl_DIM, cf_r_low4, mkl_incx, cf_r_low4, mkl_incx);
-		//scale = -1.0 / MathLibrary::dot_product<T>(r_low4, r_low4, Constants::DIM);
-		MathLibrary::crossProduct(cf_lower_S4, cf_r_low4, cf_lower_rot_force4);
-		cblas_dscal(Constants::DIM, scale, cf_lower_rot_force4, 1);
-
-		// upper_rot_force1 = -cross( upper_S1, r_up1) / (r_up1'*r_up1);
-		scale_u1 = -1.0 / cblas_ddot(mkl_DIM, cf_r_up1, mkl_incx, cf_r_up1, mkl_incy);
-		//scale_u1 = -1.0 / MathLibrary::dot_product<T>(r_up1, r_up1, Constants::DIM);
-		MathLibrary::crossProduct(cf_upper_S1, cf_r_up1, cf_upper_rot_force1);
-		cblas_dscal(Constants::DIM, scale_u1, cf_upper_rot_force1, 1);
-
-		// upper_rot_force2 = -cross( upper_S2, r_up2) / (r_up2'*r_up2);
-		scale_u2 = -1.0 / cblas_ddot(mkl_DIM, cf_r_up2, mkl_incx, cf_r_up2, mkl_incy);
-		//scale_u2 = -1.0 / MathLibrary::dot_product<T>(r_up2, r_up2, Constants::DIM);
-		MathLibrary::crossProduct(cf_upper_S2, cf_r_up2, cf_upper_rot_force2);
-		cblas_dscal(Constants::DIM, scale_u2, cf_upper_rot_force2, 1);
-
-		// upper_rot_force3 = -cross( upper_S3, r_up3) / (r_up3'*r_up3);
-		scale_u3 = -1.0 / cblas_ddot(mkl_DIM, cf_r_up3, mkl_incx, cf_r_up3, mkl_incy);
-		//scale_u3 = -1.0 / MathLibrary::dot_product<T>(r_up3, r_up3, Constants::DIM);
-		MathLibrary::crossProduct(cf_upper_S3, cf_r_up3, cf_upper_rot_force3);
-		cblas_dscal(Constants::DIM, scale_u3, cf_upper_rot_force3, 1);
-
-		// upper_rot_force4 = -cross( upper_S4, r_up4) / (r_up4'*r_up4);
-		scale_u4 = -1.0 / cblas_ddot(mkl_DIM, cf_r_up4, mkl_incx, cf_r_up4, mkl_incy);
-		//scale_u4 = -1.0 / MathLibrary::dot_product<T>(r_up4, r_up4, Constants::DIM);
-		MathLibrary::crossProduct(cf_upper_S4, cf_r_up4, cf_upper_rot_force4);
-		cblas_dscal(Constants::DIM, scale_u4, cf_upper_rot_force4, 1);
-
-		// car_rot_force1 = -cross( lower_S1, r_up1) / (r_up1'*r_up1);
-		MathLibrary::crossProduct(cf_lower_S1, cf_r_up1, cf_car_rot_force1);
-		cblas_dscal(Constants::DIM, scale_u1, cf_car_rot_force1, 1);
-
-		// car_rot_force2 = -cross( lower_S2, r_up2) / (r_up2'*r_up2);
-		MathLibrary::crossProduct(cf_lower_S2, cf_r_up2, cf_car_rot_force2);
-		cblas_dscal(Constants::DIM, scale_u2, cf_car_rot_force2, 1);
-
-		// car_rot_force3 = -cross( lower_S3, r_up3) / (r_up3'*r_up3);
-		MathLibrary::crossProduct(cf_lower_S3, cf_r_up3, cf_car_rot_force3);
-		cblas_dscal(Constants::DIM, scale_u3, cf_car_rot_force3, 1);
-
-		// car_rot_force4 = -cross( lower_S4, r_up4) / (r_up4'*r_up4);
-		MathLibrary::crossProduct(cf_lower_S4, cf_r_up4, cf_car_rot_force4);
-		cblas_dscal(Constants::DIM, scale_u4, cf_car_rot_force4, 1);
-
-		// sum_car_force1 = car_rot_force1 - upper_force1 - upper_dampf1 - upper_rot_force1;
-		cblas_dcopy(Constants::DIM, cf_car_rot_force1, 1, cf_sum_car_force1, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_force1, 1, cf_sum_car_force1, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_dampf1, 1, cf_sum_car_force1, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_rot_force1, 1, cf_sum_car_force1, 1);
-
-		// sum_car_force2 = car_rot_force2 - upper_force2 - upper_dampf2 - upper_rot_force2;
-		cblas_dcopy(Constants::DIM, cf_car_rot_force2, 1, cf_sum_car_force2, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_force2, 1, cf_sum_car_force2, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_dampf2, 1, cf_sum_car_force2, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_rot_force2, 1, cf_sum_car_force2, 1);
-
-		// sum_car_force3 = car_rot_force3 - upper_force3 - upper_dampf3 - upper_rot_force3;
-		cblas_dcopy(Constants::DIM, cf_car_rot_force3, 1, cf_sum_car_force3, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_force3, 1, cf_sum_car_force3, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_dampf3, 1, cf_sum_car_force3, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_rot_force3, 1, cf_sum_car_force3, 1);
-
-		// sum_car_force4 = car_rot_force4 - upper_force4 - upper_dampf4 - upper_rot_force4;
-		cblas_dcopy(Constants::DIM, cf_car_rot_force4, 1, cf_sum_car_force4, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_force4, 1, cf_sum_car_force4, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_dampf4, 1, cf_sum_car_force4, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_upper_rot_force4, 1, cf_sum_car_force4, 1);
-=======
 		scale = -1.0 / cblas_ddot(mkl_DIM, cf_r_low_fl, mkl_incx, cf_r_low_fl, mkl_incy);
-		//scale = -1.0 / MathLibrary::dot_product<T>(r_low1, r_low1, this->DIM);
+		//scale = -1.0 / MathLibrary::dot_product<T>(r_low1, r_low1, Constants::DIM);
 		MathLibrary::crossProduct(cf_lower_S_fl, cf_r_low_fl, cf_lower_rot_force_fl);
-		cblas_dscal(this->DIM, scale, cf_lower_rot_force_fl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_rot_force_fl, 1);
 
 		// lower_rot_force2 = -cross( lower_S2, r_low2) / (r_low2'*r_low2);
 		scale = -1.0 / cblas_ddot(mkl_DIM, cf_r_low_fr, mkl_incx, cf_r_low_fr, mkl_incy);
-		//scale = -1.0 / MathLibrary::dot_product<T>(r_low_fr, r_low_fr, this->DIM);
+		//scale = -1.0 / MathLibrary::dot_product<T>(r_low_fr, r_low_fr, Constants::DIM);
 		MathLibrary::crossProduct(cf_lower_S_fr, cf_r_low_fr, cf_lower_rot_force_fr);
-		cblas_dscal(this->DIM, scale, cf_lower_rot_force_fr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_rot_force_fr, 1);
 
 		// lower_rot_force3 = -cross( lower_S3, r_low3) / (r_low3'*r_low3);
 		scale = -1.0 / cblas_ddot(mkl_DIM, cf_r_low_rl, mkl_incx, cf_r_low_rl, mkl_incy);
-		//scale = -1.0 / MathLibrary::dot_product<T>(r_low3, r_low3, this->DIM);
+		//scale = -1.0 / MathLibrary::dot_product<T>(r_low3, r_low3, Constants::DIM);
 		MathLibrary::crossProduct(cf_lower_S_rl, cf_r_low_rl, cf_lower_rot_force_rl);
-		cblas_dscal(this->DIM, scale, cf_lower_rot_force_rl, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_rot_force_rl, 1);
 
 		// lower_rot_force4 = -cross( lower_S4, r_low4) / (r_low4'*r_low4);
 		scale = -1.0 / cblas_ddot(mkl_DIM, cf_r_low_rr, mkl_incx, cf_r_low_rr, mkl_incx);
-		//scale = -1.0 / MathLibrary::dot_product<T>(r_low4, r_low4, this->DIM);
+		//scale = -1.0 / MathLibrary::dot_product<T>(r_low4, r_low4, Constants::DIM);
 		MathLibrary::crossProduct(cf_lower_S_rr, cf_r_low_rr, cf_lower_rot_force_rr);
-		cblas_dscal(this->DIM, scale, cf_lower_rot_force_rr, 1);
+		cblas_dscal(Constants::DIM, scale, cf_lower_rot_force_rr, 1);
 
 		// upper_rot_force1 = -cross( upper_S1, r_up1) / (r_up1'*r_up1);
 		scale_u_fl = -1.0 / cblas_ddot(mkl_DIM, cf_r_up_fl, mkl_incx, cf_r_up_fl, mkl_incy);
-		//scale_u1 = -1.0 / MathLibrary::dot_product<T>(r_up1, r_up1, this->DIM);
+		//scale_u1 = -1.0 / MathLibrary::dot_product<T>(r_up1, r_up1, Constants::DIM);
 		MathLibrary::crossProduct(cf_upper_S_fl, cf_r_up_fl, cf_upper_rot_force_fl);
-		cblas_dscal(this->DIM, scale_u_fl, cf_upper_rot_force_fl, 1);
+		cblas_dscal(Constants::DIM, scale_u_fl, cf_upper_rot_force_fl, 1);
 
 		// upper_rot_force_fr = -cross( upper_S_fr, r_up_fr) / (r_up_fr'*r_up_fr);
 		scale_u_fr = -1.0 / cblas_ddot(mkl_DIM, cf_r_up_fr, mkl_incx, cf_r_up_fr, mkl_incy);
-		//scale_u_fr = -1.0 / MathLibrary::dot_product<T>(r_up_fr, r_up_fr, this->DIM);
+		//scale_u_fr = -1.0 / MathLibrary::dot_product<T>(r_up_fr, r_up_fr, Constants::DIM);
 		MathLibrary::crossProduct(cf_upper_S_fr, cf_r_up_fr, cf_upper_rot_force_fr);
-		cblas_dscal(this->DIM, scale_u_fr, cf_upper_rot_force_fr, 1);
+		cblas_dscal(Constants::DIM, scale_u_fr, cf_upper_rot_force_fr, 1);
 
 		// upper_rot_force3 = -cross( upper_S3, r_up3) / (r_up3'*r_up3);
 		scale_u_rl = -1.0 / cblas_ddot(mkl_DIM, cf_r_up_rl, mkl_incx, cf_r_up_rl, mkl_incy);
-		//scale_u3 = -1.0 / MathLibrary::dot_product<T>(r_up3, r_up3, this->DIM);
+		//scale_u3 = -1.0 / MathLibrary::dot_product<T>(r_up3, r_up3, Constants::DIM);
 		MathLibrary::crossProduct(cf_upper_S_rl, cf_r_up_rl, cf_upper_rot_force_rl);
-		cblas_dscal(this->DIM, scale_u_rl, cf_upper_rot_force_rl, 1);
+		cblas_dscal(Constants::DIM, scale_u_rl, cf_upper_rot_force_rl, 1);
 
 		// upper_rot_force4 = -cross( upper_S4, r_up4) / (r_up4'*r_up4);
 		scale_u_rr = -1.0 / cblas_ddot(mkl_DIM, cf_r_up_rr, mkl_incx, cf_r_up_rr, mkl_incy);
-		//scale_u4 = -1.0 / MathLibrary::dot_product<T>(r_up4, r_up4, this->DIM);
+		//scale_u4 = -1.0 / MathLibrary::dot_product<T>(r_up4, r_up4, Constants::DIM);
 		MathLibrary::crossProduct(cf_upper_S_rr, cf_r_up_rr, cf_upper_rot_force_rr);
-		cblas_dscal(this->DIM, scale_u_rr, cf_upper_rot_force_rr, 1);
+		cblas_dscal(Constants::DIM, scale_u_rr, cf_upper_rot_force_rr, 1);
 
 		// car_rot_force1 = -cross( lower_S1, r_up1) / (r_up1'*r_up1);
 		MathLibrary::crossProduct(cf_lower_S_fl, cf_r_up_fl, cf_car_rot_force_fl);
-		cblas_dscal(this->DIM, scale_u_fl, cf_car_rot_force_fl, 1);
+		cblas_dscal(Constants::DIM, scale_u_fl, cf_car_rot_force_fl, 1);
 
 		// car_rot_force_fr = -cross( lower_S2, r_up2) / (r_up2'*r_up2);
 		MathLibrary::crossProduct(cf_lower_S_fr, cf_r_up_fr, cf_car_rot_force_fr);
-		cblas_dscal(this->DIM, scale_u_fr, cf_car_rot_force_fr, 1);
+		cblas_dscal(Constants::DIM, scale_u_fr, cf_car_rot_force_fr, 1);
 
 		// car_rot_force3 = -cross( lower_S3, r_up3) / (r_up3'*r_up3);
 		MathLibrary::crossProduct(cf_lower_S_rl, cf_r_up_rl, cf_car_rot_force_rl);
-		cblas_dscal(this->DIM, scale_u_rl, cf_car_rot_force_rl, 1);
+		cblas_dscal(Constants::DIM, scale_u_rl, cf_car_rot_force_rl, 1);
 
 		// car_rot_force4 = -cross( lower_S4, r_up4) / (r_up4'*r_up4);
 		MathLibrary::crossProduct(cf_lower_S_rr, cf_r_up_rr, cf_car_rot_force_rr);
-		cblas_dscal(this->DIM, scale_u_rr, cf_car_rot_force_rr, 1);
+		cblas_dscal(Constants::DIM, scale_u_rr, cf_car_rot_force_rr, 1);
 
 		// sum_car_force1 = car_rot_force1 - upper_force1 - upper_dampf1 - upper_rot_force1;
-		cblas_dcopy(this->DIM, cf_car_rot_force_fl, 1, cf_sum_car_force_fl, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_force_fl, 1, cf_sum_car_force_fl, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_dampf_fl, 1, cf_sum_car_force_fl, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_rot_force_fl, 1, cf_sum_car_force_fl, 1);
+		cblas_dcopy(Constants::DIM, cf_car_rot_force_fl, 1, cf_sum_car_force_fl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_force_fl, 1, cf_sum_car_force_fl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_dampf_fl, 1, cf_sum_car_force_fl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_rot_force_fl, 1, cf_sum_car_force_fl, 1);
 
 		// sum_car_force_fr = car_rot_force_fr - upper_force_fr - upper_dampf_fr - upper_rot_force_fr;
-		cblas_dcopy(this->DIM, cf_car_rot_force_fr, 1, cf_sum_car_force_fr, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_force_fr, 1, cf_sum_car_force_fr, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_dampf_fr, 1, cf_sum_car_force_fr, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_rot_force_fr, 1, cf_sum_car_force_fr, 1);
+		cblas_dcopy(Constants::DIM, cf_car_rot_force_fr, 1, cf_sum_car_force_fr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_force_fr, 1, cf_sum_car_force_fr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_dampf_fr, 1, cf_sum_car_force_fr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_rot_force_fr, 1, cf_sum_car_force_fr, 1);
 
 		// sum_car_force3 = car_rot_force3 - upper_force3 - upper_dampf3 - upper_rot_force3;
-		cblas_dcopy(this->DIM, cf_car_rot_force_rl, 1, cf_sum_car_force_rl, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_force_rl, 1, cf_sum_car_force_rl, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_dampf_rl, 1, cf_sum_car_force_rl, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_rot_force_rl, 1, cf_sum_car_force_rl, 1);
+		cblas_dcopy(Constants::DIM, cf_car_rot_force_rl, 1, cf_sum_car_force_rl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_force_rl, 1, cf_sum_car_force_rl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_dampf_rl, 1, cf_sum_car_force_rl, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_rot_force_rl, 1, cf_sum_car_force_rl, 1);
 
 		// sum_car_force4 = car_rot_force4 - upper_force4 - upper_dampf4 - upper_rot_force4;
-		cblas_dcopy(this->DIM, cf_car_rot_force_rr, 1, cf_sum_car_force_rr, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_force_rr, 1, cf_sum_car_force_rr, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_dampf_rr, 1, cf_sum_car_force_rr, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_upper_rot_force_rr, 1, cf_sum_car_force_rr, 1);
->>>>>>> refactor_MBD
+		cblas_dcopy(Constants::DIM, cf_car_rot_force_rr, 1, cf_sum_car_force_rr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_force_rr, 1, cf_sum_car_force_rr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_dampf_rr, 1, cf_sum_car_force_rr, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_upper_rot_force_rr, 1, cf_sum_car_force_rr, 1);
 
 		/*
 		get external forces
@@ -1998,61 +1422,32 @@ public:
 		// Calculate the sum of all forces in the tyre (and keep it in local_FR)
 
 		// local_FR1 = lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...          %vt1_dot
-<<<<<<< HEAD
-		cblas_dcopy(Constants::DIM, cf_lower_force1, 1, cf_local_FR1, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_lower_dampf1, 1, cf_local_FR1, 1);
+		cblas_dcopy(Constants::DIM, cf_lower_force_fl, 1, cf_local_FR_fl, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_lower_dampf_fl, 1, cf_local_FR_fl, 1);
 		//	cblas_daxpy(Constants::DIM, 1.0, local_FT1, 1, cf_local_FR1, 1); not implemented since not used now
-		cblas_daxpy(Constants::DIM, 1.0, cf_local_FR1, 1, cf_local_FR1, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_lower_rot_force1, 1, cf_local_FR1, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_lower_rot_force_fl, 1, cf_local_FR_fl, 1);
 
 		// local_FR2 = lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...          %vt2_dot
-		cblas_dcopy(Constants::DIM, cf_lower_force2, 1, cf_local_FR2, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_lower_dampf2, 1, cf_local_FR2, 1);
+		cblas_dcopy(Constants::DIM, cf_lower_force_fr, 1, cf_local_FR_fr, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_lower_dampf_fr, 1, cf_local_FR_fr, 1);
 		//	cblas_daxpy(Constants::DIM, 1.0, local_FT2, 1, cf_local_FR2, 1); not implemented since not used now
-		cblas_daxpy(Constants::DIM, 1.0, cf_local_FR2, 1, cf_local_FR2, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_lower_rot_force2, 1, cf_local_FR2, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_lower_rot_force_fr, 1, cf_local_FR_fr, 1);
 
 		// local_FR3 = lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...          %vt3_dot
-		cblas_dcopy(Constants::DIM, cf_lower_force3, 1, cf_local_FR3, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_lower_dampf3, 1, cf_local_FR3, 1);
+		cblas_dcopy(Constants::DIM, cf_lower_force_rl, 1, cf_local_FR_rl, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_lower_dampf_rl, 1, cf_local_FR_rl, 1);
 		//	cblas_daxpy(Constants::DIM, 1.0, local_FT3, 1, cf_local_FR3, 1); not implemented since not used now
-		cblas_daxpy(Constants::DIM, 1.0, cf_local_FR3, 1, cf_local_FR3, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_lower_rot_force3, 1, cf_local_FR3, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_lower_rot_force_rl, 1, cf_local_FR_rl, 1);
 
 		// local_FR4 = lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];             %vt4_dot
-		cblas_dcopy(Constants::DIM, cf_lower_force4, 1, cf_local_FR4, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_lower_dampf4, 1, cf_local_FR4, 1);
+		cblas_dcopy(Constants::DIM, cf_lower_force_rr, 1, cf_local_FR_rr, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_lower_dampf_rr, 1, cf_local_FR_rr, 1);
 		//	cblas_daxpy(Constants::DIM, 1.0, local_FT4, 1, cf_local_FR4, 1); not implemented since not used now
-		cblas_daxpy(Constants::DIM, 1.0, cf_local_FR4, 1, cf_local_FR4, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_lower_rot_force4, 1, cf_local_FR4, 1);
-=======
-		cblas_dcopy(this->DIM, cf_lower_force_fl, 1, cf_local_FR_fl, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_lower_dampf_fl, 1, cf_local_FR_fl, 1);
-		//	cblas_daxpy(this->DIM, 1.0, local_FT1, 1, cf_local_FR1, 1); not implemented since not used now
-		cblas_daxpy(this->DIM, 1.0, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_lower_rot_force_fl, 1, cf_local_FR_fl, 1);
-
-		// local_FR2 = lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...          %vt2_dot
-		cblas_dcopy(this->DIM, cf_lower_force_fr, 1, cf_local_FR_fr, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_lower_dampf_fr, 1, cf_local_FR_fr, 1);
-		//	cblas_daxpy(this->DIM, 1.0, local_FT2, 1, cf_local_FR2, 1); not implemented since not used now
-		cblas_daxpy(this->DIM, 1.0, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_lower_rot_force_fr, 1, cf_local_FR_fr, 1);
-
-		// local_FR3 = lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...          %vt3_dot
-		cblas_dcopy(this->DIM, cf_lower_force_rl, 1, cf_local_FR_rl, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_lower_dampf_rl, 1, cf_local_FR_rl, 1);
-		//	cblas_daxpy(this->DIM, 1.0, local_FT3, 1, cf_local_FR3, 1); not implemented since not used now
-		cblas_daxpy(this->DIM, 1.0, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_lower_rot_force_rl, 1, cf_local_FR_rl, 1);
-
-		// local_FR4 = lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];             %vt4_dot
-		cblas_dcopy(this->DIM, cf_lower_force_rr, 1, cf_local_FR_rr, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_lower_dampf_rr, 1, cf_local_FR_rr, 1);
-		//	cblas_daxpy(this->DIM, 1.0, local_FT4, 1, cf_local_FR4, 1); not implemented since not used now
-		cblas_daxpy(this->DIM, 1.0, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_lower_rot_force_rr, 1, cf_local_FR_rr, 1);
->>>>>>> refactor_MBD
+		cblas_daxpy(Constants::DIM, 1.0, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_lower_rot_force_rr, 1, cf_local_FR_rr, 1);
 
 
 		if (boundary_conditions == FIXED) {
@@ -2090,41 +1485,22 @@ public:
 		// Hc = A(1:3, 1:3) * wc;
 		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->Ic, Constants::DIM, wc_, 1, 0.0, cf_Hc, 1);
 		MathLibrary::get_tilda<T>(wc_, cf_wc_tilda);
-<<<<<<< HEAD
 		cblas_dcopy(Constants::DIM, cf_Hc, 1, cf_temp, 1);
 		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_wc_tilda, Constants::DIM, cf_temp, 1, 0.0, cf_Hc, 1);
 		cblas_dcopy(Constants::DIM, cf_Hc, 1, cf_sum_torque_spring_car, 1);
 		cblas_daxpy(Constants::DIM, 1.0, cf_Tc, 1, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S4, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S3, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S2, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S1, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force1, 1, 0.0, cf_temp, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r1_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force2, 1, 0.0, cf_temp, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r2_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force3, 1, 0.0, cf_temp, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r3_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force4, 1, 0.0, cf_temp, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r4_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
-=======
-		cblas_dcopy(this->DIM, cf_Hc, 1, cf_temp, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, -1.0, cf_wc_tilda, this->DIM, cf_temp, 1, 0.0, cf_Hc, 1);
-		cblas_dcopy(this->DIM, cf_Hc, 1, cf_sum_torque_spring_car, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_Tc, 1, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, this->DIM, this->DIM, -1.0, cf_C_cN, this->DIM, cf_upper_S_rr, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, this->DIM, this->DIM, -1.0, cf_C_cN, this->DIM, cf_upper_S_rl, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, this->DIM, this->DIM, -1.0, cf_C_cN, this->DIM, cf_upper_S_fr, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, this->DIM, this->DIM, -1.0, cf_C_cN, this->DIM, cf_upper_S_fl, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, this->DIM, this->DIM, 1.0, cf_C_cN, this->DIM, cf_sum_car_force_fl, 1, 0.0, cf_temp, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1.0, this->r_fl_tilda, this->DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, this->DIM, this->DIM, 1.0, cf_C_cN, this->DIM, cf_sum_car_force_fr, 1, 0.0, cf_temp, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1.0, this->r_fr_tilda, this->DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, this->DIM, this->DIM, 1.0, cf_C_cN, this->DIM, cf_sum_car_force_rl, 1, 0.0, cf_temp, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1.0, this->r_rl_tilda, this->DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
-		cblas_dgemv(CblasRowMajor, CblasTrans, this->DIM, this->DIM, 1.0, cf_C_cN, this->DIM, cf_sum_car_force_rr, 1, 0.0, cf_temp, 1);
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, this->DIM, this->DIM, 1.0, this->r_rr_tilda, this->DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
->>>>>>> refactor_MBD
+		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_rr, 1, 1.0, cf_sum_torque_spring_car, 1);
+		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_rl, 1, 1.0, cf_sum_torque_spring_car, 1);
+		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_fr, 1, 1.0, cf_sum_torque_spring_car, 1);
+		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_fl, 1, 1.0, cf_sum_torque_spring_car, 1);
+		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_fl, 1, 0.0, cf_temp, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_fl_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
+		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_fr, 1, 0.0, cf_temp, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_fr_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
+		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_rl, 1, 0.0, cf_temp, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_rl_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
+		cblas_dgemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_rr, 1, 0.0, cf_temp, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_rr_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
 
 		/*
 			///////////////////////////////////////////////////////////////
@@ -2148,139 +1524,71 @@ public:
 		*/
 		// FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...          %vc_dot  
 		T* brem_start = cf_b_rem;
-<<<<<<< HEAD
 		cblas_dcopy(Constants::DIM, this->FC, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_sum_car_force1, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_sum_car_force2, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_sum_car_force3, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_sum_car_force4, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_sum_car_force_fl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_sum_car_force_fr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_sum_car_force_rl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_sum_car_force_rr, 1, brem_start, 1);
 
 		//  upper_force1 - lower_force1 + upper_dampf1 - lower_dampf1 + local_FW1 + upper_rot_force1 - car_rot_force1 - lower_rot_force1;
 		brem_start += Constants::DIM;
-		cblas_dcopy(Constants::DIM, cf_upper_force1, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_force1, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_upper_dampf1, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_dampf1, 1, brem_start, 1);
+		cblas_dcopy(Constants::DIM, cf_upper_force_fl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_force_fl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_upper_dampf_fl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_dampf_fl, 1, brem_start, 1);
 		//cblas_daxpy(Constants::DIM, 1.0, local_FW1, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_upper_rot_force1, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_car_rot_force1, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_rot_force1, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_upper_rot_force_fl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_car_rot_force_fl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_rot_force_fl, 1, brem_start, 1);
 
 		// upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + upper_rot_force2 - car_rot_force2 - lower_rot_force2;
 		brem_start += Constants::DIM;
-		cblas_dcopy(Constants::DIM, cf_upper_force2, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_force2, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_upper_dampf2, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_dampf2, 1, brem_start, 1);
+		cblas_dcopy(Constants::DIM, cf_upper_force_fr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_force_fr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_upper_dampf_fr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_dampf_fr, 1, brem_start, 1);
 		//cblas_daxpy(Constants::DIM, 1.0, local_FW2, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_upper_rot_force2, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_car_rot_force2, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_rot_force2, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_upper_rot_force_fr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_car_rot_force_fr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_rot_force_fr, 1, brem_start, 1);
 
 		// upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + upper_rot_force3 - car_rot_force3 - lower_rot_force3;
 		brem_start += Constants::DIM;
-		cblas_dcopy(Constants::DIM, cf_upper_force3, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_force3, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_upper_dampf3, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_dampf3, 1, brem_start, 1);
-		//cblas_daxpy(Constants::DIM, 1.0, local_FW3, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_upper_rot_force3, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_car_rot_force3, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_rot_force3, 1, brem_start, 1);
+		cblas_dcopy(Constants::DIM, cf_upper_force_rl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_force_rl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_upper_dampf_rl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_dampf_rl, 1, brem_start, 1);
+		//cblas_daxpy(Constants::DIM, 1.0, local_FW_rl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_upper_rot_force_rl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_car_rot_force_rl, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_rot_force_rl, 1, brem_start, 1);
 
 		//  upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + upper_rot_force4 - car_rot_force4 - lower_rot_force4;
 		brem_start += Constants::DIM;
-		cblas_dcopy(Constants::DIM, cf_upper_force4, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_force4, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_upper_dampf4, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_dampf4, 1, brem_start, 1);
+		cblas_dcopy(Constants::DIM, cf_upper_force_rr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_force_rr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_upper_dampf_rr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_dampf_rr, 1, brem_start, 1);
 		//cblas_daxpy(Constants::DIM, 1.0, local_FW4, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, 1.0, cf_upper_rot_force4, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_car_rot_force4, 1, brem_start, 1);
-		cblas_daxpy(Constants::DIM, -1.0, cf_lower_rot_force4, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, 1.0, cf_upper_rot_force_rr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_car_rot_force_rr, 1, brem_start, 1);
+		cblas_daxpy(Constants::DIM, -1.0, cf_lower_rot_force_rr, 1, brem_start, 1);
 
 		// local_FR1; ...					  %vt1_dot
 		brem_start += Constants::DIM;
-		cblas_dcopy(Constants::DIM, cf_local_FR1, 1, brem_start, 1);
+		cblas_dcopy(Constants::DIM, cf_local_FR_fl, 1, brem_start, 1);
 
 		// local_FR2; ...			 	      %vt2_dot
 		brem_start += Constants::DIM;
-		cblas_dcopy(Constants::DIM, cf_local_FR2, 1, brem_start, 1);
+		cblas_dcopy(Constants::DIM, cf_local_FR_fr, 1, brem_start, 1);
 
 		// local_FR3; ...			          %vt3_dot
 		brem_start += Constants::DIM;
-		cblas_dcopy(Constants::DIM, cf_local_FR3, 1, brem_start, 1);
+		cblas_dcopy(Constants::DIM, cf_local_FR_rl, 1, brem_start, 1);
 	
 		// local_FR4];			              %vt4_dot
 		brem_start += Constants::DIM;
-		cblas_dcopy(Constants::DIM, cf_local_FR4, 1, brem_start, 1);
-=======
-		cblas_dcopy(this->DIM, this->FC, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_sum_car_force_fl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_sum_car_force_fr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_sum_car_force_rl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_sum_car_force_rr, 1, brem_start, 1);
-
-		//  upper_force1 - lower_force1 + upper_dampf1 - lower_dampf1 + local_FW1 + upper_rot_force1 - car_rot_force1 - lower_rot_force1;
-		brem_start += this->DIM;
-		cblas_dcopy(this->DIM, cf_upper_force_fl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_force_fl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_upper_dampf_fl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_dampf_fl, 1, brem_start, 1);
-		//cblas_daxpy(this->DIM, 1.0, local_FW1, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_upper_rot_force_fl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_car_rot_force_fl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_rot_force_fl, 1, brem_start, 1);
-
-		// upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + upper_rot_force2 - car_rot_force2 - lower_rot_force2;
-		brem_start += this->DIM;
-		cblas_dcopy(this->DIM, cf_upper_force_fr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_force_fr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_upper_dampf_fr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_dampf_fr, 1, brem_start, 1);
-		//cblas_daxpy(this->DIM, 1.0, local_FW2, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_upper_rot_force_fr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_car_rot_force_fr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_rot_force_fr, 1, brem_start, 1);
-
-		// upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + upper_rot_force3 - car_rot_force3 - lower_rot_force3;
-		brem_start += this->DIM;
-		cblas_dcopy(this->DIM, cf_upper_force_rl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_force_rl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_upper_dampf_rl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_dampf_rl, 1, brem_start, 1);
-		//cblas_daxpy(this->DIM, 1.0, local_FW_rl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_upper_rot_force_rl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_car_rot_force_rl, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_rot_force_rl, 1, brem_start, 1);
-
-		//  upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + upper_rot_force4 - car_rot_force4 - lower_rot_force4;
-		brem_start += this->DIM;
-		cblas_dcopy(this->DIM, cf_upper_force_rr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_force_rr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_upper_dampf_rr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_dampf_rr, 1, brem_start, 1);
-		//cblas_daxpy(this->DIM, 1.0, local_FW4, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, 1.0, cf_upper_rot_force_rr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_car_rot_force_rr, 1, brem_start, 1);
-		cblas_daxpy(this->DIM, -1.0, cf_lower_rot_force_rr, 1, brem_start, 1);
-
-		// local_FR1; ...					  %vt1_dot
-		brem_start += this->DIM;
-		cblas_dcopy(this->DIM, cf_local_FR_fl, 1, brem_start, 1);
-
-		// local_FR2; ...			 	      %vt2_dot
-		brem_start += this->DIM;
-		cblas_dcopy(this->DIM, cf_local_FR_fr, 1, brem_start, 1);
-
-		// local_FR3; ...			          %vt3_dot
-		brem_start += this->DIM;
-		cblas_dcopy(this->DIM, cf_local_FR_rl, 1, brem_start, 1);
-	
-		// local_FR4];			              %vt4_dot
-		brem_start += this->DIM;
-		cblas_dcopy(this->DIM, cf_local_FR_rr, 1, brem_start, 1);
->>>>>>> refactor_MBD
+		cblas_dcopy(Constants::DIM, cf_local_FR_rr, 1, brem_start, 1);
 
 		LAPACKE_dpotrs(LAPACK_ROW_MAJOR, 'L', Constants::DIM, 1, A_Ic, Constants::DIM, cf_sum_torque_spring_car, 1);
 		cblas_dcopy(Constants::DIM, cf_sum_torque_spring_car, 1, f_, 1);
@@ -2316,69 +1624,37 @@ public:
 		start_next += Constants::DIM;
 
 		// add vw1 to f vector
-<<<<<<< HEAD
-		cblas_dcopy(Constants::DIM, vw1_, 1, start_next, 1);
+
+		cblas_dcopy(Constants::DIM, vw_fl_, 1, start_next, 1);
 		start_next += Constants::DIM;
 
 		// add vw2 to f vector
-		cblas_dcopy(Constants::DIM, vw2_, 1, start_next, 1);
+		cblas_dcopy(Constants::DIM, vw_fr_, 1, start_next, 1);
 		start_next += Constants::DIM;
 
 		// add vw3 to f vector
-		cblas_dcopy(Constants::DIM, vw3_, 1, start_next, 1);
+		cblas_dcopy(Constants::DIM, vw_rl_, 1, start_next, 1);
 		start_next += Constants::DIM;
-
-		// add vw4 to f vector
-		cblas_dcopy(Constants::DIM, vw4_, 1, start_next, 1);
-		start_next += Constants::DIM;
-
-		// add vt1 to f vector
-		cblas_dcopy(Constants::DIM, vt1_, 1, start_next, 1);
-		start_next += Constants::DIM;
-
-		// add vt2 to f vector
-		cblas_dcopy(Constants::DIM, vt2_, 1, start_next, 1);
-		start_next += Constants::DIM;
-
-		// add vt3 to f vector
-		cblas_dcopy(Constants::DIM, vt3_, 1, start_next, 1);
-		start_next += Constants::DIM;
-
-		// add vt4 to f vector
-		cblas_dcopy(Constants::DIM, vt4_, 1, start_next, 1);
-		start_next += Constants::DIM;
-=======
-		cblas_dcopy(this->DIM, vw_fl_, 1, start_next, 1);
-		start_next += this->DIM;
-
-		// add vw2 to f vector
-		cblas_dcopy(this->DIM, vw_fr_, 1, start_next, 1);
-		start_next += this->DIM;
-
-		// add vw3 to f vector
-		cblas_dcopy(this->DIM, vw_rl_, 1, start_next, 1);
-		start_next += this->DIM;
 
 		// add vw_rr to f vector
-		cblas_dcopy(this->DIM, vw_rr_, 1, start_next, 1);
-		start_next += this->DIM;
+		cblas_dcopy(Constants::DIM, vw_rr_, 1, start_next, 1);
+		start_next += Constants::DIM;
 
 		// add vt1 to f vector
-		cblas_dcopy(this->DIM, vt_fl_, 1, start_next, 1);
-		start_next += this->DIM;
+		cblas_dcopy(Constants::DIM, vt_fl_, 1, start_next, 1);
+		start_next += Constants::DIM;
 
 		// add vt2 to f vector
-		cblas_dcopy(this->DIM, vt_fr_, 1, start_next, 1);
-		start_next += this->DIM;
+		cblas_dcopy(Constants::DIM, vt_fr_, 1, start_next, 1);
+		start_next += Constants::DIM;
 
 		// add vt3 to f vector
-		cblas_dcopy(this->DIM, vt_rl_, 1, start_next, 1);
-		start_next += this->DIM;
+		cblas_dcopy(Constants::DIM, vt_rl_, 1, start_next, 1);
+		start_next += Constants::DIM;
 
 		// add vt_rr to f vector
-		cblas_dcopy(this->DIM, vt_rr_, 1, start_next, 1);
-		start_next += this->DIM;
->>>>>>> refactor_MBD
+		cblas_dcopy(Constants::DIM, vt_rr_, 1, start_next, 1);
+		start_next += Constants::DIM;
 
 
 	}
@@ -2389,21 +1665,12 @@ public:
 	void solve(T* solution_vector) {
 		// From the formulation we have 61 dimensions in the solution vector
 		size_t solution_size = (this->num_iter + 1) * this->solution_dim;
-<<<<<<< HEAD
 		T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), Constants::ALIGNMENT);
 		x_vector = (T*)mkl_calloc(solution_dim, sizeof(T), Constants::ALIGNMENT);
-		MathLibrary::get_tilda<T>(r1, r1_tilda);
-		MathLibrary::get_tilda<T>(r2, r2_tilda);
-		MathLibrary::get_tilda<T>(r3, r3_tilda);
-		MathLibrary::get_tilda<T>(r4, r4_tilda);
-=======
-		T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), this->alignment);
-		x_vector = (T*)mkl_calloc(solution_dim, sizeof(T), this->alignment);
 		MathLibrary::get_tilda<T>(r_fl, r_fl_tilda);
 		MathLibrary::get_tilda<T>(r_fr, r_fr_tilda);
 		MathLibrary::get_tilda<T>(r_rl, r_rl_tilda);
 		MathLibrary::get_tilda<T>(r_rr, r_rr_tilda);
->>>>>>> refactor_MBD
 		/*
 		Preparing x_vector in the form of
 		x_vector = [wc; ...     % 3 1:3
@@ -2439,53 +1706,28 @@ public:
 		cblas_dcopy(Constants::DIM, pcc, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 		// pw1
-<<<<<<< HEAD
-		T* pw1 = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		T* pw_fl = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pw2
-		T* pw2 = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		T* pw_fr = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pw3
-		T* pw3 = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
-		i++;
-		// pw4
-		T* pw4 = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
-		i++;
-		// pt1
-		T* pt1 = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
-		i++;
-		// pt2
-		T* pt2 = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
-		i++;
-		// pt3
-		T* pt3 = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
-		i++;
-		// pt4
-		T* pt4 = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
-=======
-		T* pw_fl = x_vector + i * (this->DIM) + j * (this->NUM_LEGS);
-		i++;
-		// pw2
-		T* pw_fr = x_vector + i * (this->DIM) + j * (this->NUM_LEGS);
-		i++;
-		// pw3
-		T* pw_rl = x_vector + i * (this->DIM) + j * (this->NUM_LEGS);
+		T* pw_rl = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pw_rr
-		T* pw_rr = x_vector + i * (this->DIM) + j * (this->NUM_LEGS);
+		T* pw_rr = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pt1
-		T* pt_fl = x_vector + i * (this->DIM) + j * (this->NUM_LEGS);
+		T* pt_fl = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pt2
-		T* pt_fr = x_vector + i * (this->DIM) + j * (this->NUM_LEGS);
+		T* pt_fr = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pt3
-		T* pt_rl = x_vector + i * (this->DIM) + j * (this->NUM_LEGS);
+		T* pt_rl = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pt_rr
-		T* pt_rr = x_vector + i * (this->DIM) + j * (this->NUM_LEGS);
->>>>>>> refactor_MBD
+		T* pt_rr = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 
 
 		get_initial_length(start_orient, r_fl, r_fr, r_rl, r_rr, pcc, initial_upper_spring_length, initial_lower_spring_length, pw_fl, pw_fr, pw_rl, pw_rr, pt_fl, pt_fr, pt_rl, pt_rr);
@@ -2503,53 +1745,28 @@ public:
 		cblas_dcopy(Constants::DIM, vc, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 		// vw1
-<<<<<<< HEAD
-		cblas_dcopy(Constants::DIM, vw1, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		cblas_dcopy(Constants::DIM, vw_fl, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 		// vw2
-		cblas_dcopy(Constants::DIM, vw2, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
-		i++;
-		// vw3
-		cblas_dcopy(Constants::DIM, vw3, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
-		i++;
-		// vw4
-		cblas_dcopy(Constants::DIM, vw4, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
-		i++;
-		// vt1
-		cblas_dcopy(Constants::DIM, vt1, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
-		i++;
-		// vt2
-		cblas_dcopy(Constants::DIM, vt2, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
-		i++;
-		// vt3
-		cblas_dcopy(Constants::DIM, vt3, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
-		i++;
-		// vt4
-		cblas_dcopy(Constants::DIM, vt4, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
-=======
-		cblas_dcopy(this->DIM, vw_fl, 1, x_vector + i * (this->DIM) + j * (this->NUM_LEGS), 1);
-		i++;
-		// vw2
-		cblas_dcopy(this->DIM, vw_fr, 1, x_vector + i * (this->DIM) + j * (this->NUM_LEGS), 1);
+		cblas_dcopy(Constants::DIM, vw_fr, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 		// vw_rl
-		cblas_dcopy(this->DIM, vw_rl, 1, x_vector + i * (this->DIM) + j * (this->NUM_LEGS), 1);
+		cblas_dcopy(Constants::DIM, vw_rl, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 		// vw4
-		cblas_dcopy(this->DIM, vw_rr, 1, x_vector + i * (this->DIM) + j * (this->NUM_LEGS), 1);
+		cblas_dcopy(Constants::DIM, vw_rr, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 		// vt1
-		cblas_dcopy(this->DIM, vt_fl, 1, x_vector + i * (this->DIM) + j * (this->NUM_LEGS), 1);
+		cblas_dcopy(Constants::DIM, vt_fl, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 		// vt2
-		cblas_dcopy(this->DIM, vt_fr, 1, x_vector + i * (this->DIM) + j * (this->NUM_LEGS), 1);
+		cblas_dcopy(Constants::DIM, vt_fr, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 		// vt_rl
-		cblas_dcopy(this->DIM, vt_rl, 1, x_vector + i * (this->DIM) + j * (this->NUM_LEGS), 1);
+		cblas_dcopy(Constants::DIM, vt_rl, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 		// vt4
-		cblas_dcopy(this->DIM, vt_rr, 1, x_vector + i * (this->DIM) + j * (this->NUM_LEGS), 1);
->>>>>>> refactor_MBD
+		cblas_dcopy(Constants::DIM, vt_rr, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		i++;
 
 		j = 0;

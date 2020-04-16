@@ -1,6 +1,6 @@
 /***********************************************************************************************//**
-* \file ReadXML.cpp
-* This file holds the function definitions of ReadXML.
+* \file MetaDataBase.cpp
+* This file holds the function definitions of MetaDataBase.
 * \date 04/14/2020
 **************************************************************************************************/
 #include <string>
@@ -9,12 +9,53 @@
 #include <iostream>
 #include <fstream>
 
-#include "ReadXML.h"
+#include "MetaDataBase.h"
+
+
+MetaDataBase* MetaDataBase::_database = NULL;
+
+MetaDataBase* MetaDataBase::DataBase() {
+    if (!_database)
+        _database = new MetaDataBase;
+    return _database;
+}
+
+
+/**
+* \brief blank private Constructor
+*/
+MetaDataBase::MetaDataBase() {
+    _filename = "";
+    _load_filename = "";
+}
+
+
+/**
+* \brief setter for the Filename
+*/
+void MetaDataBase::setFileName(
+    const std::string& filename /**< [in] reference to the filename*/
+) {
+    _filename = filename;
+    settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
+}
+
+/**
+* \brief setter for the load Filename
+*/
+void MetaDataBase::setloadFileName(
+    const std::string& filename /**< [in] reference to the load filename*/
+) {
+    _load_filename = filename;
+    load_data = EVAA_load_module(_load_filename, xml_schema::flags::dont_validate);
+
+}
+
 
 /**
 * \brief reads the vectors of the positions of the legs relative to the center of mass
 */
-template<typename T> void ReadXML::readVectorLegs(double* storage, T vec){
+template<typename T> void MetaDataBase::readVectorLegs(double* storage, T vec){
        readVector(storage, vec.FrontLeft());
        readVector(storage+3,vec.FrontRight());
        readVector(storage+6,vec.ReerLeft());
@@ -24,7 +65,7 @@ template<typename T> void ReadXML::readVectorLegs(double* storage, T vec){
 /**
 * \brief reads a 3 dim vector
 */
-template<typename T> void ReadXML::readVector(double* storage, T vec) {
+template<typename T> void MetaDataBase::readVector(double* storage, T vec) {
     storage[0] = vec.x();
     storage[1] = vec.y();
     storage[2] = vec.z();
@@ -33,7 +74,7 @@ template<typename T> void ReadXML::readVector(double* storage, T vec) {
 /**
 * \brief reads paramaters which are given for all the legs 
 */
-template<typename T> void ReadXML::readLegs(double* storage, T vec) {
+template<typename T> void MetaDataBase::readLegs(double* storage, T vec) {
     storage[0] = vec.FrontLeft();
     storage[1] = vec.FrontRight();
     storage[2] = vec.ReerLeft();
@@ -41,9 +82,9 @@ template<typename T> void ReadXML::readLegs(double* storage, T vec) {
 }
 
 /**
-* \brief reads quaternion?
+* \brief reads quaternion
 */
-template<typename T> void ReadXML::readangles(double* storage, T vec) {
+template<typename T> void MetaDataBase::readangles(double* storage, T vec) {
 	storage[0] = vec.x();
 	storage[1] = vec.y();
 	storage[2] = vec.z();
@@ -51,75 +92,32 @@ template<typename T> void ReadXML::readangles(double* storage, T vec) {
 }
 
 
-/**
-* \brief blank Constructor
-*/
-ReadXML::ReadXML(){
-    _filename = "";
-	_load_filename = "";
-}
-
-/**
-* \brief Constructor
-*/
-ReadXML::ReadXML(
-    const std::string& load_filename /**< [in] reference to the filename*/
-) :
-    _load_filename(load_filename),
-    load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
-}
-
-/**
-* \brief Constructor
-*/
-ReadXML::ReadXML(
-    const std::string & filename /**< [in] reference to the filename*/,
-    const std::string & load_filename /**< [in] reference to the load filename*/
-) :_filename(filename), _load_filename(load_filename),
-	settings(EVAA_settings(filename, xml_schema::flags::dont_validate)), 
-    load_data(EVAA_load_module(load_filename, xml_schema::flags::dont_validate)) {
-}
-
-/**
-* \brief setter for the Filename
-*/
-void ReadXML::setFileName(
-    const std::string & filename /**< [in] reference to the filename*/
-){
-    _filename = filename;
-}
-
-/**
-* \brief setter for the load Filename
-*/
-void ReadXML::setloadFileName(
-    const std::string & filename /**< [in] reference to the load filename*/
-) {
-	_load_filename = filename;
-}
 
 /**
 * \brief read car, initial and simulaiton parameter
 */
-void ReadXML::ReadParameters(Simulation_Parameters & parameters /**< [out] reference to parameter to where everything gets stored*/){
+void MetaDataBase::ReadParameters(){
 
     //--------------------------------------------------
     // Load car parameters
     //--------------------------------------------------
  
-    parameters.mass_body = settings->Vehicle().TwoTrackModel().Mass().Body();
-    readLegs(parameters.mass_wheel, settings->Vehicle().TwoTrackModel().Mass().UnsprungMass());
-    readLegs(parameters.mass_tyre, settings->Vehicle().TwoTrackModel().Mass().Tyre());
-    parameters.I_body[0] = settings->Vehicle().TwoTrackModel().Inertia().XX();
-    parameters.I_body[1] = settings->Vehicle().TwoTrackModel().Inertia().YY();
-    parameters.I_body[2] = settings->Vehicle().TwoTrackModel().Inertia().ZZ();
-    parameters.I_body[3] = settings->Vehicle().TwoTrackModel().Inertia().XY();
-    parameters.I_body[4] = settings->Vehicle().TwoTrackModel().Inertia().XZ();
-    parameters.I_body[5] = settings->Vehicle().TwoTrackModel().Inertia().YZ();
+    mass_body = settings->Vehicle().TwoTrackModel().Mass().Body();
+    readLegs(mass_wheel, settings->Vehicle().TwoTrackModel().Mass().UnsprungMass());
+    readLegs(mass_tyre, settings->Vehicle().TwoTrackModel().Mass().Tyre());
+    I_body[0] = settings->Vehicle().TwoTrackModel().Inertia().XX();
+    I_body[1] = settings->Vehicle().TwoTrackModel().Inertia().XY();
+    I_body[2] = settings->Vehicle().TwoTrackModel().Inertia().XZ();
+    I_body[3] = settings->Vehicle().TwoTrackModel().Inertia().YX();
+    I_body[4] = settings->Vehicle().TwoTrackModel().Inertia().YY();
+    I_body[5] = settings->Vehicle().TwoTrackModel().Inertia().YZ();
+    I_body[6] = settings->Vehicle().TwoTrackModel().Inertia().ZX();
+    I_body[7] = settings->Vehicle().TwoTrackModel().Inertia().ZY();
+    I_body[8] = settings->Vehicle().TwoTrackModel().Inertia().ZZ();
     if (settings->Vehicle().TwoTrackModel().Stiffness().Constant().present()) {
         std::cout << "Take constant stiffness without lookup table" << std::endl;
-        readLegs(parameters.k_tyre, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Tyre());
-        readLegs(parameters.k_body, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Body());
+        readLegs(k_tyre, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Tyre());
+        readLegs(k_body, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Body());
         _lookup_filename = "NO_FILE_SPECIFIED";
     }
     else {
@@ -133,63 +131,63 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters /**< [out] refer
             exit(2);
         }
     }
-    readLegs(parameters.c_tyre, settings->Vehicle().TwoTrackModel().DampingCoefficients().Tyre());
-    readLegs(parameters.c_body, settings->Vehicle().TwoTrackModel().DampingCoefficients().Body());
-    readLegs(parameters.l_long, settings->Vehicle().TwoTrackModel().Geometry().LongitudinalReferenceToWheel());
-    readLegs(parameters.l_lat, settings->Vehicle().TwoTrackModel().Geometry().LateralReferenceToWheel());
-    readLegs(parameters.lower_spring_length, settings->Vehicle().TwoTrackModel().Geometry().SuspensionSprings());
-    readLegs(parameters.upper_spring_length, settings->Vehicle().TwoTrackModel().Geometry().TyreSprings());
+    readLegs(c_tyre, settings->Vehicle().TwoTrackModel().DampingCoefficients().Tyre());
+    readLegs(c_body, settings->Vehicle().TwoTrackModel().DampingCoefficients().Body());
+    readLegs(l_long, settings->Vehicle().TwoTrackModel().Geometry().LongitudinalReferenceToWheel());
+    readLegs(l_lat, settings->Vehicle().TwoTrackModel().Geometry().LateralReferenceToWheel());
+    readLegs(lower_spring_length, settings->Vehicle().TwoTrackModel().Geometry().SuspensionSprings());
+    readLegs(upper_spring_length, settings->Vehicle().TwoTrackModel().Geometry().TyreSprings());
 
 
 //--------------------------------------------------
 // Load initial parameters
 //--------------------------------------------------
-    readVector(parameters.initial_vel_body, settings->InitialConditions().Velocities().Body());
-    readVector(parameters.initial_ang_vel_body, settings->InitialConditions().Velocities().angularBody());
+    readVector(initial_vel_body, settings->InitialConditions().Velocities().Body());
+    readVector(initial_ang_vel_body, settings->InitialConditions().Velocities().angularBody());
 
-    readVectorLegs(parameters.initial_vel_wheel, settings->InitialConditions().Velocities().UnsprungMass());
-    readVectorLegs(parameters.initial_vel_tyre, settings->InitialConditions().Velocities().Tyre());
+    readVectorLegs(initial_vel_wheel, settings->InitialConditions().Velocities().UnsprungMass());
+    readVectorLegs(initial_vel_tyre, settings->InitialConditions().Velocities().Tyre());
 
-    readLegs(parameters.initial_lower_spring_length, settings->InitialConditions().SpringElongation().Tyre());
-    readLegs(parameters.initial_upper_spring_length, settings->InitialConditions().SpringElongation().Body());
+    readLegs(initial_lower_spring_length, settings->InitialConditions().SpringElongation().Tyre());
+    readLegs(initial_upper_spring_length, settings->InitialConditions().SpringElongation().Body());
 
-	readVector(parameters.initial_pos_body, settings->InitialConditions().Position().Body());
+	readVector(initial_pos_body, settings->InitialConditions().Position().Body());
 	if (settings->InitialConditions().Position().UnsprungMass().present()) {
-		parameters.initial_leg_flag = 1;
-		readVectorLegs(parameters.initial_pos_wheel, settings->InitialConditions().Position().UnsprungMass().get());
-		readVectorLegs(parameters.initial_pos_tyre, settings->InitialConditions().Position().Tyre().get());
+		initial_leg_flag = 1;
+		readVectorLegs(initial_pos_wheel, settings->InitialConditions().Position().UnsprungMass().get());
+		readVectorLegs(initial_pos_tyre, settings->InitialConditions().Position().Tyre().get());
 	}
 
-	readangles(parameters.initial_angle, settings->InitialConditions().Orientation());
+	readangles(initial_angle, settings->InitialConditions().Orientation());
 
 
 //--------------------------------------------------
 // Load simulation parameters
 //--------------------------------------------------
-   readVector(parameters.gravity, settings->SimulationParameters().GeneralSettings().Gravity());
-    parameters.num_time_iter = settings->SimulationParameters().GeneralSettings().NumberOfIterations();
-    parameters.timestep = settings->SimulationParameters().GeneralSettings().TimestepSize();
+    readVector(gravity, settings->SimulationParameters().GeneralSettings().Gravity());
+    num_time_iter = settings->SimulationParameters().GeneralSettings().NumberOfIterations();
+    timestep = settings->SimulationParameters().GeneralSettings().TimestepSize();
     
 
-    parameters.DOF = settings->SimulationParameters().LinearALE().DOF();
+    DOF = settings->SimulationParameters().LinearALE().DOF();
 
-    parameters.max_num_iter = settings->SimulationParameters().MultyBodyDynamics().MaximalIterationNumber();
-    parameters.tolerance = settings->SimulationParameters().MultyBodyDynamics().Tolerance();
-    parameters.solution_dim = settings->SimulationParameters().MultyBodyDynamics().SolutionDimension();
+    max_num_iter = settings->SimulationParameters().MultyBodyDynamics().MaximalIterationNumber();
+    tolerance = settings->SimulationParameters().MultyBodyDynamics().Tolerance();
+    solution_dim = settings->SimulationParameters().MultyBodyDynamics().SolutionDimension();
 
     std::string solver = settings->SimulationParameters().MultyBodyDynamics().Solver();
 
 
     if (solver=="explicit_Euler"){
-        parameters.solver = EXPLICIT_EULER;
+        solver = EXPLICIT_EULER;
     } else if (solver=="RK4"){
-        parameters.solver = RUNGE_KUTTA_4;
+        solver = RUNGE_KUTTA_4;
     } else if (solver=="Broyden_Euler"){
-        parameters.solver = BROYDEN_EULER;
+        solver = BROYDEN_EULER;
     } else if (solver=="Broyden_CN"){
-        parameters.solver = BROYDEN_CN;
+        solver = BROYDEN_CN;
     } else if (solver=="Broyden_BDF2"){
-        parameters.solver = BROYDEN_BDF2;
+        solver = BROYDEN_BDF2;
     } else {
         std::cerr<<"Wrong MBD-solver specified in the XML! Please type: \n   -explicit_Euler \n   -RK4\n   -Broyden_Euler\n   -Broyden_CN\n   -Broyden_BDF2"<<std::endl;
         exit(2);
@@ -199,22 +197,22 @@ void ReadXML::ReadParameters(Simulation_Parameters & parameters /**< [out] refer
 /**
 * \brief read boundary condition and forces on tyres, wheel and body
 */
-void ReadXML::ReadLoadParameters(Load_Params& parameters /**< [out] reference to parameter*/) {
+void MetaDataBase::ReadLoadParameters() {
 
     //--------------------------------------------------
     // Load external parameters
     //--------------------------------------------------
 	std::string boundary_conditions = load_data->boundary_description().BoundaryConditions();
 	if (boundary_conditions == "fixed") {
-		parameters.boundary_condition_road = FIXED;
+		boundary_condition_road = FIXED;
         std::cout << "Run the simulation with fixed tyres" << std::endl;
 	}
 	else if (boundary_conditions == "nonfixed") {
-		parameters.boundary_condition_road = NONFIXED;
+		boundary_condition_road = NONFIXED;
         std::cout << "Run the simulation without any tyre constraints" << std::endl;
     }
 	else if (boundary_conditions == "circle") {
-		parameters.boundary_condition_road = CIRCULAR;
+		boundary_condition_road = CIRCULAR;
         std::cout << "Run the simulation on a circular road" << std::endl;
     }
 	else {
@@ -222,12 +220,12 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters /**< [out] reference to
 		exit(2);
 	}
 	if (load_data->boundary_description().circular().present()) {
-		parameters.profile_radius = load_data->boundary_description().circular()->radius();
-		readVector(parameters.profile_center, load_data->boundary_description().circular()->center());
+		profile_radius = load_data->boundary_description().circular()->radius();
+		readVector(profile_center, load_data->boundary_description().circular()->center());
 	}
-	readVectorLegs(parameters.external_force_tyre, load_data->forces().force_tyre());
-	readVectorLegs(parameters.external_force_wheel, load_data->forces().force_wheel());
-    readVector(parameters.external_force_body, load_data->forces().force_body());
+	readVectorLegs(external_force_tyre, load_data->forces().force_tyre());
+	readVectorLegs(external_force_wheel, load_data->forces().force_wheel());
+    readVector(external_force_body, load_data->forces().force_body());
 }
 
 
@@ -235,10 +233,9 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters /**< [out] reference to
 /**
 * \brief read and order params used for the loookup tables and generate the stiffness and damping loookup table
 */
-void ReadXML::ReadLookupParameters(
+void MetaDataBase::ReadLookupParameters(
     EVAALookup** lookupStiffness /**< [out] pointer to the pointer to the stiffness lookup from the compute engine*/,
-    EVAALookup** lookupDamping /**< [out] pointer to the pointer to the damping lookup from the compute engine*/,
-    Simulation_Parameters & parameters /**< [in] reference to the parameters and to set set the interpolation tag*/
+    EVAALookup** lookupDamping /**< [out] pointer to the pointer to the damping lookup from the compute engine*/
 ) {
     if (_lookup_filename == "NO_FILE_SPECIFIED") return;
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
@@ -274,7 +271,7 @@ void ReadXML::ReadLookupParameters(
 		a[7] = k_tyre[3];
 
         *lookupStiffness = new EVAALookup(size, a, b, c, l_min, l_max, k, type, order);
-		parameters.interpolation = 1;  // to switch from constant to interpolation type
+		interpolation = 1;  // to switch from constant to interpolation type
 
         // damping is /100 from the stiffness for the start
         for (auto j = 0; j < k; j++) {
