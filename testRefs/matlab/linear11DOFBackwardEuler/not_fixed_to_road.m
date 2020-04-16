@@ -124,7 +124,7 @@ A=((1/(h*h))*M+(1/h)*D+K);
 B=((2/(h*h))*M+(1/h)*D);
 Ared=((1/(h*h))*Mred+(1/h)*Dred+Kred);
 Bred=((2/(h*h))*Mred+(1/h)*Dred);
-f_n_p_1=[1.1e3; zeros(dim_system-1,1)];
+f_n_p_1=[-1.1e3; zeros(dim_system-1,1)];
 f_n_p_1_red=[1.1e3; zeros(6,1)];
 % gives only positive reaction in the force field on tire
 f_update = @(f, idx)( (f(idx)>0).*f(idx) );

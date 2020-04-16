@@ -29,7 +29,10 @@
 
 #include "11DOF.h"
 #include "ALE.h"
+#ifndef U_Lookup
+#define U_Lookup
 #include "EVAALookup.h"
+#endif
 #include "MathLibrary.h"
 #include "MBD_method.h"
 
@@ -104,7 +107,7 @@ private:
 	std::string _xmlLoadFileName;
 	Simulation_Parameters _parameters;
 	Load_Params _loadModuleParameter;
-	EVAALookup* _lookupStiffness;
-	EVAALookup* _lookupDamping;
+	EVAALookup<Constants::floatEVAA>* _lookupStiffness;
+	EVAALookup<Constants::floatEVAA>* _lookupDamping;
 };
 

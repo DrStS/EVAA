@@ -16,7 +16,7 @@ private:
 	Car<T>* Car_obj; // suppose Interpolation in the Car
 	Load_module* Load_module_obj; // needs Profile and Car
 	Linear11dof<T>* linear11dof_obj;
-	EVAALookup* interpolator;// interpolator member of EVAA
+	EVAALookup<Constants::floatEVAA>* interpolator;// interpolator member of EVAA
 	Simulation_Parameters params;
 	Profile* profile_obj;
 
@@ -73,7 +73,7 @@ public:
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
 		Linear11dof<T>* linear11dof_val,
-		EVAALookup* lookup_table,
+		EVAALookup<Constants::floatEVAA>* lookup_table,
 		Simulation_Parameters &params_val) {
 
 		Car_obj = Car_obj_val;

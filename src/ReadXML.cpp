@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <Constants.h>
 
 #include "ReadXML.h"
 
@@ -236,8 +237,8 @@ void ReadXML::ReadLoadParameters(Load_Params& parameters /**< [out] reference to
 * \brief read and order params used for the loookup tables and generate the stiffness and damping loookup table
 */
 void ReadXML::ReadLookupParameters(
-    EVAALookup** lookupStiffness /**< [out] pointer to the pointer to the stiffness lookup from the compute engine*/,
-    EVAALookup** lookupDamping /**< [out] pointer to the pointer to the damping lookup from the compute engine*/,
+    EVAALookup<Constants::floatEVAA>** lookupStiffness /**< [out] pointer to the pointer to the stiffness lookup from the compute engine*/,
+    EVAALookup<Constants::floatEVAA>** lookupDamping /**< [out] pointer to the pointer to the damping lookup from the compute engine*/,
     Simulation_Parameters & parameters /**< [in] reference to the parameters and to set set the interpolation tag*/
 ) {
     if (_lookup_filename == "NO_FILE_SPECIFIED") return;
@@ -273,14 +274,14 @@ void ReadXML::ReadLookupParameters(
 		a[6] = k_body[1];
 		a[7] = k_tyre[3];
 
-        *lookupStiffness = new EVAALookup(size, a, b, c, l_min, l_max, k, type, order);
+        *lookupStiffness = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
 		parameters.interpolation = 1;  // to switch from constant to interpolation type
 
         // damping is /100 from the stiffness for the start
         for (auto j = 0; j < k; j++) {
             a[j] /= 100;
         }
-        *lookupDamping = new EVAALookup(size, a, b, c, l_min, l_max, k, type, order);
+        *lookupDamping = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
 
         delete[] a;
 		delete[] k_body;

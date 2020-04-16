@@ -127,7 +127,7 @@ private:
 
 
 	////////////////////////// Lookup table ///////////////////////////////////////////
-	EVAALookup* lookupStiffness;
+	EVAALookup<Constants::floatEVAA>* lookupStiffness;
 
 	/*
 	Calculate the positions of the tyres and wheels according to the initial orientation of the car
@@ -297,7 +297,7 @@ public:
 	/*
 	Constructor
 	*/
-	MBD_method(const Simulation_Parameters& params, const Load_Params& load_params, EVAALookup* interpolator) {
+	MBD_method(const Simulation_Parameters& params, const Load_Params& load_params, EVAALookup<Constants::floatEVAA>* interpolator) {
 
 		////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
 		h = params.timestep;
