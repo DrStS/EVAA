@@ -105,8 +105,6 @@ public:
 private:
 	std::string _xmlCarFileName;
 	std::string _xmlLoadFileName;
-	Simulation_Parameters _parameters;
-	Load_Params _loadModuleParameter;
 	EVAALookup<Constants::floatEVAA>* _lookupStiffness;
 	EVAALookup<Constants::floatEVAA>* _lookupDamping;
 };

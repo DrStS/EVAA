@@ -210,7 +210,7 @@ void Circular::update_initial_condition(Car<double>* Car1){
 
 
 // ===============================   Fixed class implementation ======================= //
-Fixed::Fixed(const double& g, const Load_Params& load_param) {
+Fixed::Fixed(const double& g) {
 	Name = "fixed";
 	linear_idx = (size_t*)mkl_malloc(num_tyre * sizeof(size_t), Constants::ALIGNMENT);
 	dx = (double*)mkl_malloc(sizeof(double) * num_tyre, Constants::ALIGNMENT);
@@ -227,7 +227,7 @@ void Fixed::get_Profile_force_ALE(Car<double>* Car1, double* F_vec, double* Norm
 		}
 	}
 	else {
-		std::cout << "Please Provide Tire Index" << std::endl;
+		std::cout << "Please Provide Tyre Index" << std::endl;
 		exit(2);
 	}
 }
