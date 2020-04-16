@@ -1,16 +1,17 @@
 clear; clc; close all;
 %% make lookup
 a = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3] ;
-b = 1.59;
-c = 1.2;
-
+%b = 1.59;
+%c = 1.2;
+b = 0;
+c = 0;
 %%
 global k_grid size_grid l_min l_max dl;
 % calc min and max length to evaluate (just for now)
 l_min = -1;
-l_max = 1;
+l_max = 1000;
 % grid size
-size_grid = 1000;
+size_grid = 1001;
 % grid value allocation
 global X;
 X = zeros(size_grid, 1);
@@ -139,11 +140,11 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1000;
+num_iter = 100;
 delta_t = 1e-1; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
-tol = 1e-12;
+tol = 1e-6;
 y = zeros(11, length(t));
 order = zeros(length(t),1);
 err_arr = zeros(length(t),1);
@@ -190,10 +191,12 @@ l7 = eval(l7_sym);
 l8 = eval(l8_sym);
 
 y(:,1) = u_n;
-u_n_m_1=u_n - 4 * delta_t;
+u_n_m_1 = u_n;
+u_n_m_1(1)=u_n(1) - 1000 * delta_t;
 u_n_p_1=u_n;
 
-rhs =[1.1e3; zeros(10,1)];
+%rhs =[mass_Body; 0; 0; mass_wheel_fl; mass_tyre_fr; mass_wheel_fr; mass_tyre_fl; mass_wheel_rl; mass_tyre_rl; mass_wheel_rr; mass_tyre_rr];
+rhs = 0;
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 
@@ -209,6 +212,8 @@ for i = 1: length(t)-1
     i
     iter = 0;
     err = [];
+    delta = [];
+    init_err = r;
     while 1
         iter = iter + 1;
         temp = [];
@@ -217,7 +222,7 @@ for i = 1: length(t)-1
         J = M_div_h2 + K +dKdx_x;
         
         Delta = -J\r;
-
+        delta(iter) = norm(Delta);
         u_n_p_1 = Delta + u_n_p_1; 
         
         % update values
@@ -256,8 +261,10 @@ for i = 1: length(t)-1
     if (iter >3)
         %order(i) = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))));
     end
-    figure;
-    semilogy(err);
+    %figure;
+    %loglog(err);
+    %figure;
+    %plot(delta);
     order(i) = iter;
     condition = [condition, cond(J)];
     u_n_m_1 = u_n;
@@ -266,7 +273,9 @@ for i = 1: length(t)-1
 end
 d
 %order
-%plot(t,y(1,:));
+figure;
+plot(t,y(5,:));
+title('car position');
 %plot(t,y(4:11,:))
 figure;
 plot(order);

@@ -62,7 +62,7 @@ l2 = u2 + L2;
 
 %% Internal forces
 syms p1 p2 k1 k2;
-p1 = k1*u1 - k2*u2;
+p1 = k1*u1 - k1*u2;
 p2 = -k1*u1+(k1+k2)*u2;
 
 %% Jacobian
@@ -98,7 +98,7 @@ y = zeros(2, length(t));
 err_arr = zeros(1,length(t));
 
 %init sol vecotr
-y(:,1) = u - 2 * delta_t;
+y(:,1) = u - 20 * delta_t;
 y(:,2) = u;
 iterations = [];
 
@@ -140,8 +140,10 @@ for i = 2: length(t)-1
        end
     end
     figure;
-    semilogy(err);
-    order = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))))
+    loglog(err);
+    if iter > 3
+        order = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))))
+    end
     iterations = [iterations, iter];
 end
 figure;
