@@ -2,7 +2,7 @@
 #include <cmath>
 #include <mkl.h>
 
-#include "ReadXML.h"
+#include "MetaDataBase.h"
 #include "MathLibrary.h"
 #include "Constants.h"
 
@@ -172,12 +172,12 @@ public:
 	/*
 	Constructor
 	*/
-	Car(const Simulation_Parameters& params, EVAALookup* interpolator) {
+	Car(EVAALookup* interpolator) {
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		lookupStiffness = interpolator;
-		DOF = params.DOF;
+		DOF = MetaDataBase::DataBase()->getDOF();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////// System Mono ///////////////////////////////////////////////////////
@@ -250,47 +250,31 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		l_long[0] = params.l_long[2];
-		l_long[1] = params.l_long[3];
-		l_long[2] = params.l_long[1];
-		l_long[3] = params.l_long[0];
+		l_long =  MetaDataBase::DataBase()->getLongitudalLegPositionVector();
 
-		l_lat[0] = params.l_lat[2];
-		l_lat[1] = params.l_lat[3];
-		l_lat[2] = params.l_lat[1];
-		l_lat[3] = params.l_lat[0];
+		l_lat =  MetaDataBase::DataBase()->getLatidudalLegPositionVector();
 
+		I_CG =  MetaDataBase::DataBase()->getMomentOfInertiaVector();
 
-		//
-		I_CG[0] = params.I_body[0];
-		I_CG[1] = params.I_body[3];
-		I_CG[2] = params.I_body[4];
-		I_CG[3] = params.I_body[3];
-		I_CG[4] = params.I_body[1];
-		I_CG[5] = params.I_body[5];
-		I_CG[6] = params.I_body[4];
-		I_CG[7] = params.I_body[5];
-		I_CG[8] = params.I_body[2];
-
-		Mass_vec[0] = params.mass_body;
-		Mass_vec[1] = params.mass_wheel[2];
-		Mass_vec[2] = params.mass_tyre[2];
-		Mass_vec[3] = params.mass_wheel[3];
-		Mass_vec[4] = params.mass_tyre[3];
-		Mass_vec[5] = params.mass_wheel[1];
-		Mass_vec[6] = params.mass_tyre[1];
-		Mass_vec[7] = params.mass_wheel[0];
-		Mass_vec[8] = params.mass_tyre[0];
+		Mass_vec[0] =  MetaDataBase::DataBase()->getBodyMass();
+		Mass_vec[1] =  MetaDataBase::DataBase()->getWheelMassFrontLeft();
+		Mass_vec[2] =  MetaDataBase::DataBase()->getTyreMassFrontLeft();
+		Mass_vec[3] = MetaDataBase::DataBase()->getWheelMassFrontRight();
+		Mass_vec[4] = MetaDataBase::DataBase()->getTyreMassFrontRight();
+		Mass_vec[5] = MetaDataBase::DataBase()->getWheelMassRearLeft();
+		Mass_vec[6] = MetaDataBase::DataBase()->getTyreMassRearLeft();
+		Mass_vec[7] = MetaDataBase::DataBase()->getWheelMassRearRight();
+		Mass_vec[8] = MetaDataBase::DataBase()->getTyreMassRearRight();
 		*global_mass = get_global_mass();
 
-		spring_length[0] = params.upper_spring_length[2];
-		spring_length[1] = params.lower_spring_length[2];
-		spring_length[2] = params.upper_spring_length[3];
-		spring_length[3] = params.lower_spring_length[3];
-		spring_length[4] = params.lower_spring_length[1];
-		spring_length[5] = params.upper_spring_length[1];
-		spring_length[6] = params.upper_spring_length[0];
-		spring_length[7] = params.lower_spring_length[0];
+		spring_length[0] = MetaDataBase::DataBase()->getBodySpringLengthFrontLeft();
+		spring_length[1] = MetaDataBase::DataBase()->getTyreSpringLengthFrontLeft();
+		spring_length[2] = MetaDataBase::DataBase()->getBodySpringLengthFrontRight();
+		spring_length[3] = MetaDataBase::DataBase()->getTyreSpringLengthFrontRight();
+		spring_length[4] = MetaDataBase::DataBase()->getBodySpringLengthRearLeft();
+		spring_length[5] = MetaDataBase::DataBase()->getTyreSpringLengthRearLeft();
+		spring_length[6] = MetaDataBase::DataBase()->getBodySpringLengthRearRight();
+		spring_length[7] = MetaDataBase::DataBase()->getTyreSpringLengthRearRight();
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -301,24 +285,24 @@ public:
 		quad_angle_init[1] = params.initial_angle[1];
 		quad_angle_init[2] = params.initial_angle[2];
 		quad_angle_init[3] = params.initial_angle[3];*/
-		cblas_dcopy(4, params.initial_angle, 1, quad_angle_init, 1);
+		cblas_dcopy(4,  MetaDataBase::DataBase()->getBodyInitialOrientation(), 1, quad_angle_init, 1);
 		MathLibrary::ToEulerAngles<T>(quad_angle_init, initial_angle);
 		cblas_dcopy(Constants::DIM, initial_angle, 1, angle_CG, 1);
 
 		// Spring lengths
-		current_spring_length[0] = params.initial_upper_spring_length[2];
-		current_spring_length[1] = params.initial_lower_spring_length[2];
-		current_spring_length[2] = params.initial_upper_spring_length[3];
-		current_spring_length[3] = params.initial_lower_spring_length[3];
-		current_spring_length[4] = params.initial_upper_spring_length[1];
-		current_spring_length[5] = params.initial_lower_spring_length[1];
-		current_spring_length[6] = params.initial_upper_spring_length[0];
-		current_spring_length[7] = params.initial_lower_spring_length[0];
+		current_spring_length[0] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontLeft();
+		current_spring_length[1] = MetaDataBase::DataBase()->getTyreSpringInitialLengthFrontLeft();
+		current_spring_length[2] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontRight();
+		current_spring_length[3] = MetaDataBase::DataBase()->getTyreSpringInitialLengthFrontRight();
+		current_spring_length[4] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearLeft();
+		current_spring_length[5] = MetaDataBase::DataBase()->getTyreSpringInitialLengthRearLeft();
+		current_spring_length[6] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
+		current_spring_length[7] = MetaDataBase::DataBase()->getTyreSpringInitialLengthRearRight();
 
 
 		// Filling the position vector with initial condition
 		// CG
-		cblas_dcopy(Constants::DIM, params.initial_pos_body, 1, initial_position, 1); // copy the center of mass position
+		cblas_dcopy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialPosition(), 1, initial_position, 1); // copy the center of mass position
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////// Interpolator Initialization///////////////////////////////////
@@ -335,39 +319,38 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		const T* xml_start;
 		T* position_start;
-		if (params.initial_leg_flag) {
+		if (MetaDataBase::DataBase()->getFlagInitialLeg()) {
 			// if prescribed initial position (add a check for consistency with spring lengths)
 			// W1 = W_fl
-			xml_start = params.initial_pos_wheel + 2 * 3;
+			xml_start = MetaDataBase::DataBase()->getWheelInitialPositionFrontLeft();
 			position_start = initial_position + 3; //(end at 5)
 			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 			// W2 = W_fr
-			xml_start = params.initial_pos_wheel + 3 * 3;
+			xml_start = MetaDataBase::DataBase()->getWheelInitialPositionFrontRight();
 			position_start += 6; // skip 3 for tyre (end at 11)
 			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 			// W3 = W_rl
-			xml_start = params.initial_pos_wheel + 1 * 3;
+			xml_start = MetaDataBase::DataBase()->getWheelInitialPositionRearLeft();
 			position_start += 6; // skip 3 for tyre (end at 17)
 			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 			// W2 = W_rr
-			xml_start = params.initial_pos_wheel + 0 * 3;
+			xml_start = MetaDataBase::DataBase()->getWheelInitialPositionRearRight();
 			position_start += 6; // skip 3 for tyre (end at 23)
 			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
 
 			// T1 = T_fl
-			xml_start = params.initial_pos_tyre + 2 * 3;
-			position_start = initial_position + 6; // skip 3 for center of mass and 3 for the wheel
+			xml_start = MetaDataBase::DataBase()->getTyreInitialPositionFrontLeft();
 			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 8)
 			// T2 = T_fr
-			xml_start = params.initial_pos_tyre + 3 * 3;
+			xml_start = MetaDataBase::DataBase()->getTyreInitialPositionFrontRight();
 			position_start += 6; // skip 3 for the wheel
 			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 14)
 			// T3 = T_rl
-			xml_start = params.initial_pos_tyre + 1 * 3;
+			xml_start = MetaDataBase::DataBase()->getTyreInitialPositionRearLeft();
 			position_start += 6; // skip 3 for the wheel
 			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);// (end at 20)
 			// T4 = T_rr
-			xml_start = params.initial_pos_tyre + 0 * 3;
+			xml_start = MetaDataBase::DataBase()->getTyreInitialPositionRearRight();
 			position_start += 6; // skip 3 for the wheel
 			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 26)
 			cblas_dcopy(Constants::DIM * Constants::VEC_DIM, initial_position, 1, Position_vec, 1);
@@ -398,38 +381,38 @@ public:
 		//cblas_dcopy(Constants::DIM*Constants::VEC_DIM, initial_position, 1, Position_vec, 1);
 
 		// Initial Velocity (Reuse the pointers)
-		cblas_dcopy(Constants::DIM, params.initial_vel_body, 1, initial_velocity_vec, 1);
+		cblas_dcopy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialVelocity(), 1, initial_velocity_vec, 1);
 		// W1 = W_fl
-		xml_start = params.initial_vel_wheel + 2 * 3;
+		xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft();
 		position_start = initial_velocity_vec + 3;
 		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 5)
 		// W2 = W_fr
-		xml_start = params.initial_vel_wheel + 3 * 3;
+		xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight();
 		position_start += 6; // skip 3 for tyre
 		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);// (end at 11)
 		// W3 = W_rl
-		xml_start = params.initial_vel_wheel + 1 * 3;
+		xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft();
 		position_start += 6; // skip 3 for tyre
 		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 17)
 		// W2 = W_rr
-		xml_start = params.initial_vel_wheel + 0 * 3;
+		xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight();
 		position_start += 6; // skip 3 for tyre
 		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 23)
 
 		// T1 = T_fl
-		xml_start = params.initial_vel_tyre + 2 * 3;
-		position_start = initial_velocity_vec + 6; // skip 3 for center of mass and 3 for the wheel
+		xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft();
+		position_start = initial_velocity_vec + 6; // skip 3 for center of mass and 3 for the Tyre
 		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 8)
 		// T2 = T_fr
-		xml_start = params.initial_vel_tyre + 3 * 3;
-		position_start += 6; // skip 3 for the wheel
+		xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight();
+		position_start += 6; // skip 3 for the Tyre
 		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);// (end at 14)
 		// T3 = T_rl
-		xml_start = params.initial_vel_tyre + 1 * 3;
-		position_start += 6; // skip 3 for the wheel
+		xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft();
+		position_start += 6; // skip 3 for the Tyre
 		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 20)
 		// T4 = T_rr
-		xml_start = params.initial_vel_tyre + 0 * 3;
+		xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight();
 		position_start += 6; // skip 3 for the wheel
 		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 26)
 
@@ -437,7 +420,7 @@ public:
 		cblas_dcopy(Constants::DIM * Constants::VEC_DIM, initial_velocity_vec, 1, Velocity_vec, 1);
 
 		// Initial Angular velocity
-		cblas_dcopy(Constants::DIM, params.initial_ang_vel_body, 1, initial_angular_velocity, 1);
+		cblas_dcopy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialAngularVelocity(), 1, initial_angular_velocity, 1);
 		cblas_dcopy(Constants::DIM, initial_angular_velocity, 1, w_CG, 1);
 
 
@@ -461,18 +444,18 @@ public:
 		cblas_dscal(DOF, -h_, u_n_m_1, 1);
 		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
 		*/
-		if (params.interpolation) {
+		if (MetaDataBase::DataBase()->getUseInterpolation()) {
 			lookupStiffness->getInterpolation(current_spring_length, k_vec);
 		}
 		else {
-			k_body_fl = params.k_body[2];
-			k_tyre_fl = params.k_tyre[2];
-			k_body_fr = params.k_body[3];
-			k_tyre_fr = params.k_tyre[3];
-			k_body_rl = params.k_body[1];
-			k_tyre_rl = params.k_tyre[1];
-			k_body_rr = params.k_body[0];
-			k_tyre_rr = params.k_tyre[0];
+			k_body_fl = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
+			k_tyre_fl = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
+			k_body_fr = MetaDataBase::DataBase()->getBodyStiffnessFrontRight();
+			k_tyre_fr = MetaDataBase::DataBase()->getTyreStiffnessFrontRight();
+			k_body_rl = MetaDataBase::DataBase()->getBodyStiffnessRearLeft();
+			k_tyre_rl = MetaDataBase::DataBase()->getTyreStiffnessRearLeft();
+			k_body_rr = MetaDataBase::DataBase()->getBodyStiffnessRearRight();
+			k_tyre_rr = MetaDataBase::DataBase()->getTyreStiffnessRearRight();
 			populate_K(k_vec, k_body_fl, k_tyre_fl, k_body_fr, k_tyre_fr, k_body_rl, k_tyre_rl, k_body_rr, k_tyre_rr);
 		}
 		update_K(k_vec);
@@ -946,7 +929,8 @@ public:
 	
 	~Car() {
 		mkl_free_buffers();
-
+		
+		/*
 		mkl_free(Position_vec); 
 		Position_vec = nullptr;
 		mkl_free(Velocity_vec);
@@ -1031,5 +1015,6 @@ public:
 		angle_buffer = nullptr;
 		mkl_free(pos_buffer);
 		pos_buffer = nullptr;
+		*/
 	}
 };

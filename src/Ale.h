@@ -17,12 +17,9 @@ private:
 	Load_module* Load_module_obj; // needs Profile and Car
 	Linear11dof<T>* linear11dof_obj;
 	EVAALookup* interpolator;// interpolator member of EVAA
-	Simulation_Parameters params;
 	Profile* profile_obj;
 
-	// force and road parameters
-	Load_Params load_param;
-
+	
 	// simulation parameters
 	int DOF;
 	T tend_;
@@ -73,8 +70,7 @@ public:
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
 		Linear11dof<T>* linear11dof_val,
-		EVAALookup* lookup_table,
-		Simulation_Parameters &params_val) {
+		EVAALookup* lookup_table) {
 
 		Car_obj = Car_obj_val;
 		Load_module_obj = Load_module_val;
@@ -82,11 +78,10 @@ public:
 		interpolator = lookup_table;
 
 		// general parameters of the simulation
-		params = params_val;
-		DOF = params.DOF;
+		DOF = MetaDataBase::DataBase()->getDOF();
 
-		h_ = params.timestep;
-		tend_ = params.num_time_iter * h_;
+		h_ = MetaDataBase::DataBase()->getTimeStepSize();
+		tend_ = MetaDataBase::DataBase()->getNumberOfTimeIterations() * h_;
 	}
 
 	/*
@@ -182,7 +177,7 @@ public:
 
 			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
 			Car_obj->update_lengths_11DOF();
-			if (params.interpolation) {
+			if (MetaDataBase::DataBase()->getUseInterpolation()) {
 				interpolator->getInterpolation(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}

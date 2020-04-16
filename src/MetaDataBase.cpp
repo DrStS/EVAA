@@ -47,7 +47,7 @@ void MetaDataBase::setloadFileName(
     const std::string& filename /**< [in] reference to the load filename*/
 ) {
     _load_filename = filename;
-    load_data = EVAA_load_module(_load_filename, xml_schema::flags::dont_validate);
+    load_data = EVAA_load_module(filename, xml_schema::flags::dont_validate);
 
 }
 
@@ -179,15 +179,15 @@ void MetaDataBase::ReadParameters(){
 
 
     if (solver=="explicit_Euler"){
-        solver = EXPLICIT_EULER;
+        MBD_solver = EXPLICIT_EULER;
     } else if (solver=="RK4"){
-        solver = RUNGE_KUTTA_4;
+        MBD_solver = RUNGE_KUTTA_4;
     } else if (solver=="Broyden_Euler"){
-        solver = BROYDEN_EULER;
+        MBD_solver = BROYDEN_EULER;
     } else if (solver=="Broyden_CN"){
-        solver = BROYDEN_CN;
+        MBD_solver = BROYDEN_CN;
     } else if (solver=="Broyden_BDF2"){
-        solver = BROYDEN_BDF2;
+        MBD_solver = BROYDEN_BDF2;
     } else {
         std::cerr<<"Wrong MBD-solver specified in the XML! Please type: \n   -explicit_Euler \n   -RK4\n   -Broyden_Euler\n   -Broyden_CN\n   -Broyden_BDF2"<<std::endl;
         exit(2);

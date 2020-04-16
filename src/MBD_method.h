@@ -195,67 +195,67 @@ private:
 
 		/////////////////////////////////////////// Leg 1 ////////////////////////////////////////////////////////
 		// 5.	pw1 = pcc;
-		cblas_dcopy(Constants::DIM, pcc_, 1, wheel_coordinate1_, 1);
+		cblas_dcopy(Constants::DIM, pcc_, 1, wheel_coordinate_fl_, 1);
 
 		// 6.	pw1 = pw1 + C_Nc*r1;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, C_Nc, Constants::DIM, r1_, 1, 1, wheel_coordinate1_, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, C_Nc, Constants::DIM, r_fl_, 1, 1, wheel_coordinate_fl_, 1);
 
 		// 7.	pw1 = pw1 + upper_length(1)*global_z;
-		cblas_daxpy(Constants::DIM, initial_upper_spring_length_[0], global_z, 1, wheel_coordinate1_, 1);
+		cblas_daxpy(Constants::DIM, initial_upper_spring_length_[0], global_z, 1, wheel_coordinate_fl_, 1);
 
 		// 8.	pt1 = pw1
-		cblas_dcopy(Constants::DIM, wheel_coordinate1_, 1, tyre_coordinate1_, 1);
+		cblas_dcopy(Constants::DIM, wheel_coordinate_fl_, 1, tyre_coordinate_fl_, 1);
 
 		// 9.	pt1 = pw1 + lower_length(1)*global_z;
-		cblas_daxpy(Constants::DIM, initial_lower_spring_length_[0], global_z, 1, tyre_coordinate1_, 1);
+		cblas_daxpy(Constants::DIM, initial_lower_spring_length_[0], global_z, 1, tyre_coordinate_fl_, 1);
 
 		/////////////////////////////////////////// Leg 2 ////////////////////////////////////////////////////////
 		// 5.	pw2 = pcc;
-		cblas_dcopy(Constants::DIM, pcc_, 1, wheel_coordinate2_, 1);
+		cblas_dcopy(Constants::DIM, pcc_, 1, wheel_coordinate_fr_, 1);
 
 		// 6.	pw2 = pw2 + C_Nc*r2;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, C_Nc, Constants::DIM, r2_, 1, 1, wheel_coordinate2_, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, C_Nc, Constants::DIM, r_fr_, 1, 1, wheel_coordinate_fr_, 1);
 
 		// 7.	pw2 = pw2 + upper_length(2)*global_z;
-		cblas_daxpy(Constants::DIM, initial_upper_spring_length_[1], global_z, 1, wheel_coordinate2_, 1);
+		cblas_daxpy(Constants::DIM, initial_upper_spring_length_[1], global_z, 1, wheel_coordinate_fr_, 1);
 
 		// 8.	pt2 = pw2
-		cblas_dcopy(Constants::DIM, wheel_coordinate2_, 1, tyre_coordinate2_, 1);
+		cblas_dcopy(Constants::DIM, wheel_coordinate_fr_, 1, tyre_coordinate_fr_, 1);
 
 		// 9.	pt2 = pw2 + lower_length(2)*global_z;
-		cblas_daxpy(Constants::DIM, initial_lower_spring_length_[1], global_z, 1, tyre_coordinate2_, 1);
+		cblas_daxpy(Constants::DIM, initial_lower_spring_length_[1], global_z, 1, tyre_coordinate_fr_, 1);
 
 		/////////////////////////////////////////// Leg 3 ////////////////////////////////////////////////////////
 		// 5.	pw3 = pcc;
-		cblas_dcopy(Constants::DIM, pcc_, 1, wheel_coordinate3_, 1);
+		cblas_dcopy(Constants::DIM, pcc_, 1, wheel_coordinate_rl_, 1);
 
 		// 6.	pw3 = pw3 + C_Nc*r3;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, C_Nc, Constants::DIM, r3_, 1, 1, wheel_coordinate3_, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, C_Nc, Constants::DIM, r_rl_, 1, 1, wheel_coordinate_rl_, 1);
 
 		// 7.	pw3 = pw3 + upper_length(3)*global_z;
-		cblas_daxpy(Constants::DIM, initial_upper_spring_length_[2], global_z, 1, wheel_coordinate3_, 1);
+		cblas_daxpy(Constants::DIM, initial_upper_spring_length_[2], global_z, 1, wheel_coordinate_rl_, 1);
 
 		// 8.	pt3 = pw3
-		cblas_dcopy(Constants::DIM, wheel_coordinate3_, 1, tyre_coordinate3_, 1);
+		cblas_dcopy(Constants::DIM, wheel_coordinate_rl_, 1, tyre_coordinate_rl_, 1);
 
 		// 9.	pt3 = pw3 + lower_length(3)*global_z;
-		cblas_daxpy(Constants::DIM, initial_lower_spring_length_[2], global_z, 1, tyre_coordinate3_, 1);
+		cblas_daxpy(Constants::DIM, initial_lower_spring_length_[2], global_z, 1, tyre_coordinate_rl_, 1);
 
 		/////////////////////////////////////////// Leg 4 ////////////////////////////////////////////////////////
 		// 5.	pw4 = pcc;
-		cblas_dcopy(Constants::DIM, pcc_, 1, wheel_coordinate4_, 1);
+		cblas_dcopy(Constants::DIM, pcc_, 1, wheel_coordinate_rr_, 1);
 
 		// 6.	pw4 = pw4 + C_Nc*r4;
-		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, C_Nc, Constants::DIM, r4_, 1, 1, wheel_coordinate4_, 1);
+		cblas_dgemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, C_Nc, Constants::DIM, r_rr_, 1, 1, wheel_coordinate_rr_, 1);
 
 		// 7.	pw4 = pw4 + upper_length(4)*global_z;
-		cblas_daxpy(Constants::DIM, initial_upper_spring_length_[3], global_z, 1, wheel_coordinate4_, 1);
+		cblas_daxpy(Constants::DIM, initial_upper_spring_length_[3], global_z, 1, wheel_coordinate_rr_, 1);
 
 		// 8.	pt4 = pw4
-		cblas_dcopy(Constants::DIM, wheel_coordinate4_, 1, tyre_coordinate4_, 1);
+		cblas_dcopy(Constants::DIM, wheel_coordinate_rr_, 1, tyre_coordinate_rr_, 1);
 
 		// 9.	pt4 = pw4 + lower_length(4)*global_z;
-		cblas_daxpy(Constants::DIM, initial_lower_spring_length_[3], global_z, 1, tyre_coordinate4_, 1);
+		cblas_daxpy(Constants::DIM, initial_lower_spring_length_[3], global_z, 1, tyre_coordinate_rr_, 1);
 
 
 		mkl_free(global_z);
@@ -298,84 +298,84 @@ public:
 	/*
 	Constructor
 	*/
-	MBD_method(const Simulation_Parameters& params, const Load_Params& load_params, EVAALookup* interpolator) {
+	MBD_method(EVAALookup* interpolator) {
 
 		////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
-		h = params.timestep;
-		num_iter = params.num_time_iter;
-		max_iter = params.max_num_iter;
-		tol = params.tolerance;
-		solution_dim = params.solution_dim; /// this is by the formulation
-		used_solver = params.solver;
-		boundary_conditions = load_params.boundary_condition_road;
-		radius_circular_path = load_params.profile_radius;
-		use_interpolation = params.interpolation;
+		h = MetaDataBase::DataBase()->getTimeStepSize();
+		num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
+		max_iter = MetaDataBase::DataBase()->getMaxNumberOfBroydenIterationForMBD();
+		tol = MetaDataBase::DataBase()->getToleranceBroydenIterationForMBD();
+		solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize(); /// this is by the formulation
+		used_solver = MetaDataBase::DataBase()->getUsedSolverForMBD();
+		boundary_conditions = MetaDataBase::DataBase()->getRoadConditions();
+		radius_circular_path = MetaDataBase::DataBase()->getCircularRoadRadius();
+		use_interpolation = MetaDataBase::DataBase()->getUseInterpolation();
 		lookupStiffness = interpolator;
 
 		////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
-		k_body_fl = params.k_body[0];
-		k_tyre_fl = params.k_tyre[0];
-		k_body_fr = params.k_body[1];
-		k_tyre_fr = params.k_tyre[1];
-		k_body_rl = params.k_body[2];
-		k_tyre_rl = params.k_tyre[2];
-		k_body_rr = params.k_body[3];
-		k_tyre_rr = params.k_tyre[3];
+		k_body_fl = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
+		k_tyre_fl = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
+		k_body_fr = MetaDataBase::DataBase()->getBodyStiffnessFrontRight();
+		k_tyre_fr = MetaDataBase::DataBase()->getTyreStiffnessFrontRight();
+		k_body_rl = MetaDataBase::DataBase()->getBodyStiffnessRearLeft();
+		k_tyre_rl = MetaDataBase::DataBase()->getTyreStiffnessRearLeft();
+		k_body_rr = MetaDataBase::DataBase()->getBodyStiffnessRearRight();
+		k_tyre_rr = MetaDataBase::DataBase()->getTyreStiffnessRearRight();
 
-		k_body_rot_fl = 1e4;
-		k_body_rot_fr = 1e4;
-		k_body_rot_rl = 1e4;
-		k_body_rot_rr = 1e4;
-		k_tyre_rot_fl = 1e4;
-		k_tyre_rot_fr = 1e4;
-		k_tyre_rot_rl = 1e4;
-		k_tyre_rot_rr = 1e4;
+		k_body_rot_fl = 1e5;
+		k_body_rot_fr = 1e5;
+		k_body_rot_rl = 1e5;
+		k_body_rot_rr = 1e5;
+		k_tyre_rot_fl = 1e5;
+		k_tyre_rot_fr = 1e5;
+		k_tyre_rot_rl = 1e5;
+		k_tyre_rot_rr = 1e5;
 
-		c_body_fl = params.c_body[0];
-		c_tyre_fl = params.c_tyre[0];
-		c_body_fr = params.c_body[1];
-		c_tyre_fr = params.c_tyre[1];
-		c_body_rl = params.c_body[2];
-		c_tyre_rl = params.c_tyre[2];
-		c_body_rr = params.c_body[3];
-		c_tyre_rr = params.c_tyre[3];
+		c_body_fl = MetaDataBase::DataBase()->getBodyDampingFrontLeft();
+		c_tyre_fl = MetaDataBase::DataBase()->getTyreDampingFrontLeft();
+		c_body_fr = MetaDataBase::DataBase()->getBodyDampingFrontRight();
+		c_tyre_fr = MetaDataBase::DataBase()->getTyreDampingFrontRight();
+		c_body_rl = MetaDataBase::DataBase()->getBodyDampingRearLeft();
+		c_tyre_rl = MetaDataBase::DataBase()->getTyreDampingRearLeft();
+		c_body_rr = MetaDataBase::DataBase()->getBodyDampingRearRight();
+		c_tyre_rr = MetaDataBase::DataBase()->getTyreDampingRearRight();
 
-		l_long_fl = params.l_long[0];
-		l_long_fr = params.l_long[1];
-		l_long_rl = params.l_long[2];
-		l_long_rr = params.l_long[3];
+		l_long_fl = MetaDataBase::DataBase()->getLongitudalLegPositionFrontLeft();
+		l_long_fr = MetaDataBase::DataBase()->getLongitudalLegPositionFrontRight();
+		l_long_rl = MetaDataBase::DataBase()->getLongitudalLegPositionRearLeft();
+		l_long_rr = MetaDataBase::DataBase()->getLongitudalLegPositionRearRight();
 
-		l_lat_fl = params.l_lat[0];
-		l_lat_fr = params.l_lat[1];
-		l_lat_rl = params.l_lat[2];
-		l_lat_rr = params.l_lat[3];
+		l_lat_fl = MetaDataBase::DataBase()->getLatidudalLegPositionFrontLeft();
+		l_lat_fr = MetaDataBase::DataBase()->getLatidudalLegPositionFrontRight();
+		l_lat_rl = MetaDataBase::DataBase()->getLatidudalLegPositionRearLeft();
+		l_lat_rr = MetaDataBase::DataBase()->getLatidudalLegPositionRearRight();
 
-		mass = params.mass_body;
+		mass = MetaDataBase::DataBase()->getBodyMass();
 
-		I_body_xx = params.I_body[0];
-		I_body_yy = params.I_body[1];
-		I_body_zz = params.I_body[2];
+		I_body_xx = MetaDataBase::DataBase()->getMomentOfInertiaXX();
+		I_body_yy = MetaDataBase::DataBase()->getMomentOfInertiaYY();
+		I_body_zz = MetaDataBase::DataBase()->getMomentOfInertiaZZ();
 
-		mass_wheel_fl = params.mass_wheel[0];
-		mass_tyre_fl = params.mass_tyre[0];
-		mass_wheel_fr = params.mass_wheel[1];
-		mass_tyre_fr = params.mass_tyre[1];
-		mass_wheel_rl = params.mass_wheel[2];
-		mass_tyre_rl = params.mass_tyre[2];
-		mass_wheel_rr = params.mass_wheel[3];
-		mass_tyre_rr = params.mass_tyre[3];
+		mass_wheel_fl = MetaDataBase::DataBase()->getWheelMassFrontLeft();
+		mass_tyre_fl = MetaDataBase::DataBase()->getTyreMassFrontLeft();
+		mass_wheel_fr = MetaDataBase::DataBase()->getWheelMassFrontRight();
+		mass_tyre_fr = MetaDataBase::DataBase()->getTyreMassFrontRight();
+		mass_wheel_rl = MetaDataBase::DataBase()->getWheelMassRearLeft();
+		mass_tyre_rl = MetaDataBase::DataBase()->getTyreMassRearLeft();
+		mass_wheel_rr = MetaDataBase::DataBase()->getWheelMassRearRight();
+		mass_tyre_rr = MetaDataBase::DataBase()->getTyreMassRearRight();
 
-		upper_spring_length_fl = params.upper_spring_length[0];
-		upper_spring_length_fr = params.upper_spring_length[1];
-		upper_spring_length_rl = params.upper_spring_length[2];
-		upper_spring_length_rr = params.upper_spring_length[3];
+		upper_spring_length_fl = MetaDataBase::DataBase()->getBodySpringLengthFrontLeft();
+		upper_spring_length_fr = MetaDataBase::DataBase()->getBodySpringLengthFrontRight();
+		upper_spring_length_rl = MetaDataBase::DataBase()->getBodySpringLengthRearLeft();
+		upper_spring_length_rr = MetaDataBase::DataBase()->getBodySpringLengthRearRight();
 
-		lower_spring_length_fl = params.lower_spring_length[0];
-		lower_spring_length_fr = params.lower_spring_length[1];
-		lower_spring_length_rl = params.lower_spring_length[2];
-		lower_spring_length_rr = params.lower_spring_length[3];
+		lower_spring_length_fl = MetaDataBase::DataBase()->getTyreSpringLengthFrontLeft();
+		lower_spring_length_fr = MetaDataBase::DataBase()->getTyreSpringLengthFrontRight();
+		lower_spring_length_rl = MetaDataBase::DataBase()->getTyreSpringLengthRearLeft();
+		lower_spring_length_rr = MetaDataBase::DataBase()->getTyreSpringLengthRearRight();
 
-		g = params.gravity[2];
+		g = MetaDataBase::DataBase()->getGravityField()[2];
 
 		int i;
 
@@ -439,21 +439,21 @@ public:
 		upper_spring_damping[i] = c_body_fl;
 		lower_spring_damping[i] = c_tyre_fl;
 
-		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
-		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
-		initial_orientation[i] = params.initial_angle[i];
-		vc[i] = params.initial_vel_body[i];
-		vw_fl[i] = params.initial_vel_wheel[i];
-		vw_fr[i] = params.initial_vel_wheel[i+3];
-		vw_rl[i] = params.initial_vel_wheel[i+6];
-		vw_rr[i] = params.initial_vel_wheel[i+9];
-		vt_fl[i] = params.initial_vel_tyre[i];
-		vt_fr[i] = params.initial_vel_tyre[i+3];
-		vt_rl[i] = params.initial_vel_tyre[i+6];
-		vt_rr[i] = params.initial_vel_tyre[i+9];
-		pcc[i] = params.initial_pos_body[i]; 
+		initial_upper_spring_length[i] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontLeft();
+		initial_lower_spring_length[i] = MetaDataBase::DataBase()->getTyreSpringInitialLengthFrontLeft();
+		initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
+		vc[i] = MetaDataBase::DataBase()->getBodyInitialVelocity()[i];
+		vw_fl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft()[i];
+		vw_fr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight()[i];
+		vw_rl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft()[i];
+		vw_rr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight()[i];
+		vt_fl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft()[i];
+		vt_fr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight()[i];
+		vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
+		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
+		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
 		FC[i] = 0;
-		center_of_circle[i] = load_params.profile_center[i];
+		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 1;
 		r_fl[i] = l_lat_fl; r_fr[i] = -l_lat_fr; r_rl[i] = -l_lat_fl; r_rr[i] = l_lat_rr;
@@ -470,21 +470,21 @@ public:
 		FW_fr = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_fr;
 		lower_spring_damping[i] = c_tyre_fr;
-		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
-		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
-		initial_orientation[i] = params.initial_angle[i];
-		vc[i] = params.initial_vel_body[i];
-		vw_fl[i] = params.initial_vel_wheel[i];
-		vw_fr[i] = params.initial_vel_wheel[i + 3];
-		vw_rl[i] = params.initial_vel_wheel[i + 6];
-		vw_rr[i] = params.initial_vel_wheel[i + 9];
-		vt_fl[i] = params.initial_vel_tyre[i];
-		vt_fr[i] = params.initial_vel_tyre[i + 3];
-		vt_rl[i] = params.initial_vel_tyre[i + 6];
-		vt_rr[i] = params.initial_vel_tyre[i + 9];
-		pcc[i] = params.initial_pos_body[i];
-		FC[i] = -mass * g;
-		center_of_circle[i] = load_params.profile_center[i];
+		initial_upper_spring_length[i] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontRight();
+		initial_lower_spring_length[i] = MetaDataBase::DataBase()->getTyreSpringInitialLengthFrontRight();
+		initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
+		vc[i] = MetaDataBase::DataBase()->getBodyInitialVelocity()[i];
+		vw_fl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft()[i];
+		vw_fr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight()[i];
+		vw_rl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft()[i];
+		vw_rr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight()[i];
+		vt_fl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft()[i];
+		vt_fr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight()[i];
+		vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
+		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
+		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
+		FC[i] = -mass*g;
+		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 2;
 		r_fl[i] = 0; r_fr[i] = 0; r_rl[i] = 0; r_rr[i] = 0;
@@ -501,21 +501,21 @@ public:
 		FW_rl = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_rl;
 		lower_spring_damping[i] = c_tyre_rl;
-		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
-		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
-		initial_orientation[i] = params.initial_angle[i];
-		vc[i] = params.initial_vel_body[i];
-		vw_fl[i] = params.initial_vel_wheel[i];
-		vw_fr[i] = params.initial_vel_wheel[i + 3];
-		vw_rl[i] = params.initial_vel_wheel[i + 6];
-		vw_rr[i] = params.initial_vel_wheel[i + 9];
-		vt_fl[i] = params.initial_vel_tyre[i];
-		vt_fr[i] = params.initial_vel_tyre[i + 3];
-		vt_rl[i] = params.initial_vel_tyre[i + 6];
-		vt_rr[i] = params.initial_vel_tyre[i + 9];
-		pcc[i] = params.initial_pos_body[i];
+		initial_upper_spring_length[i] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearLeft();
+		initial_lower_spring_length[i] = MetaDataBase::DataBase()->getTyreSpringInitialLengthRearLeft();
+		initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
+		vc[i] = MetaDataBase::DataBase()->getBodyInitialVelocity()[i];
+		vw_fl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft()[i];
+		vw_fr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight()[i];
+		vw_rl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft()[i];
+		vw_rr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight()[i];
+		vt_fl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft()[i];
+		vt_fr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight()[i];
+		vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
+		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
+		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
 		FC[i] = 0;
-		center_of_circle[i] = load_params.profile_center[i];
+		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 3;
 		mass_wheel[i] = mass_wheel_rr;
@@ -530,9 +530,9 @@ public:
 		FW_rr = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_rr;
 		lower_spring_damping[i] = c_tyre_rr;
-		initial_upper_spring_length[i] = params.initial_upper_spring_length[i];
-		initial_lower_spring_length[i] = params.initial_lower_spring_length[i];
-		initial_orientation[i] = params.initial_angle[i];
+		initial_upper_spring_length[i] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
+		initial_lower_spring_length[i] = MetaDataBase::DataBase()->getTyreSpringInitialLengthRearRight();
+		initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
 
 		// A_Ic has cholesky factorization of Ic
 		cblas_dcopy(Constants::DIM * Constants::DIM, Ic, 1, A_Ic, 1);

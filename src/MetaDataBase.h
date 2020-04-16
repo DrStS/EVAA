@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include "Constants.h"
 #include "IP_EVAA_XML.h"
 #include "LOAD_EVAA_XML.h"
 #include "LOOKUP_EVAA_XML.h"
@@ -86,7 +87,7 @@ class MetaDataBase{
         double initial_pos_wheel[12]; double initial_pos_tyre[12]; // this has to be removed or used only if it is prescribed
         bool initial_leg_flag = 0;
         bool interpolation = 0;
-        int solver;
+        int MBD_solver;
         int max_num_iter; double tolerance;
         double timestep; int num_time_iter;
         int solution_dim;
@@ -214,24 +215,6 @@ class MetaDataBase{
         }
 
 
-        double getTyreDampingFrontLeft() {
-            return c_tyre[0];
-        }
-        double getTyreDampingFrontRight() {
-            return c_tyre[1];
-        }
-        double getTyreDampingRearLeft() {
-            return c_tyre[2];
-        }
-        double getTyreDampingRearRight() {
-            return c_tyre[3];
-        }
-        // vector in the format fl fr rl rr
-        double* getTyreDampingVector() {
-            return c_tyre;
-        }
-
-
         double getLongitudalLegPositionFrontLeft() {
             return l_long[0];
         }
@@ -310,35 +293,35 @@ class MetaDataBase{
 
 
         double getMomentOfInertiaXX() {
-            I_body[0];
+            return I_body[0];
         }
         double getMomentOfInertiaXY() {
-            I_body[1];
+            return I_body[1];
         }
         double getMomentOfInertiaXZ() {
-            I_body[2];
+            return I_body[2];
         }
         double getMomentOfInertiaYX() {
-            I_body[3];
+            return I_body[3];
         }
         double getMomentOfInertiaYY() {
-            I_body[4];
+            return I_body[4];
         }
         double getMomentOfInertiaYZ() {
-            I_body[5];
+            return I_body[5];
         }
         double getMomentOfInertiaZX() {
-            I_body[6];
+            return I_body[6];
         }
         double getMomentOfInertiaZY() {
-            I_body[7];
+            return I_body[7];
         }
         double getMomentOfInertiaZZ() {
-            I_body[8];
+            return I_body[8];
         }
         // contains all elements of the InertiaMatrix in the format [XX,XY,XZ,YX,YY,YZ,ZX,ZY,ZX] TODO: change it to Eigen/MKL output
         double* getMomentOfInertiaVector() {
-            I_body;
+            return I_body;
         }
 
 
@@ -461,6 +444,36 @@ class MetaDataBase{
             return initial_pos_body;
         }
 
+
+        double* getWheelInitialPositionFrontLeft() {
+            return initial_pos_wheel;
+        }
+        double* getWheelInitialPositionFrontRight() {
+            return initial_pos_wheel + 3;
+        }
+        double* getWheelInitialPositionRearLeft() {
+            return initial_pos_wheel + 6;
+        }
+        double* getWheelInitialPositionRearRight() {
+            return initial_pos_wheel + 9;
+        }
+
+
+
+        double* getTyreInitialPositionFrontLeft() {
+            return initial_pos_tyre;
+        }
+        double* getTyreInitialPositionFrontRight() {
+            return initial_pos_tyre + 3;
+        }
+        double* getTyreInitialPositionRearLeft() {
+            return initial_pos_tyre + 6;
+        }
+        double* getTyreInitialPositionRearRight() {
+            return initial_pos_tyre + 9;
+        }
+
+
         double* getBodyInitialOrientation() {
             return initial_angle;
         }
@@ -473,7 +486,7 @@ class MetaDataBase{
         }
 
         int getUsedSolverForMBD() {
-            return solver;
+            return MBD_solver;
         }
 
         int getMaxNumberOfBroydenIterationForMBD() {

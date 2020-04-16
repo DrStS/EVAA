@@ -99,7 +99,7 @@ public:
 
 class Fixed : public Profile {
 public:
-	Fixed(const double& g, const Load_Params& load_param);
+	Fixed(const double& g);
 	virtual void get_Profile_force_ALE(Car<double>* Car1, double* F_vec, double* Normal_ext);
 	virtual void get_Profile_torque(Car<double>* Car1, double* Torque_vec);
 	virtual void set_fixed_index(size_t* index);
