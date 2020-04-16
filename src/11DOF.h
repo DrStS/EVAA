@@ -16,26 +16,26 @@
 #define DBG_NEW new
 #endif
 #include <mkl.h>
-#include "ReadXML.h"
+#include "Car.h"
 #include "MathLibrary.h"
-#include "car.h"
+#include "Constants.h"
+#include "ReadXML.h"
 
 /**
 * \brief class to compute one timestep of the linear 11 dof system in small angle approximation
 */
 template <typename T>
-class linear11dof {
+class Linear11dof {
 protected:
 	// main car object
 	Car<T>* car_;												/**< pointer to car instance with all important car parameter */
 
 	// define constants
-	size_t alignment;											/**< alignment for mkl malloc */
-	const int dim = 3;											/**< dimension of solution space */
-	const size_t num_tyre = 4;									/**< number of tyres */
-	const int dim_x_dim = dim * dim;							/**< number of elements of a matrix in solution space */
-	const int num_wheels_x_dim = num_tyre * dim;				/**< number of elements of a matrix regarding the wheels */
-	const int DOF_diag = 9;										/**< number of diagonal elements of A */
+	const int dim = 3;
+	const size_t num_tyre = 4;
+	const int dim_x_dim = dim * dim;
+	const int num_wheels_x_dim = num_tyre * dim;
+	const int DOF_diag = 9; // the diagonal elements from A
 
 	// time step related
 	T factor_h2;												/**< solution in next timestep */
@@ -110,16 +110,15 @@ public:
 	/*
 	Constructor
 	*/
-	linear11dof(Car<T>* input_car) {
+	Linear11dof(Car<T>* input_car) {
 		car_ = input_car;
-		alignment = (car_)->alignment;
 		DOF = car_->DOF;
 		mat_len = (DOF) * (DOF);
-		u_n_m_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment); // velocity
-		u_n = (T*)mkl_malloc(DOF * sizeof(T), alignment); // position
-		u_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
-		A = (T*)mkl_malloc(mat_len * sizeof(T), alignment);
-		B = (T*)mkl_calloc(mat_len, sizeof(T), alignment);
+		u_n_m_1 = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // velocity
+		u_n = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // position
+		u_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT);
+		A = (T*)mkl_malloc(mat_len * sizeof(T), Constants::ALIGNMENT);
+		B = (T*)mkl_calloc(mat_len, sizeof(T), Constants::ALIGNMENT);
 
 	}
 
@@ -161,7 +160,7 @@ public:
 		// u_n_m_1 = -1/h^2 * u_n_m_1
 		cblas_dscal(DOF, -factor_h2, u_n_m_1, 1);
 		//cblas_dscal(DOF, 0.0, force, 1);
-		MathLibrary::Solvers<T, linear11dof>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, DOF);
+		MathLibrary::Solvers<T, Linear11dof>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, DOF);
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
 		// solutio = solution[t_n] = u_n_p_1
@@ -172,7 +171,7 @@ public:
 	/*
 	Destructor
 	*/
-	virtual ~linear11dof() {
+	virtual ~Linear11dof() {
 		mkl_free(A);
 		mkl_free(B);
 		mkl_free(u_n);
@@ -185,15 +184,15 @@ public:
 For testing purposes
 */
 template <typename T>
-class linear11dof_full : public linear11dof<T> {
+class Linear11dofFull : public Linear11dof<T> {
 public:
-	linear11dof_full(const Simulation_Parameters& params, const Load_Params& load_param, Car<T>* input_car) :linear11dof<T>(input_car) {
+	Linear11dofFull(const Simulation_Parameters& params, const Load_Params& load_param, Car<T>* input_car) :Linear11dof<T>(input_car) {
 
 		h_ = params.timestep;
 		tend_ = params.num_time_iter * h_;
 		int sol_size = (floor(tend_ / h_) + 1);
-		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), alignment);
-		u_sol = (T*)mkl_calloc((sol_size + 1) * (DOF), sizeof(T), alignment);
+		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT);
+		u_sol = (T*)mkl_calloc((sol_size + 1) * (DOF), sizeof(T), Constants::ALIGNMENT);
 
 
 		interpolation_enabled = params.interpolation;
@@ -261,7 +260,7 @@ public:
 		std::cout << "linear11DOF: front-right tyre position pt4=\n\t[" << sln[6] << "]" << std::endl;
 	}
 
-	virtual ~linear11dof_full() {
+	virtual ~Linear11dofFull() {
 		mkl_free(u_sol);
 		mkl_free(f_n_p_1);
 	}

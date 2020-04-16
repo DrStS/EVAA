@@ -4,21 +4,18 @@
 #include "Load_module.h"
 #include "EVAAComputeEngine.h"
 #include "11DOF.h"
-
+#include "Constants.h"
 
 /*
 Implements the ALE method to extend the linear 11DOF system
 */
 template <class T>
 class ALE {
-private:
-	// define constants
-	const int alignment = 64;
-	
+private:	
 	// necessary class objects
 	Car<T>* Car_obj; // suppose Interpolation in the Car
 	Load_module* Load_module_obj; // needs Profile and Car
-	linear11dof<T>* linear11dof_obj;
+	Linear11dof<T>* linear11dof_obj;
 	EVAALookup* interpolator;// interpolator member of EVAA
 	Simulation_Parameters params;
 	Profile* profile_obj;
@@ -75,7 +72,7 @@ public:
 	*/
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
-		linear11dof<T>* linear11dof_val,
+		Linear11dof<T>* linear11dof_val,
 		EVAALookup* lookup_table,
 		Simulation_Parameters &params_val) {
 
@@ -112,8 +109,6 @@ public:
 
 		cblas_dscal(2, -1, new_centripetal_force, 1);
 
-
-
 		// 1. Update global X,Y velocities
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[0], centripetal_force[0], new_centripetal_force[0], h_, global_mass);
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[1], centripetal_force[1], new_centripetal_force[1], h_, global_mass);
@@ -140,21 +135,21 @@ public:
 
 		//initialize solution vector
 		int sol_size = (floor(tend_ / h_) + 1);
-		int force_dimensions = Car_obj->DIM * Car_obj->vec_DIM;
+		const int force_dimensions = Constants::DIM * Constants::VEC_DIM;
 		int centripetal_force_dimensions = 3; // because update force needs it
 		int full_torque_dimensions = 3;
-		int num_springs = 2 * Car_obj->num_wheels;
+		const int num_springs = 2 * Constants::NUM_LEGS;
 
 		// allocate memory
-		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), alignment);
-		u_sol = (T*)mkl_calloc(sol_size * (Car_obj->vec_DIM * Car_obj->DIM), sizeof(T), alignment);
-		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), alignment);
-		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), alignment);
-		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), alignment);
-		centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), alignment);
-		new_centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), alignment);  // this was 2 dimensional allocation and update force updates 3 dimension on this
-		k_vect = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
-		Delta_x_vec = (T*)mkl_calloc(num_springs, sizeof(T), alignment);
+		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), Constants::ALIGNMENT);
+		u_sol = (T*)mkl_calloc(sol_size * (Constants::VEC_DIM * Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), Constants::ALIGNMENT);
+		force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), Constants::ALIGNMENT);
+		full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), Constants::ALIGNMENT);
+		centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), Constants::ALIGNMENT);
+		new_centripetal_force = (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), Constants::ALIGNMENT);  // this was 2 dimensional allocation and update force updates 3 dimension on this
+		k_vect = (T*)mkl_calloc(num_springs, sizeof(T), Constants::ALIGNMENT);
+		Delta_x_vec = (T*)mkl_calloc(num_springs, sizeof(T), Constants::ALIGNMENT);
 		
 		torque = new T[3];
 		new_torque = new T[3];
@@ -191,7 +186,7 @@ public:
 				interpolator->getInterpolation(Car_obj->current_spring_length, k_vect);
 				Car_obj->update_K(k_vect);
 			}
-			solution_vect = u_sol + iter * (Car_obj->vec_DIM * Car_obj->DIM);
+			solution_vect = u_sol + iter * (Constants::VEC_DIM * Constants::DIM);
 			Car_obj->populate_results(Car_obj->Position_vec_xy, Car_obj->u_current_linear, solution_vect);
 			
 			t += h_;
@@ -199,7 +194,7 @@ public:
 			
 		}
 
-		cblas_dcopy((Car_obj->vec_DIM * Car_obj->DIM), u_sol + (iter - 1) * (Car_obj->vec_DIM * Car_obj->DIM), 1, sol_vect, 1);
+		cblas_dcopy((Constants::VEC_DIM * Constants::DIM), u_sol + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
 		Car_obj->combine_results();
 
 		MKL_free(time_vec);

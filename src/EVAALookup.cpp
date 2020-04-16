@@ -14,6 +14,8 @@
 #define U_Lookup
 #include "EVAALookup.h"
 #endif
+#include "Constants.h"
+
 /**
 * function returns a readable output for mkl errors
 */
@@ -153,11 +155,11 @@ EVAALookup::EVAALookup(
 		bc_type = DF_BC_FREE_END;
 	}
 	// we will get the grid aftwards from a file. That why I do not directly write size, l_min, l_max into the variables
-	task = (DFTaskPtr*)mkl_malloc(ny * sizeof(DFTaskPtr), alignment);
-	grid = (double*)mkl_calloc(nx * ny, sizeof(double), alignment);
-	axis = (double*)mkl_calloc(nx, sizeof(double), alignment);
-	scoeff = (double*)mkl_calloc(ny * (nx - 1) * sorder, sizeof(double), alignment);
-
+	task = (DFTaskPtr*)mkl_malloc(ny * sizeof(DFTaskPtr), Constants::ALIGNMENT);
+	grid = (double*)mkl_calloc(nx * ny, sizeof(double), Constants::ALIGNMENT);
+	axis = (double*)mkl_calloc(nx, sizeof(double), Constants::ALIGNMENT);
+	scoeff = (double*)mkl_calloc(ny * (nx - 1) * sorder, sizeof(double), Constants::ALIGNMENT);
+	
 	/* create grid */
 	EVAAComputeGrid::buildLinearGrid(grid, axis, nx, l_min, l_max, a, b, c, ny);
 

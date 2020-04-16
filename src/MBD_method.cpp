@@ -31,19 +31,19 @@ void get_tilda(floatEVAA* x, floatEVAA* x_tilda) {
 	x_tilda[8] = 0;
 }
 
-void get_tilda_r(floatEVAA* r, const int dim, const int num_wheels, floatEVAA* r_tilda) {
+void get_tilda_r(floatEVAA* r, const int Constants::DIM, const int num_wheels, floatEVAA* r_tilda) {
 	// r - matrix 3x4 elems (floatEVAA* r); r - tilda matrix 3x12 (floatEVAA* x_tilda)
 	// given y: x_tilda*y=cross(x,y) (Stoneking, page 3 bottom)
 	for (int i = 0; i < num_wheels; i++) {
-		r_tilda[0 + i * dim] = 0;
-		r_tilda[1 + i * dim] = -r[2 * num_wheels + i];
-		r_tilda[2 + i * dim] = r[num_wheels + i];
-		r_tilda[dim * num_wheels + i * dim] = r[2 * num_wheels + i];
-		r_tilda[dim * num_wheels + 1 + i * dim] = 0;
-		r_tilda[dim * num_wheels + 2 + i * dim] = -r[i];
-		r_tilda[2 * dim * num_wheels + i * dim] = -r[num_wheels + i];
-		r_tilda[2 * dim * num_wheels + 1 + i * dim] = r[i];
-		r_tilda[2 * dim * num_wheels + 2 + i * dim] = 0;
+		r_tilda[0 + i * Constants::DIM] = 0;
+		r_tilda[1 + i * Constants::DIM] = -r[2 * num_wheels + i];
+		r_tilda[2 + i * Constants::DIM] = r[num_wheels + i];
+		r_tilda[Constants::DIM * num_wheels + i * Constants::DIM] = r[2 * num_wheels + i];
+		r_tilda[Constants::DIM * num_wheels + 1 + i * Constants::DIM] = 0;
+		r_tilda[Constants::DIM * num_wheels + 2 + i * Constants::DIM] = -r[i];
+		r_tilda[2 * Constants::DIM * num_wheels + i * Constants::DIM] = -r[num_wheels + i];
+		r_tilda[2 * Constants::DIM * num_wheels + 1 + i * Constants::DIM] = r[i];
+		r_tilda[2 * Constants::DIM * num_wheels + 2 + i * Constants::DIM] = 0;
 	}
 }
 
