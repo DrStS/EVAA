@@ -93,10 +93,9 @@ private:
 	//////////////////////////	External Forces terms //////////////////////////////////////////////////////
 	T g;
 	T* FC;
-	T FT_fl, FT_fr, FT_rl, FT_rr;
-	T FW_fl, FW_fr, FW_rl, FW_rr;
-	T FR_fl, FR_fr, FR_rl, FR_rr;
-
+	T *FT_fl, *FT_fr, *FT_rl, *FT_rr;
+	T *FW_fl, *FW_fr, *FW_rl, *FW_rr;
+	
 	//////////////////////////// Initial condition params //////////////////////////////////////////////////
 	T* initial_upper_spring_length, * initial_lower_spring_length, * initial_orientation, * initial_angular_velocity;
 
@@ -108,7 +107,7 @@ private:
 
 
 	////////////////////////// Auxillary Parameters for Compute_f function //////////////////////////////////
-	T* r_fl_tilda, * r_fr_tilda, * r_rl_tilda, * r_rr_tilda, ** FW, * FT, * A_Ic, * A_rem;
+	T* r_fl_tilda, * r_fr_tilda, * r_rl_tilda, * r_rr_tilda, * A_Ic, * A_rem;
 
 
 	/////////////////////////	Variables needed in compute_f function  /////////////////////////////////////
@@ -421,8 +420,14 @@ public:
 		r_fr_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		r_rl_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		r_rr_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		FW = (T**)mkl_calloc((Constants::NUM_LEGS), sizeof(T*), Constants::ALIGNMENT);
-		FT = (T*)mkl_calloc((Constants::NUM_LEGS), sizeof(T*), Constants::ALIGNMENT);
+		FT_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FT_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FT_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FT_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FW_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FW_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FW_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FW_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		A_Ic = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		A_rem = (T*)mkl_calloc(9 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		center_of_circle = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
@@ -438,8 +443,6 @@ public:
 		lower_spring_stiffness[i] = k_tyre_fl;
 		upper_rotational_stiffness[i] = k_body_rot_fl;
 		lower_rotational_stiffness[i] = k_tyre_rot_fl;
-		FT_fl = -mass_tyre[i] * g;
-		FW_fl = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_fl;
 		lower_spring_damping[i] = c_tyre_fl;
 
@@ -457,6 +460,14 @@ public:
 		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
 		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
 		FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i];
+		FT_fl[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[i];
+		FT_fr[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[i];
+		FT_rl[i] = MetaDataBase::DataBase()->getTyreExternalForceRearLeft()[i];
+		FT_rr[i] = MetaDataBase::DataBase()->getTyreExternalForceRearRight()[i];
+		FW_fl[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[i];
+		FW_fr[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[i];
+		FW_rl[i] = MetaDataBase::DataBase()->getWheelExternalForceRearLeft()[i];
+		FW_rr[i] = MetaDataBase::DataBase()->getWheelExternalForceRearRight()[i];
 		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 1;
@@ -470,8 +481,6 @@ public:
 		lower_spring_stiffness[i] = k_tyre_fr;
 		upper_rotational_stiffness[i] = k_body_rot_fr;
 		lower_rotational_stiffness[i] = k_tyre_rot_fr;
-		FT_fr = -mass_tyre[i] * g;
-		FW_fr = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_fr;
 		lower_spring_damping[i] = c_tyre_fr;
 		initial_upper_spring_length[i] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontRight();
@@ -488,6 +497,14 @@ public:
 		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
 		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
 		FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i]; 
+		FT_fl[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[i];
+		FT_fr[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[i];
+		FT_rl[i] = MetaDataBase::DataBase()->getTyreExternalForceRearLeft()[i];
+		FT_rr[i] = MetaDataBase::DataBase()->getTyreExternalForceRearRight()[i];
+		FW_fl[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[i];
+		FW_fr[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[i];
+		FW_rl[i] = MetaDataBase::DataBase()->getWheelExternalForceRearLeft()[i];
+		FW_rr[i] = MetaDataBase::DataBase()->getWheelExternalForceRearRight()[i];
 		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 2;
@@ -501,8 +518,6 @@ public:
 		lower_spring_stiffness[i] = k_tyre_rl;
 		upper_rotational_stiffness[i] = k_body_rot_rl;
 		lower_rotational_stiffness[i] = k_tyre_rot_rl;
-		FT_rl = -mass_tyre[i] * g;
-		FW_rl = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_rl;
 		lower_spring_damping[i] = c_tyre_rl;
 		initial_upper_spring_length[i] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearLeft();
@@ -519,6 +534,14 @@ public:
 		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
 		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
 		FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i] - mass * g;
+		FT_fl[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[i] - mass_tyre_fl * g;
+		FT_fr[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[i] - mass_tyre_fr * g;
+		FT_rl[i] = MetaDataBase::DataBase()->getTyreExternalForceRearLeft()[i] - mass_tyre_rl * g;
+		FT_rr[i] = MetaDataBase::DataBase()->getTyreExternalForceRearRight()[i] - mass_tyre_rr * g;
+		FW_fl[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[i] - mass_wheel_fl * g;
+		FW_fr[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[i] - mass_wheel_fr * g;
+		FW_rl[i] = MetaDataBase::DataBase()->getWheelExternalForceRearLeft()[i] - mass_wheel_rl * g;
+		FW_rr[i] = MetaDataBase::DataBase()->getWheelExternalForceRearRight()[i] - mass_wheel_rr * g;
 		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 3;
@@ -530,8 +553,6 @@ public:
 		lower_spring_stiffness[i] = k_tyre_rr;
 		upper_rotational_stiffness[i] = k_body_rot_rr;
 		lower_rotational_stiffness[i] = k_tyre_rot_rr;
-		FT_rr = -mass_tyre[i] * g;
-		FW_rr = -mass_wheel[i] * g;
 		upper_spring_damping[i] = c_body_rr;
 		lower_spring_damping[i] = c_tyre_rr;
 		initial_upper_spring_length[i] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
@@ -1429,28 +1450,28 @@ public:
 		// local_FR1 = lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...          %vt1_dot
 		mkl<T>::copy(Constants::DIM, cf_lower_force_fl, 1, cf_local_FR_fl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_dampf_fl, 1, cf_local_FR_fl, 1);
-		//	mkl<T>::axpy(Constants::DIM, 1.0, local_FT1, 1, cf_local_FR1, 1); not implemented since not used now
+		mkl<T>::axpy(Constants::DIM, 1.0, FT_fl, 1, cf_local_FR_fl, 1);             
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_rot_force_fl, 1, cf_local_FR_fl, 1);
 
 		// local_FR2 = lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...          %vt2_dot
 		mkl<T>::copy(Constants::DIM, cf_lower_force_fr, 1, cf_local_FR_fr, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_dampf_fr, 1, cf_local_FR_fr, 1);
-		//	mkl<T>::axpy(Constants::DIM, 1.0, local_FT2, 1, cf_local_FR2, 1); not implemented since not used now
+		mkl<T>::axpy(Constants::DIM, 1.0, FT_fr, 1, cf_local_FR_fr, 1);                
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_rot_force_fr, 1, cf_local_FR_fr, 1);
 
 		// local_FR3 = lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...          %vt3_dot
 		mkl<T>::copy(Constants::DIM, cf_lower_force_rl, 1, cf_local_FR_rl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_dampf_rl, 1, cf_local_FR_rl, 1);
-		//	mkl<T>::axpy(Constants::DIM, 1.0, local_FT3, 1, cf_local_FR3, 1); not implemented since not used now
+		mkl<T>::axpy(Constants::DIM, 1.0, FT_rl, 1, cf_local_FR_rl, 1); 
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_rot_force_rl, 1, cf_local_FR_rl, 1);
 
 		// local_FR4 = lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];             %vt4_dot
 		mkl<T>::copy(Constants::DIM, cf_lower_force_rr, 1, cf_local_FR_rr, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_dampf_rr, 1, cf_local_FR_rr, 1);
-		//	mkl<T>::axpy(Constants::DIM, 1.0, local_FT4, 1, cf_local_FR4, 1); not implemented since not used now
+		mkl<T>::axpy(Constants::DIM, 1.0, FT_rr, 1, cf_local_FR_rr, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_rot_force_rr, 1, cf_local_FR_rr, 1);
 
@@ -1541,7 +1562,7 @@ public:
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_force_fl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_upper_dampf_fl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_dampf_fl, 1, brem_start, 1);
-		//mkl<T>::axpy(Constants::DIM, 1.0, local_FW1, 1, brem_start, 1);
+		mkl<T>::axpy(Constants::DIM, 1.0, FW_fl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_upper_rot_force_fl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_car_rot_force_fl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_rot_force_fl, 1, brem_start, 1);
@@ -1552,7 +1573,7 @@ public:
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_force_fr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_upper_dampf_fr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_dampf_fr, 1, brem_start, 1);
-		//mkl<T>::axpy(Constants::DIM, 1.0, local_FW2, 1, brem_start, 1);
+		mkl<T>::axpy(Constants::DIM, 1.0, FW_fr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_upper_rot_force_fr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_car_rot_force_fr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_rot_force_fr, 1, brem_start, 1);
@@ -1563,7 +1584,7 @@ public:
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_force_rl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_upper_dampf_rl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_dampf_rl, 1, brem_start, 1);
-		//mkl<T>::axpy(Constants::DIM, 1.0, local_FW_rl, 1, brem_start, 1);
+		mkl<T>::axpy(Constants::DIM, 1.0, FW_rl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_upper_rot_force_rl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_car_rot_force_rl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_rot_force_rl, 1, brem_start, 1);
@@ -1574,7 +1595,7 @@ public:
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_force_rr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_upper_dampf_rr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_dampf_rr, 1, brem_start, 1);
-		//mkl<T>::axpy(Constants::DIM, 1.0, local_FW4, 1, brem_start, 1);
+		mkl<T>::axpy(Constants::DIM, 1.0, FW_rr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_upper_rot_force_rr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_car_rot_force_rr, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_lower_rot_force_rr, 1, brem_start, 1);
@@ -1660,8 +1681,6 @@ public:
 		// add vt_rr to f vector
 		mkl<T>::copy(Constants::DIM, vt_rr_, 1, start_next, 1);
 		start_next += Constants::DIM;
-
-
 	}
 
 	/*
@@ -1941,8 +1960,14 @@ public:
 		mkl_free(r_fr_tilda);
 		mkl_free(r_rl_tilda);
 		mkl_free(r_rr_tilda);
-		mkl_free(FW);
-		mkl_free(FT);
+		mkl_free(FW_fl);
+		mkl_free(FW_fr);
+		mkl_free(FW_rl);
+		mkl_free(FW_rr);
+		mkl_free(FT_fl);
+		mkl_free(FT_fr);
+		mkl_free(FT_rl);
+		mkl_free(FT_rr);
 		mkl_free(A_Ic);
 		mkl_free(A_rem);
 	}

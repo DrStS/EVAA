@@ -3,12 +3,12 @@ function [t, y_return, y, metrics] = main_nasa_car(r1, r2, r3, r4, mass, mass_wh
         lower_spring_stiffness, upper_spring_stiffness,  lower_spring_damping, upper_spring_damping, lower_rotational_stiffness, upper_rotational_stiffness, ...
         vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc, FC, FW1, FW2, FW3, FW4, FT1, FT2, FT3, FT4, FR1, FR2, FR3, FR4,...
         num_iter, delta_t, solver)
-   
+   global iscircular
     %% INITIALLIZATION
     [qc, pw1, pw2, pw3, pw4, pt1, pt2, pt3, pt4] = get_initial_positions(qc, r1, r2, r3, r4, pcc, initial_upper_spring_length, initial_lower_spring_length);
-
-    [vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc] = Circular_path_initialization(pcc, pt1, pt2, pt3, pt4, vc);
-
+    if iscircular
+        [vc, vw1, vw2, vw3, vw4, vt1, vt2, vt3, vt4, wc] = Circular_path_initialization(pcc, pt1, pt2, pt3, pt4, vc);
+    end
     % computation of ri_tilda, ro_tilda
     r1_tilda = get_tilda(r1);
     r2_tilda = get_tilda(r2);

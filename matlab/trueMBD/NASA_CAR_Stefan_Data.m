@@ -46,7 +46,8 @@ mass_wheel_rl=135/2;
 mass_tyre_rl=30;
 mass_wheel_rr=135/2;
 mass_tyre_rr=30;
-
+global iscircular 
+iscircular = false;
 % Dimensions of the main car body (the center of rotation is at the origin)
 r1 = [-l_long_rr; 0  ;  l_lat_rr];
 r2 = [-l_long_rl; 0  ; -l_lat_rl];
