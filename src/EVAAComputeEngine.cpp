@@ -638,19 +638,19 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	// gets written in rear vector
 	// K' <- (1.0/(h*h))*M + K
 //	MathLibrary::computeDenseVectorAddition(M.data(), K.data(), (1.0 / (h*h)), 9);
-	cblas_daxpy(121, (1.0 / (h * h)), M, 1, K, 1);
+	mkl<floatEVAA>::axpy(121, (1.0 / (h * h)), M, 1, K, 1);
 	// K <- (1.0/h)*D + K'
 //	MathLibrary::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 121);
-	cblas_daxpy(121, (1.0 / h), D, 1, K, 1);
+	mkl<floatEVAA>::axpy(121, (1.0 / h), D, 1, K, 1);
 	/// K holds now dynamic stiffness matrix  for BE integrator
 	///Build rhs for BE integrator
 	//B' <-(2.0 / (h*h))*M + B
 //	MathLibrary::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
-	cblas_daxpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
+	mkl<floatEVAA>::axpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
 
 	//B <-(1.0 / (h))*D + B'
 //	MathLibrary::computeDenseVectorAddition(D.data(), B.data(), (1.0 / h), 121);
-	cblas_daxpy(matrixElements, (1.0 / h), D, 1, B, 1);
+	mkl<floatEVAA>::axpy(matrixElements, (1.0 / h), D, 1, B, 1);
 	//A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE	
 
 	std::vector<int> pivot(DOF);
@@ -676,7 +676,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 /* void cblas_dgemv(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE trans, const MKL_INT m,
 	const MKL_INT n, const double alpha, const double* a, const MKL_INT lda, const double* x,
 	const MKL_INT incx, const double beta, double* y, const MKL_INT incy); */
-		cblas_dgemv(CblasColMajor, CblasNoTrans, 11, 11, 1.0, B, 11, u_n, 1, 0.0, u_n_p_1, 1);
+		mkl<floatEVAA>::gemv(CblasColMajor, CblasNoTrans, 11, 11, 1.0, B, 11, u_n, 1, 0.0, u_n_p_1, 1);
 #endif
 #ifdef USE_GEMM 
 		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1.0, B, 11, u_n, 11, 0.0, u_n_p_1, 11);
@@ -685,7 +685,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		// y: = alpha*A*x + beta*y
 		// tmp = ((-1.0 / (h*h))*M) * u_n_m_1
 #ifndef USE_GEMM
-		cblas_dgemv(CblasColMajor, CblasNoTrans, DOF, DOF, (-1.0 / (h * h)), M, DOF, u_n_m_1, 1, 0.0, tmp, 1);
+		mkl<floatEVAA>::gemv(CblasColMajor, CblasNoTrans, DOF, DOF, (-1.0 / (h * h)), M, DOF, u_n_m_1, 1, 0.0, tmp, 1);
 #endif
 #ifdef USE_GEMM 
 		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1.0, M, 11, u_n_m_1, 11, 0.0, tmp, 11);
@@ -694,7 +694,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		// u_n_p_1 <- 1.0 tmp + u_n_p_1
 //		MathLibrary::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.0, 11);
 		//void cblas_daxpy (const MKL_INT n, const double a, const double *x, const MKL_INT incx, double *y, const MKL_INT incy);
-		cblas_daxpy(DOF, 1.0, tmp, 1, u_n_p_1, 1);
+		mkl<floatEVAA>::axpy(DOF, 1.0, tmp, 1, u_n_p_1, 1);
 		// Solve system
 //		MathLibrary::computeDenseSymSolution(11, K, pivot, u_n_p_1);
 // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans , lapack_int n , lapack_int nrhs , const double * a , lapack_int lda , const lapack_int * ipiv , double * b , lapack_int ldb );
@@ -834,7 +834,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
 	#ifdef IO
 		IO::write_matrix(complete_soln, "MBD_result.dat", (num_iter + 1), solution_dim);
 	#endif // IO	
-	cblas_dscal(solution_dim, 0.0, soln, 1);
+	mkl<floatEVAA>::scal(solution_dim, 0.0, soln, 1);
 	mkl_free(complete_soln);
 	// ALE call 
 

@@ -5,6 +5,7 @@
 #include "EVAAComputeEngine.h"
 #include "11DOF.h"
 #include "Constants.h"
+#include "BLAS.h"
 
 /*
 Implements the ALE method to extend the linear 11DOF system
@@ -107,7 +108,7 @@ public:
 		Load_module_obj->update_force(t, force_vector, Delta_x_vec, new_centripetal_force);
 		Load_module_obj->update_torque(t, new_torque, Delta_x_vec);
 
-		cblas_dscal(2, -1, new_centripetal_force, 1);
+		mkl<T>::scal(2, -1, new_centripetal_force, 1);
 
 		// 1. Update global X,Y velocities
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[0], centripetal_force[0], new_centripetal_force[0], h_, global_mass);
@@ -169,7 +170,7 @@ public:
 			Load_module_obj->update_force(t, force_vector, Delta_x_vec, centripetal_force);
 			Load_module_obj->update_torque(t, torque, Delta_x_vec);
 			// convert centrifugal force to centripetal (only for x, y direction)
-			cblas_dscal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
+			mkl<T>::scal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
 			if (iter == 100)
 			MathLibrary::write_vector(centripetal_force, centripetal_force_dimensions);
 			global_frame_solver(t);
@@ -191,7 +192,7 @@ public:
 
 		}
 
-		cblas_dcopy((Constants::VEC_DIM * Constants::DIM), u_sol + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
+		mkl<T>::copy((Constants::VEC_DIM * Constants::DIM), u_sol + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
 		Car_obj->combine_results();
 
 		MKL_free(time_vec);
