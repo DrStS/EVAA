@@ -6,19 +6,19 @@ b = 1.59;
 c = 1.2;
 
 global L1 L2 L3 L4 L5 L6 L7 L8
-L1 = 0;
-L2 = 0;
-L3 = 0;
-L4 = 0;
-L5 = 0;
-L6 = 0;
-L7 = 0;
-L8 = 0;
+L1 = 0.2;
+L2 = 0.2;
+L3 = 0.2;
+L4 = 0.2;
+L5 = 0.2;
+L6 = 0.2;
+L7 = 0.2;
+L8 = 0.2;
 
 %%
 global k_grid size_grid l_min l_max dl;
 % calc min and max length to evaluate (just for now)
-l_min = -1;
+l_min = 0.02;
 l_max = 1;
 % grid size
 size_grid = 1000;
@@ -96,13 +96,13 @@ dKcols_dk = [dK1_dk, dK2_dk, dK3_dk, dK4_dk, dK5_dk, dK6_dk, dK7_dk, dK8_dk, dK9
 
 %% parameters
 % time
-num_iter = 1000;
+num_iter = 4;
 delta_t = 1e-1; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
 
-tol = 1e-9;
-y = zeros(11, length(t));
+tol = 1e-6;
+y = zeros(length(t),11);
 order = zeros(length(t),1);
 err_arr = zeros(length(t),1);
 
@@ -128,11 +128,11 @@ mass_tyre_rr=30;
 g = 0;
 u_n = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 
-y(:,1) = u_n;
 u_n_m_1=u_n;
+u_n_m_1(1)=u_n(1) - 100 * delta_t;
 u_n_p_1=u_n;
 
-rhs =[1.1e3; zeros(10,1)];
+rhs =-[mass_Body; 0; 0; mass_wheel_fl; 0; mass_wheel_fr; 0; mass_wheel_rl; 0; mass_wheel_rr; 0];
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 
@@ -143,7 +143,7 @@ f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_
 dKcols_dk = eval(dKcols_dk); % evaluate it numerically
 
 d = 0;
-for i = 1: length(t)-1
+for i = 1: length(t)
     K = get_K(u_n);
     r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
     
@@ -181,12 +181,13 @@ for i = 1: length(t)-1
     
     u_n_m_1 = u_n;
     u_n = u_n_p_1;
-    y(:,i+1) = u_n_p_1;
+    y(i,:) = u_n_p_1;
 end
 d
 %order
 %plot(t,y(1,:));
 %plot(t,y(4:11,:))
+csvwrite('lookUp11DofAna.txt',[y,err_arr]);
 figure;
 plot(order);
 title('newton iterations');
