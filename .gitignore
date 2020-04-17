@@ -5,7 +5,13 @@
 /src/database/LOOKUP_EVAA_XML.cpp
 /src/database/LOOKUP_EVAA_XML.h
 /src/tools/AuxiliaryParameters.cpp
+/src/tmwtypes.h
+/src/xsd.rar
 /build*
 *.asv
 *.cmake
 /Results/*
+/.vs/*
+/proposed_xml/*
+main.cpp
+/dump/*
