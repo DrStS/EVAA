@@ -348,15 +348,15 @@ public:
 
 		interpolation_enabled = MetaDataBase::DataBase()->getUseInterpolation();
 
-		f_n_p_1[0] = MetaDataBase::DataBase()->getBodyExternalForce()[1];
-		f_n_p_1[3] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[1];
-		f_n_p_1[4] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[1];
-		f_n_p_1[5] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[1];
-		f_n_p_1[6] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[1];
-		f_n_p_1[7] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[1];
-		f_n_p_1[8] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[1];
-		f_n_p_1[9] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[1];
-		f_n_p_1[10] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[1];
+		f_n_p_1[0] = MetaDataBase::DataBase()->getBodyExternalForce()[2];
+		f_n_p_1[3] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[2];
+		f_n_p_1[4] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[2];
+		f_n_p_1[5] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[2];
+		f_n_p_1[6] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[2];
+		f_n_p_1[7] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[2];
+		f_n_p_1[8] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[2];
+		f_n_p_1[9] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[2];
+		f_n_p_1[10] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[2];
 
 
 	}

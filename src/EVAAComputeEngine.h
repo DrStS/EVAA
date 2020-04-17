@@ -101,7 +101,7 @@ public:
 
 	// just for testing purposes
 	void computeALEtest(void);
-	void compare_ALE_MBD(void);
+	void compare_ALE_MBD(void) {};
 	
 	// MKL
 /*	void computeMKLNasa(void);
