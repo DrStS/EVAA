@@ -20,6 +20,7 @@
 #include "MathLibrary.h"
 #include "Constants.h"
 #include "ReadXML.h"
+#include "BLAS.h"
 
 /**
 * \brief class to compute one timestep of the linear 11 dof system in small angle approximation
@@ -165,15 +166,15 @@ public:
 		factor_h = (1 / (h_));
 
 		// B=((2/(h*h))*M+(1/h)*D);
-		cblas_daxpy(this->DOF, 2 * factor_h2, car_->M_linear, this->DOF + 1, B, this->DOF + 1);
-		cblas_daxpy(mat_len, factor_h, car_->D, 1, B, 1);
+		mkl<T>::axpy(this->DOF, 2 * factor_h2, car_->M_linear, this->DOF + 1, B, this->DOF + 1);
+		mkl<T>::axpy(mat_len, factor_h, car_->D, 1, B, 1);
 		
-		cblas_dcopy(DOF, car_->u_prev_linear, 1, u_n, 1);
+		mkl<T>::copy(DOF, car_->u_prev_linear, 1, u_n, 1);
 
 		// u_n_m_1 = u_n - h_ * velocity_current_linear
-		cblas_dcopy(DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
-		cblas_dscal(DOF, -h_, u_n_m_1, 1);
-		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
+		mkl<T>::copy(DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
+		mkl<T>::scal(DOF, -h_, u_n_m_1, 1);
+		mkl<T>::axpy(DOF, 1, u_n, 1, u_n_m_1, 1);
 	}
 	/*
 	Performs one timestep of the 11DOF solver
@@ -183,23 +184,23 @@ public:
 	virtual void update_step(T* force, T* solution) {
 		// construct A
 		// A = M_linear (also acts as initialization of A)
-		cblas_dcopy(mat_len, car_->M_linear, 1, A, 1);
+		mkl<T>::copy(mat_len, car_->M_linear, 1, A, 1);
 		// A = 1/h^2 * A => A = 1/h^2 * M
-		cblas_dscal(this->DOF, factor_h2, A, this->DOF + 1); // use the fact that M is diagonal
+		mkl<T>::scal(this->DOF, factor_h2, A, this->DOF + 1); // use the fact that M is diagonal
 		// A += 1/h * D => A = 1/h^2 * M + 1/h * D
-		cblas_daxpy(mat_len, factor_h, car_->D, 1, A, 1);
+		mkl<T>::axpy(mat_len, factor_h, car_->D, 1, A, 1);
 		// A += K => A = 1/h^2 * M + 1/h * D + K
-		cblas_daxpy(mat_len, 1, car_->K, 1, A, 1);
+		mkl<T>::axpy(mat_len, 1, car_->K, 1, A, 1);
 
 		// u_n_m_1 = -1/h^2 * u_n_m_1
-		cblas_dscal(DOF, -factor_h2, u_n_m_1, 1);
+		mkl<T>::scal(DOF, -factor_h2, u_n_m_1, 1);
 		//MathLibrary::write_vector(force, 11);
 		//cblas_dscal(DOF, 0.0, force, 1);
 		MathLibrary::Solvers<T, Linear11dof>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, DOF);
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
 		// solutio = solution[t_n] = u_n_p_1
-		cblas_dcopy(DOF, u_n_p_1, 1, solution, 1);
+		mkl<T>::copy(DOF, u_n_p_1, 1, solution, 1);
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_1
 		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and u_n_p_1 point to u_n_m_1 now
 	}
@@ -244,45 +245,45 @@ public:
 		factor_h = (1 / (h_));
 
 		// B = (6/(h*h))*M + (2/h)*D
-		cblas_dscal(mat_len, 0.0, B, 1);
-		cblas_daxpy(mat_len, 6 * factor_h2, car_->M_linear, 1, B, 1);
-		cblas_daxpy(mat_len, 2 * factor_h, car_->D, 1, B, 1);
+		mkl<T>::scal(mat_len, 0.0, B, 1);
+		mkl<T>::axpy(mat_len, 6 * factor_h2, car_->M_linear, 1, B, 1);
+		mkl<T>::axpy(mat_len, 2 * factor_h, car_->D, 1, B, 1);
 
 		// C = (-11/2)*(1/(h*h))*M + (-1/(2*h))*D
-		cblas_daxpy(mat_len, (-11.0/2.0) * factor_h2, car_->M_linear, 1, C, 1);
-		cblas_daxpy(mat_len, (-1.0/2.0) * factor_h, car_->D, 1, C, 1);
+		mkl<T>::axpy(mat_len, (-11.0/2.0) * factor_h2, car_->M_linear, 1, C, 1);
+		mkl<T>::axpy(mat_len, (-1.0/2.0) * factor_h, car_->D, 1, C, 1);
 
 		// D = (2/(h*h))*M
-		cblas_daxpy(mat_len, 2.0 * factor_h2, car_->M_linear, 1, D, 1);
+		mkl<T>::axpy(mat_len, 2.0 * factor_h2, car_->M_linear, 1, D, 1);
 
 		// E = (-1/4)*(1/(h*h))*M
-		cblas_daxpy(mat_len, (-1.0/4.0) * factor_h2, car_->M_linear, 1, E, 1);
+		mkl<T>::axpy(mat_len, (-1.0/4.0) * factor_h2, car_->M_linear, 1, E, 1);
 
-		cblas_dcopy(DOF, car_->u_prev_linear, 1, u_n, 1);
-		cblas_dcopy(DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
+		mkl<T>::copy(DOF, car_->u_prev_linear, 1, u_n, 1);
+		mkl<T>::copy(DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
 
-		cblas_dscal(DOF, -h_, u_n_m_1, 1);
-		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
+		mkl<T>::scal(DOF, -h_, u_n_m_1, 1);
+		mkl<T>::axpy(DOF, 1, u_n, 1, u_n_m_1, 1);
 
 	}
 
 	void first_two_steps(T* force, T* solution) {
 		
 		if (time_step_count == 0) {
-			cblas_dcopy(DOF, u_n_m_1, 1, u_n_m_2, 1);
+			mkl<T>::copy(DOF, u_n_m_1, 1, u_n_m_2, 1);
 			Linear11dof<T>::update_step(force, solution);
 			time_step_count += 1;
 		}
 		else if (time_step_count == 1) {
-			cblas_dcopy(DOF, u_n_m_2, 1, u_n_m_3, 1);
-			cblas_dcopy(DOF, u_n_m_1, 1, u_n_m_2, 1);
+			mkl<T>::copy(DOF, u_n_m_2, 1, u_n_m_3, 1);
+			mkl<T>::copy(DOF, u_n_m_1, 1, u_n_m_2, 1);
 			Linear11dof<T>::update_step(force, solution);
 			time_step_count += 1;
 		}
 		else {
 			time_step_count += 1;
-			cblas_dcopy(DOF, u_n_m_2, 1, u_n_m_3, 1);
-			cblas_dcopy(DOF, u_n_m_1, 1, u_n_m_2, 1);
+			mkl<T>::copy(DOF, u_n_m_2, 1, u_n_m_3, 1);
+			mkl<T>::copy(DOF, u_n_m_1, 1, u_n_m_2, 1);
 			initialize_solver_bdf2(h_);
 			update_step_bdf2(force, solution);
 			_active_executor = &Linear11dofBDF2<T>::update_step_bdf2;
@@ -301,15 +302,15 @@ public:
 	*/
 	void update_step_bdf2(T* force, T* solution) {
 		// construct A
-		cblas_dcopy(mat_len, car_->M_linear, 1, A, 1);
-		cblas_dscal(mat_len, (9.0/4.0)*factor_h2, A, 1);
-		cblas_daxpy(mat_len, (3.0/2.0)*factor_h, car_->D, 1, A, 1);
-		cblas_daxpy(mat_len, 1, car_->K, 1, A, 1);
+		mkl<T>::copy(mat_len, car_->M_linear, 1, A, 1);
+		mkl<T>::scal(mat_len, (9.0/4.0)*factor_h2, A, 1);
+		mkl<T>::axpy(mat_len, (3.0/2.0)*factor_h, car_->D, 1, A, 1);
+		mkl<T>::axpy(mat_len, 1, car_->K, 1, A, 1);
 		//cblas_dscal(DOF, 0.0, force, 1);
 		MathLibrary::Solvers<T, Linear11dofBDF2>::Linear_BDF2(A, B, C, D, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, DOF);
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
-		cblas_dcopy(DOF, u_n_p_1, 1, solution, 1);
+		mkl<T>::copy(DOF, u_n_p_1, 1, solution, 1);
 		MathLibrary::swap_address<T>(u_n_m_2, u_n_m_3); // u_n_m_2 points to u_n_m_3 and u_n_m_3 points to u_n_m_2
 		MathLibrary::swap_address<T>(u_n_m_1, u_n_m_2); // u_n_m_2 points to u_n_m_1 and u_n_m_1 points to u_n_m_3
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_3
