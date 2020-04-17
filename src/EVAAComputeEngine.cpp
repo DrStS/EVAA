@@ -49,7 +49,13 @@ using Eigen::IOFormat;
 #include <blaze/Math.h>
 #endif
 
-typedef double floatEVAA;
+#ifdef SINGLE_PRECISION
+	typedef float floatEVAA;
+#elif DOUBLE_PRECISION
+	typedef double floatEVAA;
+#endif
+
+
 
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) : 
 	_xmlCarFileName(xmlCarFileName), _xmlLoadFileName(xmlLoadFileName), 

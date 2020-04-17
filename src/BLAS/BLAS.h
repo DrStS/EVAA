@@ -142,6 +142,16 @@ public:
 #endif
 	}
 
+	static void imatcopy(const char ordering, const char trans, size_t rows, size_t cols, const T alpha, T * AB, size_t lda, size_t ldb) {
+#ifdef SINGLE_PRECISION
+		mkl_simatcopy(ordering, trans, rows, cols, alpha, AB, lda, ldb);
+#elif DOUBLE_PRECISION
+		mkl_dimatcopy(ordering, trans, rows, cols, alpha, AB, lda, ldb);
+#else
+		mkl::mkl_error();
+#endif
+	}
+
 	static void symv(const CBLAS_LAYOUT Layout, const CBLAS_UPLO uplo, const MKL_INT n, 
 		const T alpha, const T *a, const MKL_INT lda, 
 		const T *x, const MKL_INT incx, const T beta, T *y, const MKL_INT incy) {
@@ -558,6 +568,16 @@ public:
 		return LAPACKE_stgsja(matrix_layout, jobu, jobv, jobq, m, p, n, k, l, a, lda, b, ldb, tola, tolb, alpha, beta, u, ldu, v, ldv, q, ldq, ncycle);
 #elif DOUBLE_PRECISION
 		return LAPACKE_dtgsja(matrix_layout, jobu, jobv, jobq, m, p, n, k, l, a, lda, b, ldb, tola, tolb, alpha, beta, u, ldu, v, ldv, q, ldq,  ncycle);
+#else
+		mkl::mkl_error();
+#endif
+	}
+
+	static lapack_int lacpy(int matrix_layout, char uplo, lapack_int m, lapack_int n, const T* a, lapack_int lda, T* b, lapack_int ldb) {
+#ifdef SINGLE_PRECISION
+		return LAPACKE_slacpy(matrix_layout, uplo, m, n, a, lda, b, ldb);
+#elif DOUBLE_PRECISION
+		return LAPACKE_dlacpy(matrix_layout, uplo, m, n, a, lda, b, ldb);
 #else
 		mkl::mkl_error();
 #endif
