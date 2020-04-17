@@ -113,16 +113,16 @@ if generate_from_trajectoryXYZ
 %     initial_direction = [1;0];
 %     trajectoryXYZ = generate_accelerated_car(acceleration, initial_position, initial_direction, delta_t, v_init, num_iter + 1);
 
-    ramp_length = 60;
-    pre_path = 10;
-    layout = @(X)0.001 * X^2;
-    initial_position = [10; 40; 20];
-    initial_direction = [-1;0];
-    jump = 0;
-    v_init = 10;
-    trajectoryXYZ = generate_ramp(pre_path, ramp_length, layout, initial_position, initial_direction, jump, delta_t, v_init, num_iter + 1);
+%     ramp_length = 60;
+%     pre_path = 10;
+%     layout = @(X)0.001 * X^2;
+%     initial_position = [10; 40; 20];
+%     initial_direction = [-1;0];
+%     jump = -2;
+%     v_init = 10;
+%     trajectoryXYZ = generate_ramp(pre_path, ramp_length, layout, initial_position, initial_direction, jump, delta_t, v_init, num_iter + 1);
     
-%    [trajectoryXYZ, num_iter] = generate_fancy_road(delta_t);
+   [trajectoryXYZ, num_iter] = generate_fancy_road(delta_t);
 
     % get the trajectories of the tyres
     [trajectoryXYZ_t1, trajectoryXYZ_t2, trajectoryXYZ_t3, trajectoryXYZ_t4, theta, vc, w] ...

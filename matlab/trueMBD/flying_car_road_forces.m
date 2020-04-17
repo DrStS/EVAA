@@ -31,7 +31,7 @@ function [FR] = flying_car_road_forces(m, FT, leg_index, Froad, traj, v_traj, i,
     if x_prev(2)<=traj_prev+eps
         FR = Froad;
 
-        if v_prev(2) < vtraj_prev(2)-eps % car is moving downwards
+        if v_prev(2) < min(0, vtraj_prev(2))-eps % car is moving downwards
             FR(2) = FR(2) - m / dt * v_prev(2);   % !! use higher order method !!
         end
         
