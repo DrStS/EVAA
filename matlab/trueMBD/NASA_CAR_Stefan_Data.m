@@ -80,15 +80,15 @@ lower_rotational_stiffness = [k_tyre_rot_rr; k_tyre_rot_rl; k_tyre_rot_fl; k_tyr
 % initial velocities 
 vc = [0; 0; 3];       % car body
 
-vw1 = [0; 0; 0];    % wheel 
-vw2 = [0; 0; 0];    
-vw3 = [0; 0; 0];    
-vw4 = [0; 0; 0];    
+vw1 = [0; 0; 3];    % wheel 
+vw2 = [0; 0; 3];    
+vw3 = [0; 0; 3];    
+vw4 = [0; 0; 3];    
 
-vt1 = [0; 0; 0];    % tyres 
-vt2 = [0; 0; 0];    
-vt3 = [0; 0; 0];    
-vt4 = [0; 0; 0];    
+vt1 = [0; 0; 3];    % tyres 
+vt2 = [0; 0; 3];    
+vt3 = [0; 0; 3];    
+vt4 = [0; 0; 3];    
 
 % initial angular velocities
 wc = [0; 0; 0];
@@ -101,7 +101,7 @@ visualize = false;
 % force parameters
 g = 0;               % there is no gravity in outer space! 
 
-FC = [0; -mass*g; 0];    % external forces in y_direction
+FC = [0; 4e3-mass*g; 0];    % external forces in y_direction
 
 FT1 = [0; -mass_tyre(1)*g; 0];
 FT2 = [0; -mass_tyre(2)*g; 0];
@@ -114,7 +114,7 @@ FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
 % simulation specifications 
-num_iter = 1000;     % LENGTH OF THE SIMULATION
+num_iter = 10000;     % LENGTH OF THE SIMULATION
 delta_t = 1e-3;       % PLAY AROUND
 tol = 1e-7;           % !!!! PLAY AROUND !!!!
 max_iter = 1000000;     % for Broyden´
@@ -128,10 +128,10 @@ d = -0.5;
 %FR4 = @(t, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(4), F, d, delta_t);
 
 %the car is flying away 
-% FR1 = @(t, y, pcc, vt, vb, F) F;        
-% FR2 = @(t, y, pcc, vt, vb, F) F;
-% FR3 = @(t, y, pcc, vt, vb, F) F;
-% FR4 = @(t, y, pcc, vt, vb, F) F;
+FR1 = @(t, y, pcc, vt, vb, F) F;        
+FR2 = @(t, y, pcc, vt, vb, F) F;
+FR3 = @(t, y, pcc, vt, vb, F) F;
+FR4 = @(t, y, pcc, vt, vb, F) F;
 
 %fix the car on the ground (initial velocities very small) -> MOST SIMULATIONS WITH THIS 
 % FR1 = @(t, y, pcc, vt, vb, F) zeros(3,1);
@@ -139,10 +139,10 @@ d = -0.5;
 % FR3 = @(t, y, pcc, vt, vb, F) zeros(3,1);
 % FR4 = @(t, y, pcc, vt, vb, F) zeros(3,1);
 
-FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
-FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
-FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
-FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
+% FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
+% FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
+% FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
+% FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
 
 %PLAY AROUND; expect RK4 and BCN to work fine
 % Explicit solvers 

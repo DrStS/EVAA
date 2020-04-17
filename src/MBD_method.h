@@ -176,6 +176,8 @@ private:
 														8.	pt_fl	= pt_fl + lower_length(_fl)*global_z;
 		*/
 
+		
+
 		T* global_z = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		T* C_Nc = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 
@@ -257,7 +259,7 @@ private:
 		// 9.	pt4 = pw4 + lower_length(4)*global_z;
 		mkl<T>::axpy(Constants::DIM, initial_lower_spring_length_[3], global_z, 1, tyre_coordinate_rr_, 1);
 
-
+		
 		mkl_free(global_z);
 		mkl_free(C_Nc);
 	}
@@ -375,6 +377,8 @@ public:
 		lower_spring_length_rl = MetaDataBase::DataBase()->getTyreSpringLengthRearLeft();
 		lower_spring_length_rr = MetaDataBase::DataBase()->getTyreSpringLengthRearRight();
 
+		
+
 		g = MetaDataBase::DataBase()->getGravityField()[2];
 
 		int i;
@@ -452,7 +456,7 @@ public:
 		vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
 		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
 		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
-		FC[i] = 0;
+		FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i];
 		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 1;
@@ -483,7 +487,7 @@ public:
 		vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
 		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
 		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
-		FC[i] = -mass*g;
+		FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i]; 
 		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 2;
@@ -514,7 +518,7 @@ public:
 		vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
 		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
 		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
-		FC[i] = 0;
+		FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i] - mass * g;
 		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 3;
@@ -533,6 +537,7 @@ public:
 		initial_upper_spring_length[i] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
 		initial_lower_spring_length[i] = MetaDataBase::DataBase()->getTyreSpringInitialLengthRearRight();
 		initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
+		
 
 		// A_Ic has cholesky factorization of Ic
 		mkl<T>::copy(Constants::DIM * Constants::DIM, Ic, 1, A_Ic, 1);
