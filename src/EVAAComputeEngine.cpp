@@ -826,73 +826,72 @@ void EVAAComputeEngine::computeALEtest(void) {
 	delete car;
 }
 
-//void EVAAComputeEngine::compare_ALE_MBD(void) {
-//	// MBD Call
-//	size_t num_iter = _parameters.num_time_iter;
-//	const int alignment = 64;
-//	size_t solution_dim = _parameters.solution_dim;
-//	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
-//	MBD_method<floatEVAA> solver(_parameters, _loadModuleParameter, _lookupStiffness);
-//	size_t solution_size = (num_iter + 1) *solution_dim;
-//	floatEVAA* complete_soln = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
-//	solver.solve(soln, complete_soln);
-//	solver.print_final_result(soln);
-//	std::cout << "(num_iter + 1) = " << (num_iter + 1) << "solution_dim = " << solution_dim << std::endl;
-//	#ifdef IO
-//		IO::write_matrix(complete_soln, "MBD_result.dat", (num_iter + 1), solution_dim);
-//	#endif // IO	
-//	mkl<floatEVAA>::scal(solution_dim, 0.0, soln, 1);
-//	mkl_free(complete_soln);
-//	// ALE call 
-//
-//	Profile* Road_Profile;
-//
-//	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, _lookupStiffness);
-//
-//	if (_loadModuleParameter.boundary_condition_road == CIRCULAR) {
-//		Road_Profile = new Circular(_loadModuleParameter.profile_center,
-//			_loadModuleParameter.profile_radius);
-//	}
-//	else if (_loadModuleParameter.boundary_condition_road == NONFIXED) {
-//		Road_Profile = new Nonfixed(_loadModuleParameter.profile_center,
-//			_loadModuleParameter.profile_radius);
-//	}
-//	else if (_loadModuleParameter.boundary_condition_road == FIXED) {
-//		Road_Profile = new Fixed(_parameters.gravity[2], _loadModuleParameter);
-//		Road_Profile->set_fixed_index(Car1->tyre_index_set);
-//	}
-//	else {
-//		std::cout << "ALE will only work with a circular path, fixed or nonfixed boundaries, computation skipped" << std::endl;
-//		delete Car1;
-//		exit(5);
-//	}
-//
-//	solution_dim = Constants::DIM * Constants::VEC_DIM;
-//	solution_size = (num_iter + 1) * solution_dim;
-//	floatEVAA* complete_soln2 = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
-//	#ifdef IO
-//		IO::write_matrix(Car1->Position_vec, "initial_car_pos_vec.dat", 1, solution_dim);
-//	#endif // IO
-//	Road_Profile->update_initial_condition(Car1);
-//
-//	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _loadModuleParameter);
-//	Linear11dof<floatEVAA>* linear11dof_sys = new Linear11dof<floatEVAA>(Car1);
-//	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, _lookupStiffness, _parameters);
-//
-//	Ale_sys->solve(soln, complete_soln2);
-//
-//	Ale_sys->print_final_results();
-//	#ifdef IO
-//		IO::write_matrix(complete_soln2, "ALE_result.dat", (num_iter + 1), solution_dim);
-//	#endif // IO
-//	delete Car1;
-//	delete Load_module1;
-//	delete Road_Profile;
-//	delete linear11dof_sys;
-//	delete Ale_sys;
-//
-//	mkl_free(soln);
-//	mkl_free(complete_soln2);
-//
-//	
-//}
+void EVAAComputeEngine::compare_ALE_MBD(void) {
+	// MBD Call
+	size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
+	size_t solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize();
+	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
+	MBD_method<floatEVAA> solver(_parameters, _loadModuleParameter, _lookupStiffness);
+	size_t solution_size = (num_iter + 1) *solution_dim;
+	floatEVAA* complete_soln = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
+	solver.solve(soln, complete_soln);
+	solver.print_final_result(soln);
+	std::cout << "(num_iter + 1) = " << (num_iter + 1) << "solution_dim = " << solution_dim << std::endl;
+	#ifdef IO
+		IO::write_matrix(complete_soln, "MBD_result.dat", (num_iter + 1), solution_dim);
+	#endif // IO	
+	mkl<floatEVAA>::scal(solution_dim, 0.0, soln, 1);
+	mkl_free(complete_soln);
+	// ALE call 
+
+	Profile* Road_Profile;
+
+	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, _lookupStiffness);
+
+	if (_loadModuleParameter.boundary_condition_road == CIRCULAR) {
+		Road_Profile = new Circular(_loadModuleParameter.profile_center,
+			_loadModuleParameter.profile_radius);
+	}
+	else if (_loadModuleParameter.boundary_condition_road == NONFIXED) {
+		Road_Profile = new Nonfixed(_loadModuleParameter.profile_center,
+			_loadModuleParameter.profile_radius);
+	}
+	else if (_loadModuleParameter.boundary_condition_road == FIXED) {
+		Road_Profile = new Fixed(_parameters.gravity[2], _loadModuleParameter);
+		Road_Profile->set_fixed_index(Car1->tyre_index_set);
+	}
+	else {
+		std::cout << "ALE will only work with a circular path, fixed or nonfixed boundaries, computation skipped" << std::endl;
+		delete Car1;
+		exit(5);
+	}
+
+	solution_dim = Constants::DIM * Constants::VEC_DIM;
+	solution_size = (num_iter + 1) * solution_dim;
+	floatEVAA* complete_soln2 = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
+	#ifdef IO
+		IO::write_matrix(Car1->Position_vec, "initial_car_pos_vec.dat", 1, solution_dim);
+	#endif // IO
+	Road_Profile->update_initial_condition(Car1);
+
+	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _loadModuleParameter);
+	Linear11dof<floatEVAA>* linear11dof_sys = new Linear11dof<floatEVAA>(Car1);
+	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, _lookupStiffness, _parameters);
+
+	Ale_sys->solve(soln, complete_soln2);
+
+	Ale_sys->print_final_results();
+	#ifdef IO
+		IO::write_matrix(complete_soln2, "ALE_result.dat", (num_iter + 1), solution_dim);
+	#endif // IO
+	delete Car1;
+	delete Load_module1;
+	delete Road_Profile;
+	delete linear11dof_sys;
+	delete Ale_sys;
+
+	mkl_free(soln);
+	mkl_free(complete_soln2);
+
+	
+}
