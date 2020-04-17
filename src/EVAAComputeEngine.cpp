@@ -17,15 +17,21 @@
 *  You should have received a copy of the GNU General Public License
 *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
 */
+#include <fstream>
 #include <iostream>
+#include <limits>
 #include <vector>
+
+#include "11DOF.h"
+#include "car.h"
 #include "EVAAComputeEngine.h"
 #include "MathLibrary.h"
 #include <limits>
 #include <fstream>
-#include "car.h"
-#include "11DOF.h"
 #include "Output.h"
+#include "Constants.h"
+#include "ReadXML.h"
+
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
 #define USE_GEMM
@@ -43,38 +49,27 @@ using Eigen::IOFormat;
 #include <blaze/Math.h>
 #endif
 
-typedef std::numeric_limits< double > dbl;
 typedef double floatEVAA;
 
-EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName) {
-	// Intialize XML metadatabase singelton
-	_xmlFileName = xmlFileName;
-	std::ifstream f(xmlFileName.c_str());
+EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) : 
+	_xmlCarFileName(xmlCarFileName), _xmlLoadFileName(xmlLoadFileName), 
+	_lookupStiffness(nullptr) , _lookupDamping(nullptr) {
+
+	std::ifstream f(xmlCarFileName.c_str());
+	
+	// Consider replace if with assert - no cout in the end
+	 //assert(!f.good()); // only debug mode
+
 	if (f.good()) {
-		std::cout << "Read general simulation parameters and car input data at " << _xmlFileName << std::endl;
+		std::cout << "Read general simulation parameters and car input data at " << _xmlCarFileName << std::endl;
+		// remove cout!
 	}
 	else {
-		std::cout << "XML file at " << _xmlFileName << " does not exist!" << std::endl;
-		exit(2);
-	}
-	ReadXML reader(_xmlFileName);
-	reader.ReadParameters(_parameters);
-}
-
-EVAAComputeEngine::EVAAComputeEngine(std::string xmlFileName, std::string loadxml) :
-_xmlFileName(xmlFileName), _xmlLoadFileName(loadxml), lookupStiffness(nullptr){
-
-	std::ifstream f(xmlFileName.c_str());
-	// Consider replace if with assert
-	if (f.good()) {
-		std::cout << "Read general simulation parameters and car input data at " << _xmlFileName << std::endl;
-	}
-	else {
-		std::cout << "XML file at " << _xmlFileName << " for general and car settings does not exist!" << std::endl;
+		std::cout << "XML file at " << _xmlCarFileName << " for general and car settings does not exist!" << std::endl;
 		exit(2);
 	}
 
-	std::ifstream ff(loadxml.c_str());
+	std::ifstream ff(xmlLoadFileName.c_str());
 	if (ff.good()) {
 		std::cout << "Read load parameters in file: " << _xmlLoadFileName << std::endl;
 	}
@@ -83,26 +78,25 @@ _xmlFileName(xmlFileName), _xmlLoadFileName(loadxml), lookupStiffness(nullptr){
 		exit(2);
 	}
 
-	ReadXML reader(_xmlFileName, _xmlLoadFileName);
+	ReadXML reader(_xmlCarFileName, _xmlLoadFileName);
 	reader.ReadParameters(_parameters);
-	reader.ReadLoadParameters(_load_module_parameter);
-	reader.ReadLookupParameters(lookupStiffness, _parameters);
+	reader.ReadLoadParameters(_loadModuleParameter);
+	reader.ReadLookupParameters(&_lookupStiffness, &_lookupDamping, _parameters);
 }
 
-
-EVAAComputeEngine::~EVAAComputeEngine() { 
-	delete lookupStiffness;
+EVAAComputeEngine::~EVAAComputeEngine() {
+	delete _lookupStiffness;
 }
 
-void EVAAComputeEngine::prepare(void) {
+void EVAAComputeEngine::printInfo(void) {
 	MathLibrary::printMKLInfo();
 	std::cout << "\n\nCalculate the solution after " << _parameters.num_time_iter * _parameters.timestep << 
-		"s with dt="<<_parameters.timestep <<" for "<< _parameters.num_time_iter << " iterations\n\n" << std::endl;
+		"s with dt = " << _parameters.timestep << " for " << _parameters.num_time_iter << " iterations\n\n\n";
 }
 
-void EVAAComputeEngine::computeEigen11DOF(void) {
+void EVAAComputeEngine::clean(void){}
 
-	ReadXML reader(_xmlLoadFileName);
+void EVAAComputeEngine::computeEigen11DOF(void) {
 
 	int DOF = _parameters.DOF;
 
@@ -249,15 +243,20 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
 		u_n_m_1 = u_n;
 		u_n = u_n_p_1;
-		//reader.ReadLoadParameters(_load_module_parameter);
 	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	std::cout << u_n_p_1 << std::scientific << std::endl;
 }
 
-void EVAAComputeEngine::computeMKL11DOF(void) {
+void EVAAComputeEngine::computeBlaze11DOF(void) {
+#ifdef USE_BLAZE
 
-	ReadXML reader(_xmlLoadFileName);
+	using blaze::CompressedMatrix;
+	using blaze::DynamicMatrix;
+	using blaze::SymmetricMatrix;
+	using blaze::DynamicVector;
+	using blaze::columnVector;
+	using blaze::rowMajor;
 
 	int DOF = _parameters.DOF;
 
@@ -303,24 +302,201 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	double m_10 = _parameters.mass_wheel[0];
 	double m_11 = _parameters.mass_tyre[0];
 
-	int alignment = 64;
+	// Using symmetric matrix enforce the symmetry and is safer
+	SymmetricMatrix <DynamicMatrix<double>, rowMajor> K(DOF);
+
+	K(0, 0) = k_11 + k_21 + k_31 + k_41;
+	K(0, 1) = -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2;
+	K(0, 2) = -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4;
+	K(0, 3) = -k_11;
+	K(0, 5) = -k_21;
+	K(0, 7) = -k_31;
+	K(0, 9) = -k_41;
+	K(1, 1) = l_1 * l_1 * k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41;
+	K(1, 2) = l_1 * l_3 * k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41;
+	K(1, 3) = l_1 * k_11;
+	K(1, 5) = -l_2 * k_21;
+	K(1, 7) = -l_2 * k_31;
+	K(1, 9) = l_1 * k_41;
+	K(2, 2) = l_3 * l_3 * k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41;
+	K(2, 3) = l_3 * k_11;
+	K(2, 5) = l_3 * k_21;
+	K(2, 7) = -l_4 * k_31;
+	K(2, 9) = -l_4 * k_41;
+	K(3, 3) = k_11 + k_12;
+	K(3, 4) = -k_12;
+	K(4, 4) = k_12;
+	K(5, 5) = k_21 + k_22;
+	K(5, 6) = -k_22;
+	K(6, 6) = k_22;
+	K(7, 7) = k_31 + k_32;
+	K(7, 8) = -k_32;
+	K(8, 8) = k_32;
+	K(9, 9) = k_41 + k_42;
+	K(9, 10) = -k_42;
+	K(10, 10) = k_42;
+
+	SymmetricMatrix <DynamicMatrix<double>, rowMajor> D(DOF);
+	D(0, 0) = d_11 + d_21 + d_31 + d_41;
+	D(0, 1) = -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2;
+	D(0, 2) = -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4;
+	D(0, 3) = -d_11;
+	D(0, 5) = -d_21;
+	D(0, 7) = -d_31;
+	D(0, 9) = -d_41;
+	D(1, 1) = l_1 * l_1 * d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41;
+	D(1, 2) = l_1 * l_3 * d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41;
+	D(1, 3) = l_1 * d_11;
+	D(1, 5) = -l_2 * d_21;
+	D(1, 7) = -l_2 * d_31;
+	D(1, 9) = l_1 * d_41;
+	D(2, 2) = l_3 * l_3 * d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41;
+	D(2, 3) = l_3 * d_11;
+	D(2, 5) = l_3 * d_21;
+	D(2, 7) = -l_4 * d_31;
+	D(2, 9) = -l_4 * d_41;
+	D(3, 3) = d_11 + d_12;
+	D(3, 4) = -d_12;
+	D(4, 4) = d_12;
+	D(5, 5) = d_21 + d_22;
+	D(5, 6) = -d_22;
+	D(6, 6) = d_22;
+	D(7, 7) = d_31 + d_32;
+	D(7, 8) = -d_32;
+	D(8, 8) = d_32;
+	D(9, 9) = d_41 + d_42;
+	D(9, 10) = -d_42;
+	D(10, 10) = d_42;
+
+	SymmetricMatrix <DynamicMatrix<double>, rowMajor> M(DOF);
+	M(0, 0) = m_1;
+	M(1, 1) = m_2;
+	M(2, 2) = m_3;
+	M(3, 3) = m_4;
+	M(4, 4) = m_5;
+	M(5, 5) = m_6;
+	M(6, 6) = m_7;
+	M(7, 7) = m_8;
+	M(8, 8) = m_9;
+	M(9, 9) = m_10;
+	M(10, 10) = m_11;
+
+	// Define the solution vectors
+	DynamicVector<double, columnVector> u_n_p_1(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<double, columnVector> u_n(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
+	DynamicVector<double, columnVector> u_n_m_1(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
+
+	// Perform the iterations
+	//	int nRefinement = 10;
+	//	int numTimeSteps = pow(2, nRefinement);
+	int numTimeSteps = _parameters.num_time_iter;
+
+	//time step size 
+	//double h =  / (numTimeSteps);
+	double h = _parameters.timestep;
+	std::cout << "Time step h is: " << h << std::scientific << std::endl;
+
+	// Initial conditions
+	//const double u_init = 1;
+	//const double du_init = 0;
+	u_n[0] = 1;
+	u_n_m_1[0] = 1;
+
+	/// Build dynamic stiffness matrix
+	// A = (1.0/(h*h))*M + (1.0/h)*D + K
+	DynamicMatrix<double, rowMajor> A(DOF, DOF);
+	A = 1. / (h * h) * M + 1. / h * D + K;
+
+	///Build rhs for BE integrator
+	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
+	DynamicMatrix<double, rowMajor> B(DOF, DOF);
+	B = 2. / (h * h) * M + 1. / h * D;
+
+	// LU Decomposition
+	DynamicVector<int, columnVector> ipiv(DOF);   // Pivoting indices
+	DynamicMatrix<double, rowMajor>  A_LU(A);  // Temporary matrix to be decomposed
+
+	getrf(A_LU, ipiv.data());
+	M *= -1. / (h * h);
+	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
+
+		// Solve system: A*u_n_p_1 = B*u_n - M*u_n_m_1
+		// rhs = B*u_n + (-1.0 / (h*h))*M
+		u_n_p_1 = B * u_n + M * u_n_m_1; // rhs
+
+		getrs(A_LU, u_n_p_1, 'T', ipiv.data());
+		u_n_m_1 = u_n;
+		u_n = u_n_p_1;
+	}
+	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
+	std::cout << u_n_p_1 << std::scientific << std::endl;
+
+#endif
+}
+
+void EVAAComputeEngine::computeMKL11DOF(void) {
+
+	int DOF = _parameters.DOF;
+
+	// K stiffness
+	double k_11 = _parameters.k_body[0];
+	double k_12 = _parameters.k_tyre[0];
+	double k_21 = _parameters.k_body[1];
+	double k_22 = _parameters.k_tyre[1];
+	double k_31 = _parameters.k_body[2];
+	double k_32 = _parameters.k_tyre[2];
+	double k_41 = _parameters.k_body[3];
+	double k_42 = _parameters.k_tyre[3];
+	double l_1 = _parameters.l_lat[0];
+	double l_2 = _parameters.l_lat[2];
+	double l_3 = _parameters.l_long[0];
+	double l_4 = _parameters.l_long[2];
+
+
+	// D - damping matrix
+	double d_11 = _parameters.c_body[0];
+	double d_12 = _parameters.c_tyre[0];
+	double d_21 = _parameters.c_body[1];
+	double d_22 = _parameters.c_tyre[1];
+	double d_31 = _parameters.c_body[2];
+	double d_32 = _parameters.c_tyre[2];
+	double d_41 = _parameters.c_body[3];
+	double d_42 = _parameters.c_tyre[3];
+	double d_l1 = 0.1 * _parameters.l_lat[0];
+	double d_l2 = 0.1 * _parameters.l_lat[2];
+	double d_l3 = 0.1 * _parameters.l_long[0];
+	double d_l4 = 0.1 * _parameters.l_long[2];
+
+	// M - mass matrix
+	double m_1 = _parameters.mass_body;
+	double m_2 = _parameters.I_body[0];
+	double m_3 = _parameters.I_body[2];
+	double m_4 = _parameters.mass_wheel[2];
+	double m_5 = _parameters.mass_tyre[2];
+	double m_6 = _parameters.mass_wheel[3];
+	double m_7 = _parameters.mass_tyre[3];
+	double m_8 = _parameters.mass_wheel[1];
+	double m_9 = _parameters.mass_tyre[1];
+	double m_10 = _parameters.mass_wheel[0];
+	double m_11 = _parameters.mass_tyre[0];
+
 	int matrixElements = DOF * DOF;
 
 	// allocate matrices of zeros
-	double* B = (double*)mkl_calloc(matrixElements, sizeof(double), alignment);
-	double* M = (double*)mkl_calloc(matrixElements, sizeof(double), alignment);
-	double* D = (double*)mkl_calloc(matrixElements, sizeof(double), alignment);
-	double* K = (double*)mkl_calloc(matrixElements, sizeof(double), alignment);
+	double* B = (double*)mkl_calloc(matrixElements, sizeof(double), Constants::ALIGNMENT);
+	double* M = (double*)mkl_calloc(matrixElements, sizeof(double), Constants::ALIGNMENT);
+	double* D = (double*)mkl_calloc(matrixElements, sizeof(double), Constants::ALIGNMENT);
+	double* K = (double*)mkl_calloc(matrixElements, sizeof(double), Constants::ALIGNMENT);
 
 	//std::vector<double> B(121);
 	//std::vector<double> M(121);
 	//std::vector<double> D(121);
 	//std::vector<double> K(121);
 
-	double* u_n_p_1 = (double*)mkl_calloc(DOF, sizeof(double), alignment);
-	double* u_n = (double*)mkl_calloc(DOF, sizeof(double), alignment);
-	double* u_n_m_1 = (double*)mkl_calloc(DOF, sizeof(double), alignment);
-	double* tmp = (double*)mkl_calloc(DOF, sizeof(double), alignment);
+	double* u_n_p_1 = (double*)mkl_calloc(DOF, sizeof(double), Constants::ALIGNMENT);
+	double* u_n = (double*)mkl_calloc(DOF, sizeof(double), Constants::ALIGNMENT);
+	double* u_n_m_1 = (double*)mkl_calloc(DOF, sizeof(double), Constants::ALIGNMENT);
+	double* tmp = (double*)mkl_calloc(DOF, sizeof(double), Constants::ALIGNMENT);
 
 
 	//std::vector<double> f_n_p_1(11);
@@ -528,7 +704,6 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 			u_n_m_1[i] = u_n[i];
 			u_n[i] = u_n_p_1[i];
 		}
-		//reader.ReadLoadParameters(_load_module_parameter);
 	}
 	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
 	for (int i = 0; i < DOF; ++i) {
@@ -547,298 +722,100 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	mkl_free(tmp);
 }
 
-
 void EVAAComputeEngine::computeMKLlinear11dof() {
-	if (_load_module_parameter.boundary_condition_road == NONFIXED) {
+	if (_loadModuleParameter.boundary_condition_road == NONFIXED) {
 		floatEVAA h = _parameters.timestep;
 		floatEVAA tend = _parameters.num_time_iter * h;
 		int DOF = _parameters.DOF;
-		const int alignment = 64;
-		floatEVAA* soln = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), alignment);
-		Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
-		linear11dof_full<floatEVAA> solver(_parameters, _load_module_parameter, Car1);
-		solver.apply_boundary_condition(_load_module_parameter.boundary_condition_road);
-		solver.solve(soln);
+		floatEVAA* sol = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
+		Car<floatEVAA>* car = new Car<floatEVAA>(_parameters, _lookupStiffness);
+		Linear11dofFull<floatEVAA> solver(_parameters, _loadModuleParameter, car);
+		solver.apply_boundary_condition(_loadModuleParameter.boundary_condition_road);
+		solver.solve(sol);
 		size_t steps = floor(tend / h);
 
-		solver.print_final_results(soln);
+		solver.print_final_results(sol);
 
-		mkl_free(soln);
-		delete Car1;
+		mkl_free(sol);
+		delete car;
 	}
 	else {
 		std::cout << "Linear11dof solver will only work with NONFIXED boundary conditions, computation skipped" << std::endl;
 	}
 }
 
-void EVAAComputeEngine::computeBlaze11DOF(void) {
-#ifdef USE_BLAZE
-
-	ReadXML reader(_xmlLoadFileName);
-
-	using blaze::CompressedMatrix;
-	using blaze::DynamicMatrix;
-	using blaze::SymmetricMatrix;
-	using blaze::DynamicVector;
-	using blaze::columnVector;
-	using blaze::rowMajor;
-
-	int DOF = _parameters.DOF;
-
-	// K stiffness
-	double k_11 = _parameters.k_body[0];
-	double k_12 = _parameters.k_tyre[0];
-	double k_21 = _parameters.k_body[1];
-	double k_22 = _parameters.k_tyre[1];
-	double k_31 = _parameters.k_body[2];
-	double k_32 = _parameters.k_tyre[2];
-	double k_41 = _parameters.k_body[3];
-	double k_42 = _parameters.k_tyre[3];
-	double l_1 = _parameters.l_lat[0];
-	double l_2 = _parameters.l_lat[2];
-	double l_3 = _parameters.l_long[0];
-	double l_4 = _parameters.l_long[2];
-
-
-	// D - damping matrix
-	double d_11 = _parameters.c_body[0];
-	double d_12 = _parameters.c_tyre[0];
-	double d_21 = _parameters.c_body[1];
-	double d_22 = _parameters.c_tyre[1];
-	double d_31 = _parameters.c_body[2];
-	double d_32 = _parameters.c_tyre[2];
-	double d_41 = _parameters.c_body[3];
-	double d_42 = _parameters.c_tyre[3];
-	double d_l1 = 0.1 * _parameters.l_lat[0];
-	double d_l2 = 0.1 * _parameters.l_lat[2];
-	double d_l3 = 0.1 * _parameters.l_long[0];
-	double d_l4 = 0.1 * _parameters.l_long[2];
-
-	// M - mass matrix
-	double m_1 = _parameters.mass_body;
-	double m_2 = _parameters.I_body[0];
-	double m_3 = _parameters.I_body[2];
-	double m_4 = _parameters.mass_wheel[2];
-	double m_5 = _parameters.mass_tyre[2];
-	double m_6 = _parameters.mass_wheel[3];
-	double m_7 = _parameters.mass_tyre[3];
-	double m_8 = _parameters.mass_wheel[1];
-	double m_9 = _parameters.mass_tyre[1];
-	double m_10 = _parameters.mass_wheel[0];
-	double m_11 = _parameters.mass_tyre[0];
-
-	// Using symmetric matrix enforce the symmetry and is safer
-	SymmetricMatrix <DynamicMatrix<double>, rowMajor> K(DOF);
-
-	K(0, 0) = k_11 + k_21 + k_31 + k_41;
-	K(0, 1) = -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2;
-	K(0, 2) = -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4;
-	K(0, 3) = -k_11;
-	K(0, 5) = -k_21;
-	K(0, 7) = -k_31;
-	K(0, 9) = -k_41;
-	K(1, 1) = l_1 * l_1 * k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41;
-	K(1, 2) = l_1 * l_3 * k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41;
-	K(1, 3) = l_1 * k_11;
-	K(1, 5) = -l_2 * k_21;
-	K(1, 7) = -l_2 * k_31;
-	K(1, 9) = l_1 * k_41;
-	K(2, 2) = l_3 * l_3 * k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41;
-	K(2, 3) = l_3 * k_11;
-	K(2, 5) = l_3 * k_21;
-	K(2, 7) = -l_4 * k_31;
-	K(2, 9) = -l_4 * k_41;
-	K(3, 3) = k_11 + k_12;
-	K(3, 4) = -k_12;
-	K(4, 4) = k_12;
-	K(5, 5) = k_21 + k_22;
-	K(5, 6) = -k_22;
-	K(6, 6) = k_22;
-	K(7, 7) = k_31 + k_32;
-	K(7, 8) = -k_32;
-	K(8, 8) = k_32;
-	K(9, 9) = k_41 + k_42;
-	K(9, 10) = -k_42;
-	K(10, 10) = k_42;
-
-	SymmetricMatrix <DynamicMatrix<double>, rowMajor> D(DOF);
-	D(0, 0) = d_11 + d_21 + d_31 + d_41;
-	D(0, 1) = -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2;
-	D(0, 2) = -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4;
-	D(0, 3) = -d_11;
-	D(0, 5) = -d_21;
-	D(0, 7) = -d_31;
-	D(0, 9) = -d_41;
-	D(1, 1) = l_1 * l_1 * d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41;
-	D(1, 2) = l_1 * l_3 * d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41;
-	D(1, 3) = l_1 * d_11;
-	D(1, 5) = -l_2 * d_21;
-	D(1, 7) = -l_2 * d_31;
-	D(1, 9) = l_1 * d_41;
-	D(2, 2) = l_3 * l_3 * d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41;
-	D(2, 3) = l_3 * d_11;
-	D(2, 5) = l_3 * d_21;
-	D(2, 7) = -l_4 * d_31;
-	D(2, 9) = -l_4 * d_41;
-	D(3, 3) = d_11 + d_12;
-	D(3, 4) = -d_12;
-	D(4, 4) = d_12;
-	D(5, 5) = d_21 + d_22;
-	D(5, 6) = -d_22;
-	D(6, 6) = d_22;
-	D(7, 7) = d_31 + d_32;
-	D(7, 8) = -d_32;
-	D(8, 8) = d_32;
-	D(9, 9) = d_41 + d_42;
-	D(9, 10) = -d_42;
-	D(10, 10) = d_42;
-
-	SymmetricMatrix <DynamicMatrix<double>, rowMajor> M(DOF);
-	M(0, 0) = m_1;
-	M(1, 1) = m_2;
-	M(2, 2) = m_3;
-	M(3, 3) = m_4;
-	M(4, 4) = m_5;
-	M(5, 5) = m_6;
-	M(6, 6) = m_7;
-	M(7, 7) = m_8;
-	M(8, 8) = m_9;
-	M(9, 9) = m_10;
-	M(10, 10) = m_11;
-
-	// Define the solution vectors
-	DynamicVector<double, columnVector> u_n_p_1(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
-	DynamicVector<double, columnVector> u_n(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
-	DynamicVector<double, columnVector> u_n_m_1(DOF, (double)0.0); // initialize vector of dimension 11 and null elements
-
-	// Perform the iterations
-	//	int nRefinement = 10;
-	//	int numTimeSteps = pow(2, nRefinement);
-	int numTimeSteps = _parameters.num_time_iter;
-
-	//time step size 
-	//double h =  / (numTimeSteps);
-	double h = _parameters.timestep;
-	std::cout << "Time step h is: " << h << std::scientific << std::endl;
-
-	// Initial conditions
-	//const double u_init = 1;
-	//const double du_init = 0;
-	u_n[0] = 1;
-	u_n_m_1[0] = 1;
-
-	/// Build dynamic stiffness matrix
-	// A = (1.0/(h*h))*M + (1.0/h)*D + K
-	DynamicMatrix<double, rowMajor> A(DOF, DOF);
-	A = 1. / (h * h) * M + 1. / h * D + K;
-
-	///Build rhs for BE integrator
-	//B = (2.0 / (h*h))*M + 1.0 / h * D + B
-	DynamicMatrix<double, rowMajor> B(DOF, DOF);
-	B = 2. / (h * h) * M + 1. / h * D;
-
-	// LU Decomposition
-	DynamicVector<int, columnVector> ipiv(DOF);   // Pivoting indices
-	DynamicMatrix<double, rowMajor>  A_LU(A);  // Temporary matrix to be decomposed
-
-	getrf(A_LU, ipiv.data());
-	M *= -1. / (h * h);
-	for (int iTime = 0; iTime < numTimeSteps; iTime++) {
-
-		// Solve system: A*u_n_p_1 = B*u_n - M*u_n_m_1
-		// rhs = B*u_n + (-1.0 / (h*h))*M
-		u_n_p_1 = B * u_n + M * u_n_m_1; // rhs
-
-		getrs(A_LU, u_n_p_1, 'T', ipiv.data());
-		u_n_m_1 = u_n;
-		u_n = u_n_p_1;
-		//reader.ReadLoadParameters(_load_module_parameter);
-	}
-	std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
-	std::cout << u_n_p_1 << std::scientific << std::endl;
-
-#endif
-}
-
 void EVAAComputeEngine::computeMBD(void) {
 	size_t num_iter = _parameters.num_time_iter;
-	const int alignment = 64;
 	size_t solution_dim = _parameters.solution_dim;
-	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
-	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
-	solver.solve(soln);
-	solver.print_final_result(soln);
-	mkl_free(soln);
-}
-
-void EVAAComputeEngine::clean(void) {
-
+	floatEVAA* sol = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), Constants::ALIGNMENT);
+	MBD_method<floatEVAA> solver(_parameters, _loadModuleParameter, _lookupStiffness);
+	solver.solve(sol);
+	solver.print_final_result(sol);
+	mkl_free(sol);
 }
 
 void EVAAComputeEngine::computeALE(void) {
 
-	size_t num_iter = _parameters.num_time_iter;
-	Profile* Road_Profile;
+	Profile* roadProfile;
 
-	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
+	Car<floatEVAA>* car = new Car<floatEVAA>(_parameters, _lookupStiffness);
 
-	switch (_load_module_parameter.boundary_condition_road)
+	switch (_loadModuleParameter.boundary_condition_road)
 	{
 	case CIRCULAR:
-		Road_Profile = new Circular(_load_module_parameter.profile_center,
-			_load_module_parameter.profile_radius);
+		roadProfile = new Circular(_loadModuleParameter.profile_center,
+			_loadModuleParameter.profile_radius);
 		break;
 	case NONFIXED:
-		Road_Profile = new Nonfixed(_load_module_parameter.profile_center,
-			_load_module_parameter.profile_radius);
+		roadProfile = new Nonfixed(_loadModuleParameter.profile_center,
+			_loadModuleParameter.profile_radius);
 		break;
 	case FIXED:
-		Road_Profile = new Fixed(_parameters.gravity[2], _load_module_parameter);
-		Road_Profile->set_fixed_index(Car1->tyre_index_set);
+		roadProfile = new Fixed(_parameters.gravity[2], _loadModuleParameter);
+		roadProfile->set_fixed_index(car->tyre_index_set);
 		break;
 	default:
 		std::cout << "ALE will only work with a circular path, fixed or nonfixed boundaries, computation skipped!" << std::endl;
-		delete Car1;
+		delete car;
 		exit(5);
 		break;
 	}
 
-	Road_Profile->update_initial_condition(Car1);
+	roadProfile->update_initial_condition(car);
 
-	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
-	linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
-	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, lookupStiffness, _parameters);
+	Load_module* loadModule = new Load_module(roadProfile, car, _loadModuleParameter);
+	Linear11dof<floatEVAA>* linear11dof = new Linear11dof<floatEVAA>(car);
+	ALE<floatEVAA>* ale = new ALE<floatEVAA>(car, loadModule, linear11dof, _lookupStiffness, _parameters);
 
-	size_t solution_dim = Car1->DIM * (size_t)Car1->vec_DIM;
-	floatEVAA* soln = (floatEVAA*)mkl_malloc(solution_dim * sizeof(floatEVAA), Car1->alignment);
+	size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
+	floatEVAA* sol = (floatEVAA*)mkl_malloc(solutionDim * sizeof(floatEVAA), Constants::ALIGNMENT);
 
-	Ale_sys->solve(soln);
+	ale->solve(sol);
 	
-	Ale_sys->print_final_results();
+	ale->print_final_results();
 
+	delete car;
+	delete loadModule;
+	delete roadProfile;
+	delete linear11dof;
+	delete ale;
 
-	delete Car1;
-	delete Load_module1;
-	delete Road_Profile;
-	delete linear11dof_sys;
-	delete Ale_sys;
-
-	mkl_free(soln);
+	mkl_free(sol);
 }
 
 void EVAAComputeEngine::computeALEtest(void) {
 
 	size_t num_iter = _parameters.num_time_iter;
 	size_t solution_dim = _parameters.solution_dim;
-	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
-	Profile* Road_Profile = new Circular(_load_module_parameter.profile_center,
-		_load_module_parameter.profile_radius);
-	Road_Profile->update_initial_condition(Car1);
-	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
+	Car<floatEVAA>* car = new Car<floatEVAA>(_parameters, _lookupStiffness);
+	Profile* roadProfile = new Circular(_loadModuleParameter.profile_center,
+		_loadModuleParameter.profile_radius);
+	roadProfile->update_initial_condition(car);
+	Load_module* loadModule = new Load_module(roadProfile, car, _loadModuleParameter);
 	std::cout << "Load module initialized!\n";
-	delete Load_module1;
-	delete Road_Profile;
-	delete Car1;
+	delete loadModule;
+	delete roadProfile;
+	delete car;
 
 }
 
@@ -848,31 +825,33 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
 	const int alignment = 64;
 	size_t solution_dim = _parameters.solution_dim;
 	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
-	MBD_method<floatEVAA> solver(_parameters, _load_module_parameter, lookupStiffness);
+	MBD_method<floatEVAA> solver(_parameters, _loadModuleParameter, _lookupStiffness);
 	size_t solution_size = (num_iter + 1) *solution_dim;
 	floatEVAA* complete_soln = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
 	solver.solve(soln, complete_soln);
 	solver.print_final_result(soln);
 	std::cout << "(num_iter + 1) = " << (num_iter + 1) << "solution_dim = " << solution_dim << std::endl;
-	write_matrix(complete_soln, "MBD_result.dat", (num_iter + 1), solution_dim);
+	#ifdef IO
+		IO::write_matrix(complete_soln, "MBD_result.dat", (num_iter + 1), solution_dim);
+	#endif // IO	
 	cblas_dscal(solution_dim, 0.0, soln, 1);
 	mkl_free(complete_soln);
 	// ALE call 
 
 	Profile* Road_Profile;
 
-	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, lookupStiffness);
+	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, _lookupStiffness);
 
-	if (_load_module_parameter.boundary_condition_road == CIRCULAR) {
-		Road_Profile = new Circular(_load_module_parameter.profile_center,
-			_load_module_parameter.profile_radius);
+	if (_loadModuleParameter.boundary_condition_road == CIRCULAR) {
+		Road_Profile = new Circular(_loadModuleParameter.profile_center,
+			_loadModuleParameter.profile_radius);
 	}
-	else if (_load_module_parameter.boundary_condition_road == NONFIXED) {
-		Road_Profile = new Nonfixed(_load_module_parameter.profile_center,
-			_load_module_parameter.profile_radius);
+	else if (_loadModuleParameter.boundary_condition_road == NONFIXED) {
+		Road_Profile = new Nonfixed(_loadModuleParameter.profile_center,
+			_loadModuleParameter.profile_radius);
 	}
-	else if (_load_module_parameter.boundary_condition_road == FIXED) {
-		Road_Profile = new Fixed(_parameters.gravity[2], _load_module_parameter);
+	else if (_loadModuleParameter.boundary_condition_road == FIXED) {
+		Road_Profile = new Fixed(_parameters.gravity[2], _loadModuleParameter);
 		Road_Profile->set_fixed_index(Car1->tyre_index_set);
 	}
 	else {
@@ -881,22 +860,24 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
 		exit(5);
 	}
 
-	solution_dim = Car1->DIM * (size_t)Car1->vec_DIM;
+	solution_dim = Constants::DIM * Constants::VEC_DIM;
 	solution_size = (num_iter + 1) * solution_dim;
 	floatEVAA* complete_soln2 = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
-	write_matrix(Car1->Position_vec, "initial_car_pos_vec.dat", 1, solution_dim);
+	#ifdef IO
+		IO::write_matrix(Car1->Position_vec, "initial_car_pos_vec.dat", 1, solution_dim);
+	#endif // IO
 	Road_Profile->update_initial_condition(Car1);
 
-	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _load_module_parameter);
-	linear11dof<floatEVAA>* linear11dof_sys = new linear11dof<floatEVAA>(Car1);
-	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, lookupStiffness, _parameters);
+	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _loadModuleParameter);
+	Linear11dof<floatEVAA>* linear11dof_sys = new Linear11dof<floatEVAA>(Car1);
+	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, _lookupStiffness, _parameters);
 
 	Ale_sys->solve(soln, complete_soln2);
 
 	Ale_sys->print_final_results();
-	
-	IO::write_matrix(complete_soln2, "ALE_result.dat", (num_iter + 1), solution_dim);
-
+	#ifdef IO
+		IO::write_matrix(complete_soln2, "ALE_result.dat", (num_iter + 1), solution_dim);
+	#endif // IO
 	delete Car1;
 	delete Load_module1;
 	delete Road_Profile;

@@ -117,8 +117,8 @@ u_n_p_1_red=zeros(7,1);
 h=1/(1000);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 u_n=[u_init; zeros(dim_system-1,1)];
-u_n=[0;0;0; -0.04;0;-0.04;0;-0.01;0;-0.01;0];
-u_n_m_1=[u_init; zeros(dim_system-1,1)]-h*[du_init; zeros(dim_system-1,1)];
+%u_n=[0;0;0; -0.04;0;-0.04;0;-0.01;0;-0.01;0];
+u_n_m_1=u_n-h*[du_init; zeros(dim_system-1,1)];
 u_n_red=[u_init; zeros(6,1)];
 u_n_m_1_red=[u_init; zeros(6,1)]-h*[du_init; zeros(6,1)];
 A=((1/(h*h))*M+(1/h)*D+K);
@@ -153,10 +153,11 @@ for i = h:h:tend
     j=j+1;
 end
 toc
+final_displacement = u_n_p_1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Some plots
 figure();
 plot(t,u_sol(:,1)); grid on;
 %plot(t,u_sol_red(:,1)); grid on;
 legend;
-disp(u_sol(1001,1:11)')
+disp(u_sol(end,1:11)')

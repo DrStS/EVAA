@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	}
 	EVAAComputeEngine* myComputeEngine = new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", 
                                                                "C:\\software\\repos\\EVAA\\inputFiles\\load.xml" );
-	myComputeEngine->prepare();
+	myComputeEngine->printInfo();
 
 /*	anaysisTimer01.start();
 	myComputeEngine->computeMKL11DOF();
@@ -106,7 +106,6 @@ int main(int argc, char **argv) {
     myComputeEngine->computeMBD();
     anaysisTimer01.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
-
 	anaysisTimer01.start();
 	myComputeEngine->compare_ALE_MBD();
 	anaysisTimer01.stop();

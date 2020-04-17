@@ -66,6 +66,8 @@ option(USE_MATLAB              "Build Matlab API"  OFF)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
 option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  OFF)
+set(DataType_Precision "DOUBLE" CACHE STRING "DataType_Precision chosen by the user at CMake configure time")
+set_property(CACHE DataType_Precision PROPERTY STRINGS DOUBLE SINGLE INVALID)
 ######################################################################################
 #2. Macros
 ######################################################################################
@@ -250,6 +252,18 @@ IF (${USE_MATLAB})
    add_definitions(-DUSE_MATLAB)
    find_package(Matlab REQUIRED)
    MESSAGE("Matlab status: ${MATLAB_FOUND}")
+ENDIF()
+#------------------------------------------------------------------------------------#
+# Check DataType_Precision
+IF (${DataType_Precision} MATCHES "DOUBLE") 
+   MESSAGE("Compiling with DOUBLE Precision")
+   add_definitions(-DDOUBLE_PRECISION)
+ELSEIF(${DataType_Precision} MATCHES "SINGLE")
+   MESSAGE("Compiling with SINGLE Precision")
+   add_definitions(-DSINGLE_PRECISION)
+ELSEIF(${DataType_Precision} MATCHES "INVALID")
+   MESSAGE("Compiling with INVALID Precision")
+   add_definitions(-DINVALID_PRECISION)
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Global compiler flags
