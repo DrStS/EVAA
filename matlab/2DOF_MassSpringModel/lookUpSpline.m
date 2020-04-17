@@ -4,7 +4,7 @@ clear; clc; close all;
 a = 1;
 b = 2;
 c = 3;
-f1 = 0;
+f1 = 1;
 f2 = 1;
 L1 = 1;
 L2 = 1;
@@ -53,7 +53,7 @@ l2 = u2 + L2;
 
 %% Internal forces
 syms p1 p2 k1 k2;
-p1 = k1*u1 - k2*u2;
+p1 = k1*u1 - k1*u2;
 p2 = -k1*u1+(k1+k2)*u2;
 
 %% Jacobian
@@ -120,5 +120,5 @@ disp(u)
 disp(err(length(err)))
 ref = [ 0.2788; 0.1394]
 figure;
-semilogy(err)
+loglog(err)
 title('error');

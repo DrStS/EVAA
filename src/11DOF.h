@@ -19,7 +19,7 @@
 #include "Car.h"
 #include "MathLibrary.h"
 #include "Constants.h"
-#include "ReadXML.h"
+#include "MetaDataBase.h"
 #include "BLAS.h"
 
 /**
@@ -337,26 +337,26 @@ For testing purposes
 template <typename T>
 class Linear11dofFull : public Linear11dofBDF2<T> {
 public:
-	Linear11dofFull(const Simulation_Parameters& params, const Load_Params& load_param, Car<T>* input_car) :Linear11dofBDF2<T>(input_car) {
+	Linear11dofFull(Car<T>* input_car) :Linear11dofBDF2<T>(input_car) {
 
-		h_ = params.timestep;
-		tend_ = params.num_time_iter * h_;
+		h_ = MetaDataBase::DataBase()->getTimeStepSize();
+		tend_ = MetaDataBase::DataBase()->getNumberOfTimeIterations() * h_;
 		int sol_size = (floor(tend_ / h_) + 1);
 		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT);
 		u_sol = (T*)mkl_calloc((sol_size + 1) * (DOF), sizeof(T), Constants::ALIGNMENT);
 
 
-		interpolation_enabled = params.interpolation;
+		interpolation_enabled = MetaDataBase::DataBase()->getUseInterpolation();
 
-		f_n_p_1[0] = load_param.external_force_body[2];
-		f_n_p_1[3] = load_param.external_force_wheel[2 * 3 + 2];
-		f_n_p_1[4] = load_param.external_force_tyre[2 * 3 + 2];
-		f_n_p_1[5] = load_param.external_force_wheel[3 * 3 + 2];
-		f_n_p_1[6] = load_param.external_force_tyre[3 * 3 + 2];
-		f_n_p_1[7] = load_param.external_force_wheel[1 * 3 + 2];
-		f_n_p_1[8] = load_param.external_force_tyre[1 * 3 + 2];
-		f_n_p_1[9] = load_param.external_force_wheel[0 * 3 + 2];
-		f_n_p_1[10] = load_param.external_force_tyre[0 * 3 + 2];
+		f_n_p_1[0] = MetaDataBase::DataBase()->getBodyExternalForce()[1];
+		f_n_p_1[3] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[1];
+		f_n_p_1[4] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[1];
+		f_n_p_1[5] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[1];
+		f_n_p_1[6] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[1];
+		f_n_p_1[7] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[1];
+		f_n_p_1[8] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[1];
+		f_n_p_1[9] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[1];
+		f_n_p_1[10] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[1];
 
 
 	}

@@ -231,7 +231,7 @@
       </Gravity>
     </GeneralSettings>
     <MultyBodyDynamics>
-      <Solver>Broyden_CN</Solver>
+      <Solver>RK4</Solver>
       <MaximalIterationNumber>10000</MaximalIterationNumber>
       <Tolerance>1e-7</Tolerance>
       <SolutionDimension>61</SolutionDimension>

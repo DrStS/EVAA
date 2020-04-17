@@ -5,6 +5,7 @@ b = 1.59;
 c = 1.2;
 %b = 0;
 %c = 0;
+
 %% zero lengths
 
 L1 = 0.2;
@@ -38,7 +39,6 @@ for i = 1:8
         k_grid((i-1)*size_grid + j)= k(X(j), a(i));
     end
 end
-
 global k_spline1 k_spline2 k_spline3 k_spline4 k_spline5 k_spline6 k_spline7 k_spline8;
 global k_der1 k_der2 k_der3 k_der4 k_der5 k_der6 k_der7 k_der8; 
 k_spline1 = spline(X,k_grid(1:size_grid));
@@ -155,8 +155,8 @@ num_iter = 4;
 delta_t = 1e-1; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
-tol = 1e-6;
-y = zeros(length(t),11);
+tol = 1e-10;
+y = zeros(length(t),7);
 order = zeros(length(t),1);
 err_arr = zeros(length(t),1);
 
@@ -179,19 +179,19 @@ mass_wheel_rl=67.5;
 mass_tyre_rl=30;
 mass_wheel_rr=67.5;
 mass_tyre_rr=30;
-u_n = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
+u_n = [0; 0; 0; 0; 0; 0; 0];
 %% init values
 x1 = u_n(1);
 x2 = u_n(2);
 x3 = u_n(3);
 x4 = u_n(4);
-x5 = u_n(5);
-x6 = u_n(6);
-x7 = u_n(7);
-x8 = u_n(8);
-x9 = u_n(9);
-x10 = u_n(10);
-x11 = u_n(11);
+x5 = 0;
+x6 = u_n(5);
+x7 = 0;
+x8 = u_n(6);
+x9 = 0;
+x10 = u_n(7);
+x11 = 0;
 l1 = eval(l1_sym);
 l2 = eval(l2_sym);
 l3 = eval(l3_sym);
@@ -202,11 +202,14 @@ l7 = eval(l7_sym);
 l8 = eval(l8_sym);
 
 u_n_m_1 = u_n;
-u_n_m_1(1)=u_n(1) - 100 * delta_t;
+u_n_m_1(1)=u_n(1) - 0 * delta_t;
 u_n_p_1=u_n;
 
-rhs =-[mass_Body; 0; 0; mass_wheel_fl; 0; mass_wheel_fr; 0; mass_wheel_rl; 0; mass_wheel_rr; 0];
-M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
+idx = [5 7 9 11];
+rhs =-[mass_Body; 0; 0; mass_wheel_fl; mass_wheel_fr; mass_wheel_rl; mass_wheel_rr];
+%rhs =-[mass_Body; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
+%rhs = 0;
+M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_wheel_fr, mass_wheel_rl, mass_wheel_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 
 %% time steps
@@ -217,6 +220,8 @@ condition = [];
 d = 0;
 for i = 1: length(t)
     K = get_K();
+    K(:,idx) = [];
+    K(idx,:) = [];
     r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
     i
     iter = 0;
@@ -228,22 +233,22 @@ for i = 1: length(t)
         temp = [];
         getdk_dx();
         dKdx_x = eval(dKdx_x_symb);
+        dKdx_x(:,idx) = [];
+        dKdx_x(idx,:) = [];
         J = M_div_h2 + K + dKdx_x;
         Delta = -J\r;
+        %delta(iter) = norm(Delta);
         u_n_p_1 = Delta + u_n_p_1; 
+        %u_n_p_1(idx) = 0;
         
         % update values
         x1 = u_n_p_1(1);
         x2 = u_n_p_1(2);
         x3 = u_n_p_1(3);
         x4 = u_n_p_1(4);
-        x5 = u_n_p_1(5);
-        x6 = u_n_p_1(6);
-        x7 = u_n_p_1(7);
-        x8 = u_n_p_1(8);
-        x9 = u_n_p_1(9);
-        x10 = u_n_p_1(10);
-        x11 = u_n_p_1(11);
+        x6 = u_n_p_1(5);
+        x8 = u_n_p_1(6);
+        x10 = u_n_p_1(7);
         l1 = eval(l1_sym);
         l2 = eval(l2_sym);
         l3 = eval(l3_sym);
@@ -253,6 +258,8 @@ for i = 1: length(t)
         l7 = eval(l7_sym);
         l8 = eval(l8_sym);
         K = get_K();
+        K(:,idx) = [];
+        K(idx,:) = [];
         r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
         %( M_div_h2 + K )\(2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs)-u_n_p_1
         err(iter) = norm(r);
@@ -292,8 +299,7 @@ figure;
 plot(err_arr);
 title('error');
 legend();
-%csvwrite('lookUp11Dof.txt',[y,err_arr]);
-
+%csvwrite('lookUp11DofReduced.txt',[y,err_arr]);
 function K = get_K()
     global l_long_fl;
     global l_long_fr;

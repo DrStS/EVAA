@@ -1,6 +1,7 @@
 #pragma once
 
 #include "car.h"
+#include "MetaDataBase.h"
 #include "Profile_class.h"
 
 class Load_module {
@@ -20,7 +21,7 @@ private:
 	double* External_force = NULL;
 
 public:
-	Load_module(Profile* Profile_type, Car<double>* Car1, Load_Params load_param);
+	Load_module(Profile* Profile_type, Car<double>* Car1);
 	~Load_module();
 	void set_Profile(Profile* Profile_type); // not called
 	void get_Profile(Profile* Profile_type); // not called
@@ -45,6 +46,6 @@ public:
 	void update_torque(double time_t, double* Torque, double* Delta_x_vec);
 
 
-	void set_External_force(Load_Params load_param); // in Load_module constructor commented
+	void set_External_force(); // in Load_module constructor commented
 };
 
