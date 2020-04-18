@@ -1,11 +1,12 @@
-clc;
-clear all;
-close all;
-format long e;
+function [final_displacement] = BDF2_test(tend, h)
+%clc;
+%clear all;
+%close all;
+%format long e;
 % Dynamic Backward Euler problem 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 k_body_fl=28e3*0.69;
-k_tyre_fl=260e3;%260
+k_tyre_fl=260e3;
 k_body_fr=28e3*0.69;
 k_tyre_fr=260e3;
 k_body_rl=16e3*0.82;
@@ -32,7 +33,7 @@ mass_tyre_rl=30;
 mass_wheel_rr=135/2;
 mass_tyre_rr=30;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-tend=1;
+%tend=100;
 u_init=0;
 du_init=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -62,15 +63,6 @@ Kred(:,7) = [];
 Kred(7,:) = [];
 Kred(:,5) = [];
 Kred(5,:) = [];
-Dred = D;
-Dred(:,11) = [];
-Dred(11,:) = [];
-Dred(:,9) = [];
-Dred(9,:) = [];
-Dred(:,7) = [];
-Dred(7,:) = [];
-Dred(:,5) = [];
-Dred(5,:) = [];
 Mred = M;
 Mred(:,11) = [];
 Mred(11,:) = [];
@@ -80,84 +72,134 @@ Mred(:,7) = [];
 Mred(7,:) = [];
 Mred(:,5) = [];
 Mred(5,:) = [];
-
-% K(:,11) = [];
-% K(11,:) = [];
-% K(:,9) = [];
-% K(9,:) = [];
-% K(:,7) = [];
-% K(7,:) = [];
-% K(:,5) = [];
-% K(5,:) = [];
-% D(:,11) = [];
-% D(11,:) = [];
-% D(:,9) = [];
-% D(9,:) = [];
-% D(:,7) = [];
-% D(7,:) = [];
-% D(:,5) = [];
-% D(5,:) = [];
-% M(:,11) = [];
-% M(11,:) = [];
-% M(:,9) = [];
-% M(9,:) = [];
-% M(:,7) = [];
-% M(7,:) = [];
-% M(:,5) = [];
-% M(5,:) = [];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Allocate memory
 dim_system = length(M);
 t=zeros(1000+1,1);
-u_sol=zeros(1000+1,dim_system);
+u_sol=zeros(1000+1,11);
 u_n_p_1=zeros(dim_system,1);
-u_sol_red=zeros(1000+1,7);
-u_n_p_1_red=zeros(7,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-h=1/(1000);
+%h=1/(1000);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-u_n=[u_init; zeros(dim_system-1,1)];
-%u_n=[0;0;0; -0.04;0;-0.04;0;-0.01;0;-0.01;0];
+u_n=[u_init; zeros(dim_system - 1,1)];
 u_n_m_1=u_n-h*[du_init; zeros(dim_system-1,1)];
-u_n_red=[u_init; zeros(6,1)];
-u_n_m_1_red=[u_init; zeros(6,1)]-h*[du_init; zeros(6,1)];
+u_n_m_2=zeros(dim_system,1);
+u_n_m_3=zeros(dim_system,1);
 A=((1/(h*h))*M+(1/h)*D+K);
 B=((2/(h*h))*M+(1/h)*D);
-Ared=((1/(h*h))*Mred+(1/h)*Dred+Kred);
-Bred=((2/(h*h))*Mred+(1/h)*Dred);
+C = zeros(dim_system,dim_system);
+D = zeros(dim_system,dim_system);
+E = zeros(dim_system,dim_system);
 f_n_p_1=[1.1e3; zeros(dim_system-1,1)];
-f_n_p_1_red=[1.1e3; zeros(6,1)];
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Static solution
-u_stat=Kred\f_n_p_1(1:7);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Eigenfrequency solution with bc
-eigFreq=sqrt(eig(Kred,Mred))/2/pi;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Time loop
 j=2;
-idx = [1,2,3,4,6,8,10];
+i=h;
+% first euler step
 tic
-for i = h:h:tend
+if j==2 && i<tend
     rhs = (B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
     u_n_p_1 = A\rhs;
-    u_n_p_1_red=Ared\(Bred*u_n_red-((1/(h*h))*Mred)*u_n_m_1_red+f_n_p_1_red);
-   % Get solution
+    % Get solution
     t(j)=i;   
     u_sol(j,:)=u_n_p_1;
+    u_n_m_2 = u_n_m_1;
     u_n_m_1=u_n;
     u_n    =u_n_p_1;
-    u_sol_red(j,:)=u_n_p_1_red;
-    u_n_m_1_red=u_n_red;
-    u_n_red    =u_n_p_1_red;
+    j=j+1;
+    i = i+h;
+end
+ref_val = [5.681627821952628e-07;...
+     2.417538523599973e-32;...
+     1.422443170437330e-12;...
+     1.508286084852408e-10;...
+     1.295949709390701e-12;...
+     1.508286084852408e-10;...
+     1.295949709390701e-12;...
+     1.099930357207625e-10;...
+     9.450822632980253e-13;...
+     1.099930357207624e-10;...
+     9.450822632980251e-13];
+%disp(norm(u_n_p_1-ref_val))
+% % second euler step
+if j==3 && i<tend
+    rhs = (B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
+    u_n_p_1 = A\rhs;
+    % Get solution
+    t(j)=i;   
+    u_sol(j,:)=u_n_p_1;
+    u_n_m_3=u_n_m_2;
+    u_n_m_2=u_n_m_1;
+    u_n_m_1=u_n;
+    u_n    =u_n_p_1;
+    j=j+1;
+    i = i+h;
+end
+
+ref_val = [1.704450284873314e-06;...
+    -1.695580977941673e-31;...
+     7.110573430459281e-12;...
+     7.529925583571522e-10;...
+     9.039492654867869e-12;...
+     7.529925583571522e-10;...
+     9.039492654867869e-12;...
+     5.490865746803850e-10;...
+     6.591786028247906e-12;...
+     5.490865746803851e-10;...
+     6.591786028247908e-12];
+%disp(norm(u_n_p_1-ref_val))
+
+
+A = (9/(4*h*h))*M + (3/(2*h))*D + K;
+B = (6/(h*h))*M + (2/(h))*D;
+C = (-11/(2*h*h))*M + (-1/(2*h))*D;
+D = (2/(h*h))*M;
+E = (-1/(4*h*h))*M;
+for start=i:h:tend
+    rhs = B*u_n + C*u_n_m_1 + D*u_n_m_2 + E*u_n_m_3 + f_n_p_1;
+    u_n_p_1 = A\rhs;
+    t(j)=start;   
+    u_sol(j,:)=u_n_p_1;
+    u_n_m_3=u_n_m_2;
+    u_n_m_2=u_n_m_1;
+    u_n_m_1=u_n;
+    u_n    =u_n_p_1;
     j=j+1;
 end
 toc
 final_displacement = u_n_p_1;
+if tend==10
+    ref_val = [2.354848297477015e+01;...
+        -4.672535308216389e-12;...
+        -1.043337042893717e-01;...
+         2.369150496933984e+01;...
+         2.369145008337897e+01;...
+         2.369150496933973e+01;...
+         2.369145008337908e+01;...
+         2.337889552119290e+01;...
+         2.337884792289080e+01;...
+         2.337889552121592e+01;...
+         2.337884792291431e+01];
+    statement = sprintf('Diff for 10 sec %f',norm(u_n_p_1-ref_val));
+ %   disp(statement)
+elseif tend == 1
+    ref_val = [2.361027257085025e-01;...
+     9.086802443526854e-16;...
+    -1.236265017564796e-03;...
+     2.336063480730669e-01;...
+     2.335138702132668e-01;...
+     2.336063480730389e-01;...
+     2.335138702132384e-01;...
+     2.337011935281506e-01;...
+     2.336951537038742e-01;...
+     2.337011935281898e-01;...
+     2.336951537039128e-01];
+    statement = sprintf('Diff for 1 sec %f',norm(u_n_p_1-ref_val));
+  %  disp(statement)
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Some plots
-figure();
-plot(t,u_sol(:,1)); grid on;
+%figure();
+%plot(t,u_sol(:,1)); grid on;
 %plot(t,u_sol_red(:,1)); grid on;
-legend;
-disp(u_sol(end,1:11)')
+%legend;
+%disp(u_sol(end,1:11)')
+end

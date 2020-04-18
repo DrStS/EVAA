@@ -23,9 +23,12 @@
 #include <vector>
 
 #include "11DOF.h"
-#include "Car.h"
+#include "car.h"
 #include "EVAAComputeEngine.h"
 #include "MathLibrary.h"
+#include <limits>
+#include <fstream>
+#include "Output.h"
 #include "Constants.h"
 #include "MetaDataBase.h"
 
@@ -46,7 +49,13 @@ using Eigen::IOFormat;
 #include <blaze/Math.h>
 #endif
 
-typedef double floatEVAA;
+#ifdef SINGLE_PRECISION
+	typedef float floatEVAA;
+#elif DOUBLE_PRECISION
+	typedef double floatEVAA;
+#endif
+
+
 
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) : 
 	_xmlCarFileName(xmlCarFileName), _xmlLoadFileName(xmlLoadFileName), 
@@ -90,6 +99,8 @@ void EVAAComputeEngine::printInfo(void) {
 	std::cout << "\n\nCalculate the solution after " << MetaDataBase::DataBase()->getNumberOfTimeIterations() * MetaDataBase::DataBase()->getTimeStepSize() << 
 		"s with dt = " << MetaDataBase::DataBase()->getTimeStepSize() << " for " << MetaDataBase::DataBase()->getNumberOfTimeIterations() << " iterations\n\n\n";
 }
+
+void EVAAComputeEngine::clean(void){}
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
 
@@ -634,19 +645,19 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	// gets written in rear vector
 	// K' <- (1.0/(h*h))*M + K
 //	MathLibrary::computeDenseVectorAddition(M.data(), K.data(), (1.0 / (h*h)), 9);
-	cblas_daxpy(121, (1.0 / (h * h)), M, 1, K, 1);
+	mkl<floatEVAA>::axpy(121, (1.0 / (h * h)), M, 1, K, 1);
 	// K <- (1.0/h)*D + K'
 //	MathLibrary::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 121);
-	cblas_daxpy(121, (1.0 / h), D, 1, K, 1);
+	mkl<floatEVAA>::axpy(121, (1.0 / h), D, 1, K, 1);
 	/// K holds now dynamic stiffness matrix  for BE integrator
 	///Build rhs for BE integrator
 	//B' <-(2.0 / (h*h))*M + B
 //	MathLibrary::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
-	cblas_daxpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
+	mkl<floatEVAA>::axpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
 
 	//B <-(1.0 / (h))*D + B'
 //	MathLibrary::computeDenseVectorAddition(D.data(), B.data(), (1.0 / h), 121);
-	cblas_daxpy(matrixElements, (1.0 / h), D, 1, B, 1);
+	mkl<floatEVAA>::axpy(matrixElements, (1.0 / h), D, 1, B, 1);
 	//A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE	
 
 	std::vector<int> pivot(DOF);
@@ -672,7 +683,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 /* void cblas_dgemv(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE trans, const MKL_INT m,
 	const MKL_INT n, const double alpha, const double* a, const MKL_INT lda, const double* x,
 	const MKL_INT incx, const double beta, double* y, const MKL_INT incy); */
-		cblas_dgemv(CblasColMajor, CblasNoTrans, 11, 11, 1.0, B, 11, u_n, 1, 0.0, u_n_p_1, 1);
+		mkl<floatEVAA>::gemv(CblasColMajor, CblasNoTrans, 11, 11, 1.0, B, 11, u_n, 1, 0.0, u_n_p_1, 1);
 #endif
 #ifdef USE_GEMM 
 		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1.0, B, 11, u_n, 11, 0.0, u_n_p_1, 11);
@@ -681,7 +692,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		// y: = alpha*A*x + beta*y
 		// tmp = ((-1.0 / (h*h))*M) * u_n_m_1
 #ifndef USE_GEMM
-		cblas_dgemv(CblasColMajor, CblasNoTrans, DOF, DOF, (-1.0 / (h * h)), M, DOF, u_n_m_1, 1, 0.0, tmp, 1);
+		mkl<floatEVAA>::gemv(CblasColMajor, CblasNoTrans, DOF, DOF, (-1.0 / (h * h)), M, DOF, u_n_m_1, 1, 0.0, tmp, 1);
 #endif
 #ifdef USE_GEMM 
 		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1.0, M, 11, u_n_m_1, 11, 0.0, tmp, 11);
@@ -690,7 +701,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		// u_n_p_1 <- 1.0 tmp + u_n_p_1
 //		MathLibrary::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.0, 11);
 		//void cblas_daxpy (const MKL_INT n, const double a, const double *x, const MKL_INT incx, double *y, const MKL_INT incy);
-		cblas_daxpy(DOF, 1.0, tmp, 1, u_n_p_1, 1);
+		mkl<floatEVAA>::axpy(DOF, 1.0, tmp, 1, u_n_p_1, 1);
 		// Solve system
 //		MathLibrary::computeDenseSymSolution(11, K, pivot, u_n_p_1);
 // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans , lapack_int n , lapack_int nrhs , const double * a , lapack_int lda , const lapack_int * ipiv , double * b , lapack_int ldb );
@@ -813,4 +824,74 @@ void EVAAComputeEngine::computeALEtest(void) {
 	delete loadModule;
 	delete roadProfile;
 	delete car;
+}
+
+void EVAAComputeEngine::compare_ALE_MBD(void) {
+	// MBD Call
+	size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
+	size_t solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize();
+	floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
+	MBD_method<floatEVAA> solver(_parameters, _loadModuleParameter, _lookupStiffness);
+	size_t solution_size = (num_iter + 1) *solution_dim;
+	floatEVAA* complete_soln = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
+	solver.solve(soln, complete_soln);
+	solver.print_final_result(soln);
+	std::cout << "(num_iter + 1) = " << (num_iter + 1) << "solution_dim = " << solution_dim << std::endl;
+	#ifdef IO
+		IO::write_matrix(complete_soln, "MBD_result.dat", (num_iter + 1), solution_dim);
+	#endif // IO	
+	mkl<floatEVAA>::scal(solution_dim, 0.0, soln, 1);
+	mkl_free(complete_soln);
+	// ALE call 
+
+	Profile* Road_Profile;
+
+	Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, _lookupStiffness);
+
+	if (_loadModuleParameter.boundary_condition_road == CIRCULAR) {
+		Road_Profile = new Circular(_loadModuleParameter.profile_center,
+			_loadModuleParameter.profile_radius);
+	}
+	else if (_loadModuleParameter.boundary_condition_road == NONFIXED) {
+		Road_Profile = new Nonfixed(_loadModuleParameter.profile_center,
+			_loadModuleParameter.profile_radius);
+	}
+	else if (_loadModuleParameter.boundary_condition_road == FIXED) {
+		Road_Profile = new Fixed(_parameters.gravity[2], _loadModuleParameter);
+		Road_Profile->set_fixed_index(Car1->tyre_index_set);
+	}
+	else {
+		std::cout << "ALE will only work with a circular path, fixed or nonfixed boundaries, computation skipped" << std::endl;
+		delete Car1;
+		exit(5);
+	}
+
+	solution_dim = Constants::DIM * Constants::VEC_DIM;
+	solution_size = (num_iter + 1) * solution_dim;
+	floatEVAA* complete_soln2 = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
+	#ifdef IO
+		IO::write_matrix(Car1->Position_vec, "initial_car_pos_vec.dat", 1, solution_dim);
+	#endif // IO
+	Road_Profile->update_initial_condition(Car1);
+
+	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _loadModuleParameter);
+	Linear11dof<floatEVAA>* linear11dof_sys = new Linear11dof<floatEVAA>(Car1);
+	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, _lookupStiffness, _parameters);
+
+	Ale_sys->solve(soln, complete_soln2);
+
+	Ale_sys->print_final_results();
+	#ifdef IO
+		IO::write_matrix(complete_soln2, "ALE_result.dat", (num_iter + 1), solution_dim);
+	#endif // IO
+	delete Car1;
+	delete Load_module1;
+	delete Road_Profile;
+	delete linear11dof_sys;
+	delete Ale_sys;
+
+	mkl_free(soln);
+	mkl_free(complete_soln2);
+
+	
 }
