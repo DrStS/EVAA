@@ -88,9 +88,9 @@ for i = 2 : n
     end 
     
     % case if there is a change in direction
-    if abs(theta(i) - theta(i-1)) > 1
-        theta(i) = theta(i) + pi;
-    end
+%     if abs(theta(i) - theta(i-1)) > 1
+%         theta(i) = theta(i) + pi;
+%     end
 
     % tyre position update
     c = cos(theta(i));

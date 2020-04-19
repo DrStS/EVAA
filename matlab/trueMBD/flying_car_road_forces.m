@@ -19,33 +19,39 @@ function [FR] = flying_car_road_forces(m, FT, leg_index, Froad, traj, v_traj, i,
     v_prev = previous_solution_vector(16+leg_index*3:16+leg_index*3+2)';
     x_prev = previous_solution_vector(47+leg_index*3:47+leg_index*3+2)';
     f_prev = previous_force_vector(:,leg_index);
-
+    
     % current road forces
     Froad = Froad(:,i);
-   
-    % flying car cases -> no interaction with the road
-    FR = FT;
+    FR = Froad;
+    
         
     % if the tyre is on the road (or below), apply upward force
-    eps = 1e-5;
+    eps = 0;
     if x_prev(2)<=traj_prev+eps
-        FR = Froad;
-
-        if v_prev(2) < min(0, vtraj_prev(2))-eps % car is moving downwards
-            FR(2) = FR(2) - m / dt * v_prev(2);   % !! use higher order method !!
-        end
+        x_diff = traj_prev - x_prev(2);     % push tyre back to road if it is below the road
+        FR(2) = FR(2) + m / (dt) * x_diff;  % NOT PHYSICAL! just in case the velocity correction is not enough
+                                            % at high velocities, this might occur
         
+        if v_prev(2) < min(0, vtraj_prev(2))-eps % car is moving downwards
+            v_diff = min(0, vtraj_prev(2)) - v_prev(2);
+            FR(2) = FR(2) + m / dt * v_diff;   % !! use higher order method !!
+        end
         % the road should never pull the car downwards
         if Froad(2) < f_prev(2)-eps
-            FR = FT;
+            FR(2) = FT(2);
         end
         
-        % adjust the XY Force accoding to the velocity difference to the trajectory
-        % to keep the car on track
-        v_diff = v_prev - vtraj_prev;
-        v_diff(2) = 0;
-        FR = FR - m / dt * v_diff;
-        
+    else
+        % flying car cases -> no interaction with the road in Z direction
+        FR(2) = FT(2);
     end
+    
+    % adjust the XY Force accoding to the velocity difference to the trajectory
+    % to keep the car on track (not really physical, just to have a nice
+    % video :P)
+    v_diff = v_prev - vtraj_prev;
+    v_diff(2) = 0;
+    FR = FR - m / dt * v_diff;
+
 end
 

@@ -6,7 +6,7 @@ grid on
 
 num_iter = size(y,1) - 1;
 
-frames_per_second = 4.4;   % change this to what your graphic card is able
+frames_per_second = 30;   % change this to what your graphic card is able
 vis_step = ceil(1 / (delta_t * frames_per_second)); % visualization step
 
 % axis handler
@@ -15,9 +15,10 @@ axis_update_step = 20 * vis_step;
 
 % for option 3
 scale_factor = 0.8;
-fixed_range_x = 10 + scale_factor * vel_norms(1); 
-fixed_range_y = 10 + scale_factor * vel_norms(1);
-fixed_range_z = 10 + scale_factor * vel_norms(1);
+minimal_range = 15;
+fixed_range_x = minimal_range + scale_factor * vel_norms(1); 
+fixed_range_y = minimal_range + scale_factor * vel_norms(1);
+fixed_range_z = minimal_range + scale_factor * vel_norms(1);
 mid_x = y(1,5);
 mid_y = y(1,7);
 min_x = mid_x - fixed_range_x / 2;
@@ -25,9 +26,10 @@ max_x = mid_x + fixed_range_x / 2;
 min_y = mid_y - fixed_range_y / 2;
 max_y = mid_y + fixed_range_y / 2;
 global_min_z = min(min(traj_1(2,:)), min(traj_2(2,:)));
+axis_min_z = global_min_z;
 
 tic
-for i = 1 : vis_step : num_iter   
+for i = 70000 : vis_step : num_iter   
     
     %% get components
     pcc = [y(i,5), y(i,7), y(i,6)];
@@ -95,20 +97,21 @@ for i = 1 : vis_step : num_iter
             [pc4(3), pw4(3), pt4(3)],'r');
 
         % road
-        plot3(traj_1(1,1:vis_step:num_iter),...
-              traj_1(3,1:vis_step:num_iter),...
-              traj_2(2,1:vis_step:num_iter), 'b')
+        road_vis_range = max(1,i-50000):min(i+50000,num_iter);
+        plot3(traj_1(1,road_vis_range),...
+              traj_1(3,road_vis_range),...
+              traj_1(2,road_vis_range), 'b')
 
-          plot3(traj_2(1,1:vis_step:num_iter),...
-              traj_2(3,1:vis_step:num_iter),...
-              traj_2(2,1:vis_step:num_iter), 'b')
+          plot3(traj_2(1,road_vis_range),...
+                traj_2(3,road_vis_range),...
+                traj_2(2,road_vis_range), 'b')
 
     xlabel('X')
     ylabel('Y')
     zlabel('Z')
-    altstring=['altitude=',num2str(pcc(3),3),'m'];
-    title(altstring)
-    
+    timestring=['time=',num2str(floor(delta_t*i/60)),'min',num2str(mod(delta_t*i,60),4),'sec'];
+    title(timestring)
+%     view(0,0)
     hold off
 
     %% axis
@@ -157,9 +160,9 @@ for i = 1 : vis_step : num_iter
     if ( y(i, 5) + 2.5 > max_x ) 
         % update x-axis
         mid_x = y(i,5);
-        fixed_range_x = 10 + scale_factor * vel_norms(i); 
-        fixed_range_y = 10 + scale_factor * vel_norms(i);
-        fixed_range_z = 10 + scale_factor * vel_norms(i);
+        fixed_range_x =minimal_range+ scale_factor * vel_norms(i); 
+        fixed_range_y =minimal_range+ scale_factor * vel_norms(i);
+        fixed_range_z =minimal_range+ scale_factor * vel_norms(i);
         
         min_x = mid_x - 2.5;
         max_x = min_x + fixed_range_x;
@@ -170,9 +173,9 @@ for i = 1 : vis_step : num_iter
     if ( y(i, 5) - 2.5 < min_x )
         % update x-axis
         mid_x = y(i,5);
-        fixed_range_x = 10 + scale_factor * vel_norms(i); 
-        fixed_range_y = 10 + scale_factor * vel_norms(i);
-        fixed_range_z = 10 + scale_factor * vel_norms(i);
+        fixed_range_x =minimal_range+ scale_factor * vel_norms(i); 
+        fixed_range_y =minimal_range+ scale_factor * vel_norms(i);
+        fixed_range_z =minimal_range+ scale_factor * vel_norms(i);
         
         max_x = mid_x + 2.5;
         min_x = max_x - fixed_range_x;
@@ -183,9 +186,9 @@ for i = 1 : vis_step : num_iter
     if (y(i, 7) + 2.5 > max_y ) 
         % update y-axis
         mid_y = y(i,7);
-        fixed_range_x = 10 + scale_factor * vel_norms(i); 
-        fixed_range_y = 10 + scale_factor * vel_norms(i);
-        fixed_range_z = 10 + scale_factor * vel_norms(i);
+        fixed_range_x =minimal_range+ scale_factor * vel_norms(i); 
+        fixed_range_y =minimal_range+ scale_factor * vel_norms(i);
+        fixed_range_z =minimal_range+ scale_factor * vel_norms(i);
         
         min_x = mid_x - fixed_range_x / 2;
         max_x = mid_x + fixed_range_x / 2;
@@ -196,9 +199,9 @@ for i = 1 : vis_step : num_iter
     if ( y(i, 7) - 2.5 < min_y )
         % update y-axis
         mid_y = y(i,7);
-        fixed_range_x = 10 + scale_factor * vel_norms(i); 
-        fixed_range_y = 10 + scale_factor * vel_norms(i);
-        fixed_range_z = 10 + scale_factor * vel_norms(i);
+        fixed_range_x =minimal_range+ scale_factor * vel_norms(i); 
+        fixed_range_y =minimal_range+ scale_factor * vel_norms(i);
+        fixed_range_z =minimal_range+ scale_factor * vel_norms(i);
         
         min_x = mid_x - fixed_range_x / 2;
         max_x = mid_x + fixed_range_x / 2;
@@ -206,7 +209,12 @@ for i = 1 : vis_step : num_iter
         min_y = max_y - fixed_range_y;
     end
     
-    axis_min_z = max(global_min_z, min(traj_1(2,i), traj_2(2,i)) - fixed_range_z);
+    if pcc(3) - fixed_range_z + 1 > axis_min_z
+        axis_min_z = pcc(3) - fixed_range_z / 2;
+    end
+    if pcc(3) - 2 < axis_min_z
+        axis_min_z = pcc(3) - fixed_range_z / 2;
+    end    
     axis([min_x, max_x, min_y, max_y, axis_min_z-1, axis_min_z + fixed_range_z])
 
     drawnow;
@@ -267,12 +275,22 @@ for i = 1 : vis_step : num_iter
     velstring = ['speed=',num2str(vel_norms(i)*3.6,3),'km/h'];
     title(velstring)
 
+        % road
+    road_vis_range = max(1,i-2000):min(i+2000,num_iter);
+    plot3(traj_1(1,road_vis_range),...
+          traj_1(3,road_vis_range),...
+          traj_1(2,road_vis_range), 'b')
+
+      plot3(traj_2(1,road_vis_range),...
+            traj_2(3,road_vis_range),...
+            traj_2(2,road_vis_range), 'b')
+
     
     hold off
 
     axis([y(i,5) - 2.5, y(i,5) + 2.5, ...
           y(i,7) - 2.5, y(i,7) + 2.5, ...
-          min_z, min_z + 1])
+          min_z, min_z + 2.5])
 
     
     drawnow

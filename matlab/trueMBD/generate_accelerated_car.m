@@ -10,7 +10,7 @@ function [trajectory] = generate_accelerated_car(acceleration, position, directi
     
     trajectory(1,:) = x * direction(1) + position(1);
     
-    trajectory(2,:) = position(2);
+    trajectory(2,:) = x * direction(2) + position(2);
 
-    trajectory(3,:) = x * direction(2) + position(3);    
+    trajectory(3,:) = x * direction(3) + position(3);    
 end
