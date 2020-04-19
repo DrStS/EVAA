@@ -33,11 +33,12 @@ k = @(l,a)(c*l*l + b*l + a);
 for i = 0:size_grid-1
     X(i+1) = l_min+i*dl;
 end
-for i = 1:8
+for i = 1:8 
     for j = 1:size_grid
         k_grid((i-1)*size_grid + j)= k(X(j), a(i));
     end
 end
+%dlmwrite('grid.txt',[X,k_grid(1:size_grid)],'delimiter',',','precision',9);
 
 global k_spline1 k_spline2 k_spline3 k_spline4 k_spline5 k_spline6 k_spline7 k_spline8;
 global k_der1 k_der2 k_der3 k_der4 k_der5 k_der6 k_der7 k_der8; 
@@ -292,7 +293,7 @@ figure;
 plot(err_arr);
 title('error');
 legend();
-%csvwrite('lookUp11Dof.txt',[y,err_arr]);
+%dlmwrite('lookUp11Dof.txt',[y,err_arr],'delimiter',',','precision',9);
 
 function K = get_K()
     global l_long_fl;

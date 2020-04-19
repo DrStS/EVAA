@@ -299,7 +299,7 @@ figure;
 plot(err_arr);
 title('error');
 legend();
-%csvwrite('lookUp11DofReduced.txt',[y,err_arr]);
+%dlmwrite('lookUp11DofReduced.txt',[y,err_arr],'delimiter',',','precision',9);
 function K = get_K()
     global l_long_fl;
     global l_long_fr;
