@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <mkl.h>
+#include "BLAS.h"
 
 #include "MetaDataBase.h"
 #include "MathLibrary.h"
@@ -19,7 +20,7 @@ private:
 		M_linear[0] = Mass_vec[0];
 		M_linear[DOF + 1] = I_CG[0];
 		M_linear[2 * DOF + 2] = I_CG[4];
-		cblas_dcopy(DOF - 3, Mass_vec + 1, 1, M_linear + 3 * DOF + 3, DOF + 1); // M_linear = diagonal matrix
+		mkl<T>::copy(DOF - 3, Mass_vec + 1, 1, M_linear + 3 * DOF + 3, DOF + 1); // M_linear = diagonal matrix
 	}
 
 	/*
@@ -29,7 +30,7 @@ private:
 	*/
 	void ConstructALEVectors(T* globalVector, T* localVector) {
 		for (size_t i = 0; i < Constants::VEC_DIM; ++i) {
-			cblas_dcopy(Constants::DIM - 1, globalVector + i * Constants::DIM, 1, localVector + i * (Constants::DIM - 1), 1);
+			mkl<T>::copy(Constants::DIM - 1, globalVector + i * Constants::DIM, 1, localVector + i * (Constants::DIM - 1), 1);
 		}
 	}
 
@@ -41,7 +42,7 @@ private:
 		T s = std::sin(angle_CG[2]);
 
 		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
-			cblas_dcopy(Constants::DIM, posCG, Constants::INCX, corners + i, Constants::NUM_LEGS);
+			mkl<T>::copy(Constants::DIM, posCG, Constants::INCX, corners + i, Constants::NUM_LEGS);
 		}
 		corners[0] += + l_long[0] * c - l_lat[0] * s; // fl
 		corners[4] += + l_lat[0] * c + l_long[0] * s; // fl
@@ -67,7 +68,7 @@ private:
 
 		// do rotation: rotationMat * r
 		//void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const double beta, double* c, const MKL_INT ldc);
-		cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DIM, Constants::NUM_LEGS, Constants::DIM, 1, rotation_mat_buffer, Constants::DIM, initial_corners, Constants::NUM_LEGS, 0, updated_corners, Constants::NUM_LEGS);
+		mkl<T>::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DIM, Constants::NUM_LEGS, Constants::DIM, 1, rotation_mat_buffer, Constants::DIM, initial_corners, Constants::NUM_LEGS, 0, updated_corners, Constants::NUM_LEGS);
 	}
 
 	/*
@@ -285,9 +286,9 @@ public:
 		quad_angle_init[1] = params.initial_angle[1];
 		quad_angle_init[2] = params.initial_angle[2];
 		quad_angle_init[3] = params.initial_angle[3];*/
-		cblas_dcopy(4,  MetaDataBase::DataBase()->getBodyInitialOrientation(), 1, quad_angle_init, 1);
+		mkl<T>::copy(4, MetaDataBase::DataBase()->getBodyInitialOrientation(), 1, quad_angle_init, 1);
 		MathLibrary::ToEulerAngles<T>(quad_angle_init, initial_angle);
-		cblas_dcopy(Constants::DIM, initial_angle, 1, angle_CG, 1);
+		mkl<T>::copy(Constants::DIM, initial_angle, 1, angle_CG, 1);
 
 		// Spring lengths
 		current_spring_length[0] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontLeft();
@@ -302,7 +303,7 @@ public:
 
 		// Filling the position vector with initial condition
 		// CG
-		cblas_dcopy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialPosition(), 1, initial_position, 1); // copy the center of mass position
+		mkl<T>::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialPosition(), 1, initial_position, 1); // copy the center of mass position
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////// Interpolator Initialization///////////////////////////////////
@@ -310,7 +311,7 @@ public:
 		// read init corners vectors into matrix
 
 		ConstructCorner(initial_position, Corners_init); // only CG position is used to construct corners
-		cblas_dcopy(Constants::DIM, angle_CG, 1, angle_buffer, 1);
+		mkl<T>::copy(Constants::DIM, angle_CG, 1, angle_buffer, 1);
 		angle_buffer[2] = 0;
 		UpdateCorners11DOF(angle_buffer, Corners_rot, Corners_init, Corners_current);
 
@@ -324,36 +325,37 @@ public:
 			// W1 = W_fl
 			xml_start = MetaDataBase::DataBase()->getWheelInitialPositionFrontLeft();
 			position_start = initial_position + 3; //(end at 5)
-			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
+			mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1);
 			// W2 = W_fr
 			xml_start = MetaDataBase::DataBase()->getWheelInitialPositionFrontRight();
 			position_start += 6; // skip 3 for tyre (end at 11)
-			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
+			mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1);
 			// W3 = W_rl
 			xml_start = MetaDataBase::DataBase()->getWheelInitialPositionRearLeft();
 			position_start += 6; // skip 3 for tyre (end at 17)
-			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
+			mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1);
 			// W2 = W_rr
 			xml_start = MetaDataBase::DataBase()->getWheelInitialPositionRearRight();
 			position_start += 6; // skip 3 for tyre (end at 23)
-			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);
+			mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1);
 
 			// T1 = T_fl
 			xml_start = MetaDataBase::DataBase()->getTyreInitialPositionFrontLeft();
-			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 8)
+			position_start = initial_position + 6; // skip 3 for center of mass and 3 for the wheel
+			mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 8)
 			// T2 = T_fr
 			xml_start = MetaDataBase::DataBase()->getTyreInitialPositionFrontRight();
 			position_start += 6; // skip 3 for the wheel
-			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 14)
+			mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 14)
 			// T3 = T_rl
 			xml_start = MetaDataBase::DataBase()->getTyreInitialPositionRearLeft();
 			position_start += 6; // skip 3 for the wheel
-			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);// (end at 20)
+			mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1);// (end at 20)
 			// T4 = T_rr
 			xml_start = MetaDataBase::DataBase()->getTyreInitialPositionRearRight();
 			position_start += 6; // skip 3 for the wheel
-			cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 26)
-			cblas_dcopy(Constants::DIM * Constants::VEC_DIM, initial_position, 1, Position_vec, 1);
+			mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 26)
+			mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, initial_position, 1, Position_vec, 1);
 		}
 		else {
 			T* W_fl = initial_position + 3;
@@ -366,7 +368,7 @@ public:
 			T* T_rr = initial_position + 24;
 			get_length(Corners_current, current_spring_length, W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr);
 			/* Update the mean position where changes are to be added*/
-			cblas_dcopy(Constants::DIM, initial_position, 1, Position_vec, 1);
+			mkl<T>::copy(Constants::DIM, initial_position, 1, Position_vec, 1);
 			W_fl = Position_vec + 3;
 			W_fr = Position_vec + 9;
 			W_rl = Position_vec + 15;
@@ -381,47 +383,49 @@ public:
 		//cblas_dcopy(Constants::DIM*Constants::VEC_DIM, initial_position, 1, Position_vec, 1);
 
 		// Initial Velocity (Reuse the pointers)
-		cblas_dcopy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialVelocity(), 1, initial_velocity_vec, 1);
+		mkl<T>::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialVelocity(), 1, initial_velocity_vec, 1);
 		// W1 = W_fl
 		xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft();
 		position_start = initial_velocity_vec + 3;
-		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 5)
+		mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 5)
 		// W2 = W_fr
 		xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight();
 		position_start += 6; // skip 3 for tyre
-		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);// (end at 11)
+		mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1);// (end at 11)
 		// W3 = W_rl
 		xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft();
 		position_start += 6; // skip 3 for tyre
-		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 17)
+		mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 17)
 		// W2 = W_rr
 		xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight();
 		position_start += 6; // skip 3 for tyre
-		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 23)
+		mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 23)
 
 		// T1 = T_fl
 		xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft();
-		position_start = initial_velocity_vec + 6; // skip 3 for center of mass and 3 for the Tyre
-		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 8)
+		position_start = initial_velocity_vec + 6; // skip 3 for center of mass and 3 for the wheel
+		mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 8)
+		
 		// T2 = T_fr
 		xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight();
 		position_start += 6; // skip 3 for the Tyre
-		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1);// (end at 14)
+		mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1);// (end at 14)
 		// T3 = T_rl
 		xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft();
-		position_start += 6; // skip 3 for the Tyre
-		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 20)
+		position_start += 6; // skip 3 for the wheel
+		mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 20)
+		
 		// T4 = T_rr
 		xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight();
 		position_start += 6; // skip 3 for the wheel
-		cblas_dcopy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 26)
+		mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1); // (end at 26)
 
 		// copy the initial position to the position vector
-		cblas_dcopy(Constants::DIM * Constants::VEC_DIM, initial_velocity_vec, 1, Velocity_vec, 1);
+		mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, initial_velocity_vec, 1, Velocity_vec, 1);
 
 		// Initial Angular velocity
-		cblas_dcopy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialAngularVelocity(), 1, initial_angular_velocity, 1);
-		cblas_dcopy(Constants::DIM, initial_angular_velocity, 1, w_CG, 1);
+		mkl<T>::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialAngularVelocity(), 1, initial_angular_velocity, 1);
+		mkl<T>::copy(Constants::DIM, initial_angular_velocity, 1, w_CG, 1);
 
 
 		/*
@@ -433,7 +437,7 @@ public:
 		//compute_dx(u_prev_linear + 3);
 		//construct_11DOF_vector(initial_position, initial_angle, u_prev_linear);
 		compute_dx(u_prev_linear + 3);
-		cblas_dcopy(DOF, u_prev_linear, 1, u_current_linear, 1);
+		mkl<T>::copy(DOF, u_prev_linear, 1, u_current_linear, 1);
 		tyre_index_set[0] = 2;
 		tyre_index_set[1] = 4;
 		tyre_index_set[2] = 6;
@@ -585,11 +589,11 @@ public:
 
 		// symmetrize K
 		//cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
-		LAPACKE_dlacpy(LAPACK_ROW_MAJOR, 'U', DOF, DOF, K, DOF, K_trans, DOF);
+		mkl<T>::lacpy(LAPACK_ROW_MAJOR, 'U', DOF, DOF, K, DOF, K_trans, DOF);
 
-		mkl_dimatcopy('R', 'T', DOF, DOF, 1.0, K_trans, DOF, DOF); // get transpose of matrix
+		mkl<T>::imatcopy('R', 'T', DOF, DOF, 1.0, K_trans, DOF, DOF); // get transpose of matrix
 		
-		LAPACKE_dlacpy(LAPACK_ROW_MAJOR, 'L', DOF, DOF, K_trans, DOF, K, DOF); // copy lower triangular in the orig matrix
+		mkl<T>::lacpy(LAPACK_ROW_MAJOR, 'L', DOF, DOF, K_trans, DOF, K, DOF); // copy lower triangular in the orig matrix
 		//cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
 
 		// add the diagonal to K
@@ -610,7 +614,7 @@ public:
 		Position_11dof[2] = Global_angle[1]; // y angle of the CG
 
 		// copy y coordinate in order wheel, tyre, wheel, tyre, wheel, tyre, ...
-		cblas_dcopy(Constants::VEC_DIM - 1, Global_position + 5, 3, Position_11dof + 3, 1);
+		mkl<T>::copy(Constants::VEC_DIM - 1, Global_position + 5, 3, Position_11dof + 3, 1);
 	}
 
 	/*
@@ -640,27 +644,27 @@ public:
 	}
 	void get_length(T* Corners, T* curr_spring_len, T* W_fl, T* T_fl, T* W_fr, T* T_fr, T* W_rl, T* T_rl, T* W_rr, T* T_rr) {
 		// W_fl & T_fl
-		cblas_dcopy(Constants::DIM, Corners, 4, W_fl, 1);
+		mkl<T>::copy(Constants::DIM, Corners, 4, W_fl, 1);
 		W_fl[2] -= curr_spring_len[0];
-		cblas_dcopy(Constants::DIM, W_fl, 1, T_fl, 1);
+		mkl<T>::copy(Constants::DIM, W_fl, 1, T_fl, 1);
 		T_fl[2] -= curr_spring_len[1];
 
 		// W_fr & T_fr
-		cblas_dcopy(Constants::DIM, Corners + 1, 4, W_fr, 1);
+		mkl<T>::copy(Constants::DIM, Corners + 1, 4, W_fr, 1);
 		W_fr[2] -= curr_spring_len[2];
-		cblas_dcopy(Constants::DIM, W_fr, 1, T_fr, 1);
+		mkl<T>::copy(Constants::DIM, W_fr, 1, T_fr, 1);
 		T_fr[2] -= curr_spring_len[3];
 
 		// W_rl & T_rl
-		cblas_dcopy(Constants::DIM, Corners + 2, 4, W_rl, 1);
+		mkl<T>::copy(Constants::DIM, Corners + 2, 4, W_rl, 1);
 		W_rl[2] -= curr_spring_len[4];
-		cblas_dcopy(Constants::DIM, W_rl, 1, T_rl, 1);
+		mkl<T>::copy(Constants::DIM, W_rl, 1, T_rl, 1);
 		T_rl[2] -= curr_spring_len[5];
 
 		// W_rr & T_rr
-		cblas_dcopy(Constants::DIM, Corners + 3, 4, W_rr, 1);
+		mkl<T>::copy(Constants::DIM, Corners + 3, 4, W_rr, 1);
 		W_rr[2] -= curr_spring_len[6];
-		cblas_dcopy(Constants::DIM, W_rr, 1, T_rr, 1);
+		mkl<T>::copy(Constants::DIM, W_rr, 1, T_rr, 1);
 		T_rr[2] -= curr_spring_len[7];
 	}
 
@@ -674,7 +678,7 @@ public:
 
 		*/
 
-		vdSub(2 * (Constants::NUM_LEGS), spring_length, current_length, dx);
+		mkl<T>::vSub(2 * (Constants::NUM_LEGS), spring_length, current_length, dx);
 	}
 	/*
 	From the current elongations, calculate the differences to the rest positions
@@ -684,7 +688,7 @@ public:
 		compute_dx(current_spring_length, dx);
 	}
 	inline void compute_dx_tyre(T* dx) {
-		cblas_dcopy(Constants::NUM_LEGS, u_current_linear + 4, 2, dx, 1);
+		mkl<T>::copy(Constants::NUM_LEGS, u_current_linear + 4, 2, dx, 1);
 	}
 
 	/*
@@ -700,20 +704,20 @@ public:
 		//  - current_spring_length = abs(current_spring_length)
 
 		// current_spring_length[:] = u_current_linear[3:10]
-		cblas_dcopy(8, u_current_linear + 3, 1, current_spring_length, 1);
+		mkl<T>::copy(8, u_current_linear + 3, 1, current_spring_length, 1);
 
 		// current_spring_length[:] -= Position_vec[..3..] -> in 3rd dimension =>
 		//		=> current_spring_length[:] = u_current_linear[3:10] - Position_vec[5,8,11,...,26]
-		cblas_daxpy(8, -1, Position_vec + (1 * Constants::DIM + 2), Constants::DIM, current_spring_length, 1);
+		mkl<T>::axpy(8, -1, Position_vec + (1 * Constants::DIM + 2), Constants::DIM, current_spring_length, 1);
 
 		// subtract even indices from odd indices in current_spring_length: current_spring_length[1,3,5,7] -= current_spring_length[0,2,4,6]
-		cblas_daxpy(4, -1, current_spring_length, 2, current_spring_length + 1, 2);
+		mkl<T>::axpy(4, -1, current_spring_length, 2, current_spring_length + 1, 2);
 		
 		// add Corners_current to even indices: current_spring_length[0,2,4,6] += Corners_current[8,9,10,11]
-		cblas_daxpy(4, 1, Corners_current + 8, 1, current_spring_length, 2);
+		mkl<T>::axpy(4, 1, Corners_current + 8, 1, current_spring_length, 2);
 
 		// get absolute value for each element of the vector
-		vdAbs(8, current_spring_length, current_spring_length);
+		mkl<T>::vAbs(8, current_spring_length, current_spring_length);
 
 		//std::cout << " Current spring length blas: \n\n";
 		//for (auto i = 0; i < 8; ++i)
@@ -760,13 +764,13 @@ public:
 	}
 
 	void get_Position_vec(T* Pos) {
-		cblas_dcopy(Constants::DIM * Constants::VEC_DIM, Position_vec, 1, Pos, 1);
+		mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, Position_vec, 1, Pos, 1);
 	}
 	void set_Position_vec(const T* Pos) {		
-		cblas_dcopy(Constants::DIM * Constants::VEC_DIM, Pos, 1, Position_vec, 1);
+		mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, Pos, 1, Position_vec, 1);
 	}
 	void get_Position_vec_CG(T* Pos_CG) {
-		cblas_dcopy(Constants::DIM, Position_vec, 1, Pos_CG, 1);
+		mkl<T>::copy(Constants::DIM, Position_vec, 1, Pos_CG, 1);
 	}
 
 	// Sums up all the 9 masses
@@ -777,53 +781,53 @@ public:
 	}
 
 	void set_Position_vec_CG(const T* Pos_CG) {
-		cblas_dcopy(Constants::DIM, Pos_CG, 1, Position_vec, 1);
+		mkl<T>::copy(Constants::DIM, Pos_CG, 1, Position_vec, 1);
 	}
 
 	void get_Velocity_vec(T* Vel) {
-		cblas_dcopy(Constants::DIM * Constants::VEC_DIM, Velocity_vec, 1, Vel, 1);	
+		mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, Velocity_vec, 1, Vel, 1);
 	}
 
 	void get_Velocity_vec_xy(T* Vel) {
-		cblas_dcopy((Constants::DIM - 1) * Constants::VEC_DIM, Velocity_vec_xy, 1, Vel, 1);
+		mkl<T>::copy((Constants::DIM - 1) * Constants::VEC_DIM, Velocity_vec_xy, 1, Vel, 1);
 	}
 
 	void get_Position_vec_xy(T* Vel) {
-		cblas_dcopy((Constants::DIM - 1) * Constants::VEC_DIM, Position_vec_xy, 1, Vel, 1);
+		mkl<T>::copy((Constants::DIM - 1) * Constants::VEC_DIM, Position_vec_xy, 1, Vel, 1);
 	}
 
 	void set_Velocity_vec(const T* Vel) {
-		cblas_dcopy(Constants::DIM * Constants::VEC_DIM, Vel, 1, Velocity_vec, 1);
+		mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, Vel, 1, Velocity_vec, 1);
 	}
 	void get_Velocity_vec_CG(T* Vel_CG) {
-		cblas_dcopy(Constants::DIM, Velocity_vec, 1, Vel_CG, 1);
+		mkl<T>::copy(Constants::DIM, Velocity_vec, 1, Vel_CG, 1);
 	}
 	void set_Velocity_vec_CG(const T* Vel_CG) {
-		cblas_dcopy(Constants::DIM, Vel_CG, 1, Velocity_vec, 1);
+		mkl<T>::copy(Constants::DIM, Vel_CG, 1, Velocity_vec, 1);
 	}
 
 	void get_k_vec(T* k) {
-		cblas_dcopy(2 * Constants::NUM_LEGS, k_vec, 1, k, 1);
+		mkl<T>::copy(2 * Constants::NUM_LEGS, k_vec, 1, k, 1);
 	}
 	void get_k_vec_tyre(T* k) {
-		cblas_dcopy(Constants::NUM_LEGS, k_vec + 1, 2, k, 1);
+		mkl<T>::copy(Constants::NUM_LEGS, k_vec + 1, 2, k, 1);
 	}
 	void get_k_vec_wheel(T* k) {
-		cblas_dcopy(Constants::NUM_LEGS, k_vec, 2, k, 1);
+		mkl<T>::copy(Constants::NUM_LEGS, k_vec, 2, k, 1);
 	}
 
 	void set_k_vec(const T* k) {
-		cblas_dcopy(2 * Constants::NUM_LEGS, k, 1, k_vec, 1);
+		mkl<T>::copy(2 * Constants::NUM_LEGS, k, 1, k_vec, 1);
 	}
 
 	void get_Mass_vec(T* M) {
-		cblas_dcopy(Constants::VEC_DIM, Mass_vec, 1, M, 1);
+		mkl<T>::copy(Constants::VEC_DIM, Mass_vec, 1, M, 1);
 	}
 	T get_Mass_vec_CG() const {
 		return Mass_vec[0];
 	}
 	void set_Mass_vec(const T* M) {
-		cblas_dcopy(Constants::VEC_DIM, M, 1, Mass_vec, 1);
+		mkl<T>::copy(Constants::VEC_DIM, M, 1, Mass_vec, 1);
 	}
 
 	/*
@@ -833,22 +837,22 @@ public:
 	*/
 	void get_dist_vector_xy(T* Point_P, T* dist_vector) {
 		for (auto i = 0; i < Constants::VEC_DIM; ++i) {
-			cblas_dcopy(Constants::DIM-1, Point_P, Constants::INCX, &dist_vector[(Constants::DIM-1) * i], Constants::INCX);
+			mkl<T>::copy(Constants::DIM-1, Point_P, Constants::INCX, &dist_vector[(Constants::DIM-1) * i], Constants::INCX);
 		}
-		vdSub((Constants::DIM-1) * Constants::VEC_DIM, Position_vec_xy, dist_vector, dist_vector);
+		mkl<T>::vSub((Constants::DIM-1) * Constants::VEC_DIM, Position_vec_xy, dist_vector, dist_vector);
 	}
 
 	void get_dist_vector(T* Point_P, T* dist_vector) {	
 		for (auto i = 0; i < Constants::VEC_DIM; ++i) {
-			cblas_dcopy(Constants::DIM, Point_P, Constants::INCX, &dist_vector[Constants::DIM * i], Constants::INCX);
+			mkl<T>::copy(Constants::DIM, Point_P, Constants::INCX, &dist_vector[Constants::DIM * i], Constants::INCX);
 		}
-		vdSub(Constants::DIM * Constants::VEC_DIM, Position_vec, dist_vector, dist_vector);
+		mkl<T>::vSub(Constants::DIM * Constants::VEC_DIM, Position_vec, dist_vector, dist_vector);
 	} // 9 * 3 - from each important point to a fixed Point_P
 
 	void get_dist_vector_CG(T* Point_P, T* dist_vector) {
 		// get distance vector from Center of Gravity of the car to a Point P 
 		// source: Point_P, dest: CG
-		vdSub(Constants::DIM, Position_vec, Point_P, dist_vector);
+		mkl<T>::vSub(Constants::DIM, Position_vec, Point_P, dist_vector);
 	} // 3 - from Center of Gravity of a fixed Point_P
 
 	T get_I_body_xx() const {
@@ -912,8 +916,8 @@ public:
 		//	<< Position_vec_xy[16] << "\t" << Position_vec_xy[17] << "\t";
 
 	    // Position_vec_xy[4,5,8,9,12,13,16,17] = Position_vec_xy[2,3,6,7,10,11,14,15]
-		cblas_dcopy(Constants::NUM_LEGS, Position_vec_xy + 2, 4, Position_vec_xy + 4, 4);
-		cblas_dcopy(Constants::NUM_LEGS, Position_vec_xy + 3, 4, Position_vec_xy + 5, 4);
+		mkl<T>::copy(Constants::NUM_LEGS, Position_vec_xy + 2, 4, Position_vec_xy + 4, 4);
+		mkl<T>::copy(Constants::NUM_LEGS, Position_vec_xy + 3, 4, Position_vec_xy + 5, 4);
 
 	}
 

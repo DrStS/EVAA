@@ -23,11 +23,13 @@
 #include <vector>
 
 #include "11DOF.h"
-#include "Car.h"
-#include "EVAAComputeEngine.h"
-#include "MathLibrary.h"
+#include "car.h"
 #include "Constants.h"
+#include "EVAAComputeEngine.h"
+#include "LoadModule.h"
+#include "MathLibrary.h"
 #include "MetaDataBase.h"
+#include "Output.h"
 
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
@@ -46,7 +48,13 @@ using Eigen::IOFormat;
 #include <blaze/Math.h>
 #endif
 
-typedef double floatEVAA;
+#ifdef SINGLE_PRECISION
+	typedef float floatEVAA;
+#elif DOUBLE_PRECISION
+	typedef double floatEVAA;
+#endif
+
+
 
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) : 
 	_xmlCarFileName(xmlCarFileName), _xmlLoadFileName(xmlLoadFileName), 
@@ -90,6 +98,8 @@ void EVAAComputeEngine::printInfo(void) {
 	std::cout << "\n\nCalculate the solution after " << MetaDataBase::DataBase()->getNumberOfTimeIterations() * MetaDataBase::DataBase()->getTimeStepSize() << 
 		"s with dt = " << MetaDataBase::DataBase()->getTimeStepSize() << " for " << MetaDataBase::DataBase()->getNumberOfTimeIterations() << " iterations\n\n\n";
 }
+
+void EVAAComputeEngine::clean(void){}
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
 
@@ -634,19 +644,19 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	// gets written in rear vector
 	// K' <- (1.0/(h*h))*M + K
 //	MathLibrary::computeDenseVectorAddition(M.data(), K.data(), (1.0 / (h*h)), 9);
-	cblas_daxpy(121, (1.0 / (h * h)), M, 1, K, 1);
+	mkl<floatEVAA>::axpy(121, (1.0 / (h * h)), M, 1, K, 1);
 	// K <- (1.0/h)*D + K'
 //	MathLibrary::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 121);
-	cblas_daxpy(121, (1.0 / h), D, 1, K, 1);
+	mkl<floatEVAA>::axpy(121, (1.0 / h), D, 1, K, 1);
 	/// K holds now dynamic stiffness matrix  for BE integrator
 	///Build rhs for BE integrator
 	//B' <-(2.0 / (h*h))*M + B
 //	MathLibrary::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
-	cblas_daxpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
+	mkl<floatEVAA>::axpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
 
 	//B <-(1.0 / (h))*D + B'
 //	MathLibrary::computeDenseVectorAddition(D.data(), B.data(), (1.0 / h), 121);
-	cblas_daxpy(matrixElements, (1.0 / h), D, 1, B, 1);
+	mkl<floatEVAA>::axpy(matrixElements, (1.0 / h), D, 1, B, 1);
 	//A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE	
 
 	std::vector<int> pivot(DOF);
@@ -672,7 +682,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 /* void cblas_dgemv(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE trans, const MKL_INT m,
 	const MKL_INT n, const double alpha, const double* a, const MKL_INT lda, const double* x,
 	const MKL_INT incx, const double beta, double* y, const MKL_INT incy); */
-		cblas_dgemv(CblasColMajor, CblasNoTrans, 11, 11, 1.0, B, 11, u_n, 1, 0.0, u_n_p_1, 1);
+		mkl<floatEVAA>::gemv(CblasColMajor, CblasNoTrans, 11, 11, 1.0, B, 11, u_n, 1, 0.0, u_n_p_1, 1);
 #endif
 #ifdef USE_GEMM 
 		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1.0, B, 11, u_n, 11, 0.0, u_n_p_1, 11);
@@ -681,7 +691,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		// y: = alpha*A*x + beta*y
 		// tmp = ((-1.0 / (h*h))*M) * u_n_m_1
 #ifndef USE_GEMM
-		cblas_dgemv(CblasColMajor, CblasNoTrans, DOF, DOF, (-1.0 / (h * h)), M, DOF, u_n_m_1, 1, 0.0, tmp, 1);
+		mkl<floatEVAA>::gemv(CblasColMajor, CblasNoTrans, DOF, DOF, (-1.0 / (h * h)), M, DOF, u_n_m_1, 1, 0.0, tmp, 1);
 #endif
 #ifdef USE_GEMM 
 		//cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1.0, M, 11, u_n_m_1, 11, 0.0, tmp, 11);
@@ -690,7 +700,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 		// u_n_p_1 <- 1.0 tmp + u_n_p_1
 //		MathLibrary::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.0, 11);
 		//void cblas_daxpy (const MKL_INT n, const double a, const double *x, const MKL_INT incx, double *y, const MKL_INT incy);
-		cblas_daxpy(DOF, 1.0, tmp, 1, u_n_p_1, 1);
+		mkl<floatEVAA>::axpy(DOF, 1.0, tmp, 1, u_n_p_1, 1);
 		// Solve system
 //		MathLibrary::computeDenseSymSolution(11, K, pivot, u_n_p_1);
 // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans , lapack_int n , lapack_int nrhs , const double * a , lapack_int lda , const lapack_int * ipiv , double * b , lapack_int ldb );
@@ -753,22 +763,22 @@ void EVAAComputeEngine::computeMBD(void) {
 
 void EVAAComputeEngine::computeALE(void) {
 
-	Profile* roadProfile;
+	Profile<floatEVAA>* roadProfile;
 
 	Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness);
 
 	switch (MetaDataBase::DataBase()->getRoadConditions())
 	{
 	case CIRCULAR:
-		roadProfile = new Circular(MetaDataBase::DataBase()->getCircularRoadCenter(),
+		roadProfile = new Circular<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
 			MetaDataBase::DataBase()->getCircularRoadRadius());
 		break;
 	case NONFIXED:
-		roadProfile = new Nonfixed(MetaDataBase::DataBase()->getCircularRoadCenter(),
+		roadProfile = new Nonfixed<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
 			MetaDataBase::DataBase()->getCircularRoadRadius());
 		break;
 	case FIXED:
-		roadProfile = new Fixed(MetaDataBase::DataBase()->getGravityField()[1]);
+		roadProfile = new Fixed<floatEVAA>(MetaDataBase::DataBase()->getGravityField()[1]);
 		roadProfile->set_fixed_index(car->tyre_index_set);
 		break;
 	default:
@@ -780,7 +790,7 @@ void EVAAComputeEngine::computeALE(void) {
 
 	roadProfile->update_initial_condition(car);
 
-	Load_module* loadModule = new Load_module(roadProfile, car);
+	LoadModule<floatEVAA>* loadModule = new LoadModule<floatEVAA>(roadProfile, car);
 	Linear11dof<floatEVAA>* linear11dof = new Linear11dof<floatEVAA>(car);
 	ALE<floatEVAA>* ale = new ALE<floatEVAA>(car, loadModule, linear11dof, _lookupStiffness);
 
@@ -805,10 +815,10 @@ void EVAAComputeEngine::computeALEtest(void) {
 	size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
 	size_t solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize();
 	Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness);
-	Profile* roadProfile = new Circular(MetaDataBase::DataBase()->getCircularRoadCenter(),
+	Profile<floatEVAA>* roadProfile = new Circular<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
 		MetaDataBase::DataBase()->getCircularRoadRadius());
 	roadProfile->update_initial_condition(car);
-	Load_module* loadModule = new Load_module(roadProfile, car);
+	LoadModule<floatEVAA>* loadModule = new LoadModule<floatEVAA>(roadProfile, car);
 	std::cout << "Load module initialized!\n";
 	delete loadModule;
 	delete roadProfile;

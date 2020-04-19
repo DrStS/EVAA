@@ -1,14 +1,24 @@
 clear; clc; close all;
 %% make lookup
 a = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3] ;
-%b = 1.59;
-%c = 1.2;
-b = 0;
-c = 0;
+b = 1.59;
+c = 1.2;
+%b = 0;
+%c = 0;
+%% zero lengths
+
+L1 = 0.2;
+L2 = 0.2;
+L3 = 0.2;
+L4 = 0.2;
+L5 = 0.2;
+L6 = 0.2;
+L7 = 0.2;
+L8 = 0.2;
 %%
 global k_grid size_grid l_min l_max dl;
 % calc min and max length to evaluate (just for now)
-l_min = -1;
+l_min = 0.02;
 l_max = 1;
 % grid size
 size_grid = 1001;
@@ -28,6 +38,7 @@ for i = 1:8
         k_grid((i-1)*size_grid + j)= k(X(j), a(i));
     end
 end
+
 global k_spline1 k_spline2 k_spline3 k_spline4 k_spline5 k_spline6 k_spline7 k_spline8;
 global k_der1 k_der2 k_der3 k_der4 k_der5 k_der6 k_der7 k_der8; 
 k_spline1 = spline(X,k_grid(1:size_grid));
@@ -59,14 +70,14 @@ syms x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11
 syms d1 d2 d3 d4 d5 d6 d7 d8
 syms l1_sym l2_sym l3_sym l4_sym l5_sym l6_sym l7_sym l8_sym
 syms dKdx_x_symb
-l1_sym = x1 + l_lat_fl*x2 - l_long_fl*x3  - x4;
-l2_sym = x4 - x5;
-l3_sym = x1 - l_lat_fr*x2 - l_long_fr*x3 - x6;
-l4_sym = x6 - x7;
-l5_sym = x1 + l_lat_rl*x2 + l_long_rl*x3 - x8;
-l6_sym = x8 - x9;
-l7_sym = x1 - x10 - l_lat_rr*x2 + l_long_rr*x3;
-l8_sym = x10 - x11;
+l1_sym = L1 + x1 + l_lat_fl*x2 - l_long_fl*x3  - x4;
+l2_sym = L2 + x4 - x5;
+l3_sym = L3 + x1 - l_lat_fr*x2 - l_long_fr*x3 - x6;
+l4_sym = L4 + x6 - x7;
+l5_sym = L5 + x1 + l_lat_rl*x2 + l_long_rl*x3 - x8;
+l6_sym = L6 + x8 - x9;
+l7_sym = L7 + x1 - x10 - l_lat_rr*x2 + l_long_rr*x3;
+l8_sym = L8 + x10 - x11;
 
 dKdx_x_symb = [(d1 + d3 + d5 + d7)*x1 - d7*x10 + (d1*l_lat_fl - d3*l_lat_fr + ...
 d5*l_lat_rl - d7*l_lat_rr)*x2 - d1*x4 - d3*x6 - d5*x8 + x3*(-(d3*l_long_fr)...
@@ -140,12 +151,12 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 400;
+num_iter = 4;
 delta_t = 1e-1; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
 tol = 1e-6;
-y = zeros(11, length(t));
+y = zeros(length(t),11);
 order = zeros(length(t),1);
 err_arr = zeros(length(t),1);
 
@@ -190,9 +201,8 @@ l6 = eval(l6_sym);
 l7 = eval(l7_sym);
 l8 = eval(l8_sym);
 
-y(:,1) = u_n;
 u_n_m_1 = u_n;
-u_n_m_1(1)=u_n(1) - 0 * delta_t;
+u_n_m_1(1)=u_n(1) - 100 * delta_t;
 u_n_p_1=u_n;
 
 rhs =-[mass_Body; 0; 0; mass_wheel_fl; 0; mass_wheel_fr; 0; mass_wheel_rl; 0; mass_wheel_rr; 0];
@@ -205,7 +215,7 @@ f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_
 %dKcols_dk = eval(dKcols_dk); % evaluate it numerically
 condition = [];
 d = 0;
-for i = 1: length(t)-1
+for i = 1: length(t)
     K = get_K();
     r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
     i
@@ -266,14 +276,14 @@ for i = 1: length(t)-1
     condition = [condition, cond(J)];
     u_n_m_1 = u_n;
     u_n = u_n_p_1;
-    y(:,i+1) = u_n_p_1;
+    y(i,:) = u_n_p_1;
 end
 d
 %order
 figure;
-plot(t,y(1,:));
+plot(t,y(:,1));
 title('car position');
-%plot(t,y(4:11,:))
+%plot(t,y(:,4:11))
 figure;
 plot(order);
 title('newton iterations');
@@ -282,6 +292,7 @@ figure;
 plot(err_arr);
 title('error');
 legend();
+%csvwrite('lookUp11Dof.txt',[y,err_arr]);
 
 function K = get_K()
     global l_long_fl;

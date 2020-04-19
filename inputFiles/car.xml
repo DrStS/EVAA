@@ -93,10 +93,10 @@
   <InitialConditions>
     <SpringElongation>
       <Body>
-        <ReerRight>0.24</ReerRight>
-        <ReerLeft>0.24</ReerLeft>
-        <FrontLeft>0.21</FrontLeft>
-        <FrontRight>0.21</FrontRight>
+        <ReerRight>0.20</ReerRight>
+        <ReerLeft>0.20</ReerLeft>
+        <FrontLeft>0.20</FrontLeft>
+        <FrontRight>0.20</FrontRight>
       </Body>
       <Tyre>
         <ReerRight>0.2</ReerRight>

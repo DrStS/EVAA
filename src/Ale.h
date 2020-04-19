@@ -1,10 +1,11 @@
 #pragma once
 //#include "Car.h"
-#include "Profile_class.h"
-#include "Load_module.h"
+#include "RoadProfile.h"
+#include "LoadModule.h"
 #include "EVAAComputeEngine.h"
 #include "11DOF.h"
 #include "Constants.h"
+#include "BLAS.h"
 
 /*
 Implements the ALE method to extend the linear 11DOF system
@@ -14,10 +15,10 @@ class ALE {
 private:	
 	// necessary class objects
 	Car<T>* Car_obj; // suppose Interpolation in the Car
-	Load_module* Load_module_obj; // needs Profile and Car
+	LoadModule<T>* Load_module_obj; // needs Profile and Car
 	Linear11dof<T>* linear11dof_obj;
 	EVAALookup<Constants::floatEVAA>* interpolator;// interpolator member of EVAA
-	Profile* profile_obj;
+	Profile<T>* profile_obj;
 
 	
 	// simulation parameters
@@ -68,7 +69,7 @@ public:
 	Constructor
 	*/
 	ALE(Car<T>* Car_obj_val,
-		Load_module* Load_module_val,
+		LoadModule<T>* Load_module_val,
 		Linear11dof<T>* linear11dof_val,
 		EVAALookup<Constants::floatEVAA>* lookup_table) {
 
@@ -102,7 +103,7 @@ public:
 		Load_module_obj->update_force(t, force_vector, Delta_x_vec, new_centripetal_force);
 		Load_module_obj->update_torque(t, new_torque, Delta_x_vec);
 
-		cblas_dscal(2, -1, new_centripetal_force, 1);
+		mkl<T>::scal(2, -1, new_centripetal_force, 1);
 
 		// 1. Update global X,Y velocities
 		MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->Velocity_vec_xy[0], centripetal_force[0], new_centripetal_force[0], h_, global_mass);
@@ -121,13 +122,8 @@ public:
 		torque[2] = new_torque[2]; // z - component
 
 	}
-
-
-	/*
-	Executes the time iteration of the ALE solvers, switches from global position update to solving of the linear 11DOF system
-	*/
-	void solve(T* sol_vect) {
-
+	void solve(T* sol_vect, T* u_sol) {
+	
 		//initialize solution vector
 		int sol_size = (floor(tend_ / h_) + 1);
 		const int force_dimensions = Constants::DIM * Constants::VEC_DIM;
@@ -136,6 +132,7 @@ public:
 		const int num_springs = 2 * Constants::NUM_LEGS;
 
 		// allocate memory
+
 		time_vec = (T*)mkl_calloc(sol_size, sizeof(T), Constants::ALIGNMENT);
 		u_sol = (T*)mkl_calloc(sol_size * (Constants::VEC_DIM * Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), Constants::ALIGNMENT);
@@ -148,13 +145,13 @@ public:
 		
 		torque = new T[3];
 		new_torque = new T[3];
-		
+
 		// calculate characteristics of the whole car
 		calculate_global_inertia_Z();
 		global_mass = Car_obj->get_global_mass();
 		// start time iteration
 		T t = h_;
-		
+
 		// initialize the linear solver
 		linear11dof_obj->initialize_solver(h_);
 		T* solution_vect;
@@ -168,8 +165,9 @@ public:
 			Load_module_obj->update_force(t, force_vector, Delta_x_vec, centripetal_force);
 			Load_module_obj->update_torque(t, torque, Delta_x_vec);
 			// convert centrifugal force to centripetal (only for x, y direction)
-			cblas_dscal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
-
+			mkl<T>::scal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
+			if (iter == 100)
+			MathLibrary::write_vector(centripetal_force, centripetal_force_dimensions);
 			global_frame_solver(t);
 
 			// translate 27 force vector + 3 torques into 11DOF
@@ -183,24 +181,37 @@ public:
 			}
 			solution_vect = u_sol + iter * (Constants::VEC_DIM * Constants::DIM);
 			Car_obj->populate_results(Car_obj->Position_vec_xy, Car_obj->u_current_linear, solution_vect);
-			
+
 			t += h_;
 			iter++;
-			
+
 		}
 
-		cblas_dcopy((Constants::VEC_DIM * Constants::DIM), u_sol + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
+		mkl<T>::copy((Constants::VEC_DIM * Constants::DIM), u_sol + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
 		Car_obj->combine_results();
 
 		MKL_free(time_vec);
-		MKL_free(u_sol);
+		
 		MKL_free(force_vector);
 		MKL_free(centripetal_force);
 		MKL_free(new_centripetal_force);
 		MKL_free(Delta_x_vec);
-		
+
 		delete[] torque;
 		delete[] new_torque;
+	
+	}
+
+
+
+	/*
+	Executes the time iteration of the ALE solvers, switches from global position update to solving of the linear 11DOF system
+	*/
+	void solve(T* sol_vect) {
+		int sol_size = (floor(tend_ / h_) + 1);
+		u_sol = (T*)mkl_calloc(sol_size * (Constants::VEC_DIM * Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		solve(sol_vect, u_sol);
+		MKL_free(u_sol);
 	}
 
 

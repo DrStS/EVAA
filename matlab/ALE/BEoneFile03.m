@@ -1,7 +1,8 @@
-clc;
-clear all;
-close all;
-format long e;
+function [final_displacement] = BEoneFile03(tend, h)
+%clc;
+%clear all;
+%close all;
+%format long e;
 % Dynamic Backward Euler problem 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 k_body_fl=28e3*0.69;
@@ -32,7 +33,7 @@ mass_tyre_rl=30;
 mass_wheel_rr=135/2;
 mass_tyre_rr=30;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-tend=1;
+%tend=1;
 u_init=0;
 du_init=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,11 +115,11 @@ u_n_p_1=zeros(dim_system,1);
 u_sol_red=zeros(1000+1,7);
 u_n_p_1_red=zeros(7,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-h=1/(1000);
+%h=1/(1000);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 u_n=[u_init; zeros(dim_system-1,1)];
 %u_n=[0;0;0; -0.04;0;-0.04;0;-0.01;0;-0.01;0];
-u_n_m_1=u_n-h*[du_init; zeros(dim_system-1,1)];
+u_n_m_1=[u_init; zeros(dim_system-1,1)]-h*[du_init; zeros(dim_system-1,1)];
 u_n_red=[u_init; zeros(6,1)];
 u_n_m_1_red=[u_init; zeros(6,1)]-h*[du_init; zeros(6,1)];
 A=((1/(h*h))*M+(1/h)*D+K);
@@ -156,8 +157,9 @@ toc
 final_displacement = u_n_p_1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Some plots
-figure();
-plot(t,u_sol(:,1)); grid on;
+%figure();
+%plot(t,u_sol(:,1)); grid on;
 %plot(t,u_sol_red(:,1)); grid on;
-legend;
-disp(u_sol(end,1:11)')
+%legend;
+%disp(u_sol(end,1:11)')
+end
