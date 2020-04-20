@@ -188,10 +188,7 @@ private:
 		MathLibrary::get_basis<T>(initial_orientation_, C_Nc);
 
 		// 3.	global_z = C_Nc(:,3);
-//		mkl<T>::copy(Constants::DIM, C_Nc + 6, Constants::DIM, global_z, 1);
-		global_z[0] = C_Nc[0 * Constants::DIM + 2];
-		global_z[1] = C_Nc[1 * Constants::DIM + 2];
-		global_z[2] = C_Nc[2 * Constants::DIM + 2];
+		mkl<T>::copy(Constants::DIM, C_Nc + 2, Constants::DIM, global_z, 1);
 
 		// 4.	global_z = -global_z / norm(global_z);
 		nrm = mkl<T>::nrm2(Constants::DIM, global_z, 1);
