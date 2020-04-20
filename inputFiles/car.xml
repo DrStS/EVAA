@@ -223,7 +223,7 @@
   <SimulationParameters>
     <GeneralSettings>
       <TimestepSize>1e-3</TimestepSize>
-      <NumberOfIterations>1</NumberOfIterations>
+      <NumberOfIterations>1000s</NumberOfIterations>
       <Gravity>
         <x>0</x>
         <y>0</y>

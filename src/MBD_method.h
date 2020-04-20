@@ -188,7 +188,7 @@ private:
 		MathLibrary::get_basis<T>(initial_orientation_, C_Nc);
 
 		// 3.	global_z = C_Nc(:,2);
-		mkl<T>::copy(Constants::DIM, C_Nc + 1, Constants::DIM, global_z, 1);
+		mkl<T>::copy(Constants::DIM, C_Nc + 2, Constants::DIM, global_z, 1);
 
 		// 4.	global_z = -global_z / norm(global_z);
 		nrm = mkl<T>::nrm2(Constants::DIM, global_z, 1);
@@ -433,7 +433,7 @@ public:
 		center_of_circle = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 
 		i = 0;
-		r_fl[i] = -l_long_fl; r_fr[i] = -l_long_fr; r_rl[i] = l_long_fl; r_rr[i] = l_long_rr;
+		r_fl[i] = l_long_fl; r_fr[i] = l_long_fr; r_rl[i] = -l_long_rl; r_rr[i] = -l_long_rr;
 		Ic[i * Constants::DIM + i] = I_body_xx;
 		mass_wheel[i] = mass_wheel_fl;
 		mass_tyre[i] = mass_tyre_fl;
@@ -471,7 +471,7 @@ public:
 		center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
 
 		i = 1;
-		r_fl[i] = l_lat_fl; r_fr[i] = -l_lat_fr; r_rl[i] = -l_lat_fl; r_rr[i] = l_lat_rr;
+		r_fl[i] = -l_lat_fl; r_fr[i] = l_lat_fr; r_rl[i] = -l_lat_rl; r_rr[i] = l_lat_rr;
 		Ic[i * Constants::DIM + i] = I_body_yy;
 		mass_wheel[i] = mass_wheel_fr;
 		mass_tyre[i] = mass_tyre_fr;
@@ -973,6 +973,7 @@ public:
 		mkl<T>::copy(Constants::DIM, pcc_, 1, cf_r_up_fl, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r_fl, 1, 1, cf_r_up_fl, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, pw_fl_, 1, cf_r_up_fl, 1);
+		
 
 		// r_up_fr
 		mkl<T>::copy(Constants::DIM, pcc_, 1, cf_r_up_fr, 1);
@@ -1012,6 +1013,7 @@ public:
 		inv_norm_r_up_fr = 1.0 / norm_r_up_fr;
 		inv_norm_r_up_rl = 1.0 / norm_r_up_rl;
 		inv_norm_r_up_rr = 1.0 / norm_r_up_rr;
+
 
 		norm_r_low_fl = mkl<T>::nrm2(Constants::DIM, cf_r_low_fl, 1);
 		norm_r_low_fr = mkl<T>::nrm2(Constants::DIM, cf_r_low_fr, 1);
@@ -1064,7 +1066,7 @@ public:
 
 		*/
 
-		mkl<T>::copy(Constants::DIM, cf_C_cN + 1, Constants::DIM, cf_col_dat, 1);
+		mkl<T>::copy(Constants::DIM, cf_C_cN + 2, Constants::DIM, cf_col_dat, 1);
 
 		MathLibrary::get_quaternion<T>(cf_r_up_fl, cf_col_dat, cf_upper_angle_fl, cf_upper_normal_fl, Constants::DIM);
 		MathLibrary::get_quaternion<T>(cf_r_up_fr, cf_col_dat, cf_upper_angle_fr, cf_upper_normal_fr, Constants::DIM);
@@ -1076,6 +1078,7 @@ public:
 		MathLibrary::get_quaternion(cf_r_low_rl, cf_r_up_rl, cf_lower_angle_rl, cf_lower_normal_rl, Constants::DIM);
 		MathLibrary::get_quaternion(cf_r_low_rr, cf_r_up_rr, cf_lower_angle_rr, cf_lower_normal_rr, Constants::DIM);
 
+		
 
 		/*
 		///////////////////////////////////////////////////////////////
@@ -1282,7 +1285,7 @@ public:
 		scale = (this->upper_rotational_stiffness[0]) * (*cf_upper_angle_fl);
 		mkl<T>::copy(Constants::DIM, cf_upper_normal_fl, 1, cf_upper_S_fl, 1);
 		mkl<T>::scal(Constants::DIM, scale, cf_upper_S_fl, 1);
-
+		
 
 		// upper_S2 = upper_rotational_stiffness(2) * upper_angle2 * upper_normal2;
 		scale = (this->upper_rotational_stiffness[1]) * (*cf_upper_angle_fr);
@@ -1513,14 +1516,18 @@ public:
 		MathLibrary::get_tilda<T>(wc_, cf_wc_tilda);
 		mkl<T>::copy(Constants::DIM, cf_Hc, 1, cf_temp, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_wc_tilda, Constants::DIM, cf_temp, 1, 0.0, cf_Hc, 1);
+
 		mkl<T>::copy(Constants::DIM, cf_Hc, 1, cf_sum_torque_spring_car, 1);
+		
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_Tc, 1, cf_sum_torque_spring_car, 1);
+
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_rr, 1, 1.0, cf_sum_torque_spring_car, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_rl, 1, 1.0, cf_sum_torque_spring_car, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_fr, 1, 1.0, cf_sum_torque_spring_car, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_fl, 1, 1.0, cf_sum_torque_spring_car, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_fl, 1, 0.0, cf_temp, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_fl_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
+		
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_fr, 1, 0.0, cf_temp, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_fr_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_rl, 1, 0.0, cf_temp, 1);
@@ -1528,6 +1535,7 @@ public:
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_rr, 1, 0.0, cf_temp, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_rr_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
 
+		
 		/*
 			///////////////////////////////////////////////////////////////
 			///////////                 Solve                  ////////////
@@ -1681,6 +1689,7 @@ public:
 		// add vt_rr to f vector
 		mkl<T>::copy(Constants::DIM, vt_rr_, 1, start_next, 1);
 		start_next += Constants::DIM;
+		
 	}
 
 	/*
@@ -1695,6 +1704,7 @@ public:
 		MathLibrary::get_tilda<T>(r_fr, r_fr_tilda);
 		MathLibrary::get_tilda<T>(r_rl, r_rl_tilda);
 		MathLibrary::get_tilda<T>(r_rr, r_rr_tilda);
+
 		/*
 		Preparing x_vector in the form of
 		x_vector = [wc; ...     % 3 1:3
@@ -1912,7 +1922,7 @@ public:
 		std::cout << "MBD: car body position pc=\n\t[" << sln[34] << "\n\t " << sln[35] << "\n\t " << sln[36] << "]" << std::endl;
 		std::cout << "MBD: rear-right wheel position pw1=\n\t[" << sln[37] << "\n\t " << sln[38] << "\n\t " << sln[39] << "]" << std::endl;
 		std::cout << "MBD: rear-left wheel position pw2=\n\t[" << sln[40] << "\n\t " << sln[41] << "\n\t " << sln[42] << "]" << std::endl;
-		std::cout << "MBD: front-left wheel position pw3=\n\t[" << sln[43] << "\n\t " << sln[44] << "\n\t " << sln[47] << "]" << std::endl;
+		std::cout << "MBD: front-left wheel position pw3=\n\t[" << sln[43] << "\n\t " << sln[44] << "\n\t " << sln[45] << "]" << std::endl;
 		std::cout << "MBD: front-right wheel position pw4=\n\t[" << sln[46] << "\n\t " << sln[47] << "\n\t " << sln[48] << "]" << std::endl;
 		std::cout << "MBD: rear-right tyre position pt1=\n\t[" << sln[49] << "\n\t " << sln[50] << "\n\t " << sln[51] << "]" << std::endl;
 		std::cout << "MBD: rear-left tyre position pt2=\n\t[" << sln[52] << "\n\t " << sln[53] << "\n\t " << sln[54] << "]" << std::endl;
