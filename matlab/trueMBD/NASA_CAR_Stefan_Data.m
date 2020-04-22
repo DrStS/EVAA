@@ -190,5 +190,27 @@ if visualize
     visualizer3D(y, delta_t);
 end
 
+wc = y_sol(end,1:3)'
+vc = y_sol(end,4:6)'
+vw_rr = y_sol(end,7:9)'
+vw_rl = y_sol(end,10:12)'
+vw_fl = y_sol(end,13:15)'
+vw_fr = y_sol(end,16:18)'
+vt_rr = y_sol(end,19:21)'
+vt_rl = y_sol(end,22:24)'
+vt_fl = y_sol(end,25:27)'
+vt_fr = y_sol(end,28:30)'
+qc = y_sol(end,31:34)'
+pcc = y_sol(end,35:37)'
+pw_rr = y_sol(end,38:40)'
+pw_rl = y_sol(end,41:43)'
+pw_fl = y_sol(end,44:46)'
+pw_fr = y_sol(end,47:49)'
+pt_rr = y_sol(end,50:52)'
+pt_rl = y_sol(end,53:55)'
+pt_fl = y_sol(end,56:58)'
+pt_fr = y_sol(end,59:61)'
+
+
 
 

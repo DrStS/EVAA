@@ -559,7 +559,6 @@ public:
 		initial_lower_spring_length[i] = MetaDataBase::DataBase()->getTyreSpringInitialLengthRearRight();
 		initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
 		
-
 		// A_Ic has cholesky factorization of Ic
 		mkl<T>::copy(Constants::DIM * Constants::DIM, Ic, 1, A_Ic, 1);
 		mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DIM, A_Ic, Constants::DIM);
@@ -1766,6 +1765,7 @@ public:
 
 		get_initial_length(start_orient, r_fl, r_fr, r_rl, r_rr, pcc, initial_upper_spring_length, initial_lower_spring_length, pw_fl, pw_fr, pw_rl, pw_rr, pt_fl, pt_fr, pt_rl, pt_rr);
 
+
 		// overwrites the initial velocity values
 		if (boundary_conditions == CIRCULAR) 
 			circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc, pt_fl, pt_fr, pt_rl, pt_rr, radius_circular_path);
@@ -1910,24 +1910,24 @@ public:
 	void print_final_result(T* sln) {
 		std::cout << "MBD: angular velocity w=\n\t["<<sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
 		std::cout << "MBD: car body velocity vc=\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;
-		std::cout << "MBD: rear-right wheel velocity vw1=\n\t[" << sln[6] << "\n\t " << sln[7] << "\n\t " << sln[8] << "]" << std::endl;
-		std::cout << "MBD: rear-left wheel velocity vw2=\n\t[" << sln[9] << "\n\t " << sln[10] << "\n\t " << sln[11] << "]" << std::endl;
-		std::cout << "MBD: front-left wheel velocity vw3=\n\t[" << sln[12] << "\n\t " << sln[13] << "\n\t " << sln[14] << "]" << std::endl;
-		std::cout << "MBD: front-right wheel velocity vw4=\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
-		std::cout << "MBD: rear-right tyre velocity vt1=\n\t[" << sln[18] << "\n\t " << sln[19] << "\n\t " << sln[20] << "]" << std::endl;
-		std::cout << "MBD: rear-left tyre velocity vt2=\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
-		std::cout << "MBD: front-left tyre velocity vt3=\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
-		std::cout << "MBD: front-right tyre velocity vt4=\n\t[" << sln[27] << "\n\t " << sln[28] << "\n\t " << sln[29] << "]" << std::endl;
+		std::cout << "MBD: front-left wheel velocity vw_fl=\n\t[" << sln[6] << "\n\t " << sln[7] << "\n\t " << sln[8] << "]" << std::endl;
+		std::cout << "MBD: front-right wheel velocity vw_fr=\n\t[" << sln[9] << "\n\t " << sln[10] << "\n\t " << sln[11] << "]" << std::endl;
+		std::cout << "MBD: rear-left wheel velocity vw_rl=\n\t[" << sln[12] << "\n\t " << sln[13] << "\n\t " << sln[14] << "]" << std::endl;
+		std::cout << "MBD: rear-right wheel velocity vw_rr=\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
+		std::cout << "MBD: front-left tyre velocity vt_fl=\n\t[" << sln[18] << "\n\t " << sln[19] << "\n\t " << sln[20] << "]" << std::endl;
+		std::cout << "MBD: front-right tyre velocity vt_fr=\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
+		std::cout << "MBD: rear-left tyre velocity vt_rl=\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
+		std::cout << "MBD: rear-right tyre velocity vt_rr=\n\t[" << sln[27] << "\n\t " << sln[28] << "\n\t " << sln[29] << "]" << std::endl;
 		std::cout << "MBD: orientation q=\n\t[" << sln[30] << "\n\t " << sln[31] << "\n\t " << sln[32] << "\n\t " << sln[33] << "]" << std::endl;
 		std::cout << "MBD: car body position pc=\n\t[" << sln[34] << "\n\t " << sln[35] << "\n\t " << sln[36] << "]" << std::endl;
-		std::cout << "MBD: rear-right wheel position pw1=\n\t[" << sln[37] << "\n\t " << sln[38] << "\n\t " << sln[39] << "]" << std::endl;
-		std::cout << "MBD: rear-left wheel position pw2=\n\t[" << sln[40] << "\n\t " << sln[41] << "\n\t " << sln[42] << "]" << std::endl;
-		std::cout << "MBD: front-left wheel position pw3=\n\t[" << sln[43] << "\n\t " << sln[44] << "\n\t " << sln[45] << "]" << std::endl;
-		std::cout << "MBD: front-right wheel position pw4=\n\t[" << sln[46] << "\n\t " << sln[47] << "\n\t " << sln[48] << "]" << std::endl;
-		std::cout << "MBD: rear-right tyre position pt1=\n\t[" << sln[49] << "\n\t " << sln[50] << "\n\t " << sln[51] << "]" << std::endl;
-		std::cout << "MBD: rear-left tyre position pt2=\n\t[" << sln[52] << "\n\t " << sln[53] << "\n\t " << sln[54] << "]" << std::endl;
-		std::cout << "MBD: front-left tyre position pt3=\n\t[" << sln[55] << "\n\t " << sln[56] << "\n\t " << sln[57] << "]" << std::endl;
-		std::cout << "MBD: front-right tyre position pt4=\n\t[" << sln[58] << "\n\t " << sln[59] << "\n\t " << sln[60] << "]" << std::endl;
+		std::cout << "MBD: front-left wheel position pw_fl=\n\t[" << sln[37] << "\n\t " << sln[38] << "\n\t " << sln[39] << "]" << std::endl;
+		std::cout << "MBD: front-right wheel position pw_fr=\n\t[" << sln[40] << "\n\t " << sln[41] << "\n\t " << sln[42] << "]" << std::endl;
+		std::cout << "MBD: rear-left wheel position pw_rl=\n\t[" << sln[43] << "\n\t " << sln[44] << "\n\t " << sln[45] << "]" << std::endl;
+		std::cout << "MBD: rear-right wheel position pw_rr=\n\t[" << sln[46] << "\n\t " << sln[47] << "\n\t " << sln[48] << "]" << std::endl;
+		std::cout << "MBD: front-left tyre position pt_fl=\n\t[" << sln[49] << "\n\t " << sln[50] << "\n\t " << sln[51] << "]" << std::endl;
+		std::cout << "MBD: front-right tyre position pt_fr=\n\t[" << sln[52] << "\n\t " << sln[53] << "\n\t " << sln[54] << "]" << std::endl;
+		std::cout << "MBD: rear-left tyre position pt_rl=\n\t[" << sln[55] << "\n\t " << sln[56] << "\n\t " << sln[57] << "]" << std::endl;
+		std::cout << "MBD: rear-right tyre position pt_rr=\n\t[" << sln[58] << "\n\t " << sln[59] << "\n\t " << sln[60] << "]" << std::endl;
 
 	}
 
