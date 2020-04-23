@@ -1536,7 +1536,7 @@ local_FT4 = [0; FT(4); 0];
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_rr, 1, 0.0, cf_temp, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_rr_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
 
-		write_vector(cf_sum_torque_spring_car, 3);
+		
 	}
 
 	void construct_right_hand_side() {

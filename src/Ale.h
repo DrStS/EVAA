@@ -69,8 +69,8 @@ public:
 	Constructor
 	*/
 	ALE(Car<T>* Car_obj_val,
-		TwoTrackModel<T>* TwoTrackModel_val,
 		LoadModule<T>* Load_module_val,
+		TwoTrackModel<T>* TwoTrackModel_val,
 		EVAALookup<Constants::floatEVAA>* lookup_table) {
 
 		Car_obj = Car_obj_val;
