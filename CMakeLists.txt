@@ -66,6 +66,7 @@ option(USE_MATLAB              "Build Matlab API"  OFF)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
 option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  OFF)
+option(INTERPOLATION         "Use Interpolation"  OFF)
 set(DataType_Precision "DOUBLE" CACHE STRING "DataType_Precision chosen by the user at CMake configure time")
 set_property(CACHE DataType_Precision PROPERTY STRINGS DOUBLE SINGLE INVALID)
 ######################################################################################
@@ -252,6 +253,12 @@ IF (${USE_MATLAB})
    add_definitions(-DUSE_MATLAB)
    find_package(Matlab REQUIRED)
    MESSAGE("Matlab status: ${MATLAB_FOUND}")
+ENDIF()
+#------------------------------------------------------------------------------------#
+# Check Interpolation
+IF (${INTERPOLATION}) 
+   MESSAGE("Using Interpolation")
+   add_definitions(-DINTERPOLATION)
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Check DataType_Precision
