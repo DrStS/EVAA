@@ -729,7 +729,6 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	mkl_free(tmp);
 }
 
-
 void EVAAComputeEngine::computeMKLlinear11dof() {
 	if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
 		floatEVAA h = MetaDataBase::DataBase()->getTimeStepSize();
