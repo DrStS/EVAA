@@ -16,7 +16,7 @@ private:
 	// necessary class objects
 	Car<T>* Car_obj; // suppose Interpolation in the Car
 	Load_module* Load_module_obj; // needs Profile and Car
-	Linear11dof<T>* linear11dof_obj;
+	TwoTrackModel<T>* TwoTrackModel_obj;
 	EVAALookup<Constants::floatEVAA>* interpolator;// interpolator member of EVAA
 	Profile* profile_obj;
 
@@ -70,12 +70,12 @@ public:
 	*/
 	ALE(Car<T>* Car_obj_val,
 		Load_module* Load_module_val,
-		Linear11dof<T>* linear11dof_val,
+		TwoTrackModel<T>* TwoTrackModel_val,
 		EVAALookup<Constants::floatEVAA>* lookup_table) {
 
 		Car_obj = Car_obj_val;
 		Load_module_obj = Load_module_val;
-		linear11dof_obj = linear11dof_val;
+		TwoTrackModel_obj = TwoTrackModel_val;
 		interpolator = lookup_table;
 
 		// general parameters of the simulation
@@ -153,7 +153,7 @@ public:
 		T t = h_;
 
 		// initialize the linear solver
-		linear11dof_obj->initialize_solver(h_);
+		TwoTrackModel_obj->initialize_solver(h_);
 		T* solution_vect;
 		int iter = 1;
 		// time iteration
@@ -173,7 +173,7 @@ public:
 			// translate 27 force vector + 3 torques into 11DOF
 			Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
 
-			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
+			TwoTrackModel_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
 			Car_obj->update_lengths_11DOF();
 			if (MetaDataBase::DataBase()->getUseInterpolation()) {
 				interpolator->getInterpolation(Car_obj->current_spring_length, k_vect);

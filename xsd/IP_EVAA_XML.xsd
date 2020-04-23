@@ -37,61 +37,61 @@
 
   <xs:complexType name="car_settings_t">
     <xs:sequence>
-      <xs:element name="Vehicle">
+      <xs:element name="VehicleXML">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="TwoTrackModel">
+            <xs:element name="TwoTrackModelXML">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="Geometry">
+                  <xs:element name="GeometryXML">
                     <xs:complexType>
                       <xs:sequence>
-                        <xs:element name="LateralReferenceToWheel" type="legs_t"/>
-                        <xs:element name="LongitudinalReferenceToWheel" type="legs_t"/>
-                        <xs:element name="SuspensionSprings" type="legs_t"/>
-                        <xs:element name="TyreSprings" type="legs_t"/>
+                        <xs:element name="LateralReferenceToWheelXML" type="legs_t"/>
+                        <xs:element name="LongitudinalReferenceToWheelXML" type="legs_t"/>
+                        <xs:element name="SuspensionSpringsXML" type="legs_t"/>
+                        <xs:element name="TyreSpringsXML" type="legs_t"/>
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
-                  <xs:element name="Stiffness">
+                  <xs:element name="StiffnessXML">
                     <xs:complexType>
                       <xs:choice>
-                        <xs:element name="Constant">
+                        <xs:element name="ConstantXML">
                           <xs:complexType>
                             <xs:sequence>
-                              <xs:element name="Tyre" type="legs_t"/>
-                              <xs:element name="Body" type="legs_t"/>
+                              <xs:element name="TyreXML" type="legs_t"/>
+                              <xs:element name="BodyXML" type="legs_t"/>
                             </xs:sequence>
                           </xs:complexType>
                         </xs:element>
-                        <xs:element name="LookupTable">
+                        <xs:element name="LookupTableXML">
                           <xs:complexType>
                             <xs:sequence>
-                              <xs:element name="FilePath" type="xs:string"/>
+                              <xs:element name="FilePathXML" type="xs:string"/>
                             </xs:sequence>
                           </xs:complexType>
                         </xs:element>
                       </xs:choice>
                     </xs:complexType>
                   </xs:element>
-                  <xs:element name="DampingCoefficients">
+                  <xs:element name="DampingCoefficientsXML">
                     <xs:complexType>
                       <xs:sequence>
-                        <xs:element name="Tyre" type="legs_t"/>
-                        <xs:element name="Body" type="legs_t"/>
+                        <xs:element name="TyreXML" type="legs_t"/>
+                        <xs:element name="BodyXML" type="legs_t"/>
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
-                  <xs:element name="Mass">
+                  <xs:element name="MassXML">
                     <xs:complexType>
                       <xs:sequence>
-                        <xs:element name="Body" type="xs:double" />
-                        <xs:element name="UnsprungMass" type="legs_t"/>
-                        <xs:element name="Tyre" type="legs_t"/>
+                        <xs:element name="BodyXML" type="xs:double" />
+                        <xs:element name="UnsprungMassXML" type="legs_t"/>
+                        <xs:element name="TyreXML" type="legs_t"/>
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
-                  <xs:element name="Inertia">
+                  <xs:element name="InertiaXML">
                     <xs:complexType>
                       <xs:sequence>
                         <xs:element name="XX" type="xs:double" />
@@ -113,67 +113,67 @@
         </xs:complexType>
       </xs:element>
 
-      <xs:element name="InitialConditions">
+      <xs:element name="InitialConditionsXML">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="SpringElongation">
+            <xs:element name="SpringElongationXML">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="Tyre" type="legs_t"/>
-                  <xs:element name="Body" type="legs_t"/>
+                  <xs:element name="TyreXML" type="legs_t"/>
+                  <xs:element name="BodyXML" type="legs_t"/>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            <xs:element name="Velocities">
+            <xs:element name="VelocitiesXML">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="Body" type="vector_t"/>
-                  <xs:element name="angularBody" type="vector_t"/>
-                  <xs:element name="UnsprungMass" type="legs_vector_t"/>
-                  <xs:element name="Tyre" type="legs_vector_t"/>
+                  <xs:element name="BodyXML" type="vector_t"/>
+                  <xs:element name="angularBodyXML" type="vector_t"/>
+                  <xs:element name="UnsprungMassXML" type="legs_vector_t"/>
+                  <xs:element name="TyreXML" type="legs_vector_t"/>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-  		      <xs:element name="Position">
+  		      <xs:element name="PositionXML">
 			        <xs:complexType>
 				        <xs:sequence>
-					        <xs:element name="Body" type="vector_t" />
-                  <xs:element name="UnsprungMass" type="legs_vector_t" minOccurs="0" maxOccurs="1"/>
-                  <xs:element name="Tyre" type="legs_vector_t" minOccurs="0" maxOccurs="1"/>
+					        <xs:element name="BodyXML" type="vector_t" />
+                  <xs:element name="UnsprungMassXML" type="legs_vector_t" minOccurs="0" maxOccurs="1"/>
+                  <xs:element name="TyreXML" type="legs_vector_t" minOccurs="0" maxOccurs="1"/>
                 </xs:sequence>
               </xs:complexType>
   		      </xs:element>
-  		      <xs:element name="Orientation" type="quad" />
+  		      <xs:element name="OrientationXML" type="quad" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
 
-      <xs:element name="SimulationParameters">
+      <xs:element name="SimulationParametersXML">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="MultyBodyDynamics">
+            <xs:element name="MultyBodyDynamicsXML">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="Solver" type="xs:string"/>
-                  <xs:element name="MaximalIterationNumber" type="xs:int" />
-                  <xs:element name="Tolerance" type="xs:double" />
-                  <xs:element name="SolutionDimension" type="xs:int" />
+                  <xs:element name="SolverXML" type="xs:string"/>
+                  <xs:element name="MaximalIterationNumberXML" type="xs:int" />
+                  <xs:element name="ToleranceXML" type="xs:double" />
+                  <xs:element name="SolutionDimensionXML" type="xs:int" />
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            <xs:element name="LinearALE">
+            <xs:element name="LinearALEXML">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="DOF" type="xs:int" />
+                  <xs:element name="DOFXML" type="xs:int" />
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            <xs:element name="GeneralSettings">
+            <xs:element name="GeneralSettingsXML">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="Gravity" type="vector_t" />
-                  <xs:element name="TimestepSize" type="xs:double" />
-                  <xs:element name="NumberOfIterations" type="xs:int" />
+                  <xs:element name="GravityXML" type="vector_t" />
+                  <xs:element name="TimestepSizeXML" type="xs:double" />
+                  <xs:element name="NumberOfIterationsXML" type="xs:int" />
                 </xs:sequence>
               </xs:complexType>
             </xs:element>

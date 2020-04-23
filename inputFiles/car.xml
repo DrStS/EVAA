@@ -1,82 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <EVAA_settings>
-  <Vehicle>
-    <TwoTrackModel>
-      <Geometry>
-        <LateralReferenceToWheel>
+  <VehicleXML>
+    <TwoTrackModelXML>
+      <GeometryXML>
+        <LateralReferenceToWheelXML>
           <ReerRight>1.68</ReerRight>
           <ReerLeft>1.68</ReerLeft>
           <FrontLeft>1.6916</FrontLeft>
           <FrontRight>1.6916</FrontRight>
-        </LateralReferenceToWheel>
-        <LongitudinalReferenceToWheel>
+        </LateralReferenceToWheelXML>
+        <LongitudinalReferenceToWheelXML>
           <ReerRight>1.596</ReerRight>
           <ReerLeft>1.596</ReerLeft>
           <FrontLeft>1.395</FrontLeft>
           <FrontRight>1.395</FrontRight>
-        </LongitudinalReferenceToWheel>
-        <SuspensionSprings>
+        </LongitudinalReferenceToWheelXML>
+        <SuspensionSpringsXML>
           <ReerRight>0.2</ReerRight>
           <ReerLeft>0.2</ReerLeft>
           <FrontLeft>0.2</FrontLeft>
           <FrontRight>0.2</FrontRight>
-        </SuspensionSprings>
-        <TyreSprings>
+        </SuspensionSpringsXML>
+        <TyreSpringsXML>
           <ReerRight>0.2</ReerRight>
           <ReerLeft>0.2</ReerLeft>
           <FrontLeft>0.2</FrontLeft>
           <FrontRight>0.2</FrontRight>
-        </TyreSprings>
-      </Geometry>
-      <Stiffness>
-        <Constant>
-          <Tyre>
+        </TyreSpringsXML>
+      </GeometryXML>
+      <StiffnessXML>
+        <ConstantXML>
+          <TyreXML>
             <ReerRight>260e3</ReerRight>
             <ReerLeft>260e3</ReerLeft>
             <FrontLeft>260e3</FrontLeft>
             <FrontRight>260e3</FrontRight>
-          </Tyre>
-          <Body>
+          </TyreXML>
+          <BodyXML>
             <ReerRight>13.12e3</ReerRight>
             <ReerLeft>13.12e3</ReerLeft>
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
-          </Body>
-        </Constant>
-        <!--LookupTable>
-          <FilePath>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePath>
-        </LookupTable-->
-      </Stiffness>
-      <DampingCoefficients>
-        <Tyre>
+          </BodyXML>
+        </ConstantXML>
+        <!--LookupTableXML>
+          <FilePathXML>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePathXML>
+        </LookupTableXML-->
+      </StiffnessXML>
+      <DampingCoefficientsXML>
+        <TyreXML>
           <ReerRight>0</ReerRight>
           <ReerLeft>0</ReerLeft>
           <FrontLeft>0</FrontLeft>
           <FrontRight>0</FrontRight>
-        </Tyre>
-        <Body>
+        </TyreXML>
+        <BodyXML>
           <ReerRight>0</ReerRight>
           <ReerLeft>0</ReerLeft>
           <FrontLeft>0</FrontLeft>
           <FrontRight>0</FrontRight>
-        </Body>
-      </DampingCoefficients>
-      <Mass>
-        <Body>1936</Body>
-        <UnsprungMass>
+        </BodyXML>
+      </DampingCoefficientsXML>
+      <MassXML>
+        <BodyXML>1936</BodyXML>
+        <UnsprungMassXML>
           <ReerRight>67.5</ReerRight>
           <ReerLeft>67.5</ReerLeft>
           <FrontLeft>72.5</FrontLeft>
           <FrontRight>72.5</FrontRight>
-        </UnsprungMass>
-        <Tyre>
+        </UnsprungMassXML>
+        <TyreXML>
           <ReerRight>30</ReerRight>
           <ReerLeft>30</ReerLeft>
           <FrontLeft>30</FrontLeft>
           <FrontRight>30</FrontRight>
-        </Tyre>
-      </Mass>
-      <Inertia>
+        </TyreXML>
+      </MassXML>
+      <InertiaXML>
         <XX>6400</XX>
         <XY>0</XY>
         <XZ>0</XZ>
@@ -86,37 +86,37 @@
         <ZX>0</ZX>
         <ZY>0</ZY>
         <ZZ>5000</ZZ>
-      </Inertia>
-    </TwoTrackModel>
-  </Vehicle>
+      </InertiaXML>
+    </TwoTrackModelXML>
+  </VehicleXML>
 
-  <InitialConditions>
-    <SpringElongation>
-      <Body>
+  <InitialConditionsXML>
+    <SpringElongationXML>
+      <BodyXML>
         <ReerRight>0.20</ReerRight>
         <ReerLeft>0.20</ReerLeft>
         <FrontLeft>0.20</FrontLeft>
         <FrontRight>0.20</FrontRight>
-      </Body>
-      <Tyre>
+      </BodyXML>
+      <TyreXML>
         <ReerRight>0.2</ReerRight>
         <ReerLeft>0.2</ReerLeft>
         <FrontLeft>0.2</FrontLeft>
         <FrontRight>0.2</FrontRight>
-      </Tyre>
-    </SpringElongation>
-    <Velocities>
-      <angularBody>
+      </TyreXML>
+    </SpringElongationXML>
+    <VelocitiesXML>
+      <angularBodyXML>
         <x>0</x>
         <y>0</y>
         <z>0</z>
-      </angularBody>
-      <Body>
+      </angularBodyXML>
+      <BodyXML>
         <x>0</x>
         <y>3</y>
         <z>0</z>
-      </Body>
-      <UnsprungMass>
+      </BodyXML>
+      <UnsprungMassXML>
         <ReerRight>
           <x>0</x>
           <y>3</y>
@@ -137,8 +137,8 @@
           <y>3</y>
           <z>0</z>
         </FrontRight>
-      </UnsprungMass>
-      <Tyre>
+      </UnsprungMassXML>
+      <TyreXML>
         <ReerRight>
           <x>0</x>
           <y>3</y>
@@ -159,21 +159,21 @@
           <y>3</y>
           <z>0</z>
         </FrontRight>
-      </Tyre>
-    </Velocities>
-    <Orientation>
+      </TyreXML>
+    </VelocitiesXML>
+    <OrientationXML>
 	    <x>0</x>
 		<y>0</y>
 		<z>0</z>
 	    <w>1</w>
-    </Orientation>
-	<Position>
-		<Body>
+    </OrientationXML>
+	<PositionXML>
+		<BodyXML>
 			<x>50</x>
 			<y>0</y>
 			<z>0</z>
-		</Body>
-  <!--  <UnsprungMass>
+		</BodyXML>
+  <!--  <UnsprungMassXML>
       <ReerRight>
         <x>50</x>
         <y>0</y>
@@ -194,8 +194,8 @@
         <y>0</y>
         <z>-0.01</z>
       </FrontRight>
-    </UnsprungMass>
-    <Tyre>
+    </UnsprungMassXML>
+    <TyreXML>
       <ReerRight>
         <x>50</x>
         <y>0</y>
@@ -216,28 +216,28 @@
         <y>0</y>
         <z>0</z>
       </FrontRight>
-    </Tyre>--> 
-  </Position>
-  </InitialConditions>
+    </TyreXML>--> 
+  </PositionXML>
+  </InitialConditionsXML>
 
-  <SimulationParameters>
-    <GeneralSettings>
-      <TimestepSize>1e-3</TimestepSize>
-      <NumberOfIterations>1000s</NumberOfIterations>
-      <Gravity>
+  <SimulationParametersXML>
+    <GeneralSettingsXML>
+      <TimestepSizeXML>1e-3</TimestepSizeXML>
+      <NumberOfIterationsXML>1000</NumberOfIterationsXML>
+      <GravityXML>
         <x>0</x>
         <y>0</y>
         <z>0</z>
-      </Gravity>
-    </GeneralSettings>
-    <MultyBodyDynamics>
-      <Solver>RK4</Solver>
-      <MaximalIterationNumber>10000</MaximalIterationNumber>
-      <Tolerance>1e-7</Tolerance>
-      <SolutionDimension>61</SolutionDimension>
-    </MultyBodyDynamics>
-    <LinearALE>
-      <DOF>11</DOF>
-    </LinearALE>
-  </SimulationParameters>
+      </GravityXML>
+    </GeneralSettingsXML>
+    <MultyBodyDynamicsXML>
+      <SolverXML>RK4</SolverXML>
+      <MaximalIterationNumberXML>10000</MaximalIterationNumberXML>
+      <ToleranceXML>1e-7</ToleranceXML>
+      <SolutionDimensionXML>61</SolutionDimensionXML>
+    </MultyBodyDynamicsXML>
+    <LinearALEXML>
+      <DOFXML>11</DOFXML>
+    </LinearALEXML>
+  </SimulationParametersXML>
 </EVAA_settings>

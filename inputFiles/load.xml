@@ -15,7 +15,7 @@
     <force_body>
       <x>0</x>
       <y>0</y>
-      <z>4e3</z>
+      <z>1.1e3</z>
     </force_body>
     <force_wheel>
       <ReerRight>

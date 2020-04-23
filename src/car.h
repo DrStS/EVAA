@@ -18,9 +18,9 @@ private:
 	*/
 	void Construct11DOFMass() {
 		M_linear[0] = Mass_vec[0];
-		M_linear[DOF + 1] = I_CG[0];
-		M_linear[2 * DOF + 2] = I_CG[4];
-		mkl<T>::copy(DOF - 3, Mass_vec + 1, 1, M_linear + 3 * DOF + 3, DOF + 1); // M_linear = diagonal matrix
+		M_linear[Constants::DOF + 1] = I_CG[0];
+		M_linear[2 * Constants::DOF + 2] = I_CG[4];
+		mkl<T>::copy(Constants::DOF - 3, Mass_vec + 1, 1, M_linear + 3 * Constants::DOF + 3, Constants::DOF + 1); // M_linear = diagonal matrix
 	}
 
 	/*
@@ -213,14 +213,14 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////// Params for 11 DOF system ////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		M_linear = (T*)mkl_calloc(DOF * DOF, sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
-		temp_linear = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT);  // 11 Constants::DIM
-		K = (T*)mkl_calloc(DOF * DOF, sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
-		K_trans = (T*)mkl_malloc(DOF * DOF * sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
-		D = (T*)mkl_calloc(DOF * DOF, sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
-		u_prev_linear = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // 11 Constants::DIM
-		u_current_linear = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // 11 Constants::DIM
-		velocity_current_linear = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
+		M_linear = (T*)mkl_calloc(Constants::DOF * Constants::DOF, sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
+		temp_linear = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);  // 11 Constants::DIM
+		K = (T*)mkl_calloc(Constants::DOF * Constants::DOF, sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
+		K_trans = (T*)mkl_malloc(Constants::DOF * Constants::DOF * sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
+		D = (T*)mkl_calloc(Constants::DOF * Constants::DOF, sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
+		u_prev_linear = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // 11 Constants::DIM
+		u_current_linear = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // 11 Constants::DIM
+		velocity_current_linear = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
 		k_vec = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
 		l_lat = (T*)mkl_malloc(Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
 		l_long = (T*)mkl_malloc(Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
@@ -437,7 +437,7 @@ public:
 		//compute_dx(u_prev_linear + 3);
 		//construct_11DOF_vector(initial_position, initial_angle, u_prev_linear);
 		compute_dx(u_prev_linear + 3);
-		mkl<T>::copy(DOF, u_prev_linear, 1, u_current_linear, 1);
+		mkl<T>::copy(Constants::DOF, u_prev_linear, 1, u_current_linear, 1);
 		tyre_index_set[0] = 2;
 		tyre_index_set[1] = 4;
 		tyre_index_set[2] = 6;
@@ -519,85 +519,85 @@ public:
 		K[10] = 0.0;
 
 		temp_linear[1] = l_lat[0] * l_lat[0] * k_vect[0] + l_lat[1] * l_lat[1] * k_vect[2] + l_lat[2] * l_lat[2] * k_vect[4] + l_lat[3] * l_lat[3] * k_vect[6];
-		K[DOF + 2] = -l_long[0] * l_lat[0] * k_vect[0] + l_lat[1] * l_long[1] * k_vect[2] + l_long[2] * l_lat[2] * k_vect[4] - l_long[3] * l_lat[3] * k_vect[6];
-		K[DOF + 3] = -l_lat[0] * k_vect[0];
-		K[DOF + 4] = 0;
-		K[DOF + 5] = l_lat[1] * k_vect[2];
-		K[DOF + 6] = 0;
-		K[DOF + 7] = -l_lat[2] * k_vect[4];
-		K[DOF + 8] = 0;
-		K[DOF + 9] = l_lat[3] * k_vect[6];
-		K[DOF + 10] = 0;
+		K[Constants::DOF + 2] = -l_long[0] * l_lat[0] * k_vect[0] + l_lat[1] * l_long[1] * k_vect[2] + l_long[2] * l_lat[2] * k_vect[4] - l_long[3] * l_lat[3] * k_vect[6];
+		K[Constants::DOF + 3] = -l_lat[0] * k_vect[0];
+		K[Constants::DOF + 4] = 0;
+		K[Constants::DOF + 5] = l_lat[1] * k_vect[2];
+		K[Constants::DOF + 6] = 0;
+		K[Constants::DOF + 7] = -l_lat[2] * k_vect[4];
+		K[Constants::DOF + 8] = 0;
+		K[Constants::DOF + 9] = l_lat[3] * k_vect[6];
+		K[Constants::DOF + 10] = 0;
 
 		temp_linear[2] = l_long[0] * l_long[0] * k_vect[0] + l_long[1] * l_long[1] * k_vect[2] + l_long[2] * l_long[2] * k_vect[4] + l_long[3] * l_long[3] * k_vect[6];
-		K[2 * DOF + 3] = l_long[0] * k_vect[0];
-		K[2 * DOF + 4] = 0;
-		K[2 * DOF + 5] = l_long[1] * k_vect[2];
-		K[2 * DOF + 6] = 0;
-		K[2 * DOF + 7] = -l_long[2] * k_vect[4];
-		K[2 * DOF + 8] = 0;
-		K[2 * DOF + 9] = -l_long[3] * k_vect[6];
-		K[2 * DOF + 10] = 0;
+		K[2 * Constants::DOF + 3] = l_long[0] * k_vect[0];
+		K[2 * Constants::DOF + 4] = 0;
+		K[2 * Constants::DOF + 5] = l_long[1] * k_vect[2];
+		K[2 * Constants::DOF + 6] = 0;
+		K[2 * Constants::DOF + 7] = -l_long[2] * k_vect[4];
+		K[2 * Constants::DOF + 8] = 0;
+		K[2 * Constants::DOF + 9] = -l_long[3] * k_vect[6];
+		K[2 * Constants::DOF + 10] = 0;
 
 		temp_linear[3] = k_vect[0] + k_vect[1];
-		K[3 * DOF + 4] = -k_vect[1];
-		K[3 * DOF + 5] = 0;
-		K[3 * DOF + 6] = 0;
-		K[3 * DOF + 7] = 0;
-		K[3 * DOF + 8] = 0;
-		K[3 * DOF + 9] = 0;
-		K[3 * DOF + 10] = 0;
+		K[3 * Constants::DOF + 4] = -k_vect[1];
+		K[3 * Constants::DOF + 5] = 0;
+		K[3 * Constants::DOF + 6] = 0;
+		K[3 * Constants::DOF + 7] = 0;
+		K[3 * Constants::DOF + 8] = 0;
+		K[3 * Constants::DOF + 9] = 0;
+		K[3 * Constants::DOF + 10] = 0;
 		// all others are zero
 
 		temp_linear[4] = k_vect[1];
-		K[4 * DOF + 5] = 0;
-		K[4 * DOF + 6] = 0;
-		K[4 * DOF + 7] = 0;
-		K[4 * DOF + 8] = 0;
-		K[4 * DOF + 9] = 0;
-		K[4 * DOF + 10] = 0;
+		K[4 * Constants::DOF + 5] = 0;
+		K[4 * Constants::DOF + 6] = 0;
+		K[4 * Constants::DOF + 7] = 0;
+		K[4 * Constants::DOF + 8] = 0;
+		K[4 * Constants::DOF + 9] = 0;
+		K[4 * Constants::DOF + 10] = 0;
 
 		temp_linear[5] = k_vect[2] + k_vect[3];
-		K[5 * DOF + 6] = -k_vect[3];
-		K[5 * DOF + 7] = 0;
-		K[5 * DOF + 8] = 0;
-		K[5 * DOF + 9] = 0;
-		K[5 * DOF + 10] = 0;
+		K[5 * Constants::DOF + 6] = -k_vect[3];
+		K[5 * Constants::DOF + 7] = 0;
+		K[5 * Constants::DOF + 8] = 0;
+		K[5 * Constants::DOF + 9] = 0;
+		K[5 * Constants::DOF + 10] = 0;
 
 		temp_linear[6] = k_vect[3];
-		K[6 * DOF + 7] = 0;
-		K[6 * DOF + 8] = 0;
-		K[6 * DOF + 9] = 0;
-		K[6 * DOF + 10] = 0;
+		K[6 * Constants::DOF + 7] = 0;
+		K[6 * Constants::DOF + 8] = 0;
+		K[6 * Constants::DOF + 9] = 0;
+		K[6 * Constants::DOF + 10] = 0;
 
 		temp_linear[7] = k_vect[4] + k_vect[5];
-		K[7 * DOF + 8] = -k_vect[5];
-		K[7 * DOF + 9] = 0;
-		K[7 * DOF + 10] = 0;
+		K[7 * Constants::DOF + 8] = -k_vect[5];
+		K[7 * Constants::DOF + 9] = 0;
+		K[7 * Constants::DOF + 10] = 0;
 
 
 		temp_linear[8] = k_vect[5];
-		K[8 * DOF + 9] = 0;
-		K[8 * DOF + 10] = 0;
+		K[8 * Constants::DOF + 9] = 0;
+		K[8 * Constants::DOF + 10] = 0;
 
 
 		temp_linear[9] = k_vect[6] + k_vect[7];
-		K[9 * DOF + 10] = -k_vect[7];
+		K[9 * Constants::DOF + 10] = -k_vect[7];
 
 		temp_linear[10] = k_vect[7];
 		
 
 		// symmetrize K
 		//cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
-		mkl<T>::lacpy(LAPACK_ROW_MAJOR, 'U', DOF, DOF, K, DOF, K_trans, DOF);
+		mkl<T>::lacpy(LAPACK_ROW_MAJOR, 'U', Constants::DOF, Constants::DOF, K, Constants::DOF, K_trans, Constants::DOF);
 
-		mkl<T>::imatcopy('R', 'T', DOF, DOF, 1.0, K_trans, DOF, DOF); // get transpose of matrix
+		mkl<T>::imatcopy('R', 'T', Constants::DOF, Constants::DOF, 1.0, K_trans, Constants::DOF, Constants::DOF); // get transpose of matrix
 		
-		mkl<T>::lacpy(LAPACK_ROW_MAJOR, 'L', DOF, DOF, K_trans, DOF, K, DOF); // copy lower triangular in the orig matrix
+		mkl<T>::lacpy(LAPACK_ROW_MAJOR, 'L', Constants::DOF, Constants::DOF, K_trans, Constants::DOF, K, Constants::DOF); // copy lower triangular in the orig matrix
 		//cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
 
 		// add the diagonal to K
-		MathLibrary::allocate_to_diagonal(K, temp_linear, DOF); // K = K + K'+ diag(K)
+		MathLibrary::allocate_to_diagonal(K, temp_linear, Constants::DOF); // K = K + K'+ diag(K)
 
 
 	}

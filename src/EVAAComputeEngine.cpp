@@ -730,14 +730,14 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 }
 
 
-void EVAAComputeEngine::computeMKLlinear11dof() {
+void EVAAComputeEngine::computeMKLTwoTrackModel() {
 	if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
 		floatEVAA h = MetaDataBase::DataBase()->getTimeStepSize();
 		floatEVAA tend = MetaDataBase::DataBase()->getNumberOfTimeIterations() * h;
 		int DOF = MetaDataBase::DataBase()->getDOF();
 		floatEVAA* sol = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
 		Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness);
-		Linear11dofFull<floatEVAA> solver(car);
+		TwoTrackModelFull<floatEVAA> solver(car);
 		solver.apply_boundary_condition(MetaDataBase::DataBase()->getRoadConditions());
 		solver.solve(sol);
 		size_t steps = floor(tend / h);
@@ -748,7 +748,7 @@ void EVAAComputeEngine::computeMKLlinear11dof() {
 		delete car;
 	}
 	else {
-		std::cout << "Linear11dof solver will only work with NONFIXED boundary conditions, computation skipped" << std::endl;
+		std::cout << "TwoTrackModel solver will only work with NONFIXED boundary conditions, computation skipped" << std::endl;
 	}
 }
 
@@ -792,8 +792,8 @@ void EVAAComputeEngine::computeALE(void) {
 	roadProfile->update_initial_condition(car);
 
 	Load_module* loadModule = new Load_module(roadProfile, car);
-	Linear11dof<floatEVAA>* linear11dof = new Linear11dof<floatEVAA>(car);
-	ALE<floatEVAA>* ale = new ALE<floatEVAA>(car, loadModule, linear11dof, _lookupStiffness);
+	TwoTrackModel<floatEVAA>* TwoTrackModel_obj = new TwoTrackModel<floatEVAA>(car);
+	ALE<floatEVAA>* ale = new ALE<floatEVAA>(car, loadModule, TwoTrackModel_obj, _lookupStiffness);
 
 	size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
 	floatEVAA* sol = (floatEVAA*)mkl_malloc(solutionDim * sizeof(floatEVAA), Constants::ALIGNMENT);
@@ -805,7 +805,7 @@ void EVAAComputeEngine::computeALE(void) {
 	delete car;
 	delete loadModule;
 	delete roadProfile;
-	delete linear11dof;
+	delete TwoTrackModel_obj;
 	delete ale;
 
 	mkl_free(sol);
@@ -876,8 +876,8 @@ void EVAAComputeEngine::computeALEtest(void) {
 //	Road_Profile->update_initial_condition(Car1);
 //
 //	Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _loadModuleParameter);
-//	Linear11dof<floatEVAA>* linear11dof_sys = new Linear11dof<floatEVAA>(Car1);
-//	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, linear11dof_sys, _lookupStiffness, _parameters);
+//	TwoTrackModel<floatEVAA>* TwoTrackModel_sys = new TwoTrackModel<floatEVAA>(Car1);
+//	ALE<floatEVAA>* Ale_sys = new ALE<floatEVAA>(Car1, Load_module1, TwoTrackModel_sys, _lookupStiffness, _parameters);
 //
 //	Ale_sys->solve(soln, complete_soln2);
 //
@@ -888,7 +888,7 @@ void EVAAComputeEngine::computeALEtest(void) {
 //	delete Car1;
 //	delete Load_module1;
 //	delete Road_Profile;
-//	delete linear11dof_sys;
+//	delete TwoTrackModel_sys;
 //	delete Ale_sys;
 //
 //	mkl_free(soln);

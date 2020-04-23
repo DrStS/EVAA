@@ -16,7 +16,7 @@
 #define DBG_NEW new
 #endif
 #include <mkl.h>
-#include "Car.h"
+#include "car.h"
 #include "MathLibrary.h"
 #include "Constants.h"
 #include "MetaDataBase.h"
@@ -26,7 +26,7 @@
 * \brief class to compute one timestep of the linear 11 dof system in small angle approximation
 */
 template <typename T>
-class Linear11dofParent {
+class TwoTrackModelParent {
 protected:
 	// main car object
 	Car<T>* car_;												/**< pointer to car instance with all important car parameter */
@@ -116,13 +116,13 @@ public:
 	Constructor
 	*/
 
-	Linear11dofParent(Car<T>* input_car) {
+	TwoTrackModelParent(Car<T>* input_car) {
 		car_ = input_car;
 		DOF = car_->DOF;
-		mat_len = (DOF) * (DOF);
-		u_n_m_1 = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // velocity
-		u_n = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // position
-		u_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT);
+		mat_len = (Constants::DOF) * (Constants::DOF);
+		u_n_m_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // velocity
+		u_n = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // position
+		u_n_p_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
 		A = (T*)mkl_malloc(mat_len * sizeof(T), Constants::ALIGNMENT);
 		B = (T*)mkl_calloc(mat_len, sizeof(T), Constants::ALIGNMENT);
 	}
@@ -140,7 +140,7 @@ public:
 	/*
 	Destructor
 	*/
-	virtual ~Linear11dofParent() {
+	virtual ~TwoTrackModelParent() {
 		mkl_free(A);
 		mkl_free(B);
 		mkl_free(u_n);
@@ -150,12 +150,12 @@ public:
 };
 
 template <typename T>
-class Linear11dof : public Linear11dofParent<T>{
+class TwoTrackModel : public TwoTrackModelParent<T>{
 public:
 	/*
 	Constructor
 	*/
-	Linear11dof(Car<T>* input_car): Linear11dofParent<T>(input_car){}
+	TwoTrackModel(Car<T>* input_car): TwoTrackModelParent<T>(input_car){}
 
 	/*
 	Intializes the solution vector in the timestep -1 (before the simulation starts)
@@ -166,15 +166,15 @@ public:
 		factor_h = (1 / (h_));
 
 		// B=((2/(h*h))*M+(1/h)*D);
-		mkl<T>::axpy(this->DOF, 2 * factor_h2, car_->M_linear, this->DOF + 1, B, this->DOF + 1);
+		mkl<T>::axpy(Constants::DOF, 2 * factor_h2, car_->M_linear, Constants::DOF + 1, B, Constants::DOF + 1);
 		mkl<T>::axpy(mat_len, factor_h, car_->D, 1, B, 1);
 		
-		mkl<T>::copy(DOF, car_->u_prev_linear, 1, u_n, 1);
+		mkl<T>::copy(Constants::DOF, car_->u_prev_linear, 1, u_n, 1);
 
 		// u_n_m_1 = u_n - h_ * velocity_current_linear
-		mkl<T>::copy(DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
-		mkl<T>::scal(DOF, -h_, u_n_m_1, 1);
-		mkl<T>::axpy(DOF, 1, u_n, 1, u_n_m_1, 1);
+		mkl<T>::copy(Constants::DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
+		mkl<T>::scal(Constants::DOF, -h_, u_n_m_1, 1);
+		mkl<T>::axpy(Constants::DOF, 1, u_n, 1, u_n_m_1, 1);
 	}
 	/*
 	Performs one timestep of the 11DOF solver
@@ -186,49 +186,49 @@ public:
 		// A = M_linear (also acts as initialization of A)
 		mkl<T>::copy(mat_len, car_->M_linear, 1, A, 1);
 		// A = 1/h^2 * A => A = 1/h^2 * M
-		mkl<T>::scal(this->DOF, factor_h2, A, this->DOF + 1); // use the fact that M is diagonal
+		mkl<T>::scal(Constants::DOF, factor_h2, A, Constants::DOF + 1); // use the fact that M is diagonal
 		// A += 1/h * D => A = 1/h^2 * M + 1/h * D
 		mkl<T>::axpy(mat_len, factor_h, car_->D, 1, A, 1);
 		// A += K => A = 1/h^2 * M + 1/h * D + K
 		mkl<T>::axpy(mat_len, 1, car_->K, 1, A, 1);
 
 		// u_n_m_1 = -1/h^2 * u_n_m_1
-		mkl<T>::scal(DOF, -factor_h2, u_n_m_1, 1);
+		mkl<T>::scal(Constants::DOF, -factor_h2, u_n_m_1, 1);
 		//MathLibrary::write_vector(force, 11);
 		//cblas_dscal(DOF, 0.0, force, 1);
-		MathLibrary::Solvers<T, Linear11dof>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, DOF);
+		MathLibrary::Solvers<T, TwoTrackModel<T>>::Linear_Backward_Euler(A, B, car_->M_linear, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
 		// solutio = solution[t_n] = u_n_p_1
-		mkl<T>::copy(DOF, u_n_p_1, 1, solution, 1);
+		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_1
 		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and u_n_p_1 point to u_n_m_1 now
 	}
 	/*
 	Destructor
 	*/
-	virtual ~Linear11dof() {}
+	virtual ~TwoTrackModel() {}
 };
 
 template <typename T>
-class Linear11dofBDF2 : public Linear11dof<T> {
+class TwoTrackModelBDF2 : public TwoTrackModel<T> {
 protected:
 	T* C, *D, *E;
 	T* u_n_m_2, *u_n_m_3;
 	size_t time_step_count = 0;
-	void(Linear11dofBDF2<T>::*_active_executor)(T*, T*);
+	void(TwoTrackModelBDF2<T>::*_active_executor)(T*, T*);
 
 public:
 	/*
 	Constructor
 	*/
-	Linear11dofBDF2(Car<T>* input_car) : Linear11dof<T>(input_car) {
+	TwoTrackModelBDF2(Car<T>* input_car) : TwoTrackModel<T>(input_car) {
 		C = (T*)mkl_calloc(mat_len,  sizeof(T), Constants::ALIGNMENT);
 		D = (T*)mkl_calloc(mat_len, sizeof(T), Constants::ALIGNMENT);
 		E = (T*)mkl_calloc(mat_len, sizeof(T), Constants::ALIGNMENT);
-		u_n_m_2 = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT);
-		u_n_m_3 = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT);
-		_active_executor = &Linear11dofBDF2<T>::first_two_steps;
+		u_n_m_2 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
+		u_n_m_3 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
+		_active_executor = &TwoTrackModelBDF2<T>::first_two_steps;
 	}
 
 	/*
@@ -236,7 +236,7 @@ public:
 	*/
 	virtual void initialize_solver(T h) {
 		h_ = h;
-		Linear11dof<T>::initialize_solver(h_);
+		TwoTrackModel<T>::initialize_solver(h_);
 	}
 
 	void initialize_solver_bdf2(T h) {
@@ -259,34 +259,34 @@ public:
 		// E = (-1/4)*(1/(h*h))*M
 		mkl<T>::axpy(mat_len, (-1.0/4.0) * factor_h2, car_->M_linear, 1, E, 1);
 
-		mkl<T>::copy(DOF, car_->u_prev_linear, 1, u_n, 1);
-		mkl<T>::copy(DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
+		mkl<T>::copy(Constants::DOF, car_->u_prev_linear, 1, u_n, 1);
+		mkl<T>::copy(Constants::DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
 
-		mkl<T>::scal(DOF, -h_, u_n_m_1, 1);
-		mkl<T>::axpy(DOF, 1, u_n, 1, u_n_m_1, 1);
+		mkl<T>::scal(Constants::DOF, -h_, u_n_m_1, 1);
+		mkl<T>::axpy(Constants::DOF, 1, u_n, 1, u_n_m_1, 1);
 
 	}
 
 	void first_two_steps(T* force, T* solution) {
 		
 		if (time_step_count == 0) {
-			mkl<T>::copy(DOF, u_n_m_1, 1, u_n_m_2, 1);
-			Linear11dof<T>::update_step(force, solution);
+			mkl<T>::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
+			TwoTrackModel<T>::update_step(force, solution);
 			time_step_count += 1;
 		}
 		else if (time_step_count == 1) {
-			mkl<T>::copy(DOF, u_n_m_2, 1, u_n_m_3, 1);
-			mkl<T>::copy(DOF, u_n_m_1, 1, u_n_m_2, 1);
-			Linear11dof<T>::update_step(force, solution);
+			mkl<T>::copy(Constants::DOF, u_n_m_2, 1, u_n_m_3, 1);
+			mkl<T>::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
+			TwoTrackModel<T>::update_step(force, solution);
 			time_step_count += 1;
 		}
 		else {
 			time_step_count += 1;
-			mkl<T>::copy(DOF, u_n_m_2, 1, u_n_m_3, 1);
-			mkl<T>::copy(DOF, u_n_m_1, 1, u_n_m_2, 1);
+			mkl<T>::copy(Constants::DOF, u_n_m_2, 1, u_n_m_3, 1);
+			mkl<T>::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
 			initialize_solver_bdf2(h_);
 			update_step_bdf2(force, solution);
-			_active_executor = &Linear11dofBDF2<T>::update_step_bdf2;
+			_active_executor = &TwoTrackModelBDF2<T>::update_step_bdf2;
 		}
 		
 	}
@@ -307,10 +307,10 @@ public:
 		mkl<T>::axpy(mat_len, (3.0/2.0)*factor_h, car_->D, 1, A, 1);
 		mkl<T>::axpy(mat_len, 1, car_->K, 1, A, 1);
 		//cblas_dscal(DOF, 0.0, force, 1);
-		MathLibrary::Solvers<T, Linear11dofBDF2>::Linear_BDF2(A, B, C, D, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, DOF);
+		MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Linear_BDF2(A, B, C, D, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
-		mkl<T>::copy(DOF, u_n_p_1, 1, solution, 1);
+		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
 		MathLibrary::swap_address<T>(u_n_m_2, u_n_m_3); // u_n_m_2 points to u_n_m_3 and u_n_m_3 points to u_n_m_2
 		MathLibrary::swap_address<T>(u_n_m_1, u_n_m_2); // u_n_m_2 points to u_n_m_1 and u_n_m_1 points to u_n_m_3
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_3
@@ -320,7 +320,7 @@ public:
 	/*
 	Destructor
 	*/
-	virtual ~Linear11dofBDF2() {
+	virtual ~TwoTrackModelBDF2() {
 		mkl_free(C);
 		mkl_free(D);
 		mkl_free(E);
@@ -335,15 +335,15 @@ public:
 For testing purposes
 */
 template <typename T>
-class Linear11dofFull : public Linear11dofBDF2<T> {
+class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
 public:
-	Linear11dofFull(Car<T>* input_car) :Linear11dofBDF2<T>(input_car) {
+	TwoTrackModelFull(Car<T>* input_car) :TwoTrackModelBDF2<T>(input_car) {
 
 		h_ = MetaDataBase::DataBase()->getTimeStepSize();
 		tend_ = MetaDataBase::DataBase()->getNumberOfTimeIterations() * h_;
 		int sol_size = (floor(tend_ / h_) + 1);
-		f_n_p_1 = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT);
-		u_sol = (T*)mkl_calloc((sol_size + 1) * (DOF), sizeof(T), Constants::ALIGNMENT);
+		f_n_p_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
+		u_sol = (T*)mkl_calloc((sol_size + 1) * (Constants::DOF), sizeof(T), Constants::ALIGNMENT);
 
 
 		interpolation_enabled = MetaDataBase::DataBase()->getUseInterpolation();
@@ -395,20 +395,20 @@ public:
 	void print_final_results(T* sln) {
 		std::cout.precision(15);
 		std::cout << std::scientific;
-		std::cout << "linear11DOF: orientation angles=\n\t[" << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
-		std::cout << "linear11DOF: car body position pc=\n\t[" << sln[0] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-right wheel position pw1=\n\t[" << sln[9] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-left wheel position pw2=\n\t[" << sln[7] << "]" << std::endl;
-		std::cout << "linear11DOF: front-left wheel position pw3=\n\t[" << sln[3] << "]" << std::endl;
-		std::cout << "linear11DOF: front-right wheel position pw4=\n\t[" << sln[5] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-right tyre position pt1=\n\t[" << sln[10] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-left tyre position pt2=\n\t[" << sln[8] << "]" << std::endl;
-		std::cout << "linear11DOF: front-left tyre position pt3=\n\t[" << sln[4] << "]" << std::endl;
-		std::cout << "linear11DOF: front-right tyre position pt4=\n\t[" << sln[6] << "]" << std::endl;
+		std::cout << "TwoTrackModel: orientation angles=\n\t[" << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
+		std::cout << "TwoTrackModel: car body position pc=\n\t[" << sln[0] << "]" << std::endl;
+		std::cout << "TwoTrackModel: rear-right wheel position pw1=\n\t[" << sln[9] << "]" << std::endl;
+		std::cout << "TwoTrackModel: rear-left wheel position pw2=\n\t[" << sln[7] << "]" << std::endl;
+		std::cout << "TwoTrackModel: front-left wheel position pw3=\n\t[" << sln[3] << "]" << std::endl;
+		std::cout << "TwoTrackModel: front-right wheel position pw4=\n\t[" << sln[5] << "]" << std::endl;
+		std::cout << "TwoTrackModel: rear-right tyre position pt1=\n\t[" << sln[10] << "]" << std::endl;
+		std::cout << "TwoTrackModel: rear-left tyre position pt2=\n\t[" << sln[8] << "]" << std::endl;
+		std::cout << "TwoTrackModel: front-left tyre position pt3=\n\t[" << sln[4] << "]" << std::endl;
+		std::cout << "TwoTrackModel: front-right tyre position pt4=\n\t[" << sln[6] << "]" << std::endl;
 	}
 
 
-	virtual ~Linear11dofFull() {
+	virtual ~TwoTrackModelFull() {
 		mkl_free(u_sol);
 		mkl_free(f_n_p_1);
 	}

@@ -82,7 +82,7 @@ public:
 	* \author Stefan Sicklinger
 	***********/
 	// MKL Linear solver
-	void computeMKLlinear11dof();
+	void computeMKLTwoTrackModel();
 	/***********************************************************************************************
 	* \brief compute engine
 	* \author Stefan Sicklinger
