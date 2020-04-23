@@ -23,7 +23,7 @@ private:
 	size_t solution_dim; /// this is by the formulation
 	std::string solver_name;
 	int used_solver;
-	
+
 	////////////////////////////// Environment conditions //////////////////////////////////////////////////////////////////
 	int boundary_conditions;
 	T radius_circular_path;
@@ -93,9 +93,9 @@ private:
 	//////////////////////////	External Forces terms //////////////////////////////////////////////////////
 	T g;
 	T* FC;
-	T *FT_fl, *FT_fr, *FT_rl, *FT_rr;
-	T *FW_fl, *FW_fr, *FW_rl, *FW_rr;
-	
+	T* FT_fl, * FT_fr, * FT_rl, * FT_rr;
+	T* FW_fl, * FW_fr, * FW_rl, * FW_rr;
+
 	//////////////////////////// Initial condition params //////////////////////////////////////////////////
 	T* initial_upper_spring_length, * initial_lower_spring_length, * initial_orientation, * initial_angular_velocity;
 
@@ -121,8 +121,14 @@ private:
 	T* cf_car_rot_force_fl, * cf_car_rot_force_fr, * cf_car_rot_force_rl, * cf_car_rot_force_rr, * cf_sum_car_force_fl, * cf_sum_car_force_fr, * cf_sum_car_force_rl, * cf_sum_car_force_rr;
 	T* cf_local_FR_fl, * cf_local_FR_fr, * cf_local_FR_rl, * cf_local_FR_rr;
 	T* cf_Hc, * cf_sum_torque_spring_car, * cf_Tc, * cf_wc_tilda;
-	T* cf_b_rem, * cf_Qc, * cf_qc_dot;
+	T* cf_b_rem, * cf_Qc, * cf_qc_dot, * accelerations;
 	T* current_spring_lengths, * stiffness_vector;
+	T* wc_, * vc_, * vw_fl_, * vw_fr_, * vw_rl_, * vw_rr_, * vt_fl_, * vt_fr_, * vt_rl_, * vt_rr_, * qc_;
+	T* pcc_, * pw_fl_, * pw_fr_, * pw_rl_, * pw_rr_, * pt_fl_, * pt_fr_, * pt_rl_, * pt_rr_;
+	T inv_norm_r_up_fl, inv_norm_r_up_fr, inv_norm_r_up_rl, inv_norm_r_up_rr;
+	T inv_norm_r_low_fl, inv_norm_r_low_fr, inv_norm_r_low_rl, inv_norm_r_low_rr;
+	T norm_r_up_fl, norm_r_up_fr, norm_r_up_rl, norm_r_up_rr;
+	T norm_r_low_fl, norm_r_low_fr, norm_r_low_rl, norm_r_low_rr;
 
 
 	////////////////////////// Lookup table ///////////////////////////////////////////
@@ -175,7 +181,7 @@ private:
 														8.	pt_fl	= pt_fl + lower_length(_fl)*global_z;
 		*/
 
-		
+
 
 		T* global_z = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		T* C_Nc = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
@@ -258,7 +264,7 @@ private:
 		// 9.	pt4 = pw4 + lower_length(4)*global_z;
 		mkl<T>::axpy(Constants::DIM, initial_lower_spring_length_[3], global_z, 1, tyre_coordinate_rr_, 1);
 
-		
+
 		mkl_free(global_z);
 		mkl_free(C_Nc);
 	}
@@ -295,12 +301,62 @@ private:
 	}
 
 
-public:
-	/*
-	Constructor
-	*/
-	MBD_method(EVAALookup<Constants::floatEVAA> * interpolator) {
+	void MemoryAllocation() {
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+		r_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		r_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		r_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		r_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		Ic = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		mass_wheel = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		mass_tyre = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		upper_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		lower_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		upper_spring_stiffness = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		lower_spring_stiffness = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		upper_rotational_stiffness = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		lower_rotational_stiffness = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		initial_upper_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		initial_lower_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		initial_orientation = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		initial_angular_velocity = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		upper_spring_damping = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		lower_spring_damping = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
+		vc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vw_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vw_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vw_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vw_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vt_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vt_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vt_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		vt_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		pcc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		FC = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		r_fl_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		r_fr_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		r_rl_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		r_rr_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FT_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FT_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FT_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FT_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FW_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FW_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FW_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		FW_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		A_Ic = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+		A_rem = (T*)mkl_calloc(9 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		center_of_circle = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+		accelerations = (T*)mkl_calloc(9 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+
+
+	}
+
+	void ReadFromXML() {
 		////////////////////////////// Simulation Parameters ///////////////////////////////////////////////////////////////
 		h = MetaDataBase::DataBase()->getTimeStepSize();
 		num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
@@ -311,7 +367,6 @@ public:
 		boundary_conditions = MetaDataBase::DataBase()->getRoadConditions();
 		radius_circular_path = MetaDataBase::DataBase()->getCircularRoadRadius();
 		use_interpolation = MetaDataBase::DataBase()->getUseInterpolation();
-		lookupStiffness = interpolator;
 
 		////////////////////////////// Car Definition ///////////////////////////////////////////////////////////////////////
 		k_body_fl = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
@@ -376,61 +431,13 @@ public:
 		lower_spring_length_rl = MetaDataBase::DataBase()->getTyreSpringLengthRearLeft();
 		lower_spring_length_rr = MetaDataBase::DataBase()->getTyreSpringLengthRearRight();
 
-		
+
 
 		g = MetaDataBase::DataBase()->getGravityField()[2];
 
+
+		// Fill up vectors
 		int i;
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		r_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		r_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		r_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		r_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		Ic = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		mass_wheel = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		mass_tyre = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		upper_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		lower_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		upper_spring_stiffness = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		lower_spring_stiffness = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		upper_rotational_stiffness = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		lower_rotational_stiffness = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		initial_upper_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		initial_lower_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		initial_orientation = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		initial_angular_velocity = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		upper_spring_damping = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		lower_spring_damping = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-		vc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vw_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vw_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vw_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vw_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vt_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vt_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vt_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		vt_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		pcc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		FC = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		r_fl_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		r_fr_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		r_rl_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		r_rr_tilda = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		FT_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		FT_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		FT_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		FT_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		FW_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		FW_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		FW_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		FW_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		A_Ic = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-		A_rem = (T*)mkl_calloc(9 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		center_of_circle = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 
 		i = 0;
 		r_fl[i] = l_long_fl; r_fr[i] = l_long_fr; r_rl[i] = -l_long_rl; r_rr[i] = -l_long_rr;
@@ -496,7 +503,7 @@ public:
 		vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
 		vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
 		pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
-		FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i]; 
+		FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i];
 		FT_fl[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[i];
 		FT_fr[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[i];
 		FT_rl[i] = MetaDataBase::DataBase()->getTyreExternalForceRearLeft()[i];
@@ -558,59 +565,76 @@ public:
 		initial_upper_spring_length[i] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
 		initial_lower_spring_length[i] = MetaDataBase::DataBase()->getTyreSpringInitialLengthRearRight();
 		initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
-		
+
+	}
+
+	void getCholeskyDecomposition() {
 		// A_Ic has cholesky factorization of Ic
 		mkl<T>::copy(Constants::DIM * Constants::DIM, Ic, 1, A_Ic, 1);
 		mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DIM, A_Ic, Constants::DIM);
 	}
 
+	/********************************************************************
+					Road Profile and Load module
+	*********************************************************************/
 	/*
 	Updates the velocity of the 4 wheels and tyres as well as the angular velocity, such that the car is already in the trajectory of the circle
 	overwrites the velocity in the tyres and wheels and the angular velocities
-	only keeps the tangential component of the velocity of the car body 
+	only keeps the tangential component of the velocity of the car body
 	*/
-	void circular_path_initialization(T* vc, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr, 
-		T* vt_fl, T* vt_fr, T* vt_rl, T* vt_rr, T* omega, T* pcc, 
-		T* pt_fl , T* pt_fr, T* pt_rl, T* pt_rr, T &radius_param) {
+	void circular_path_initialization(T* vc, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr,
+		T* vt_fl, T* vt_fr, T* vt_rl, T* vt_rr, T* omega, T* pcc,
+		T* pt_fl, T* pt_fr, T* pt_rl, T* pt_rr, T& radius_param) {
 
 		const MKL_INT dim = Constants::DIM;
 		const MKL_INT incx = 1;
- 
+
+		// only consider circular motion in the XY-plane
 		vc[2] = 0;
 
+		// memory allocation
 		T* perpendicular_dir = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		T* tangential_dir = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		T* radial_vector = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 
+		// vector from the car to the center of the circle
 		radial_vector[0] = pcc[0] - center_of_circle[0];
 		radial_vector[1] = pcc[1] - center_of_circle[1];
 		radial_vector[2] = 0;
 
+		// absolute distance from the car to the center
+		T radius = mkl<T>::nrm2(Constants::DIM, radial_vector, 1);
+
+		// vector out of the XY-plane (unit Z direction)
 		perpendicular_dir[2] = 1;
 
-		T radius = mkl<T>::nrm2(Constants::DIM, radial_vector, 1);
 
 		if (abs(radius - radius_param) > 0.01)
 			std::cout << "Warning! the initial position of the car is not on the trajectory provided in the circular path. \n The expected radius is " << radius_circular_path << ", but the car is at an initial distance of " << radius << " from the center of the circle.\n The execution procedes with the current spatial configuration and with the current distance to the center of the circle." << std::endl;
 
 		T inv_radius = 1. / radius;
 
+		// normalize the radial vector
 		mkl<T>::scal(dim, inv_radius, radial_vector, incx);
 
+		// calculate the direction of the motion
 		MathLibrary::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
 
+		// calculate the velocity magnitude
 		T magnitude = mkl<T>::dot(dim, vc, incx, tangential_dir, incx);
 
+		// get the velocity vector in tangential direction with computed magnitude
 		mkl<T>::copy(Constants::DIM, tangential_dir, 1, vc, 1);
-
 		mkl<T>::scal(dim, magnitude, vc, incx);
 
+		// get the physical radial vector again
 		mkl<T>::scal(dim, radius, radial_vector, incx);
 
+		// calculate the angular velocity of the car
 		MathLibrary::crossProduct(radial_vector, vc, omega);
-
 		mkl<T>::scal(Constants::DIM, inv_radius * inv_radius, omega, 1);
 
+		// calculate the velocity in all legs
 		MathLibrary::crossProduct(omega, pt_fl, vt_fl);
 		MathLibrary::crossProduct(omega, pt_fr, vt_fr);
 		MathLibrary::crossProduct(omega, pt_rl, vt_rl);
@@ -666,57 +690,68 @@ public:
 	\param p is the global position of the tyre
 	\result Fr The only force acting on the tyre
 	*/
-	void get_circular_road_force(T* Fr, T* v, T &m, T* p) {
+	void get_circular_road_force(T* Fr, T* v, T& m, T* p) {
 
-		T *unit_z_vector, *velocity_direction_tyre;
+		T* unit_z_vector, * velocity_direction_tyre;
 		T velocity_magnitude_tyre, inv_radius, force_magnitude_tyre;
 
+		// allocate memory
 		unit_z_vector = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		velocity_direction_tyre = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 
-
+		// some MKL constants (DIM=3)
 		const MKL_INT mkl_DIM = Constants::DIM;
 		const MKL_INT mkl_incx = 1;
 		const MKL_INT mkl_incy = 1;
 
+		//the force is in the same direction as the position vector TODO: take care of situation when the center of the circle is not at the origin!!
 		mkl<T>::copy(Constants::DIM, p, 1, Fr, 1);
 
 		Fr[2] = 0;		// path only in XZ-plane
 
-		inv_radius = 1.0 / mkl<T>::nrm2(Constants::DIM, p, 1);		// corresponds to the (inverse) radius of the trajectory at the considered tyre
+		// inverse radius of the trajectory at the considered tyre (see TODO above)
+		inv_radius = 1.0 / mkl<T>::nrm2(Constants::DIM, p, 1);
 
+		// normalize the force vector -- minus sign because the force points to the center 
 		mkl<T>::scal(Constants::DIM, -inv_radius, Fr, 1);
 
+		// perpendicular to the motion and radius
 		unit_z_vector[0] = 0.;
 		unit_z_vector[1] = 0.;
 		unit_z_vector[2] = 1.;
 
+		// get normalized direction of motion
 		MathLibrary::crossProduct(Fr, unit_z_vector, velocity_direction_tyre);
 
+		// get the physical velocity
 		velocity_magnitude_tyre = mkl<T>::dot(mkl_DIM, v, mkl_incx, velocity_direction_tyre, mkl_incy);
 
+		// get the physical force
 		force_magnitude_tyre = m * velocity_magnitude_tyre * velocity_magnitude_tyre * inv_radius;
-
 		mkl<T>::scal(Constants::DIM, force_magnitude_tyre, Fr, 1);
 
+		// free memory
 		MKL_free(unit_z_vector);
 		MKL_free(velocity_direction_tyre);
 	}
 
 
+
+	/************************************************************************
+					Functions needed for compute_f
+	*************************************************************************/
 	/*
 	Memory allocation of all the variables required in the solve function
 	To increase performance by removing repeting memory allocations
 	The same locations are overwritten at each timestep
 	*/
 	void compute_f_mem_alloc() {
+
 		// add to members
-
-
 		cf_C_cN = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
 		cf_r_up_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		cf_r_up_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		cf_r_up_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);	
+		cf_r_up_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		cf_r_up_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		cf_r_low_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		cf_r_low_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
@@ -808,7 +843,6 @@ public:
 		// required for the look up table
 		current_spring_lengths = (T*)mkl_calloc(8 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
 		stiffness_vector = (T*)mkl_calloc(8 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-
 	}
 
 	/*
@@ -896,61 +930,34 @@ public:
 		mkl_free(cf_qc_dot);
 		mkl_free(current_spring_lengths);
 		mkl_free(stiffness_vector);
+		mkl_free(accelerations);
 	}
 
-	/*
-	Solver which is called at each time step
-	Computes the forces and torques on each point mass and computes the right hand side of the ODE
-	\param x_ current solution of the system
-	\param t_ current simulation time
-	\return f_ the load vector
-	*/
-	void compute_f3D_reduced(T* x_, T t_, T* f_) {
-		/*
-		Small performance gain might be possible by transforming C_cN to column major
-		Note: corresponding MKL function call have to be changed too
-		*/
-		// Aliasing for readability
-		T* wc_ = x_;
-		T* vc_ = x_ + Constants::DIM;
-		T* vw_fl_ = x_ + 2 * Constants::DIM;
-		T* vw_fr_ = x_ + 3 * Constants::DIM;
-		T* vw_rl_ = x_ + 4 * Constants::DIM;
-		T* vw_rr_ = x_ + 5 * Constants::DIM;
-		T* vt_fl_ = x_ + 6 * Constants::DIM;
-		T* vt_fr_ = x_ + 7 * Constants::DIM;
-		T* vt_rl_ = x_ + 8 * Constants::DIM;
-		T* vt_rr_ = x_ + 9 * Constants::DIM;
-		T* qc_ = x_ + 10 * Constants::DIM;
-		T* pcc_ = x_ + 10 * Constants::DIM + Constants::NUM_LEGS;
-		T* pw_fl_ = x_ + 11 * Constants::DIM + Constants::NUM_LEGS;
-		T* pw_fr_ = x_ + 12 * Constants::DIM + Constants::NUM_LEGS;
-		T* pw_rl_ = x_ + 13 * Constants::DIM + Constants::NUM_LEGS;
-		T* pw_rr_ = x_ + 14 * Constants::DIM + Constants::NUM_LEGS;
-		T* pt_fl_ = x_ + 15 * Constants::DIM + Constants::NUM_LEGS;
-		T* pt_fr_ = x_ + 16 * Constants::DIM + Constants::NUM_LEGS;
-		T* pt_rl_ = x_ + 17 * Constants::DIM + Constants::NUM_LEGS;
-		T* pt_rr_ = x_ + 18 * Constants::DIM + Constants::NUM_LEGS;
-		T inv_norm_r_up_fl, inv_norm_r_up_fr, inv_norm_r_up_rl, inv_norm_r_up_rr;
-		T inv_norm_r_low_fl, inv_norm_r_low_fr, inv_norm_r_low_rl, inv_norm_r_low_rr;
-		T norm_r_up_fl, norm_r_up_fr, norm_r_up_rl, norm_r_up_rr;
-		T norm_r_low_fl, norm_r_low_fr, norm_r_low_rl, norm_r_low_rr;
-		//write_vector(r_fl, Constants::DIM);
-		//write_matrix(r_fl_tilda, Constants::DIM);
-		/*
-		/////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////                 Basis        //////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////
-		get cosine transforms (C_Nc means r_N = C_Nc * r_c)
-		compute local base vectors
-		basis_c = get_basis(qc);
-		*/
+	void get_current_variables(T* x) {
+		wc_ = x;
+		vc_ = x + 3;
+		vw_fl_ = x + 6;
+		vw_fr_ = x + 9;
+		vw_rl_ = x + 12;
+		vw_rr_ = x + 15;
+		vt_fl_ = x + 18;
+		vt_fr_ = x + 21;
+		vt_rl_ = x + 24;
+		vt_rr_ = x + 27;
+		qc_ = x + 30;
+		pcc_ = x + 34;
+		pw_fl_ = x + 37;
+		pw_fr_ = x + 40;
+		pw_rl_ = x + 43;
+		pw_rr_ = x + 46;
+		pt_fl_ = x + 49;
+		pt_fr_ = x + 52;
+		pt_rl_ = x + 55;
+		pt_rr_ = x + 58;
+	}
 
-		MathLibrary::get_basis<T>(qc_, cf_C_cN);
-		const MKL_INT mkl_DIM = Constants::DIM;
-		const MKL_INT mkl_incx = 1;
-		const MKL_INT mkl_incy = 1;
-
+	void compute_spring_lengths(double* pcc_, double* pw_, double* pt_, double* cf_r_up_, double* cf_r_low_, double* r_,
+		double& norm_r_up, double& inv_norm_r_up, double& norm_r_low, double& inv_norm_r_low) {
 		/*
 		% global positions of the tyre connections
 			pc1 = C_cN' * r1 + pcc;
@@ -969,62 +976,39 @@ public:
 			r_low3 = pw3 - pt3;
 			r_low4 = pw4 - pt4;
 		*/
-		mkl<T>::copy(Constants::DIM, pcc_, 1, cf_r_up_fl, 1);
-		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r_fl, 1, 1, cf_r_up_fl, 1);
-		mkl<T>::axpy(Constants::DIM, -1.0, pw_fl_, 1, cf_r_up_fl, 1);
-		
 
-		// r_up_fr
-		mkl<T>::copy(Constants::DIM, pcc_, 1, cf_r_up_fr, 1);
-		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r_fr, 1, 1, cf_r_up_fr, 1);
-		mkl<T>::axpy(Constants::DIM, -1.0, pw_fr_, 1, cf_r_up_fr, 1);
-		// r_up_rl
-		mkl<T>::copy(Constants::DIM, pcc_, 1, cf_r_up_rl, 1);
-		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r_rl, 1, 1, cf_r_up_rl, 1);
-		mkl<T>::axpy(Constants::DIM, -1.0, pw_rl_, 1, cf_r_up_rl, 1);
-		// r_up4
-		mkl<T>::copy(Constants::DIM, pcc_, 1, cf_r_up_rr, 1);
-		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, this->r_rr, 1, 1, cf_r_up_rr, 1);
-		mkl<T>::axpy(Constants::DIM, -1.0, pw_rr_, 1, cf_r_up_rr, 1);
-		
-		// r_low1
-		mkl<T>::copy(Constants::DIM, pw_fl_, 1, cf_r_low_fl, 1);
-		mkl<T>::axpy(Constants::DIM, -1.0, pt_fl_, 1, cf_r_low_fl, 1);
+		mkl<T>::copy(Constants::DIM, pcc_, 1, cf_r_up_, 1);
+		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, r_, 1, 1, cf_r_up_, 1);
+		mkl<T>::axpy(Constants::DIM, -1.0, pw_, 1, cf_r_up_, 1);
 
-		// r_low2
-		mkl<T>::copy(Constants::DIM, pw_fr_, 1, cf_r_low_fr, 1);
-		mkl<T>::axpy(Constants::DIM, -1.0, pt_fr_, 1, cf_r_low_fr, 1);
-
-		// r_low3
-		mkl<T>::copy(Constants::DIM, pw_rl_, 1, cf_r_low_rl, 1);
-		mkl<T>::axpy(Constants::DIM, -1.0, pt_rl_, 1, cf_r_low_rl, 1);
-		// r_low4
-		mkl<T>::copy(Constants::DIM, pw_rr_, 1, cf_r_low_rr, 1);
-		mkl<T>::axpy(Constants::DIM, -1.0, pt_rr_, 1, cf_r_low_rr, 1);
+		// r_low
+		mkl<T>::copy(Constants::DIM, pw_, 1, cf_r_low_, 1);
+		mkl<T>::axpy(Constants::DIM, -1.0, pt_, 1, cf_r_low_, 1);
 
 		/* Compute spring lengths and their inverses */
-		norm_r_up_fl = mkl<T>::nrm2(Constants::DIM, cf_r_up_fl, 1);
-		norm_r_up_fr = mkl<T>::nrm2(Constants::DIM, cf_r_up_fr, 1);
-		norm_r_up_rl = mkl<T>::nrm2(Constants::DIM, cf_r_up_rl, 1);
-		norm_r_up_rr = mkl<T>::nrm2(Constants::DIM, cf_r_up_rr, 1);
+		norm_r_up = mkl<T>::nrm2(Constants::DIM, cf_r_up_, 1);
 
-		inv_norm_r_up_fl = 1.0 / norm_r_up_fl;
-		inv_norm_r_up_fr = 1.0 / norm_r_up_fr;
-		inv_norm_r_up_rl = 1.0 / norm_r_up_rl;
-		inv_norm_r_up_rr = 1.0 / norm_r_up_rr;
+		inv_norm_r_up = 1.0 / norm_r_up;
 
+		norm_r_low = mkl<T>::nrm2(Constants::DIM, cf_r_low_, 1);
 
-		norm_r_low_fl = mkl<T>::nrm2(Constants::DIM, cf_r_low_fl, 1);
-		norm_r_low_fr = mkl<T>::nrm2(Constants::DIM, cf_r_low_fr, 1);
-		norm_r_low_rl = mkl<T>::nrm2(Constants::DIM, cf_r_low_rl, 1);
-		norm_r_low_rr = mkl<T>::nrm2(Constants::DIM, cf_r_low_rr, 1);
+		inv_norm_r_low = 1.0 / norm_r_low;
 
-		inv_norm_r_low_fl = 1.0 / norm_r_low_fl;
-		inv_norm_r_low_fr = 1.0 / norm_r_low_fr;
-		inv_norm_r_low_rl = 1.0 / norm_r_low_rl;
-		inv_norm_r_low_rr = 1.0 / norm_r_low_rr;
+	}
 
+	void get_car_orientation() {
+		/*
+		/////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////                 Basis        //////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////
+		get cosine transforms (C_Nc means r_N = C_Nc * r_c)
+		compute local base vectors
+		basis_c = get_basis(qc);
+		*/
+		MathLibrary::get_basis<T>(qc_, cf_C_cN);
+	}
 
+	void apply_stiffness_interpolation() {
 		/* Compute stiffness from lookup table*/
 		if (use_interpolation) {
 			//populate the lenght_vector
@@ -1050,6 +1034,11 @@ public:
 			lower_spring_stiffness[3] = stiffness_vector[7];
 		}
 
+
+
+	}
+
+	void compute_angles() {
 		/*
 		get angle and normal vectors at the legs
 
@@ -1076,10 +1065,9 @@ public:
 		MathLibrary::get_quaternion(cf_r_low_fr, cf_r_up_fr, cf_lower_angle_fr, cf_lower_normal_fr, Constants::DIM);
 		MathLibrary::get_quaternion(cf_r_low_rl, cf_r_up_rl, cf_lower_angle_rl, cf_lower_normal_rl, Constants::DIM);
 		MathLibrary::get_quaternion(cf_r_low_rr, cf_r_up_rr, cf_lower_angle_rr, cf_lower_normal_rr, Constants::DIM);
+	}
 
-		
-
-		/*
+	void compute_elongational_forces() {		/*
 		///////////////////////////////////////////////////////////////
 		////////////           Forces  and Torques          ///////////
 		///////////////////////////////////////////////////////////////
@@ -1123,33 +1111,40 @@ public:
 		mkl<T>::copy(Constants::DIM, cf_r_low_rr, 1, cf_lower_force_rr, 1);
 		scale = this->lower_spring_stiffness[3] * (1.0 - this->lower_spring_length[3] * inv_norm_r_low_rr);
 		mkl<T>::scal(Constants::DIM, scale, cf_lower_force_rr, 1);
-
+	}
+	
+	void compute_damping_forces(){
 		/*
 		calculate forces from damping effects
-			upper_vdiff1 = (dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1)) * r_up1 * inv_norm_r_up1 * inv_norm_r_up1;
-			upper_vdiff2 = (dot((vc - C_cN' * (r2_tilda * wc)), r_up2) - dot(vw2, r_up2)) * r_up2 * inv_norm_r_up2 * inv_norm_r_up2;
-			upper_vdiff3 = (dot((vc - C_cN' * (r3_tilda * wc)), r_up3) - dot(vw3, r_up3)) * r_up3 * inv_norm_r_up3 * inv_norm_r_up3;
-			upper_vdiff4 = (dot((vc - C_cN' * (r4_tilda * wc)), r_up4) - dot(vw4, r_up4)) * r_up4 * inv_norm_r_up4 * inv_norm_r_up4;
+		upper_vdiff1 = (dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1)) * r_up1 * inv_norm_r_up1 * inv_norm_r_up1;
+		upper_vdiff2 = (dot((vc - C_cN' * (r2_tilda * wc)), r_up2) - dot(vw2, r_up2)) * r_up2 * inv_norm_r_up2 * inv_norm_r_up2;
+		upper_vdiff3 = (dot((vc - C_cN' * (r3_tilda * wc)), r_up3) - dot(vw3, r_up3)) * r_up3 * inv_norm_r_up3 * inv_norm_r_up3;
+		upper_vdiff4 = (dot((vc - C_cN' * (r4_tilda * wc)), r_up4) - dot(vw4, r_up4)) * r_up4 * inv_norm_r_up4 * inv_norm_r_up4;
 
-			lower_vdiff1 = (dot(vw1, r_low1) - dot(vt1, r_low1)) * r_low1 * inv_norm_r_low1 * inv_norm_r_low1;
-			lower_vdiff2 = (dot(vw2, r_low2) - dot(vt2, r_low2)) * r_low2 * inv_norm_r_low2 * inv_norm_r_low2;
-			lower_vdiff3 = (dot(vw3, r_low3) - dot(vt3, r_low3)) * r_low3 * inv_norm_r_low3 * inv_norm_r_low3;
-			lower_vdiff4 = (dot(vw4, r_low4) - dot(vt4, r_low4)) * r_low4 * inv_norm_r_low4 * inv_norm_r_low4;
+		lower_vdiff1 = (dot(vw1, r_low1) - dot(vt1, r_low1)) * r_low1 * inv_norm_r_low1 * inv_norm_r_low1;
+		lower_vdiff2 = (dot(vw2, r_low2) - dot(vt2, r_low2)) * r_low2 * inv_norm_r_low2 * inv_norm_r_low2;
+		lower_vdiff3 = (dot(vw3, r_low3) - dot(vt3, r_low3)) * r_low3 * inv_norm_r_low3 * inv_norm_r_low3;
+		lower_vdiff4 = (dot(vw4, r_low4) - dot(vt4, r_low4)) * r_low4 * inv_norm_r_low4 * inv_norm_r_low4;
 
-			upper_dampf1 = upper_spring_damping1(upper_vdiff1);
-			upper_dampf2 = upper_spring_damping2(upper_vdiff2);
-			upper_dampf3 = upper_spring_damping3(upper_vdiff3);
-			upper_dampf4 = upper_spring_damping4(upper_vdiff4);
+		upper_dampf1 = upper_spring_damping1(upper_vdiff1);
+		upper_dampf2 = upper_spring_damping2(upper_vdiff2);
+		upper_dampf3 = upper_spring_damping3(upper_vdiff3);
+		upper_dampf4 = upper_spring_damping4(upper_vdiff4);
 
-			lower_dampf1 = lower_spring_damping1(lower_vdiff1);
-			lower_dampf2 = lower_spring_damping2(lower_vdiff2);
-			lower_dampf3 = lower_spring_damping3(lower_vdiff3);
-			lower_dampf4 = lower_spring_damping4(lower_vdiff4);
+		lower_dampf1 = lower_spring_damping1(lower_vdiff1);
+		lower_dampf2 = lower_spring_damping2(lower_vdiff2);
+		lower_dampf3 = lower_spring_damping3(lower_vdiff3);
+		lower_dampf4 = lower_spring_damping4(lower_vdiff4);
 
-		*/
+	*/
 
+		const MKL_INT mkl_DIM = Constants::DIM;
+		const MKL_INT mkl_incx = 1;
+		const MKL_INT mkl_incy = 1;
 
-		//// upper_dampf1
+		T scale;
+
+		// upper_dampf1
 		// compute: vc - C_cN' * (r1_tilda * wc))
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_fl_tilda, Constants::DIM, wc_, 1, 0.0, cf_temp, 1);
 		mkl<T>::copy(Constants::DIM, vc_, 1, cf_upper_dampf_fl, 1);
@@ -1264,27 +1259,30 @@ public:
 		scale = scale * inv_norm_r_low_rr * inv_norm_r_low_rr * this->lower_spring_damping[3];
 		mkl<T>::copy(Constants::DIM, cf_r_low_rr, 1, cf_lower_dampf_rr, 1);
 		mkl<T>::scal(Constants::DIM, scale, cf_lower_dampf_rr, 1);
+}
 
+	void compute_torques() {
 		/*
-		torque from the rotational spring
-		upper_S1 = upper_rotational_stiffness(1) * upper_angle1 * upper_normal1;        % in global basis
-		upper_S2 = upper_rotational_stiffness(2) * upper_angle2 * upper_normal2;
-		upper_S3 = upper_rotational_stiffness(3) * upper_angle3 * upper_normal3;
-		upper_S4 = upper_rotational_stiffness(4) * upper_angle4 * upper_normal4;
+	torque from the rotational spring
+	upper_S1 = upper_rotational_stiffness(1) * upper_angle1 * upper_normal1;        % in global basis
+	upper_S2 = upper_rotational_stiffness(2) * upper_angle2 * upper_normal2;
+	upper_S3 = upper_rotational_stiffness(3) * upper_angle3 * upper_normal3;
+	upper_S4 = upper_rotational_stiffness(4) * upper_angle4 * upper_normal4;
 
-		lower_S1 = lower_rotational_stiffness(1) * lower_angle1 * lower_normal1;        % in global basis
-		lower_S2 = lower_rotational_stiffness(2) * lower_angle2 * lower_normal2;
-		lower_S3 = lower_rotational_stiffness(3) * lower_angle3 * lower_normal3;
-		lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
-		*/
+	lower_S1 = lower_rotational_stiffness(1) * lower_angle1 * lower_normal1;        % in global basis
+	lower_S2 = lower_rotational_stiffness(2) * lower_angle2 * lower_normal2;
+	lower_S3 = lower_rotational_stiffness(3) * lower_angle3 * lower_normal3;
+	lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
+	*/
 
 
+		T scale;
 
 		// upper_S1 = upper_rotational_stiffness(1) * upper_angle1 * upper_normal1;
 		scale = (this->upper_rotational_stiffness[0]) * (*cf_upper_angle_fl);
 		mkl<T>::copy(Constants::DIM, cf_upper_normal_fl, 1, cf_upper_S_fl, 1);
 		mkl<T>::scal(Constants::DIM, scale, cf_upper_S_fl, 1);
-		
+
 
 		// upper_S2 = upper_rotational_stiffness(2) * upper_angle2 * upper_normal2;
 		scale = (this->upper_rotational_stiffness[1]) * (*cf_upper_angle_fr);
@@ -1321,29 +1319,37 @@ public:
 		mkl<T>::copy(Constants::DIM, cf_lower_normal_rr, 1, cf_lower_S_rr, 1);
 		mkl<T>::scal(Constants::DIM, scale, cf_lower_S_rr, 1);
 
+	}
+
+	void compute_torques_resultant_forces() {
 		/*
-		calculate the effect of the rotational springs (in global basis)
-		lower_rot_force1 = -cross( lower_S1, r_low1) / (r_low1'*r_low1);
-		lower_rot_force2 = -cross( lower_S2, r_low2) / (r_low2'*r_low2);
-		lower_rot_force3 = -cross( lower_S3, r_low3) / (r_low3'*r_low3);
-		lower_rot_force4 = -cross( lower_S4, r_low4) / (r_low4'*r_low4);
+calculate the effect of the rotational springs (in global basis)
+lower_rot_force1 = -cross( lower_S1, r_low1) / (r_low1'*r_low1);
+lower_rot_force2 = -cross( lower_S2, r_low2) / (r_low2'*r_low2);
+lower_rot_force3 = -cross( lower_S3, r_low3) / (r_low3'*r_low3);
+lower_rot_force4 = -cross( lower_S4, r_low4) / (r_low4'*r_low4);
 
-		upper_rot_force1 = -cross( upper_S1, r_up1) / (r_up1'*r_up1);
-		upper_rot_force2 = -cross( upper_S2, r_up2) / (r_up2'*r_up2);
-		upper_rot_force3 = -cross( upper_S3, r_up3) / (r_up3'*r_up3);
-		upper_rot_force4 = -cross( upper_S4, r_up4) / (r_up4'*r_up4);
+upper_rot_force1 = -cross( upper_S1, r_up1) / (r_up1'*r_up1);
+upper_rot_force2 = -cross( upper_S2, r_up2) / (r_up2'*r_up2);
+upper_rot_force3 = -cross( upper_S3, r_up3) / (r_up3'*r_up3);
+upper_rot_force4 = -cross( upper_S4, r_up4) / (r_up4'*r_up4);
 
-		car_rot_force1 = -cross( lower_S1, r_up1) / (r_up1'*r_up1);
-		car_rot_force2 = -cross( lower_S2, r_up2) / (r_up2'*r_up2);
-		car_rot_force3 = -cross( lower_S3, r_up3) / (r_up3'*r_up3);
-		car_rot_force4 = -cross( lower_S4, r_up4) / (r_up4'*r_up4);
+car_rot_force1 = -cross( lower_S1, r_up1) / (r_up1'*r_up1);
+car_rot_force2 = -cross( lower_S2, r_up2) / (r_up2'*r_up2);
+car_rot_force3 = -cross( lower_S3, r_up3) / (r_up3'*r_up3);
+car_rot_force4 = -cross( lower_S4, r_up4) / (r_up4'*r_up4);
 
-		sum_car_force1 = car_rot_force1 - upper_force1 - upper_dampf1 - upper_rot_force1;
-		sum_car_force2 = car_rot_force2 - upper_force2 - upper_dampf2 - upper_rot_force2;
-		sum_car_force3 = car_rot_force3 - upper_force3 - upper_dampf3 - upper_rot_force3;
-		sum_car_force4 = car_rot_force4 - upper_force4 - upper_dampf4 - upper_rot_force4;
-		*/
+sum_car_force1 = car_rot_force1 - upper_force1 - upper_dampf1 - upper_rot_force1;
+sum_car_force2 = car_rot_force2 - upper_force2 - upper_dampf2 - upper_rot_force2;
+sum_car_force3 = car_rot_force3 - upper_force3 - upper_dampf3 - upper_rot_force3;
+sum_car_force4 = car_rot_force4 - upper_force4 - upper_dampf4 - upper_rot_force4;
+*/
+		const MKL_INT mkl_DIM = Constants::DIM;
+		const MKL_INT mkl_incx = 1;
+		const MKL_INT mkl_incy = 1;
 
+
+		T scale;
 		T scale_u_fl, scale_u_fr, scale_u_rl, scale_u_rr;
 		// lower_rot_force1 = -cross( lower_S1, r_low1) / (r_low1'*r_low1);
 		scale = -1.0 / mkl<T>::dot(mkl_DIM, cf_r_low_fl, mkl_incx, cf_r_low_fl, mkl_incy);
@@ -1409,6 +1415,9 @@ public:
 		MathLibrary::crossProduct(cf_lower_S_rr, cf_r_up_rr, cf_car_rot_force_rr);
 		mkl<T>::scal(Constants::DIM, scale_u_rr, cf_car_rot_force_rr, 1);
 
+	}
+
+	void compute_car_body_forces() {
 		// sum_car_force1 = car_rot_force1 - upper_force1 - upper_dampf1 - upper_rot_force1;
 		mkl<T>::copy(Constants::DIM, cf_car_rot_force_fl, 1, cf_sum_car_force_fl, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_upper_force_fl, 1, cf_sum_car_force_fl, 1);
@@ -1433,40 +1442,44 @@ public:
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_upper_dampf_rr, 1, cf_sum_car_force_rr, 1);
 		mkl<T>::axpy(Constants::DIM, -1.0, cf_upper_rot_force_rr, 1, cf_sum_car_force_rr, 1);
 
+
+	}
+
+	void compute_external_forces() {
 		/*
-		get external forces
-		for the legs
-		local_FW1 = [0; FW(1); 0];      %in global basis
-		local_FW_fr = [0; FW(_fr); 0];
-		local_FW3 = [0; FW(3); 0];
-		local_FW4 = [0; FW(4); 0];
+get external forces
+for the legs
+local_FW1 = [0; FW(1); 0];      %in global basis
+local_FW_fr = [0; FW(_fr); 0];
+local_FW3 = [0; FW(3); 0];
+local_FW4 = [0; FW(4); 0];
 
-		local_FT1 = [0; FT(1); 0];      %in global basis
-		local_FT_fr = [0; FT(2); 0];
-		local_FT3 = [0; FT(3); 0];
-		local_FT4 = [0; FT(4); 0];
-		*/
+local_FT1 = [0; FT(1); 0];      %in global basis
+local_FT_fr = [0; FT(2); 0];
+local_FT3 = [0; FT(3); 0];
+local_FT4 = [0; FT(4); 0];
+*/
 
-		// Calculate the sum of all forces in the tyre (and keep it in local_FR)
+// Calculate the sum of all forces in the tyre (and keep it in local_FR)
 
-		// local_FR1 = lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...          %vt1_dot
+// local_FR1 = lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...          %vt1_dot
 		mkl<T>::copy(Constants::DIM, cf_lower_force_fl, 1, cf_local_FR_fl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_dampf_fl, 1, cf_local_FR_fl, 1);
-		mkl<T>::axpy(Constants::DIM, 1.0, FT_fl, 1, cf_local_FR_fl, 1);             
+		mkl<T>::axpy(Constants::DIM, 1.0, FT_fl, 1, cf_local_FR_fl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_rot_force_fl, 1, cf_local_FR_fl, 1);
 
 		// local_FR2 = lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...          %vt2_dot
 		mkl<T>::copy(Constants::DIM, cf_lower_force_fr, 1, cf_local_FR_fr, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_dampf_fr, 1, cf_local_FR_fr, 1);
-		mkl<T>::axpy(Constants::DIM, 1.0, FT_fr, 1, cf_local_FR_fr, 1);                
+		mkl<T>::axpy(Constants::DIM, 1.0, FT_fr, 1, cf_local_FR_fr, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_rot_force_fr, 1, cf_local_FR_fr, 1);
 
 		// local_FR3 = lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...          %vt3_dot
 		mkl<T>::copy(Constants::DIM, cf_lower_force_rl, 1, cf_local_FR_rl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_dampf_rl, 1, cf_local_FR_rl, 1);
-		mkl<T>::axpy(Constants::DIM, 1.0, FT_rl, 1, cf_local_FR_rl, 1); 
+		mkl<T>::axpy(Constants::DIM, 1.0, FT_rl, 1, cf_local_FR_rl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_rot_force_rl, 1, cf_local_FR_rl, 1);
 
@@ -1477,20 +1490,9 @@ public:
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_rot_force_rr, 1, cf_local_FR_rr, 1);
 
+	}
 
-		if (boundary_conditions == FIXED) {
-			get_fixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
-		}
-		else if (boundary_conditions == NONFIXED) {
-			get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
-		}
-		else if (boundary_conditions == CIRCULAR) {
-			get_circular_road_force(cf_local_FR_fl, vt_fl_, mass_tyre_rr, pt_fl_);
-			get_circular_road_force(cf_local_FR_fr, vt_fr_, mass_tyre_rl, pt_fr_);
-			get_circular_road_force(cf_local_FR_rl, vt_rl_, mass_tyre_fl, pt_rl_);
-			get_circular_road_force(cf_local_FR_rr, vt_rr_, mass_tyre_fr, pt_rr_);
-		}
-		
+	void compute_car_body_total_torque() {
 		/*
 		get H=I*w
 		Hc = A(1:3, 1:3) * wc;           %in local car basis
@@ -1517,16 +1519,16 @@ public:
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_wc_tilda, Constants::DIM, cf_temp, 1, 0.0, cf_Hc, 1);
 
 		mkl<T>::copy(Constants::DIM, cf_Hc, 1, cf_sum_torque_spring_car, 1);
-		
+
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_Tc, 1, cf_sum_torque_spring_car, 1);
 
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_rr, 1, 1.0, cf_sum_torque_spring_car, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_rl, 1, 1.0, cf_sum_torque_spring_car, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_fr, 1, 1.0, cf_sum_torque_spring_car, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1.0, cf_C_cN, Constants::DIM, cf_upper_S_fl, 1, 1.0, cf_sum_torque_spring_car, 1);
+
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_fl, 1, 0.0, cf_temp, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_fl_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
-		
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_fr, 1, 0.0, cf_temp, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_fr_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_rl, 1, 0.0, cf_temp, 1);
@@ -1534,29 +1536,28 @@ public:
 		mkl<T>::gemv(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1.0, cf_C_cN, Constants::DIM, cf_sum_car_force_rr, 1, 0.0, cf_temp, 1);
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->r_rr_tilda, Constants::DIM, cf_temp, 1, 1.0, cf_sum_torque_spring_car, 1);
 
-		
-		/*
-			///////////////////////////////////////////////////////////////
-			///////////                 Solve                  ////////////
-			///////////////////////////////////////////////////////////////
-			b =  [sum_torque_spring_car;...                                                           %w_dot_c
-				 FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...          %vc_dot
-				 upper_force1 - lower_force1 + upper_dampf1 - lower_dampf1 + local_FW1 + ...
-						upper_rot_force1 - car_rot_force1 - lower_rot_force1; ...                     %vw1_dot
-				 upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + ...
-						upper_rot_force2 - car_rot_force2 - lower_rot_force2; ...                     %vw2_dot
-				 upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + ...
-						upper_rot_force3 - car_rot_force3 - lower_rot_force3; ...                     %vw3_dot
-				 upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + ...
-						upper_rot_force4 - car_rot_force4 - lower_rot_force4; ...                     %vw4_dot
-				 lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...          %vt1_dot
-				 lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...          %vt2_dot
-				 lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...          %vt3_dot
-				 lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];             %vt4_dot
+		write_vector(cf_sum_torque_spring_car, 3);
+	}
+
+	void construct_right_hand_side() {
+		/*b = [sum_torque_spring_car; ...% w_dot_c
+			FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...% vc_dot
+			upper_force1 - lower_force1 + upper_dampf1 - lower_dampf1 + local_FW1 + ...
+			upper_rot_force1 - car_rot_force1 - lower_rot_force1; ...% vw1_dot
+			upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + ...
+			upper_rot_force2 - car_rot_force2 - lower_rot_force2; ...% vw2_dot
+			upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + ...
+			upper_rot_force3 - car_rot_force3 - lower_rot_force3; ...% vw3_dot
+			upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + ...
+			upper_rot_force4 - car_rot_force4 - lower_rot_force4; ...% vw4_dot
+			lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...% vt1_dot
+			lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...% vt2_dot
+			lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...% vt3_dot
+			lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];% vt4_dot
 
 		*/
 		// FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...          %vc_dot  
-		T* brem_start = cf_b_rem;
+		T * brem_start = cf_b_rem;
 		mkl<T>::copy(Constants::DIM, this->FC, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_sum_car_force_fl, 1, brem_start, 1);
 		mkl<T>::axpy(Constants::DIM, 1.0, cf_sum_car_force_fr, 1, brem_start, 1);
@@ -1618,18 +1619,21 @@ public:
 		// local_FR3; ...			          %vt3_dot
 		brem_start += Constants::DIM;
 		mkl<T>::copy(Constants::DIM, cf_local_FR_rl, 1, brem_start, 1);
-	
+
 		// local_FR4];			              %vt4_dot
 		brem_start += Constants::DIM;
 		mkl<T>::copy(Constants::DIM, cf_local_FR_rr, 1, brem_start, 1);
 
+	}
+
+	void solve_accelerations() {
 		mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DIM, 1, A_Ic, Constants::DIM, cf_sum_torque_spring_car, 1);
-		mkl<T>::copy(Constants::DIM, cf_sum_torque_spring_car, 1, f_, 1);
-		T* start_next = f_ + Constants::DIM;
 
-		MathLibrary::vector_elem_wise_product<T>(A_rem, cf_b_rem, start_next, 9 * Constants::DIM);
-		start_next += 9 * Constants::DIM;
+		MathLibrary::vector_elem_wise_product<T>(A_rem, cf_b_rem, accelerations, 9 * Constants::DIM);
 
+	}
+
+	void compute_quaternion_change_rate() {
 		/*
 		get the derivative of the altitude (expressed in quaternions) from the angular velocities
 		Qc = 0.5 * [qc(4) -qc(3) qc(2); qc(3) qc(4) -qc(1); -qc(2) qc(1) qc(4); -qc(1) -qc(2) -qc(3)];
@@ -1649,6 +1653,15 @@ public:
 		cf_Qc[10] = -0.5 * qc_[1];
 		cf_Qc[11] = -0.5 * qc_[2];
 		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::NUM_LEGS, Constants::DIM, 1.0, cf_Qc, Constants::DIM, wc_, 1, 0.0, cf_qc_dot, 1);
+
+	}
+
+	void construct_f_vector(double * f_) {
+		mkl<T>::copy(Constants::DIM, cf_sum_torque_spring_car, 1, f_, 1);
+		T* start_next = f_ + Constants::DIM;
+
+		mkl<T>::copy(9 * Constants::DIM, accelerations, 1, start_next, 1);
+		start_next += 9 * Constants::DIM;
 
 		mkl<T>::copy(Constants::NUM_LEGS, cf_qc_dot, 1, start_next, 1);
 		start_next += Constants::NUM_LEGS;
@@ -1688,6 +1701,23 @@ public:
 		// add vt_rr to f vector
 		mkl<T>::copy(Constants::DIM, vt_rr_, 1, start_next, 1);
 		start_next += Constants::DIM;
+
+
+	}
+
+public:
+	/*
+	Constructor
+	*/
+	MBD_method(EVAALookup<Constants::floatEVAA> * interpolator) {
+
+		lookupStiffness = interpolator;
+
+		MemoryAllocation();
+
+		ReadFromXML();
+
+		getCholeskyDecomposition();
 		
 	}
 
@@ -1730,77 +1760,88 @@ public:
 		size_t i, j;
 		i = 10;
 		j = 0;
+
 		// qc
-		T* start_orient = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		qc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		mkl<T>::copy(Constants::NUM_LEGS, initial_orientation, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
 		j++;
-
 		// pcc
-		mkl<T>::copy(Constants::DIM, pcc, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		pcc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, pcc, 1, pcc_ , 1);
 		i++;
+		std::cout << "zoodle" << std::endl;
 		// pw1
-		T* pw_fl = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		pw_fl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pw2
-		T* pw_fr = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		pw_fr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pw3
-		T* pw_rl = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		pw_rl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pw_rr
-		T* pw_rr = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		pw_rr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pt1
-		T* pt_fl = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		pt_fl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pt2
-		T* pt_fr = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		pt_fr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pt3
-		T* pt_rl = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		pt_rl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 		i++;
 		// pt_rr
-		T* pt_rr = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		pt_rr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 
 
-		get_initial_length(start_orient, r_fl, r_fr, r_rl, r_rr, pcc, initial_upper_spring_length, initial_lower_spring_length, pw_fl, pw_fr, pw_rl, pw_rr, pt_fl, pt_fr, pt_rl, pt_rr);
+		get_initial_length(qc_, r_fl, r_fr, r_rl, r_rr, pcc, initial_upper_spring_length, initial_lower_spring_length, pw_fl_, pw_fr_, pw_rl_, pw_rr_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
 
 
 		// overwrites the initial velocity values
 		if (boundary_conditions == CIRCULAR) 
-			circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc, pt_fl, pt_fr, pt_rl, pt_rr, radius_circular_path);
-
+			circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_, pt_rr_, radius_circular_path);
 		i = 0;
 		j = 0;
 		// wc
-		mkl<T>::copy(Constants::DIM, initial_angular_velocity, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		wc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, initial_angular_velocity, 1, wc_, 1);
 		i++;
 		// vc
-		mkl<T>::copy(Constants::DIM, vc, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		vc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, vc, 1, vc_, 1);
 		i++;
 		// vw1
-		mkl<T>::copy(Constants::DIM, vw_fl, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		vw_fl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, vw_fl, 1, vw_fl_, 1);
 		i++;
 		// vw2
-		mkl<T>::copy(Constants::DIM, vw_fr, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		vw_fr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, vw_fr, 1, vw_fr_, 1);
 		i++;
 		// vw_rl
-		mkl<T>::copy(Constants::DIM, vw_rl, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		vw_rl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, vw_rl, 1, vw_rl_ , 1);
 		i++;
 		// vw4
-		mkl<T>::copy(Constants::DIM, vw_rr, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		vw_rr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, vw_rr, 1, vw_rr_, 1);
 		i++;
 		// vt1
-		mkl<T>::copy(Constants::DIM, vt_fl, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		vt_fl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, vt_fl, 1, vt_fl_ , 1);
 		i++;
 		// vt2
-		mkl<T>::copy(Constants::DIM, vt_fr, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		vt_fr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, vt_fr, 1, vt_fr_, 1);
 		i++;
 		// vt_rl
-		mkl<T>::copy(Constants::DIM, vt_rl, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		vt_rl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, vt_rl, 1, vt_rl_, 1);
 		i++;
 		// vt4
-		mkl<T>::copy(Constants::DIM, vt_rr, 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+		vt_rr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
+		mkl<T>::copy(Constants::DIM, vt_rr, 1, vt_rr_, 1);
 		i++;
 
 		j = 0;
@@ -1887,6 +1928,72 @@ public:
 		//	std::cout << "Solution copied!\n" << std::endl;
 		mkl_free(complete_vector);
 		mkl_free(x_vector);
+	}
+
+
+	/*
+	Solver which is called at each time step
+	Computes the forces and torques on each point mass and computes the right hand side of the ODE
+	\param x_ current solution of the system
+	\param t_ current simulation time
+	\return f_ the load vector
+	*/
+	void compute_f3D_reduced(T* x_, T t_, T* f_) {
+		/*
+		Small performance gain might be possible by transforming C_cN to column major
+		Note: corresponding MKL function call have to be changed too
+		*/
+		const MKL_INT mkl_DIM = Constants::DIM;
+		const MKL_INT mkl_incx = 1;
+		const MKL_INT mkl_incy = 1;
+
+		get_current_variables(x_);
+
+		get_car_orientation();
+
+		compute_spring_lengths(pcc_, pw_fl_, pt_fl_, cf_r_up_fl, cf_r_low_fl, this->r_fl, norm_r_up_fl, inv_norm_r_up_fl, norm_r_low_fl, inv_norm_r_low_fl);
+		compute_spring_lengths(pcc_, pw_fr_, pt_fr_, cf_r_up_fr, cf_r_low_fr, this->r_fr, norm_r_up_fr, inv_norm_r_up_fr, norm_r_low_fr, inv_norm_r_low_fr);
+		compute_spring_lengths(pcc_, pw_rl_, pt_rl_, cf_r_up_rl, cf_r_low_rl, this->r_rl, norm_r_up_rl, inv_norm_r_up_rl, norm_r_low_rl, inv_norm_r_low_rl);
+		compute_spring_lengths(pcc_, pw_rr_, pt_rr_, cf_r_up_rr, cf_r_low_rr, this->r_rr, norm_r_up_rr, inv_norm_r_up_rr, norm_r_low_rr, inv_norm_r_low_rr);
+
+		apply_stiffness_interpolation();
+
+		compute_angles();
+
+		compute_elongational_forces();
+
+		compute_damping_forces();
+
+		compute_torques();
+
+		compute_torques_resultant_forces();
+
+		compute_car_body_forces();
+
+		compute_external_forces();
+
+		if (boundary_conditions == FIXED) {
+			get_fixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
+		}
+		else if (boundary_conditions == NONFIXED) {
+			get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
+		}
+		else if (boundary_conditions == CIRCULAR) {
+			get_circular_road_force(cf_local_FR_fl, vt_fl_, mass_tyre_rr, pt_fl_);
+			get_circular_road_force(cf_local_FR_fr, vt_fr_, mass_tyre_rl, pt_fr_);
+			get_circular_road_force(cf_local_FR_rl, vt_rl_, mass_tyre_fl, pt_rl_);
+			get_circular_road_force(cf_local_FR_rr, vt_rr_, mass_tyre_fr, pt_rr_);
+		}
+
+		compute_car_body_total_torque();
+
+		construct_right_hand_side();
+
+		solve_accelerations();
+
+		compute_quaternion_change_rate();
+
+		construct_f_vector(f_);
 	}
 
 	/*
