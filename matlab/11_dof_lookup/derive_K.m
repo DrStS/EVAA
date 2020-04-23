@@ -142,14 +142,15 @@ f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_
 
 dKcols_dk = eval(dKcols_dk); % evaluate it numerically
 
-d = 0;
+d = 0; grad_cond = 0;
 for i = 1: length(t)-1
     K = get_K(u_n);
-    r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
+    new_r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
     
     iter = 0;
     err = [];
     while 1
+        r = new_r;
         iter = iter + 1;
         temp = [];
         dk_dx = getdk_dx(u_n_p_1);
@@ -163,13 +164,16 @@ for i = 1: length(t)-1
         
         % update values
         K = get_K(u_n_p_1);
-        r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
-        err(iter) = norm(r);
+        new_r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
+        err(iter) = norm(new_r);
         if (iter == 20)
             d = d + 1;
         end
-        if (err(iter) < tol || iter == 20)
-            err_arr(i) = norm(r);
+        if (err(iter) < tol || (norm(J\new_r) > norm(Delta)) || iter == 20)
+            if((norm(J\new_r) > norm(Delta)))
+              grad_cond = grad_cond + 1;
+            end
+            err_arr(i) = norm(new_r);
             break;
         end
     end

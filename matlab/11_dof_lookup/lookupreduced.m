@@ -217,18 +217,19 @@ M_div_h2 = M / (delta_t * delta_t);
 f_newton = @(y_curr,y1,y2,K)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
 %dKcols_dk = eval(dKcols_dk); % evaluate it numerically
 condition = [];
-d = 0;
+d = 0; grad_cond = 0;
 for i = 1: length(t)
     K = get_K();
     K(:,idx) = [];
     K(idx,:) = [];
-    r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
+    new_r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
     i
     iter = 0;
     err = [];
     delta = [];
-    init_err = r;
+    init_err = new_r;
     while 1
+        r = new_r;
         iter = iter + 1;
         temp = [];
         getdk_dx();
@@ -260,14 +261,17 @@ for i = 1: length(t)
         K = get_K();
         K(:,idx) = [];
         K(idx,:) = [];
-        r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
+        new_r = f_newton(u_n_p_1, u_n, u_n_m_1, K);
         %( M_div_h2 + K )\(2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs)-u_n_p_1
-        err(iter) = norm(r);
+        err(iter) = norm(new_r);
         if (iter == 20)
             d = d + 1;
         end
-        if (err(iter) < tol || iter == 20)
-            err_arr(i) = norm(r);
+        if (err(iter) < tol || (norm(J\new_r) > norm(Delta)) || iter == 20)
+            if((norm(J\new_r) > norm(Delta)))
+              grad_cond = grad_cond + 1;
+            end
+            err_arr(i) = norm(new_r);
             break;
         end
     end

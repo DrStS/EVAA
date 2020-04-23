@@ -1,7 +1,7 @@
 #pragma once
 //#include "Car.h"
-#include "Profile_class.h"
-#include "Load_module.h"
+#include "RoadProfile.h"
+#include "LoadModule.h"
 #include "EVAAComputeEngine.h"
 #include "11DOF.h"
 #include "Constants.h"
@@ -15,10 +15,10 @@ class ALE {
 private:	
 	// necessary class objects
 	Car<T>* Car_obj; // suppose Interpolation in the Car
-	Load_module* Load_module_obj; // needs Profile and Car
+	LoadModule<T>* Load_module_obj; // needs Profile and Car
 	TwoTrackModel<T>* TwoTrackModel_obj;
 	EVAALookup<Constants::floatEVAA>* interpolator;// interpolator member of EVAA
-	Profile* profile_obj;
+	Profile<T>* profile_obj;
 
 	
 	// simulation parameters
@@ -69,8 +69,8 @@ public:
 	Constructor
 	*/
 	ALE(Car<T>* Car_obj_val,
-		Load_module* Load_module_val,
 		TwoTrackModel<T>* TwoTrackModel_val,
+		LoadModule<T>* Load_module_val,
 		EVAALookup<Constants::floatEVAA>* lookup_table) {
 
 		Car_obj = Car_obj_val;

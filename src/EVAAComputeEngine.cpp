@@ -24,13 +24,12 @@
 
 #include "11DOF.h"
 #include "car.h"
-#include "EVAAComputeEngine.h"
-#include "MathLibrary.h"
-#include <limits>
-#include <fstream>
-#include "Output.h"
 #include "Constants.h"
+#include "EVAAComputeEngine.h"
+#include "LoadModule.h"
+#include "MathLibrary.h"
 #include "MetaDataBase.h"
+#include "Output.h"
 
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
@@ -764,22 +763,22 @@ void EVAAComputeEngine::computeMBD(void) {
 
 void EVAAComputeEngine::computeALE(void) {
 
-	Profile* roadProfile;
+	Profile<floatEVAA>* roadProfile;
 
 	Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness);
 
 	switch (MetaDataBase::DataBase()->getRoadConditions())
 	{
 	case CIRCULAR:
-		roadProfile = new Circular(MetaDataBase::DataBase()->getCircularRoadCenter(),
+		roadProfile = new Circular<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
 			MetaDataBase::DataBase()->getCircularRoadRadius());
 		break;
 	case NONFIXED:
-		roadProfile = new Nonfixed(MetaDataBase::DataBase()->getCircularRoadCenter(),
+		roadProfile = new Nonfixed<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
 			MetaDataBase::DataBase()->getCircularRoadRadius());
 		break;
 	case FIXED:
-		roadProfile = new Fixed(MetaDataBase::DataBase()->getGravityField()[1]);
+		roadProfile = new Fixed<floatEVAA>(MetaDataBase::DataBase()->getGravityField()[1]);
 		roadProfile->set_fixed_index(car->tyre_index_set);
 		break;
 	default:
@@ -791,7 +790,7 @@ void EVAAComputeEngine::computeALE(void) {
 
 	roadProfile->update_initial_condition(car);
 
-	Load_module* loadModule = new Load_module(roadProfile, car);
+	LoadModule<floatEVAA>* loadModule = new LoadModule<floatEVAA>(roadProfile, car);
 	TwoTrackModel<floatEVAA>* TwoTrackModel_obj = new TwoTrackModel<floatEVAA>(car);
 	ALE<floatEVAA>* ale = new ALE<floatEVAA>(car, loadModule, TwoTrackModel_obj, _lookupStiffness);
 
@@ -816,10 +815,10 @@ void EVAAComputeEngine::computeALEtest(void) {
 	size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
 	size_t solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize();
 	Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness);
-	Profile* roadProfile = new Circular(MetaDataBase::DataBase()->getCircularRoadCenter(),
+	Profile<floatEVAA>* roadProfile = new Circular<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
 		MetaDataBase::DataBase()->getCircularRoadRadius());
 	roadProfile->update_initial_condition(car);
-	Load_module* loadModule = new Load_module(roadProfile, car);
+	LoadModule<floatEVAA>* loadModule = new LoadModule<floatEVAA>(roadProfile, car);
 	std::cout << "Load module initialized!\n";
 	delete loadModule;
 	delete roadProfile;
