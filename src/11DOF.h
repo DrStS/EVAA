@@ -118,7 +118,6 @@ public:
 
 	TwoTrackModelParent(Car<T>* input_car) {
 		car_ = input_car;
-		DOF = car_->DOF;
 		mat_len = (Constants::DOF) * (Constants::DOF);
 		u_n_m_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // velocity
 		u_n = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // position
@@ -169,10 +168,10 @@ public:
 		mkl<T>::axpy(Constants::DOF, 2 * factor_h2, car_->M_linear, Constants::DOF + 1, B, Constants::DOF + 1);
 		mkl<T>::axpy(mat_len, factor_h, car_->D, 1, B, 1);
 		
-		mkl<T>::copy(Constants::DOF, car_->u_prev_linear, 1, u_n, 1);
+		mkl<T>::copy(Constants::DOF, car_->currentDisplacementTwoTrackModel, 1, u_n, 1);
 
-		// u_n_m_1 = u_n - h_ * velocity_current_linear
-		mkl<T>::copy(Constants::DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
+		// u_n_m_1 = u_n - h_ * currentVelocityTwoTrackModel
+		mkl<T>::copy(Constants::DOF, car_->currentVelocityTwoTrackModel, 1, u_n_m_1, 1);
 		mkl<T>::scal(Constants::DOF, -h_, u_n_m_1, 1);
 		mkl<T>::axpy(Constants::DOF, 1, u_n, 1, u_n_m_1, 1);
 	}
@@ -259,8 +258,8 @@ public:
 		// E = (-1/4)*(1/(h*h))*M
 		mkl<T>::axpy(mat_len, (-1.0/4.0) * factor_h2, car_->M_linear, 1, E, 1);
 
-		mkl<T>::copy(Constants::DOF, car_->u_prev_linear, 1, u_n, 1);
-		mkl<T>::copy(Constants::DOF, car_->velocity_current_linear, 1, u_n_m_1, 1);
+		mkl<T>::copy(Constants::DOF, car_->currentDisplacementTwoTrackModel, 1, u_n, 1);
+		mkl<T>::copy(Constants::DOF, car_->currentVelocityTwoTrackModel, 1, u_n_m_1, 1);
 
 		mkl<T>::scal(Constants::DOF, -h_, u_n_m_1, 1);
 		mkl<T>::axpy(Constants::DOF, 1, u_n, 1, u_n_m_1, 1);
@@ -379,8 +378,8 @@ public:
 		//cblas_dcopy(DOF, car_->u_prev_linear, 1, solution_vect, 1);
 		while (std::abs(t - (tend_ + h_)) > eps) {
 			if (interpolation_enabled) {
-				(car_)->update_lengths_11DOF();
-				(car_)->lookupStiffness->getInterpolation((car_)->current_spring_length, (car_)->k_vec);
+				(car_)->updateLengthsTwoTrackModel();
+				(car_)->lookupStiffness->getInterpolation((car_)->currentSpringsLength, (car_)->k_vec);
 				(car_)->update_K((car_)->k_vec);
 			}
 			//solution_vect = u_sol + iter * (DOF);

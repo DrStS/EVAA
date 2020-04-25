@@ -233,7 +233,7 @@ public:
 		}
 
 		// compute centripetal part of the global normal force 
-		get_centrifugal_force_ALE(Normal_ext, Velocity_vec, *(Car1->global_mass), dist_car_center);
+		get_centrifugal_force_ALE(Normal_ext, Velocity_vec, *(Car1->massFullCar), dist_car_center);
 	}
 
 

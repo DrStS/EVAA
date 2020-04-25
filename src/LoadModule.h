@@ -31,13 +31,13 @@ private:
 		// compute torque around X-axis
 //		#pragma loop(ivdep)
 		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-			Torque[0] += F_vec[i * Constants::DIM + 1] * Car_obj->distance_nickpol[i];
+			Torque[0] += F_vec[i * Constants::DIM + 1] * Car_obj->currentCIRTwoTrackModel[i];
 		}
 
 		// compute torque around Y-axis
 	//	#pragma loop(ivdep)
 		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-			Torque[1] += F_vec[i * Constants::DIM + 0] * Car_obj->distance_nickpol[i];
+			Torque[1] += F_vec[i * Constants::DIM + 0] * Car_obj->currentCIRTwoTrackModel[i];
 		}
 	}
 
@@ -111,10 +111,10 @@ public:
 	\return F_vec vector of forces in the car [GC:XYZ,W1:XYZ,T1:XYZ, ...]
 	\return Normal_ext external forces acting on the whole car system [XYZ]
 	*/
-	void update_force(T time_t, T* F_vec, T* Delta_x_vec, T* Normal_ext) {
+	void update_force(T time_t, T* F_vec, T* Normal_ext) {
 		mkl<T>::scal(Constants::DIM * Constants::VEC_DIM, 0.0, F_vec, 1);
-		mkl<T>::scal(Constants::DIM, 0.0, Normal_ext, 1);
-		mkl<T>::scal(2 * Constants::NUM_LEGS, 0.0, Delta_x_vec, 1);
+		mkl<T>::scal(Constants::DIM, 0.0, Normal_ext, 1);			// fix this so TEOOOOOOOOOO 
+																    // why did Shubham tell me to comment everything out ? 
 		Active_Profile->get_Profile_force_ALE(Car_obj, F_vec, Normal_ext);
 		/*
 		Modify the profile to know where the ground is and apply normal force accordingly
@@ -129,7 +129,7 @@ public:
 		// =============== PAY ATTENTION to THIS ============================
 
 		// get stiffnesses vector k_vec
-		Car_obj->get_k_vec(k_vec);
+/*		Car_obj->get_k_vec(k_vec);
 
 		for (auto i = 0; i < (Constants::VEC_DIM - 1); i += 2) {
 			// use the elastic forces at wheels
@@ -148,7 +148,7 @@ public:
 			//mkl<T>::axpy(DIM, -k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1, &F_vec[DIM * (i + 2)], 1);
 			F_vec[Constants::DIM * (i + 2) + 2] -= 0.0 * k_vec[i + 1] * Delta_x_vec[(i + 1)];
 		}
-
+*/
 		// test add
 		mkl<T>::axpy(Constants::DIM, 1.0, External_force, 1, F_vec, 1);
 
