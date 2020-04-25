@@ -301,7 +301,6 @@ public:
 	};
 	virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext) {
 		if (index_set) {
-			Car1->get_k_vec_tyre(k_vec);
 			Car1->compute_dx_tyre(dx);
 			for (size_t i = 0; i < num_tyre; ++i) {
 				F_vec[linear_idx[i] * Constants::DIM + 2] = -k_vec[i] * dx[i];

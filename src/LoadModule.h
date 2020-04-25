@@ -107,9 +107,6 @@ public:
 		vdAdd(Constants::DIM, External_force, Normal_ext, Normal_ext);
 		// =============== PAY ATTENTION to THIS ============================
 
-		// get stiffnesses vector k_vec
-		Car_obj->get_k_vec(k_vec);
-
 		for (auto i = 0; i < (Constants::VEC_DIM - 1); i += 2) {
 			// use the elastic forces at wheels
 			// F_CG += k_wi * delta_x_i

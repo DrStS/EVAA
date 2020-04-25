@@ -21,7 +21,7 @@ global k_grid size_grid l_min l_max dl;
 l_min = 0.02;
 l_max = 1;
 % grid size
-size_grid = 1001;
+size_grid = 101;
 % grid value allocation
 global X;
 X = zeros(size_grid, 1);
@@ -152,7 +152,7 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 4;
+num_iter = 10e00;
 delta_t = 1e-1; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
@@ -203,7 +203,7 @@ l7 = eval(l7_sym);
 l8 = eval(l8_sym);
 
 u_n_m_1 = u_n;
-u_n_m_1(1)=u_n(1) - 100 * delta_t;
+u_n_m_1(1)=u_n(1);
 u_n_p_1=u_n;
 
 rhs =-[mass_Body; 0; 0; mass_wheel_fl; 0; mass_wheel_fr; 0; mass_wheel_rl; 0; mass_wheel_rr; 0];

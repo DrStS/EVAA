@@ -8,6 +8,7 @@
 #include "mkl.h"
 #include "Constants.h"
 #include <iostream>
+#include <Output.h>
 
 /**
 * function returns a readable output for mkl errors
@@ -110,7 +111,8 @@ private:
 	T* datahint = nullptr;								/**< additional info about the structure*/
 	MKL_INT stype;											/**< spline type: linear = DF_PP_DEFAULT, spline = DF_PP_NATURAL*/
 	MKL_INT sorder;											/**< spline order: linear = DF_PP_LINEAR, spline = DF_PP_CUBIC*/
-	int alignment = 64;										/**< alignment for mkl */
+	T l_min, l_max;										/**< to test wheather its inbound */
+
 public:
 	/**
 	* \brief Constructor of lookup class
@@ -130,7 +132,7 @@ public:
 		int k /**< [in] number of springs */,
 		int type /**< [in] int which corersponds to a certain type of interpolation */,
 		int order /**< [in] order of the interpolation: depends on type */
-	) : nx(size), ny(k), sorder(order), stype(type) {
+	) : nx(size), ny(k), sorder(order), stype(type), l_min(l_min), l_max(l_max) {
 		if (sorder == DF_PP_CUBIC) {
 			bc_type = DF_BC_FREE_END;
 		}
@@ -160,6 +162,9 @@ public:
 			err = dfdConstruct1D(task[i], DF_PP_SPLINE, DF_METHOD_STD);
 			//CheckDfError(err);
 		}
+		// for debugging purposes
+		generateLookupOutputFile(l_min, l_max, a[0]);
+
 		mkl_free(grid);
 		grid = nullptr;
 		mkl_free(axis);
@@ -198,8 +203,17 @@ public:
 		const MKL_INT dorder[1] = { 1 };				// only the values are computed
 
 		for (auto i = 0; i < ny; i++) {
+			if (length[i] > l_max) {
+				std::cout << "spring length to big for lookup: " << length[i] << std::endl;
+				exit(100);
+			}
+			if (length[i] < l_min) {
+				std::cout << "spring length to small for lookup: " << length[i] << std::endl;
+				exit(100);
+			}
 			dfdInterpolate1D(task[i], DF_INTERP, DF_METHOD_PP,
-				1, &length[i], DF_NO_HINT, ndorder,
+				1, &length[i], DF_NO_HINT
+				, ndorder,
 				dorder, datahint, &inter[i], rhint, 0);
 		}
 
@@ -222,6 +236,35 @@ public:
 				1, &length[i], DF_NO_HINT, ndorder,
 				dorder, datahint, &deriv[i], rhint, 0);
 		}
+	}
+
+	/**
+	* \brief Calculate Matrix for the 11 Dof system with fl,fr,rl,rr notation
+	*/
+	void getMatrixInterpolation(
+		T* length /**< [in] pointer to array of size k with lenght values of springs*/,
+		T* inter /**< [out] pointer to array of size k to store interpolation values*/,
+		T* mat /**< [out] pointer to array of size k * k to store interpolation values*/
+	) {
+		getInterpolation(length, inter);
+	}
+
+	/**
+	* \brief interpolate the first task on every point of axis to check for correctnes
+	*/
+	void generateLookupOutputFile(T l_min, T l_max, T add) {
+		const MKL_INT ndorder = 1;						// size of array describing derivative (dorder), which is definde two lines below
+		const MKL_INT dorder[1] = { 1 };				// only the values are computed
+		T* interpolation = (T*)mkl_malloc((2*nx -1 ) * sizeof(T),  Constants::ALIGNMENT);
+		T* interpolationPoints = (T*)mkl_malloc((2 * nx - 1) * sizeof(T), Constants::ALIGNMENT);
+		for (auto i = 0; i < (2 * nx - 1); i++) {
+			interpolationPoints[i] = l_min + i * (l_max - l_min)/(2*nx-2);
+			dfdInterpolate1D(task[0], DF_INTERP, DF_METHOD_PP, 1, &interpolationPoints[i],
+				DF_NO_HINT, ndorder, dorder, datahint, &interpolation[i], rhint, 0);
+		}
+
+		IO::writeLookUpGridPlusInterpolateValues<T>(axis, grid, nx, interpolationPoints, interpolation, 2*nx-1, "LookupTablePlusInterpolation" + std::to_string(add) + ".txt");
+		mkl_free(interpolation);
 	}
 };
 /*

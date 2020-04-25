@@ -7,6 +7,10 @@ namespace Constants {
 	constexpr int INCX = 1;  /**< MKL constant incx */
 	constexpr int NUM_LEGS = 4; /**< number of tyres, wheels, legs */
 	using floatEVAA = double;
+	constexpr bool USEINTERPOLATION = true;
+	constexpr floatEVAA TOLERANCE = 1.0e-10;
+	constexpr int DOF = 11;
+	constexpr int DOFDOF = 121;
 	//size_t alignment;											/**< alignment for mkl malloc */
 	//const int dim = 3;											/**< dimension of solution space */
 	//const size_t num_tyre = 4;									/**< number of tyres */

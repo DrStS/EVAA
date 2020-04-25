@@ -16,8 +16,8 @@ private:
 	// necessary class objects
 	Car<T>* Car_obj; // suppose Interpolation in the Car
 	LoadModule<T>* Load_module_obj; // needs Profile and Car
-	Linear11dof<T>* linear11dof_obj;
-	EVAALookup<Constants::floatEVAA>* interpolator;// interpolator member of EVAA
+	Linear11dofBE<T>* linear11dof_obj;
+	EVAALookup<T>* interpolator;// interpolator member of EVAA
 	Profile<T>* profile_obj;
 
 	
@@ -70,8 +70,8 @@ public:
 	*/
 	ALE(Car<T>* Car_obj_val,
 		LoadModule<T>* Load_module_val,
-		Linear11dof<T>* linear11dof_val,
-		EVAALookup<Constants::floatEVAA>* lookup_table) {
+		Linear11dofBE<T>* linear11dof_val,
+		EVAALookup<T>* lookup_table) {
 
 		Car_obj = Car_obj_val;
 		Load_module_obj = Load_module_val;
@@ -152,8 +152,6 @@ public:
 		// start time iteration
 		T t = h_;
 
-		// initialize the linear solver
-		linear11dof_obj->initialize_solver(h_);
 		T* solution_vect;
 		int iter = 1;
 		// time iteration
@@ -175,10 +173,6 @@ public:
 
 			linear11dof_obj->update_step(force_vector_11dof, Car_obj->u_current_linear);
 			Car_obj->update_lengths_11DOF();
-			if (MetaDataBase::DataBase()->getUseInterpolation()) {
-				interpolator->getInterpolation(Car_obj->current_spring_length, k_vect);
-				Car_obj->update_K(k_vect);
-			}
 			solution_vect = u_sol + iter * (Constants::VEC_DIM * Constants::DIM);
 			Car_obj->populate_results(Car_obj->Position_vec_xy, Car_obj->u_current_linear, solution_vect);
 

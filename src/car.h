@@ -10,18 +10,7 @@
 template <typename T>
 class Car {
 private:
-	/*
-	Create the diagonal mass matrix M_linear to solve the 11DOF system
-	\param Global_mass contains the masses of the 9 bodies (CG, 4 * W, 4 * T)
-	\param Global_moment_Inertia contains the tensor of inertia of the body
-	\param Mass_11DOF unused
-	*/
-	void Construct11DOFMass() {
-		M_linear[0] = Mass_vec[0];
-		M_linear[DOF + 1] = I_CG[0];
-		M_linear[2 * DOF + 2] = I_CG[4];
-		mkl<T>::copy(DOF - 3, Mass_vec + 1, 1, M_linear + 3 * DOF + 3, DOF + 1); // M_linear = diagonal matrix
-	}
+
 
 	/*
 	Copy all X and Y coordinates of the global vector to the local vector
@@ -140,22 +129,11 @@ public:
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////// Members from 11 DOF system //////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
-	int DOF; // comes from xml (Consider extracting as constant, move to Constants.h)
-	EVAALookup<Constants::floatEVAA>* lookupStiffness;
-	T k_body_fl;
-	T k_tyre_fl;
-	T k_body_fr;
-	T k_tyre_fr;
-	T k_body_rl;
-	T k_tyre_rl;
-	T k_body_rr;
-	T k_tyre_rr;
 	
 	T *quad_angle_init;
-	T* M_linear, *temp_linear, *K, *K_trans, *D;
 	T *spring_length, *current_spring_length;
 	T* u_prev_linear, *u_current_linear;
-	T* k_vec, *l_lat, *l_long;
+	T* l_lat, *l_long;
 	T* velocity_current_linear;
 	size_t* tyre_index_set;
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -173,13 +151,7 @@ public:
 	/*
 	Constructor
 	*/
-	Car(EVAALookup<Constants::floatEVAA> * interpolator) {
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////// Generte Lookup Table /////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		lookupStiffness = interpolator;
-		DOF = MetaDataBase::DataBase()->getDOF();
-
+	Car() {
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////// System Mono ///////////////////////////////////////////////////////
 		///////////////////////////////// Memory Allocation and matrix formulation ///////////////////////////////////////
@@ -213,15 +185,9 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////// Params for 11 DOF system ////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		M_linear = (T*)mkl_calloc(DOF * DOF, sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
-		temp_linear = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT);  // 11 Constants::DIM
-		K = (T*)mkl_calloc(DOF * DOF, sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
-		K_trans = (T*)mkl_malloc(DOF * DOF * sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
-		D = (T*)mkl_calloc(DOF * DOF, sizeof(T), Constants::ALIGNMENT); // 121 Constants::DIM
-		u_prev_linear = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // 11 Constants::DIM
-		u_current_linear = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // 11 Constants::DIM
-		velocity_current_linear = (T*)mkl_malloc(DOF * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
-		k_vec = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
+		u_prev_linear = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // 11 Constants::DIM
+		u_current_linear = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // 11 Constants::DIM
+		velocity_current_linear = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
 		l_lat = (T*)mkl_malloc(Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
 		l_long = (T*)mkl_malloc(Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
 		spring_length = (T*)mkl_malloc(2 * Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 8 Constants::DIM
@@ -382,7 +348,7 @@ public:
 		//// copy the initial position to the position vector
 		//cblas_dcopy(Constants::DIM*Constants::VEC_DIM, initial_position, 1, Position_vec, 1);
 
-		// Initial Velocity (Reuse the pointers)
+		// Initial _c (Reuse the pointers)
 		mkl<T>::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialVelocity(), 1, initial_velocity_vec, 1);
 		// W1 = W_fl
 		xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft();
@@ -433,36 +399,17 @@ public:
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////// 11 DOF Buffer Initialization //////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		Construct11DOFMass();
 		//compute_dx(u_prev_linear + 3);
 		//construct_11DOF_vector(initial_position, initial_angle, u_prev_linear);
 		compute_dx(u_prev_linear + 3);
-		mkl<T>::copy(DOF, u_prev_linear, 1, u_current_linear, 1);
+		mkl<T>::copy(Constants::DOF, u_prev_linear, 1, u_current_linear, 1);
 		tyre_index_set[0] = 2;
 		tyre_index_set[1] = 4;
 		tyre_index_set[2] = 6;
 		tyre_index_set[3] = 8;
 
 		construct_11DOF_vector(initial_velocity_vec, initial_angular_velocity, velocity_current_linear);
-		/* This stays in the 11 DOF
-		cblas_dscal(DOF, -h_, u_n_m_1, 1);
-		cblas_daxpy(DOF, 1, u_n, 1, u_n_m_1, 1);
-		*/
-		if (MetaDataBase::DataBase()->getUseInterpolation()) {
-			lookupStiffness->getInterpolation(current_spring_length, k_vec);
-		}
-		else {
-			k_body_fl = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
-			k_tyre_fl = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
-			k_body_fr = MetaDataBase::DataBase()->getBodyStiffnessFrontRight();
-			k_tyre_fr = MetaDataBase::DataBase()->getTyreStiffnessFrontRight();
-			k_body_rl = MetaDataBase::DataBase()->getBodyStiffnessRearLeft();
-			k_tyre_rl = MetaDataBase::DataBase()->getTyreStiffnessRearLeft();
-			k_body_rr = MetaDataBase::DataBase()->getBodyStiffnessRearRight();
-			k_tyre_rr = MetaDataBase::DataBase()->getTyreStiffnessRearRight();
-			populate_K(k_vec, k_body_fl, k_tyre_fl, k_body_fr, k_tyre_fr, k_body_rl, k_tyre_rl, k_body_rr, k_tyre_rr);
-		}
-		update_K(k_vec);
+		
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////// ALE Buffer Initialization /////////////////////////////////////////////////////////
@@ -499,110 +446,6 @@ public:
 	}
 
 	/*
-	Calculate the entries of the stiffness matrix
-	\param k_vect vector with all spring stiffnesses (in Stefans order)
-	*/
-	void update_K(T* k_vect) {
-		// K = 0
-		//cblas_dscal(DOF * DOF, 0.0, K, 1); // by copying upper to lower, we avoid reinitialization with 0
-
-		temp_linear[0] = k_vect[0] + k_vect[2] + k_vect[4] + k_vect[6];
-		K[1] = k_vect[0] * l_lat[0] - k_vect[2] * l_lat[1] + k_vect[4] * l_lat[2] - k_vect[6] * l_lat[3];
-		K[2] = -k_vect[0] * l_long[0] - k_vect[2] * l_long[1] + k_vect[4] * l_long[2] + k_vect[6] * l_long[3];
-		K[3] = -k_vect[0];
-		K[4] = 0.0;
-		K[5] = -k_vect[2];
-		K[6] = 0.0;
-		K[7] = -k_vect[4];
-		K[8] = 0.0;
-		K[9] = -k_vect[6];
-		K[10] = 0.0;
-
-		temp_linear[1] = l_lat[0] * l_lat[0] * k_vect[0] + l_lat[1] * l_lat[1] * k_vect[2] + l_lat[2] * l_lat[2] * k_vect[4] + l_lat[3] * l_lat[3] * k_vect[6];
-		K[DOF + 2] = -l_long[0] * l_lat[0] * k_vect[0] + l_lat[1] * l_long[1] * k_vect[2] + l_long[2] * l_lat[2] * k_vect[4] - l_long[3] * l_lat[3] * k_vect[6];
-		K[DOF + 3] = -l_lat[0] * k_vect[0];
-		K[DOF + 4] = 0;
-		K[DOF + 5] = l_lat[1] * k_vect[2];
-		K[DOF + 6] = 0;
-		K[DOF + 7] = -l_lat[2] * k_vect[4];
-		K[DOF + 8] = 0;
-		K[DOF + 9] = l_lat[3] * k_vect[6];
-		K[DOF + 10] = 0;
-
-		temp_linear[2] = l_long[0] * l_long[0] * k_vect[0] + l_long[1] * l_long[1] * k_vect[2] + l_long[2] * l_long[2] * k_vect[4] + l_long[3] * l_long[3] * k_vect[6];
-		K[2 * DOF + 3] = l_long[0] * k_vect[0];
-		K[2 * DOF + 4] = 0;
-		K[2 * DOF + 5] = l_long[1] * k_vect[2];
-		K[2 * DOF + 6] = 0;
-		K[2 * DOF + 7] = -l_long[2] * k_vect[4];
-		K[2 * DOF + 8] = 0;
-		K[2 * DOF + 9] = -l_long[3] * k_vect[6];
-		K[2 * DOF + 10] = 0;
-
-		temp_linear[3] = k_vect[0] + k_vect[1];
-		K[3 * DOF + 4] = -k_vect[1];
-		K[3 * DOF + 5] = 0;
-		K[3 * DOF + 6] = 0;
-		K[3 * DOF + 7] = 0;
-		K[3 * DOF + 8] = 0;
-		K[3 * DOF + 9] = 0;
-		K[3 * DOF + 10] = 0;
-		// all others are zero
-
-		temp_linear[4] = k_vect[1];
-		K[4 * DOF + 5] = 0;
-		K[4 * DOF + 6] = 0;
-		K[4 * DOF + 7] = 0;
-		K[4 * DOF + 8] = 0;
-		K[4 * DOF + 9] = 0;
-		K[4 * DOF + 10] = 0;
-
-		temp_linear[5] = k_vect[2] + k_vect[3];
-		K[5 * DOF + 6] = -k_vect[3];
-		K[5 * DOF + 7] = 0;
-		K[5 * DOF + 8] = 0;
-		K[5 * DOF + 9] = 0;
-		K[5 * DOF + 10] = 0;
-
-		temp_linear[6] = k_vect[3];
-		K[6 * DOF + 7] = 0;
-		K[6 * DOF + 8] = 0;
-		K[6 * DOF + 9] = 0;
-		K[6 * DOF + 10] = 0;
-
-		temp_linear[7] = k_vect[4] + k_vect[5];
-		K[7 * DOF + 8] = -k_vect[5];
-		K[7 * DOF + 9] = 0;
-		K[7 * DOF + 10] = 0;
-
-
-		temp_linear[8] = k_vect[5];
-		K[8 * DOF + 9] = 0;
-		K[8 * DOF + 10] = 0;
-
-
-		temp_linear[9] = k_vect[6] + k_vect[7];
-		K[9 * DOF + 10] = -k_vect[7];
-
-		temp_linear[10] = k_vect[7];
-		
-
-		// symmetrize K
-		//cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
-		mkl<T>::lacpy(LAPACK_ROW_MAJOR, 'U', DOF, DOF, K, DOF, K_trans, DOF);
-
-		mkl<T>::imatcopy('R', 'T', DOF, DOF, 1.0, K_trans, DOF, DOF); // get transpose of matrix
-		
-		mkl<T>::lacpy(LAPACK_ROW_MAJOR, 'L', DOF, DOF, K_trans, DOF, K, DOF); // copy lower triangular in the orig matrix
-		//cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
-
-		// add the diagonal to K
-		MathLibrary::allocate_to_diagonal(K, temp_linear, DOF); // K = K + K'+ diag(K)
-
-
-	}
-
-	/*
 	Get the solution vector as required for the 11DOF system
 	\param Global_position in the format [GC:XYZ,W1:XYZ,T1:XYZ,W2:XYZ,T2:XYZ,...]
 	\param Global_angle with three angles [X,Y,Z]
@@ -617,31 +460,6 @@ public:
 		mkl<T>::copy(Constants::VEC_DIM - 1, Global_position + 5, 3, Position_11dof + 3, 1);
 	}
 
-	/*
-	fill the vector with all stiffness with the constant values from the XML (if the lookup table is not used)
-	\param k_tyre_** stiffnesses of the lower springs
-	\param k_body_** stiffnesses of the upper springs
-	\return k_vect with all stiffnesses in Stefan's ordering
-	*/
-	void populate_K(T* k_vect, T k_body_fl, T k_tyre_fl, T k_body_fr,
-		T k_tyre_fr,
-		T k_body_rl,
-		T k_tyre_rl,
-		T k_body_rr,
-		T k_tyre_rr) {
-
-		/*
-		This is needed when interpolation is turned off
-		*/
-		k_vect[0] = k_body_fl;
-		k_vect[1] = k_tyre_fl;
-		k_vect[2] = k_body_fr;
-		k_vect[3] = k_tyre_fr;
-		k_vect[4] = k_body_rl;
-		k_vect[5] = k_tyre_rl;
-		k_vect[6] = k_body_rr;
-		k_vect[7] = k_tyre_rr;
-	}
 	void get_length(T* Corners, T* curr_spring_len, T* W_fl, T* T_fl, T* W_fr, T* T_fr, T* W_rl, T* T_rl, T* W_rr, T* T_rr) {
 		// W_fl & T_fl
 		mkl<T>::copy(Constants::DIM, Corners, 4, W_fl, 1);
@@ -806,19 +624,6 @@ public:
 		mkl<T>::copy(Constants::DIM, Vel_CG, 1, Velocity_vec, 1);
 	}
 
-	void get_k_vec(T* k) {
-		mkl<T>::copy(2 * Constants::NUM_LEGS, k_vec, 1, k, 1);
-	}
-	void get_k_vec_tyre(T* k) {
-		mkl<T>::copy(Constants::NUM_LEGS, k_vec + 1, 2, k, 1);
-	}
-	void get_k_vec_wheel(T* k) {
-		mkl<T>::copy(Constants::NUM_LEGS, k_vec, 2, k, 1);
-	}
-
-	void set_k_vec(const T* k) {
-		mkl<T>::copy(2 * Constants::NUM_LEGS, k, 1, k_vec, 1);
-	}
 
 	void get_Mass_vec(T* M) {
 		mkl<T>::copy(Constants::VEC_DIM, Mass_vec, 1, M, 1);
@@ -935,90 +740,49 @@ public:
 		mkl_free_buffers();
 		
 		/*
-		mkl_free(Position_vec); 
-		Position_vec = nullptr;
+		mkl_free(Position_vec);
 		mkl_free(Velocity_vec);
-		Velocity_vec = nullptr;
 		mkl_free(Mass_vec);
-		Mass_vec = nullptr;
 		mkl_free(angle_CG);
-		angle_CG = nullptr;
 		mkl_free(w_CG);
-		w_CG = nullptr;
 		mkl_free(I_CG);
-		I_CG = nullptr;
 
 
 		// Initial Conditions of the car
 		mkl_free(initial_position);
-		initial_position = nullptr;
 		mkl_free(initial_velocity_vec);
-		initial_velocity_vec = nullptr;
 		mkl_free(initial_angle);
-		initial_angle = nullptr;
 		mkl_free(initial_angular_velocity);
-		initial_angular_velocity = nullptr;
 		
 		mkl_free(quad_angle_init);
-		quad_angle_init = nullptr;
-		mkl_free(M_linear);
-		M_linear = nullptr;
-		mkl_free(temp_linear); 
-		temp_linear = nullptr;
-		mkl_free(K);
-		K = nullptr;
-		mkl_free(K_trans);
-		K_trans = nullptr;
-		mkl_free(D);
-		D = nullptr;
 		mkl_free(spring_length); 
-		spring_length = nullptr;
 		mkl_free(current_spring_length);
-		current_spring_length = nullptr;
 		mkl_free(u_prev_linear); 
-		u_prev_linear = nullptr;
 		mkl_free(u_current_linear);
-		u_current_linear = nullptr;
-		mkl_free(k_vec); 
-		k_vec = nullptr;
 		mkl_free(l_lat); 
-		l_lat = nullptr;
 		mkl_free(l_long);
-		l_long = nullptr;
 		mkl_free(velocity_current_linear);
-		velocity_current_linear = nullptr;
 		mkl_free(tyre_index_set);
-		tyre_index_set = nullptr;
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////// ALE Vectors ///////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		mkl_free(Position_vec_xy);
-		Position_vec_xy = nullptr;
 
 		mkl_free(Velocity_vec_xy);
-		Velocity_vec_xy = nullptr;
 
 		delete Angle_z;
-		Angle_z = nullptr;
 		delete w_z;
-		w_z = nullptr;
 		delete global_mass;
-		global_mass = nullptr;
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		///////////////////////////////////// Interpolator objects ///////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////
 		mkl_free(Corners_current);
-		Corners_current = nullptr;
 		mkl_free(Corners_rot);
-		Corners_rot = nullptr;
 		mkl_free(Corners_init);
-		Corners_init = nullptr;
 		mkl_free(angle_buffer);
-		angle_buffer = nullptr;
 		mkl_free(pos_buffer);
-		pos_buffer = nullptr;
 		*/
 	}
 };

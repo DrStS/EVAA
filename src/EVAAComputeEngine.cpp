@@ -728,18 +728,33 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 	mkl_free(tmp);
 }
 
+void EVAAComputeEngine::computeMKL11DOFBE(void) {
+
+	if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
+		floatEVAA* sol = (floatEVAA*)mkl_calloc(Constants::DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
+		Car<floatEVAA>* car = new Car<floatEVAA>();
+		Linear11dofFullBE<floatEVAA> solver(car, _lookupStiffness, _lookupDamping);
+		solver.apply_boundary_condition(MetaDataBase::DataBase()->getRoadConditions());
+		solver.solve(sol);
+
+		solver.print_final_results(sol);
+
+		mkl_free(sol);
+		delete car;
+	}
+	else {
+		std::cout << "Linear11dof solver will only work with NONFIXED boundary conditions, computation skipped" << std::endl;
+	}
+}
+
 
 void EVAAComputeEngine::computeMKLlinear11dof() {
 	if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
-		floatEVAA h = MetaDataBase::DataBase()->getTimeStepSize();
-		floatEVAA tend = MetaDataBase::DataBase()->getNumberOfTimeIterations() * h;
-		int DOF = MetaDataBase::DataBase()->getDOF();
-		floatEVAA* sol = (floatEVAA*)mkl_calloc(DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
-		Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness);
-		Linear11dofFull<floatEVAA> solver(car);
+		floatEVAA* sol = (floatEVAA*)mkl_calloc(Constants::DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
+		Car<floatEVAA>* car = new Car<floatEVAA>();
+		Linear11dofFull<floatEVAA> solver(car, _lookupStiffness, _lookupDamping);
 		solver.apply_boundary_condition(MetaDataBase::DataBase()->getRoadConditions());
 		solver.solve(sol);
-		size_t steps = floor(tend / h);
 
 		solver.print_final_results(sol);
 
@@ -765,7 +780,7 @@ void EVAAComputeEngine::computeALE(void) {
 
 	Profile<floatEVAA>* roadProfile;
 
-	Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness);
+	Car<floatEVAA>* car = new Car<floatEVAA>();
 
 	switch (MetaDataBase::DataBase()->getRoadConditions())
 	{
@@ -791,7 +806,7 @@ void EVAAComputeEngine::computeALE(void) {
 	roadProfile->update_initial_condition(car);
 
 	LoadModule<floatEVAA>* loadModule = new LoadModule<floatEVAA>(roadProfile, car);
-	Linear11dof<floatEVAA>* linear11dof = new Linear11dof<floatEVAA>(car);
+	Linear11dofBE<floatEVAA>* linear11dof = new Linear11dofBE<floatEVAA>(car, _lookupStiffness, _lookupDamping);
 	ALE<floatEVAA>* ale = new ALE<floatEVAA>(car, loadModule, linear11dof, _lookupStiffness);
 
 	size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
@@ -814,7 +829,7 @@ void EVAAComputeEngine::computeALEtest(void) {
 
 	size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
 	size_t solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize();
-	Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness);
+	Car<floatEVAA>* car = new Car<floatEVAA>();
 	Profile<floatEVAA>* roadProfile = new Circular<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
 		MetaDataBase::DataBase()->getCircularRoadRadius());
 	roadProfile->update_initial_condition(car);

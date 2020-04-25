@@ -245,8 +245,8 @@ void MetaDataBase::ReadLookupParameters(
 		int size, k, type, order;
 
 		a = new(double[8]);
-		k_body = new(double[8]);
-		k_tyre = new(double[8]);
+		k_body = new(double[4]);
+		k_tyre = new(double[4]);
 
 		std::cout << "Generate look up table from parameters." << std::endl;
 
@@ -261,13 +261,13 @@ void MetaDataBase::ReadLookupParameters(
 
 		readLegs(k_body, lookup_table->LookupTableGenerator().get().Magnitude().Body());
 		readLegs(k_tyre, lookup_table->LookupTableGenerator().get().Magnitude().Tyre());
-		a[0] = k_body[2];
+		a[0] = k_body[0];
 		a[1] = k_tyre[0];
-		a[2] = k_body[3];
+		a[2] = k_body[1];
 		a[3] = k_tyre[1];
-		a[4] = k_body[0];
+		a[4] = k_body[2];
 		a[5] = k_tyre[2];
-		a[6] = k_body[1];
+		a[6] = k_body[3];
 		a[7] = k_tyre[3];
 
         *lookupStiffness = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);

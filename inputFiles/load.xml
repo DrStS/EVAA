@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <EVAA_load_module>
 	<boundary_description>
-		<BoundaryConditions>circle</BoundaryConditions>
+		<BoundaryConditions>nonfixed</BoundaryConditions>
     <circular>
 			<radius>50</radius>
 			<center>
@@ -15,28 +15,28 @@
     <force_body>
       <x>0</x>
       <y>0</y>
-      <z>0</z>
+      <z>-1936</z>
     </force_body>
     <force_wheel>
       <ReerRight>
         <x>0</x>
         <y>0</y>
-        <z>0</z>
+        <z>-67.5</z>
       </ReerRight>
       <ReerLeft>
         <x>0</x>
         <y>0</y>
-        <z>0</z>
+        <z>-67.5</z>
       </ReerLeft>
       <FrontLeft>
         <x>0</x>
         <y>0</y>
-        <z>0</z>
+        <z>-67.5</z>
       </FrontLeft>
       <FrontRight>
         <x>0</x>
         <y>0</y>
-        <z>0</z>
+        <z>-67.5</z>
       </FrontRight>
     </force_wheel>
     <force_tyre>

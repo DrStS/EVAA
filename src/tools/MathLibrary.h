@@ -1023,6 +1023,47 @@ namespace MathLibrary {
 			//std::cout << "Exiting Broyden!\n" << std::endl;
 		}
 
+		/**
+		* \brief newton loop for the 11 Dof system 
+		*/
+		static void Newton(
+			C* obj /**< instance of 11dof class*/, 
+			T* force /**< pointer to force vector (not from 11dof class)*/,
+			T* J /**< pointer to Jacobien from 11dofClass*/,
+			T* res /**< residual from 11Dof class*/,
+			T* res_norm /**< norm of the residual from the 11 Dof class*/,
+			T* u_n_p_1 /**< current position vector*/,
+			T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/
+		) {
+			int count = 0;
+			T delta_norm = 1, delta_norm2 = 0;
+			lapack_int status;
+			//std::cout << "bin drin" << std::endl;
+			obj->calcResidual(force);
+			do {
+				count++;
+				std::cout << "iter: " << count << std::endl;
+				obj->constructJacobien();
+				// get J=LL^T
+				status = mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
+				check_status<lapack_int>(status);
+				// residual=J\residual -> residual = delta
+				mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, res, 1);
+				// u_n_p_1 -= delta
+				mkl<T>::axpy(Constants::DOF, -1, res, 1, u_n_p_1, 1);
+				delta_norm = mkl<T>::nrm2(Constants::DOF, res, 1);
+				// update all the matrices
+				obj->updateSystem();
+				// calculate the newton function
+				obj->calcResidual(force);
+				// copy the new residual to a temp to check if newton has converged without losing residual
+				mkl<T>::copy(Constants::DOF, res, 1, temp, 1);
+				mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
+				delta_norm2 = mkl<T>::nrm2(Constants::DOF, temp, 1);
+				std::cout << "res_norm:" << *res_norm << std::endl;
+			} while (*res_norm > Constants::TOLERANCE && delta_norm2 < delta_norm && count < 10);
+		}
+
 		/*
 		explicit Runge-Kutta-4
 		\param num_time_iter number of time steps to perform

@@ -88,6 +88,10 @@ public:
 	* \author Stefan Sicklinger
 	***********/
 
+	/**
+	* \brief compute 11Dof system with BE to prove correctness
+	*/
+	void computeMKL11DOFBE();
 
 	/*
 	Solve the MBD system
