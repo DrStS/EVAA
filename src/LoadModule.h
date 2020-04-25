@@ -21,6 +21,27 @@ private:
 	T* Normal_from_profile = NULL; // Normal_force computed inside get_Profile_force
 	T* External_force = NULL;
 
+	/**
+	* \brief adds the effect of the internal forces on the torque
+	* \param Torque current torque of the body [XYZ]
+	* \param F_vec vector of all internal XY-forces in the Eulerian frame at each position [GC:XYZ,W1:XYZ,T1:XYZ, ...]
+	*/
+	void ComputeInternalTorque(T* Torque, T* F_vec) {
+
+		// compute torque around X-axis
+//		#pragma loop(ivdep)
+		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
+			Torque[0] += F_vec[i * Constants::DIM + 1] * Car_obj->distance_nickpol[i];
+		}
+
+		// compute torque around Y-axis
+	//	#pragma loop(ivdep)
+		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
+			Torque[1] += F_vec[i * Constants::DIM + 0] * Car_obj->distance_nickpol[i];
+		}
+	}
+
+
 public:
 	LoadModule(Profile<T>* Profile_type, Car<T>* Car1) {
 		Active_Profile = Profile_type;
@@ -141,8 +162,9 @@ public:
 	\param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
 	\return Torque acting on the total car system [XYZ]
 	*/
-	void update_torque(T time_t, T* Torque, T* Delta_x_vec) {
+	void update_torque(T time_t, T* Torque, T* F_vec) {
 		Active_Profile->get_Profile_torque(Car_obj, Torque);
+		ComputeInternalTorque(Torque, F_vec);
 	}
 
 

@@ -154,6 +154,7 @@ public:
 	T *quad_angle_init;
 	T* M_linear, *temp_linear, *K, *K_trans, *D;
 	T *spring_length, *current_spring_length;
+	T* pos_nickpol, *distance_nickpol;
 	T* u_prev_linear, *u_current_linear;
 	T* k_vec, *l_lat, *l_long;
 	T* velocity_current_linear;
@@ -225,6 +226,8 @@ public:
 		l_lat = (T*)mkl_malloc(Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
 		l_long = (T*)mkl_malloc(Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
 		spring_length = (T*)mkl_malloc(2 * Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 8 Constants::DIM
+		pos_nickpol = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
+		distance_nickpol = (T*)mkl_malloc((2*Constants::NUM_LEGS + 1) * sizeof(T), Constants::ALIGNMENT); // 9 
 		current_spring_length = (T*)mkl_malloc(2 * Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 8 Constants::DIM
 		tyre_index_set = (size_t*)mkl_malloc(Constants::NUM_LEGS * sizeof(size_t), Constants::ALIGNMENT);
 
@@ -251,11 +254,12 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////// Extract Data from parser /////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		l_long =  MetaDataBase::DataBase()->getLongitudalLegPositionVector();
 
-		l_lat =  MetaDataBase::DataBase()->getLatidudalLegPositionVector();
+		mkl<T>::copy(Constants::NUM_LEGS, MetaDataBase::DataBase()->getLongitudalLegPositionVector(), 1, l_long, 1);
 
-		I_CG =  MetaDataBase::DataBase()->getMomentOfInertiaVector();
+		mkl<T>::copy(Constants::NUM_LEGS, MetaDataBase::DataBase()->getLatidudalLegPositionVector(), 1, l_lat, 1);
+
+		mkl<T>::copy(Constants::DIM * Constants::DIM, MetaDataBase::DataBase()->getMomentOfInertiaVector(), 1, I_CG, 1);
 
 		Mass_vec[0] =  MetaDataBase::DataBase()->getBodyMass();
 		Mass_vec[1] =  MetaDataBase::DataBase()->getWheelMassFrontLeft();
@@ -276,6 +280,8 @@ public:
 		spring_length[5] = MetaDataBase::DataBase()->getTyreSpringLengthRearLeft();
 		spring_length[6] = MetaDataBase::DataBase()->getBodySpringLengthRearRight();
 		spring_length[7] = MetaDataBase::DataBase()->getTyreSpringLengthRearRight();
+
+		mkl<T>::copy(Constants::DIM, MetaDataBase::DataBase()->getPositionCenterOfInstantaneousRotation(), 1, pos_nickpol, 1);
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -379,8 +385,9 @@ public:
 			T_rr = Position_vec + 24;
 			get_length(Corners_current, spring_length, W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr);
 		}
-		//// copy the initial position to the position vector
-		//cblas_dcopy(Constants::DIM*Constants::VEC_DIM, initial_position, 1, Position_vec, 1);
+		
+		// we updated the initial global position, so we 
+		UpdateNickpolRadius();
 
 		// Initial Velocity (Reuse the pointers)
 		mkl<T>::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialVelocity(), 1, initial_velocity_vec, 1);
@@ -737,7 +744,14 @@ public:
 		//	std::cout << current_spring_length[i] << "\t ";
 
 		//exit(11);
+		UpdateNickpolRadius();
+	}
 
+	void UpdateNickpolRadius() {
+		T globalNickpolPosition = Position_vec[2] + pos_nickpol[2];		// get global Z position of the Nickpol
+		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
+			distance_nickpol[i] = Position_vec[2 + i * Constants::DIM] - globalNickpolPosition;
+		}
 	}
 
 	/* Fills the global vector with all entries
@@ -973,6 +987,10 @@ public:
 		D = nullptr;
 		mkl_free(spring_length); 
 		spring_length = nullptr;
+		mkl_free(pos_nickpol);
+		pos_nickpol = nullptr;
+		mkl_free(distance_nickpol);
+		distance_nickpol = nullptr;
 		mkl_free(current_spring_length);
 		current_spring_length = nullptr;
 		mkl_free(u_prev_linear); 

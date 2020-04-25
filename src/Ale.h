@@ -101,7 +101,7 @@ public:
 		// get forces 
 		Car_obj->compute_dx(Delta_x_vec);
 		Load_module_obj->update_force(t, force_vector, Delta_x_vec, new_centripetal_force);
-		Load_module_obj->update_torque(t, new_torque, Delta_x_vec);
+		Load_module_obj->update_torque(t, new_torque, force_vector);
 
 		mkl<T>::scal(2, -1, new_centripetal_force, 1);
 
@@ -163,7 +163,7 @@ public:
 			//////////// update force vector ///////////
 			Car_obj->compute_dx(Delta_x_vec);
 			Load_module_obj->update_force(t, force_vector, Delta_x_vec, centripetal_force);
-			Load_module_obj->update_torque(t, torque, Delta_x_vec);
+			Load_module_obj->update_torque(t, torque, force_vector);
 			// convert centrifugal force to centripetal (only for x, y direction)
 			mkl<T>::scal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
 			if (iter == 100)

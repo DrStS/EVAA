@@ -77,6 +77,7 @@ class MetaDataBase{
         double k_tyre[4]; double k_body[4];
         double c_tyre[4]; double c_body[4];
         double l_long[4]; double l_lat[4];
+        double pos_nickpol[3];
         double mass_body; double I_body[9];
         double mass_tyre[4]; double mass_wheel[4];
         double lower_spring_length[4]; double upper_spring_length[4];
@@ -248,6 +249,11 @@ class MetaDataBase{
         // vector in the format fl fr rl rr
         double* getLatidudalLegPositionVector() {
             return l_lat;
+        }
+
+
+        double* getPositionCenterOfInstantaneousRotation() {
+            return pos_nickpol;
         }
 
 

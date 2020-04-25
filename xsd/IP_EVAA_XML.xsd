@@ -50,6 +50,7 @@
                         <xs:element name="LongitudinalReferenceToWheelXML" type="legs_t"/>
                         <xs:element name="SuspensionSpringsXML" type="legs_t"/>
                         <xs:element name="TyreSpringsXML" type="legs_t"/>
+                        <xs:element name="RelativeCenterOfInstanteneousRotation" type="vector_t"/>
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>

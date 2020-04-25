@@ -135,6 +135,7 @@ void MetaDataBase::ReadParameters(){
     readLegs(c_body, settings->VehicleXML().TwoTrackModelXML().DampingCoefficientsXML().BodyXML());
     readLegs(l_long, settings->VehicleXML().TwoTrackModelXML().GeometryXML().LongitudinalReferenceToWheelXML());
     readLegs(l_lat, settings->VehicleXML().TwoTrackModelXML().GeometryXML().LateralReferenceToWheelXML());
+    readVector(pos_nickpol, settings->VehicleXML().TwoTrackModelXML().GeometryXML().RelativeCenterOfInstanteneousRotation());
     readLegs(lower_spring_length, settings->VehicleXML().TwoTrackModelXML().GeometryXML().SuspensionSpringsXML());
     readLegs(upper_spring_length, settings->VehicleXML().TwoTrackModelXML().GeometryXML().TyreSpringsXML());
 

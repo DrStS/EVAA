@@ -243,6 +243,8 @@ public:
 	\return F_vec torque acting on teh car system [XYZ]
 	*/
 	virtual void get_Profile_torque(Car<T>* Car1, T* Torque) {
+		Torque[0] = 0;
+		Torque[1] = 0;
 		Torque[2] = 0; // Torque on z direction
 	}
 
@@ -314,6 +316,8 @@ public:
 	}
 
 	virtual void get_Profile_torque(Car<T>* Car1, T* Torque_vec) {
+		Torque_vec[0] = 0;
+		Torque_vec[1] = 0;
 		Torque_vec[2] = 0; // Torque on z direction
 	}
 
