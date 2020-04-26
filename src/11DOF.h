@@ -183,14 +183,24 @@ protected:
 	* \brief initialise the vectors u_n, u_n_m_1, u_n_p_1
 	*
 	* called in the constructor
-	* u_n = lenght_init -length_normal
+	* u_n = ...
 	* u_n_m_1 = u_n - _h * velocity
 	* u_n_p_1 = u_n
 	* tempVector is used for velocity
 	*/
 	void initPosVectors() {
-		// u_n = lenght_init -length_normal
-		mkl<T>::vSub(Constants::NUM_LEGS, springLengths, springLengthsNormal, u_n);
+		// u_n
+		u_n[0] = 0;
+		u_n[1] = MetaDataBase::DataBase()->getBodyInitialOrientation()[0];
+		u_n[2] = MetaDataBase::DataBase()->getBodyInitialOrientation()[1];
+		u_n[3] = springLengthsNormal[0] + u_n[0] + _car->l_lat[0] * u_n[1] - _car->l_long[0] * u_n[2] - springLengths[0];
+		u_n[4] = springLengthsNormal[1] + u_n[3] - springLengths[1];
+		u_n[5] = springLengthsNormal[2] + u_n[0] - _car->l_lat[0] * u_n[1] - _car->l_long[0] * u_n[2] - springLengths[2];
+		u_n[6] = springLengthsNormal[3] + u_n[5] - springLengths[3];
+		u_n[7] = springLengthsNormal[4] + u_n[0] + _car->l_lat[0] * u_n[1] + _car->l_long[0] * u_n[2] - springLengths[4];
+		u_n[8] = springLengthsNormal[5] + u_n[7] - springLengths[5];
+		u_n[9] = springLengthsNormal[6] + u_n[0] - _car->l_lat[0] * u_n[1] + _car->l_long[0] * u_n[2] - springLengths[6];
+		u_n[10] = springLengthsNormal[7] + u_n[9] - springLengths[7];
 		
 		// store velocity in temp
 		temp[0] = MetaDataBase::DataBase()->getBodyInitialVelocity()[2];
