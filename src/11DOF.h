@@ -307,9 +307,10 @@ public:
 	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
 	*/
 	virtual void update_step(T* force, T* solution) {
-		//MathLibrary::Solvers<T, TwoTrackModelBE>::Linear_Backward_Euler(A, B, M_h2, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
+		// TODO: pass on either (-u_n_m_1) or (-M_h2) // could be done by having a C matrix
+		MathLibrary::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, M_h2, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
 #ifdef INTERPOLATION
-			MathLibrary::Solvers<T, TwoTrackModelBE>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
+			MathLibrary::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
 #endif
 		// solutio = solution[t_n] = u_n_p_1
 		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
@@ -837,10 +838,11 @@ public:
 	\return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
 	*/
 	void update_step_bdf2(T* force, T* solution) {
-		//cblas_dscal(DOF, 0.0, force, 1);
-		MathLibrary::Solvers<T, TwoTrackModelBDF2>::Linear_BDF2(A, B, C, Dmat, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
+		// cblas_dscal(DOF, 0.0, force, 1);
+		// TODO: this doesnt work for the moment as we do not have C, Dmat, E 
+		// MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Linear_BDF2(A, B, C, Dmat, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
 #ifdef INTERPOLATION
-			MathLibrary::Solvers<T, TwoTrackModelBDF2>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
+			MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
 #endif
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
