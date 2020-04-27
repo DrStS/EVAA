@@ -74,7 +74,7 @@ protected:
 
 	T* kVec, * dVec, * temp;
 	T* springLengths, * springLengthsNormal;
-	size_t* tyre_index_set;
+	size_t tyre_index_set[4] = { 4, 6, 8, 10 };
 
 	T* J, * dKdxx, * dDdxx;
 	T* residual;
@@ -362,10 +362,10 @@ public:
 	}
 
 	/**
-	* \brief construct Jacobien
+	* \brief construct Jacobien for non fixed case
 	*
 	* this has to be called every newton iteraton
-	* J = M_h2 + D / _h + K + (dDdx + dKdx)*x[n+1] - dDdx / _h * x[n]
+	* J = M_h2 + D / _h + K + dKdx*x[n+1] + 1/h_ * dDdx ( x[n+1] - x[n] )
 	*/
 	void constructJacobien() {
 		// first update the derivative 
@@ -373,17 +373,31 @@ public:
 		lookupDamping->getDerivative(springLengths, dddl);
 		// construct the derivative (tensor) times a pos vector
 		constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
-		constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
 		// J = A
 		mkl<T>::copy(Constants::DOFDOF, A, 1, J, 1);
 		// J += dDdx * x[n+1]
 		mkl<T>::axpy(Constants::DOFDOF, 1.0, dDdxx, 1, J, 1);
 		// J += dKdx * x[n+1]
 		mkl<T>::axpy(Constants::DOFDOF, 1.0, dKdxx, 1, J, 1);
-		// calc dDdxx with x[n] 
-		constructLookupDerivativeX(dddl, u_n, dDdxx);
-		// J += -1/_h * dDdx * x[n]
-		mkl<T>::axpy(Constants::DOFDOF, -factor_h, dDdxx, 1, J, 1);
+		// temp = x[n+1]
+		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, temp, 1);
+		// temp += -x[n]
+		mkl<T>::axpy(Constants::DOF, -1, u_n, 1, temp, 1);
+		// calc dDdxx with (x[n+1] - x[n])
+		constructLookupDerivativeX(dddl, temp, dDdxx);
+		// J += 1/_h * dDdxx
+		mkl<T>::axpy(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
+	}
+	/**
+	* \brief construct Jacobien for fixed to road
+	*
+	* add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h D - K + 1/h dDdx * x[n]]
+	* therefore J = M_h2 for the tyre positions
+	*/
+	void constructFixedJacobien() {
+		for (auto i = 0; i < Constants::NUM_LEGS) {
+			mkl<T>::copy(Constants::DOF, M_h2 + ( 4 + 2 * i ) * Constants::DOF,1, J + (4 + 2 * i) * Constants::DOF, 1);
+		}
 	}
 	/**
 	* \brief update all dependent matrices on the position vector

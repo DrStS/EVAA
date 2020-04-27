@@ -1042,7 +1042,7 @@ namespace MathLibrary {
 			obj->calcResidual(force);
 			do {
 				count++;
-				std::cout << "iter: " << count << std::endl;
+				//std::cout << "iter: " << count << std::endl;
 				obj->constructJacobien();
 				// get J=LL^T
 				status = mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
@@ -1060,7 +1060,7 @@ namespace MathLibrary {
 				mkl<T>::copy(Constants::DOF, res, 1, temp, 1);
 				mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
 				delta_norm2 = mkl<T>::nrm2(Constants::DOF, temp, 1);
-				std::cout << "res_norm:" << *res_norm << std::endl;
+				//std::cout << "res_norm:" << *res_norm << std::endl;
 			} while (*res_norm > Constants::TOLERANCE && delta_norm2 < delta_norm && count < 10);
 		}
 
