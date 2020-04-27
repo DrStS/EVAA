@@ -178,7 +178,7 @@ x11)	d8*(x10 - x11)];
 %% parameters
 % time
 num_iter = 1e1;
-delta_t = 1e-3; 
+delta_t = 1e-1; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
 tol = 1e-8;
@@ -259,8 +259,6 @@ for i = 1: length(t)
         rhs(9) = newForce(9);
         rhs(11) = newForce(11);
     end
-    u_n_p_1 = ( M_div_h2 + K )\ (2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs);
-    K = get_K();
     r = f_newton(u_n_p_1, u_n, u_n_m_1, K,rhs);
     i
     iter = 0;

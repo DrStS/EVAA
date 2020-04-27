@@ -733,7 +733,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 	if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
 		floatEVAA* sol = (floatEVAA*)mkl_calloc(Constants::DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
 		Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness, _lookupDamping);
-		TwoTrackModelFull<floatEVAA, TwoTrackModelBE<floatEVAA>> solver(car, _lookupStiffness, _lookupDamping);
+		TwoTrackModelFull<floatEVAA> solver(car, _lookupStiffness, _lookupDamping);
 		solver.apply_boundary_condition(MetaDataBase::DataBase()->getRoadConditions());
 		solver.solve(sol);
 
@@ -746,7 +746,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 		std::cout << "Linear11dof solver will only work with NONFIXED boundary conditions, computation skipped" << std::endl;
 	}
 }
-
+/*
 void EVAAComputeEngine::computeMKLTwoTrackModel() {
 	if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
 		floatEVAA* sol = (floatEVAA*)mkl_calloc(Constants::DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
@@ -763,7 +763,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModel() {
 	else {
 		std::cout << "TwoTrackModel solver will only work with NONFIXED boundary conditions, computation skipped" << std::endl;
 	}
-}
+}*/
 
 void EVAAComputeEngine::computeMBD(void) {	
 	size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
@@ -776,7 +776,6 @@ void EVAAComputeEngine::computeMBD(void) {
 }
 
 void EVAAComputeEngine::computeALE(void) {
-
 	Profile<floatEVAA>* roadProfile;
 
 	Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness, _lookupDamping);
@@ -803,9 +802,8 @@ void EVAAComputeEngine::computeALE(void) {
 	}
 
 	roadProfile->update_initial_condition(car);
-
 	LoadModule<floatEVAA>* loadModule = new LoadModule<floatEVAA>(roadProfile, car);
-	TwoTrackModelParent <floatEVAA>* TwoTrackModel_obj = new TwoTrackModelBE<floatEVAA>(car, _lookupStiffness, _lookupDamping);
+	TwoTrackModelParent<floatEVAA>* TwoTrackModel_obj = new TwoTrackModelBE<floatEVAA>(car, _lookupStiffness, _lookupDamping);
 	ALE<floatEVAA>* ale = new ALE<floatEVAA>(car, loadModule, TwoTrackModel_obj, _lookupStiffness);
 
 	size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;

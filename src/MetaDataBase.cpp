@@ -279,7 +279,6 @@ void MetaDataBase::ReadLookupParameters(
             a[j] /= 100;
         }
         *lookupDamping = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
-
         delete[] a;
 		delete[] k_body;
 		delete[] k_tyre;

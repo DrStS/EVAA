@@ -470,7 +470,7 @@ public:
 
 #ifdef INTERPOLATION
 			_lookupStiffness->getInterpolation(currentSpringsLength, kVec);
-			_lookupDamping->getInterpolation(currentSpringsLength, dVec)
+			_lookupDamping->getInterpolation(currentSpringsLength, dVec);
 #else
 			kVec[0] = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
 			kVec[1] = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();

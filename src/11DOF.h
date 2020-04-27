@@ -244,8 +244,6 @@ public:
 		K = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		D = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 
-		kVec = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
-		dVec = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
 		temp = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);		/**< used for the constructStiffnesMatrix and constructDampingMatrix as well as for the BE*/
 		Mat_temp = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT); /**< used for the constructStiffnesMatrix and constructDampingMatrix*/
 		Mat_springLength = (T*)mkl_calloc( 2 * Constants::NUM_LEGS * Constants::DOF, sizeof(T), Constants::ALIGNMENT);
@@ -289,8 +287,6 @@ public:
 		mkl_free(M_h2);
 		mkl_free(K);
 		mkl_free(D);
-		mkl_free(kVec);
-		mkl_free(dVec);
 		mkl_free(temp);
 		mkl_free(Mat_temp);
 		mkl_free(springLengths);
@@ -311,9 +307,9 @@ public:
 	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
 	*/
 	virtual void update_step(T* force, T* solution) {
-		MathLibrary::Solvers<T, Linear11dofBE>::Linear_Backward_Euler(A, B, M_h2, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
+		//MathLibrary::Solvers<T, TwoTrackModelBE>::Linear_Backward_Euler(A, B, M_h2, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
 #ifdef INTERPOLATION
-			MathLibrary::Solvers<T, Linear11dofBE>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
+			MathLibrary::Solvers<T, TwoTrackModelBE>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
 #endif
 		// solutio = solution[t_n] = u_n_p_1
 		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
@@ -374,7 +370,7 @@ public:
 	* therefore J = M_h2 for the tyre positions
 	*/
 	virtual void constructFixedJacobien() {
-		for (auto i = 0; i < Constants::NUM_LEGS) {
+		for (auto i = 0; i < Constants::NUM_LEGS; i++) {
 			mkl<T>::copy(Constants::DOF, M_h2 + ( 4 + 2 * i ) * Constants::DOF,1, J + (4 + 2 * i) * Constants::DOF, 1);
 		}
 	}
@@ -398,7 +394,7 @@ public:
 	*/
 	void constructStiffnessMatrix() {
 #ifdef INTERPOLATION
-		lookupStiffness->getInterpolation(_car->currentSpringLength, kVec);
+		lookupStiffness->getInterpolation(_car->currentSpringsLength, kVec);
 #endif
 		temp[0] = kVec[0] + kVec[2] + kVec[4] + kVec[6];
 		K[1] = kVec[0] * _car->l_lat[0] - kVec[2] * _car->l_lat[1] + kVec[4] * _car->l_lat[2] - kVec[6] * _car->l_lat[3];
@@ -500,7 +496,7 @@ public:
 	*/
 	void constructDampingMatrix() {
 #ifdef INTERPOLATION
-			lookupDamping->getInterpolation(_car->currentSpringLength, dVec);
+			lookupDamping->getInterpolation(_car->currentSpringsLength, dVec);
 #endif
 		temp[0] = dVec[0] + dVec[2] + dVec[4] + dVec[6];
 		D[1] = dVec[0] * _car->l_lat[0] - dVec[2] * _car->l_lat[1] + dVec[4] * _car->l_lat[2] - dVec[6] * _car->l_lat[3];
@@ -842,9 +838,9 @@ public:
 	*/
 	void update_step_bdf2(T* force, T* solution) {
 		//cblas_dscal(DOF, 0.0, force, 1);
-		MathLibrary::Solvers<T, Linear11dofBDF2>::Linear_BDF2(A, B, C, D, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
+		MathLibrary::Solvers<T, TwoTrackModelBDF2>::Linear_BDF2(A, B, C, D, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
 #ifdef INTERPOLATION
-			MathLibrary::Solvers<T, Linear11dofBDF2>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
+			MathLibrary::Solvers<T, TwoTrackModelBDF2>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
 #endif
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
@@ -894,8 +890,8 @@ public:
 	*/
 	virtual void constructJacobien() {
 		// first update the derivative 
-		lookupStiffness->getDerivative(_car->currentSpringLength, dkdl);
-		lookupDamping->getDerivative(_car->currentSpringLength, dddl);
+		lookupStiffness->getDerivative(_car->currentSpringsLength, dkdl);
+		lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
 		// construct the derivative (tensor) times a pos vector
 		constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
 		// J = A
@@ -931,10 +927,10 @@ public:
 /*
 For testing purposes
 */
-template <typename T, typename C>
-class TwoTrackModelFull : public C {
+template <typename T>
+class TwoTrackModelFull : public TwoTrackModelBE<T> {
 public:
-	TwoTrackModelFull(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation): C(input_car, stiffnessInterpolation, dampingInterpolation) {
+	TwoTrackModelFull(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation): TwoTrackModelBE<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
 
 		tend_ = MetaDataBase::DataBase()->getNumberOfTimeIterations() * _h;
 		int sol_size = (floor(tend_ / _h) + 1);
@@ -968,12 +964,10 @@ public:
 		T t = _h;
 		double eps = _h / 100;
 		T* solution_vect = u_sol;
-
 		//cblas_dcopy(DOF, _car->u_prev_linear, 1, solution_vect, 1);
 		while (std::abs(t - (tend_ + _h)) > eps) {
 			//solution_vect = u_sol + iter * (DOF);
 			update_step(f_n_p_1, sol_vect);
-
 			iter++;
 			t += _h;
 		}
@@ -985,14 +979,14 @@ public:
 		std::cout << std::scientific;
 		std::cout << "linear11DOF: orientation angles=\n\t[" << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
 		std::cout << "linear11DOF: car body position pc=\n\t[" << sln[0] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-right wheel position pw1=\n\t[" << sln[9] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-left wheel position pw2=\n\t[" << sln[7] << "]" << std::endl;
 		std::cout << "linear11DOF: front-left wheel position pw3=\n\t[" << sln[3] << "]" << std::endl;
-		std::cout << "linear11DOF: front-right wheel position pw4=\n\t[" << sln[5] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-right tyre position pt1=\n\t[" << sln[10] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-left tyre position pt2=\n\t[" << sln[8] << "]" << std::endl;
 		std::cout << "linear11DOF: front-left tyre position pt3=\n\t[" << sln[4] << "]" << std::endl;
+		std::cout << "linear11DOF: front-right wheel position pw4=\n\t[" << sln[5] << "]" << std::endl;
 		std::cout << "linear11DOF: front-right tyre position pt4=\n\t[" << sln[6] << "]" << std::endl;
+		std::cout << "linear11DOF: rear-left wheel position pw2=\n\t[" << sln[7] << "]" << std::endl;
+		std::cout << "linear11DOF: rear-left tyre position pt2=\n\t[" << sln[8] << "]" << std::endl;
+		std::cout << "linear11DOF: rear-right wheel position pw1=\n\t[" << sln[9] << "]" << std::endl;
+		std::cout << "linear11DOF: rear-right tyre position pt1=\n\t[" << sln[10] << "]" << std::endl;
 	}
 
 
