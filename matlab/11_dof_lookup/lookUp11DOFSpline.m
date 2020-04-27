@@ -177,11 +177,11 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1e1;
-delta_t = 1e-1; 
+num_iter = 1e3;
+delta_t = 1e-3; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
-tol = 1e-8;
+tol = 1e-10;
 y = zeros(length(t),11);
 order = zeros(length(t),1);
 err_arr = zeros(length(t),1);
@@ -231,7 +231,8 @@ u_n_m_1 = u_n;
 u_n_m_1(1)=u_n(1);
 u_n_p_1=u_n;
 
-rhs =-[mass_Body; 0; 0; mass_wheel_fl; 0; mass_wheel_fr; 0; mass_wheel_rl; 0; mass_wheel_rr; 0];
+%rhs =-[mass_Body; 0; 0; mass_wheel_fl; 0; mass_wheel_fr; 0; mass_wheel_rl; 0; mass_wheel_rr; 0];
+rhs = [1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 %%
