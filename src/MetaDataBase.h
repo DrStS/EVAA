@@ -77,13 +77,14 @@ class MetaDataBase{
         double k_tyre[4]; double k_body[4];
         double c_tyre[4]; double c_body[4];
         double l_long[4]; double l_lat[4];
+        double vehicleCIR[3];
         double mass_body; double I_body[9];
         double mass_tyre[4]; double mass_wheel[4];
         double lower_spring_length[4]; double upper_spring_length[4];
         double initial_lower_spring_length[4]; double initial_upper_spring_length[4];
         double initial_vel_body[3]; double initial_vel_wheel[12]; double initial_vel_tyre[12];
         double initial_ang_vel_body[3]; double gravity[3];
-        double initial_pos_body[3]; double initial_angle[4];
+        double initial_pos_body[3]; double initialAngleGlobal[4];
         double initial_pos_wheel[12]; double initial_pos_tyre[12]; // this has to be removed or used only if it is prescribed
         bool initial_leg_flag = 0;
         bool interpolation = 0;
@@ -248,6 +249,11 @@ class MetaDataBase{
         // vector in the format fl fr rl rr
         double* getLatidudalLegPositionVector() {
             return l_lat;
+        }
+
+
+        double* getPositionCenterOfInstantaneousRotation() {
+            return vehicleCIR;
         }
 
 
@@ -475,7 +481,7 @@ class MetaDataBase{
 
 
         double* getBodyInitialOrientation() {
-            return initial_angle;
+            return initialAngleGlobal;
         }
         bool getFlagInitialLeg() {
             return initial_leg_flag;

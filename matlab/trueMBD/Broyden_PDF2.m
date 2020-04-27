@@ -1,12 +1,6 @@
 function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_iter)
 % implementation of the previous difference formula (also called BDF in
 % older literature)
-
-    global previous_solution_vector previous_force_vector internal_tyre_forces
-
-    previous_force_vector = zeros(3,4);
-    internal_tyre_forces = zeros(3,4);
-
     % Initialize return vector
     x_vector_new = [x_previous'; zeros(length(t)-1, length(x_previous))];
     metrics = zeros(length(t), 2); %first component: number of iteration to convergence, second component: condition of the Jacobian
@@ -20,19 +14,15 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
 
     x_previous = x_vector_new(n-1, :);
 
-    previous_solution_vector = x_previous;
-
-    % 1. Initial guess using previous time step
-    f_old = f(t(n-1), n, x_previous');
-    previous_force_vector = internal_tyre_forces;
-
+    % 1. Initialize guess from previous time step
+    f_old = f(t(n-1), x_previous');
     % in case the velocity is 0 add nuggets to avoid singular matrices
     f_old(abs(f_old) < 0.001) = 0.001*sign(f_old(abs(f_old) < 0.001));
     f_old(f_old==0) = (2*randi(2)-3)*0.001;
 
     % 2. Initial guess from Explicit Euler
     x = x_previous + delta_t * f_old';
-    f_new = f(t(n), n, x');
+    f_new = f(t(n), x');
 
     % Initial approximation of the Jacobian
     dx = x - x_previous;
@@ -56,7 +46,7 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
         x_new = (x' - J\F')';
 
         % Calculate new derivative
-        x_dot = f(t(n-1), n, x_new')';
+        x_dot = f(t(n-1), x_new')';
 
         F_new = x_new - x_previous - delta_t * x_dot;
 
@@ -77,19 +67,15 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
         x_previous = x_vector_new(n-1, :);
         x_previous_previous = x_vector_new(n-2, :);
         
-        previous_solution_vector = x_previous;
-        
-		% 1. Initial guess using previous time step
-		f_old = f(t(n-1), n, x_previous');
-        previous_force_vector = internal_tyre_forces;
-
+        % 1. Initialize guess from previous time step
+        f_old = f(t(n-1), x_previous');
         % in case the velocity is 0 add nuggets to avoid singular matrices
         f_old(abs(f_old) < 0.001) = 0.001*sign(f_old(abs(f_old) < 0.001));
         f_old(f_old==0) = (2*randi(2)-3)*0.001;
          
         % 2. Initial guess from Explicit Euler
         x = x_previous + delta_t * f_old';
-        f_new = f(t(n), n, x');
+        f_new = f(t(n), x');
         
         % Initial approximation of the Jacobian
         dx = x - x_previous;
@@ -113,7 +99,7 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
             x_new = (x' - J\F')';
             
             % Calculate new derivative
-            x_dot = f(t(n-1), n, x_new')';
+            x_dot = f(t(n-1), x_new')';
             
             F_new = x_new - 4/3 * x_previous + 1/3 * x_previous_previous - 2/3 * delta_t * x_dot;
             
@@ -130,9 +116,6 @@ function [t, x_vector_new, metrics] = Broyden_PDF2(f, t, x_previous, tol, max_it
             dispstr = ['Maximum number of iteration ', num2str(max_iter),' reached! Current accuracy: ', num2str(norm(F))];
             disp(dispstr)
         end
-%         timestr = ['Time iteration ', num2str(n), ' required ', num2str(i), ' steps to solution'];
-%         disp(timestr);        
-
         if (mod(n, dt_inv)==0)
             timestr = ['Iteration ', num2str(n), ' at time ', num2str(t(n+1))];
             disp(timestr);

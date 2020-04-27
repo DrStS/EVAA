@@ -21,6 +21,27 @@ private:
 	T* Normal_from_profile = NULL; // Normal_force computed inside get_Profile_force
 	T* External_force = NULL;
 
+	/**
+	* \brief adds the effect of the internal forces on the torque
+	* \param Torque current torque of the body [XYZ]
+	* \param F_vec vector of all internal XY-forces in the Eulerian frame at each position [GC:XYZ,W1:XYZ,T1:XYZ, ...]
+	*/
+	void ComputeInternalTorque(T* Torque, T* F_vec) {
+
+		// compute torque around X-axis
+//		#pragma loop(ivdep)
+		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
+			Torque[0] += F_vec[i * Constants::DIM + 1] * Car_obj->currentCIRTwoTrackModel[i];
+		}
+
+		// compute torque around Y-axis
+	//	#pragma loop(ivdep)
+		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
+			Torque[1] += F_vec[i * Constants::DIM + 0] * Car_obj->currentCIRTwoTrackModel[i];
+		}
+	}
+
+
 public:
 	LoadModule(Profile<T>* Profile_type, Car<T>* Car1) {
 		Active_Profile = Profile_type;
@@ -90,10 +111,10 @@ public:
 	\return F_vec vector of forces in the car [GC:XYZ,W1:XYZ,T1:XYZ, ...]
 	\return Normal_ext external forces acting on the whole car system [XYZ]
 	*/
-	void update_force(T time_t, T* F_vec, T* Delta_x_vec, T* Normal_ext) {
+	void update_force(T time_t, T* F_vec, T* Normal_ext) {
 		mkl<T>::scal(Constants::DIM * Constants::VEC_DIM, 0.0, F_vec, 1);
-		mkl<T>::scal(Constants::DIM, 0.0, Normal_ext, 1);
-		mkl<T>::scal(2 * Constants::NUM_LEGS, 0.0, Delta_x_vec, 1);
+		mkl<T>::scal(Constants::DIM, 0.0, Normal_ext, 1);			// fix this so TEOOOOOOOOOO 
+																    // why did Shubham tell me to comment everything out ? 
 		Active_Profile->get_Profile_force_ALE(Car_obj, F_vec, Normal_ext);
 		/*
 		Modify the profile to know where the ground is and apply normal force accordingly
@@ -106,6 +127,9 @@ public:
 		// N += external_force  /// this formulation is WRONG (!!!) if done before computing following steps, should be done at the end. external force doesn't necessarily have to create a normal force it can create acceleration, ex: when car flies
 		vdAdd(Constants::DIM, External_force, Normal_ext, Normal_ext);
 		// =============== PAY ATTENTION to THIS ============================
+
+		// get stiffnesses vector k_vec
+/*		Car_obj->get_k_vec(k_vec);
 
 		for (auto i = 0; i < (Constants::VEC_DIM - 1); i += 2) {
 			// use the elastic forces at wheels
@@ -124,7 +148,7 @@ public:
 			//mkl<T>::axpy(DIM, -k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1, &F_vec[DIM * (i + 2)], 1);
 			F_vec[Constants::DIM * (i + 2) + 2] -= 0.0 * k_vec[i + 1] * Delta_x_vec[(i + 1)];
 		}
-
+*/
 		// test add
 		mkl<T>::axpy(Constants::DIM, 1.0, External_force, 1, F_vec, 1);
 
@@ -138,8 +162,9 @@ public:
 	\param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
 	\return Torque acting on the total car system [XYZ]
 	*/
-	void update_torque(T time_t, T* Torque, T* Delta_x_vec) {
+	void update_torque(T time_t, T* Torque, T* F_vec) {
 		Active_Profile->get_Profile_torque(Car_obj, Torque);
+		ComputeInternalTorque(Torque, F_vec);
 	}
 
 

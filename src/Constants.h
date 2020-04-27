@@ -6,10 +6,10 @@ namespace Constants {
 	constexpr int VEC_DIM = 9; /**< [CG, Wi, Ti] (9 positions / vectors for CG, wheels and tyres) */
 	constexpr int INCX = 1;  /**< MKL constant incx */
 	constexpr int NUM_LEGS = 4; /**< number of tyres, wheels, legs */
+	constexpr int DOF = 11; /**< Degrees of Freedom in the Eulerian Frame */
 	using floatEVAA = double;
 	constexpr bool USEINTERPOLATION = true;
 	constexpr floatEVAA TOLERANCE = 1.0e-10;
-	constexpr int DOF = 11;
 	constexpr int DOFDOF = 121;
 	//size_t alignment;											/**< alignment for mkl malloc */
 	//const int dim = 3;											/**< dimension of solution space */

@@ -102,26 +102,26 @@ void MetaDataBase::ReadParameters(){
     // Load car parameters
     //--------------------------------------------------
  
-    mass_body = settings->Vehicle().TwoTrackModel().Mass().Body();
-    readLegs(mass_wheel, settings->Vehicle().TwoTrackModel().Mass().UnsprungMass());
-    readLegs(mass_tyre, settings->Vehicle().TwoTrackModel().Mass().Tyre());
-    I_body[0] = settings->Vehicle().TwoTrackModel().Inertia().XX();
-    I_body[1] = settings->Vehicle().TwoTrackModel().Inertia().XY();
-    I_body[2] = settings->Vehicle().TwoTrackModel().Inertia().XZ();
-    I_body[3] = settings->Vehicle().TwoTrackModel().Inertia().YX();
-    I_body[4] = settings->Vehicle().TwoTrackModel().Inertia().YY();
-    I_body[5] = settings->Vehicle().TwoTrackModel().Inertia().YZ();
-    I_body[6] = settings->Vehicle().TwoTrackModel().Inertia().ZX();
-    I_body[7] = settings->Vehicle().TwoTrackModel().Inertia().ZY();
-    I_body[8] = settings->Vehicle().TwoTrackModel().Inertia().ZZ();
-    if (settings->Vehicle().TwoTrackModel().Stiffness().Constant().present()) {
+    mass_body = settings->VehicleXML().TwoTrackModelXML().MassXML().BodyXML();
+    readLegs(mass_wheel, settings->VehicleXML().TwoTrackModelXML().MassXML().UnsprungMassXML());
+    readLegs(mass_tyre, settings->VehicleXML().TwoTrackModelXML().MassXML().TyreXML());
+    I_body[0] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().XX();
+    I_body[1] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().XY();
+    I_body[2] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().XZ();
+    I_body[3] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().YX();
+    I_body[4] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().YY();
+    I_body[5] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().YZ();
+    I_body[6] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().ZX();
+    I_body[7] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().ZY();
+    I_body[8] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().ZZ();
+    if (settings->VehicleXML().TwoTrackModelXML().StiffnessXML().ConstantXML().present()) {
         std::cout << "Take constant stiffness without lookup table" << std::endl;
-        readLegs(k_tyre, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Tyre());
-        readLegs(k_body, settings->Vehicle().TwoTrackModel().Stiffness().Constant().get().Body());
+        readLegs(k_tyre, settings->VehicleXML().TwoTrackModelXML().StiffnessXML().ConstantXML().get().TyreXML());
+        readLegs(k_body, settings->VehicleXML().TwoTrackModelXML().StiffnessXML().ConstantXML().get().BodyXML());
         _lookup_filename = "NO_FILE_SPECIFIED";
     }
     else {
-        _lookup_filename = settings->Vehicle().TwoTrackModel().Stiffness().LookupTable().get().FilePath();
+        _lookup_filename = settings->VehicleXML().TwoTrackModelXML().StiffnessXML().LookupTableXML().get().FilePathXML();
         std::ifstream f(_lookup_filename.c_str());
         if (f.good()) {
             std::cout << "Read lookup table from " << _lookup_filename << std::endl;
@@ -131,51 +131,52 @@ void MetaDataBase::ReadParameters(){
             exit(2);
         }
     }
-    readLegs(c_tyre, settings->Vehicle().TwoTrackModel().DampingCoefficients().Tyre());
-    readLegs(c_body, settings->Vehicle().TwoTrackModel().DampingCoefficients().Body());
-    readLegs(l_long, settings->Vehicle().TwoTrackModel().Geometry().LongitudinalReferenceToWheel());
-    readLegs(l_lat, settings->Vehicle().TwoTrackModel().Geometry().LateralReferenceToWheel());
-    readLegs(lower_spring_length, settings->Vehicle().TwoTrackModel().Geometry().SuspensionSprings());
-    readLegs(upper_spring_length, settings->Vehicle().TwoTrackModel().Geometry().TyreSprings());
+    readLegs(c_tyre, settings->VehicleXML().TwoTrackModelXML().DampingCoefficientsXML().TyreXML());
+    readLegs(c_body, settings->VehicleXML().TwoTrackModelXML().DampingCoefficientsXML().BodyXML());
+    readLegs(l_long, settings->VehicleXML().TwoTrackModelXML().GeometryXML().LongitudinalReferenceToWheelXML());
+    readLegs(l_lat, settings->VehicleXML().TwoTrackModelXML().GeometryXML().LateralReferenceToWheelXML());
+    readVector(vehicleCIR, settings->VehicleXML().TwoTrackModelXML().GeometryXML().RelativeCenterOfInstanteneousRotation());
+    readLegs(lower_spring_length, settings->VehicleXML().TwoTrackModelXML().GeometryXML().SuspensionSpringsXML());
+    readLegs(upper_spring_length, settings->VehicleXML().TwoTrackModelXML().GeometryXML().TyreSpringsXML());
 
 
 //--------------------------------------------------
 // Load initial parameters
 //--------------------------------------------------
-    readVector(initial_vel_body, settings->InitialConditions().Velocities().Body());
-    readVector(initial_ang_vel_body, settings->InitialConditions().Velocities().angularBody());
+    readVector(initial_vel_body, settings->InitialConditionsXML().VelocitiesXML().BodyXML());
+    readVector(initial_ang_vel_body, settings->InitialConditionsXML().VelocitiesXML().angularBodyXML());
 
-    readVectorLegs(initial_vel_wheel, settings->InitialConditions().Velocities().UnsprungMass());
-    readVectorLegs(initial_vel_tyre, settings->InitialConditions().Velocities().Tyre());
+    readVectorLegs(initial_vel_wheel, settings->InitialConditionsXML().VelocitiesXML().UnsprungMassXML());
+    readVectorLegs(initial_vel_tyre, settings->InitialConditionsXML().VelocitiesXML().TyreXML());
 
-    readLegs(initial_lower_spring_length, settings->InitialConditions().SpringElongation().Tyre());
-    readLegs(initial_upper_spring_length, settings->InitialConditions().SpringElongation().Body());
+    readLegs(initial_lower_spring_length, settings->InitialConditionsXML().SpringElongationXML().TyreXML());
+    readLegs(initial_upper_spring_length, settings->InitialConditionsXML().SpringElongationXML().BodyXML());
 
-	readVector(initial_pos_body, settings->InitialConditions().Position().Body());
-	if (settings->InitialConditions().Position().UnsprungMass().present()) {
+	readVector(initial_pos_body, settings->InitialConditionsXML().PositionXML().BodyXML());
+	if (settings->InitialConditionsXML().PositionXML().UnsprungMassXML().present()) {
 		initial_leg_flag = 1;
-		readVectorLegs(initial_pos_wheel, settings->InitialConditions().Position().UnsprungMass().get());
-		readVectorLegs(initial_pos_tyre, settings->InitialConditions().Position().Tyre().get());
+		readVectorLegs(initial_pos_wheel, settings->InitialConditionsXML().PositionXML().UnsprungMassXML().get());
+		readVectorLegs(initial_pos_tyre, settings->InitialConditionsXML().PositionXML().TyreXML().get());
 	}
 
-	readangles(initial_angle, settings->InitialConditions().Orientation());
+	readangles(initialAngleGlobal, settings->InitialConditionsXML().OrientationXML());
 
 
 //--------------------------------------------------
 // Load simulation parameters
 //--------------------------------------------------
-    readVector(gravity, settings->SimulationParameters().GeneralSettings().Gravity());
-    num_time_iter = settings->SimulationParameters().GeneralSettings().NumberOfIterations();
-    timestep = settings->SimulationParameters().GeneralSettings().TimestepSize();
+    readVector(gravity, settings->SimulationParametersXML().GeneralSettingsXML().GravityXML());
+    num_time_iter = settings->SimulationParametersXML().GeneralSettingsXML().NumberOfIterationsXML();
+    timestep = settings->SimulationParametersXML().GeneralSettingsXML().TimestepSizeXML();
     
 
-    DOF = settings->SimulationParameters().LinearALE().DOF();
+    DOF = settings->SimulationParametersXML().LinearALEXML().DOFXML();
 
-    max_num_iter = settings->SimulationParameters().MultyBodyDynamics().MaximalIterationNumber();
-    tolerance = settings->SimulationParameters().MultyBodyDynamics().Tolerance();
-    solution_dim = settings->SimulationParameters().MultyBodyDynamics().SolutionDimension();
+    max_num_iter = settings->SimulationParametersXML().MultyBodyDynamicsXML().MaximalIterationNumberXML();
+    tolerance = settings->SimulationParametersXML().MultyBodyDynamicsXML().ToleranceXML();
+    solution_dim = settings->SimulationParametersXML().MultyBodyDynamicsXML().SolutionDimensionXML();
 
-    std::string solver = settings->SimulationParameters().MultyBodyDynamics().Solver();
+    std::string solver = settings->SimulationParametersXML().MultyBodyDynamicsXML().SolverXML();
 
 
     if (solver=="explicit_Euler"){

@@ -235,7 +235,7 @@ rhs =-[mass_Body; 0; 0; mass_wheel_fl; 0; mass_wheel_fr; 0; mass_wheel_rl; 0; ma
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 %%
-fixed = true;
+fixed = false;
 %% time steps
 idx = [1 2 3 4 6 8 10];
 f_newton = @(y_curr,y1,y2,K,rhs)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
@@ -259,6 +259,8 @@ for i = 1: length(t)
         rhs(9) = newForce(9);
         rhs(11) = newForce(11);
     end
+    u_n_p_1 = ( M_div_h2 + K )\ (2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs);
+    K = get_K();
     r = f_newton(u_n_p_1, u_n, u_n_m_1, K,rhs);
     i
     iter = 0;

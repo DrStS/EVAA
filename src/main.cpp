@@ -94,8 +94,8 @@ int main(int argc, char **argv) {
 	myComputeEngine->computeBlaze11DOF();
 	anaysisTimer01.stop();
 	std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze).\n\n\n" << std::endl;
-*//*	anaysisTimer01.start();
-	myComputeEngine->computeMKLlinear11dof();
+*/	anaysisTimer01.start();
+	myComputeEngine->computeMKLTwoTrackModel();
 	anaysisTimer01.stop();
 	std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(computeMKLlinear11dof).\n\n\n" << std::endl;
     anaysisTimer01.start();
@@ -117,14 +117,9 @@ int main(int argc, char **argv) {
 	*/
     
     anaysisTimer01.start();
-    myComputeEngine->computeMKL11DOFBE();
+    myComputeEngine->computeMKLTwoTrackModelBE();
     anaysisTimer01.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
-
-    anaysisTimer01.start();
-    myComputeEngine->computeMKLlinear11dof();
-    anaysisTimer01.stop();
-    std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver 11dofBDF2.\n\n\n" << std::endl;
 	
     delete myComputeEngine;
 	std::cout << "\nWe did a great job! Awesome!" << std::endl;

@@ -82,7 +82,7 @@ public:
 	* \author Stefan Sicklinger
 	***********/
 	// MKL Linear solver
-	void computeMKLlinear11dof();
+	void computeMKLTwoTrackModel();
 	/***********************************************************************************************
 	* \brief compute engine
 	* \author Stefan Sicklinger
@@ -91,7 +91,7 @@ public:
 	/**
 	* \brief compute 11Dof system with BE to prove correctness
 	*/
-	void computeMKL11DOFBE();
+	void computeMKLTwoTrackModelBE();
 
 	/*
 	Solve the MBD system

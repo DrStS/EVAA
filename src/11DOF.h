@@ -4,19 +4,8 @@
 * \date 04/14/2020
 **************************************************************************************************/
 #pragma once
-#define _CRTDBG_MAP_ALLOC
-#include <cstdlib>
-#include <crtdbg.h>
-
-#ifdef _DEBUG
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-// Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
-// allocations to be of _CLIENT_BLOCK type
-#else
-#define DBG_NEW new
-#endif
 #include <mkl.h>
-#include "Car.h"
+#include "car.h"
 #include "MathLibrary.h"
 #include "Constants.h"
 #include "MetaDataBase.h"
@@ -26,33 +15,7 @@
 * \brief class to compute one timestep of the linear 11 dof system in small angle approximation
 */
 template <typename T>
-class Linear11dofBE {
-private:
-	/**
-	* \brief construct A Matrix
-	*
-	* this has to be called every time step for interpolation
-	* A = 1/h^2 * M + 1/h * D + K
-	*/
-	void constructAMatrix() {
-		// A = M/h^2 (also acts as initialization of A)
-		mkl<T>::copy(Constants::DOFDOF, M_h2, 1, A, 1);
-		// A += 1/h * D => A = 1/h^2 * M + 1/h * D
-		mkl<T>::axpy(Constants::DOFDOF, factor_h, D, 1, A, 1);
-		// A += K => A = 1/h^2 * M + 1/h * D + K
-		mkl<T>::axpy(Constants::DOFDOF, 1, K, 1, A, 1);
-	}
-	/**
-	* \brief construct B
-	*
-	* this has to be called every time step for interpolation
-	* B = 2/(h*h) * M + 1/h * D
-	*/
-	void constructBMatrix() {
-		mkl<T>::scal(Constants::DOFDOF, 0.0, B, 1);
-		mkl<T>::axpy(Constants::DOF, 2, M_h2, Constants::DOF + 1, B, Constants::DOF + 1);
-		mkl<T>::axpy(Constants::DOFDOF, factor_h, D, 1, B, 1);
-	}
+class TwoTrackModelParent {
 protected:
 	// main car object
 	Car<T>* _car;												/**< pointer to car instance with all important car parameter */
@@ -74,7 +37,6 @@ protected:
 
 	T* kVec, * dVec, * temp;
 	T* springLengths, * springLengthsNormal;
-	size_t tyre_index_set[4] = { 4, 6, 8, 10 };
 
 	T* J, * dKdxx, * dDdxx;
 	T* residual;
@@ -85,13 +47,58 @@ protected:
 	EVAALookup<T>* lookupStiffness;
 	EVAALookup<T>* lookupDamping;
 
-
-	void compute_normal_force(T* K, T* u, T* force, size_t* index, size_t dim, size_t n) {
-#pragma loop( ivdep )
-		for (int i = 0; i < n; ++i) {
-			force[index[i]] = -K[index[i] * dim + index[i]] * u[index[i]];
-		}
+public:
+	TwoTrackModelParent(){}
+	/*
+	Constructor
+	*/
+	TwoTrackModelParent(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation): lookupStiffness(stiffnessInterpolation), lookupDamping(dampingInterpolation), _car(input_car) {
 	}
+
+	/*
+	Performs one timestep of the 11DOF solver
+	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+	\return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+	*/
+	virtual void update_step(T* force, T* solution) = 0;
+	/*
+	Destructor
+	*/
+	virtual ~TwoTrackModelParent() {}
+};
+
+/**
+* \brief class to compute one timestep of the linear 11 dof system in small angle approximation
+*/
+template <typename T>
+class TwoTrackModelBE: public TwoTrackModelParent<T> {
+private:
+	/**
+	* \brief construct A Matrix
+	*
+	* this has to be called every time step for interpolation
+	* A = 1/h^2 * M + 1/h * D + K
+	*/
+	virtual void constructAMatrix() {
+		// A = M/h^2 (also acts as initialization of A)
+		mkl<T>::copy(Constants::DOFDOF, M_h2, 1, A, 1);
+		// A += 1/h * D => A = 1/h^2 * M + 1/h * D
+		mkl<T>::axpy(Constants::DOFDOF, factor_h, D, 1, A, 1);
+		// A += K => A = 1/h^2 * M + 1/h * D + K
+		mkl<T>::axpy(Constants::DOFDOF, 1, K, 1, A, 1);
+	}
+	/**
+	* \brief construct B
+	*
+	* this has to be called every time step for interpolation
+	* B = 2/(h*h) * M + 1/h * D
+	*/
+	void constructBMatrix() {
+		mkl<T>::scal(Constants::DOFDOF, 0.0, B, 1);
+		mkl<T>::axpy(Constants::DOF, 2, M_h2, Constants::DOF + 1, B, Constants::DOF + 1);
+		mkl<T>::axpy(Constants::DOFDOF, factor_h, D, 1, B, 1);
+	}
+protected:
 	/**
 	* \brief construct Mass matrix
 	*
@@ -99,22 +106,15 @@ protected:
 	*/
 	void constructMassMatrix() {
 		// get values from MetaDataBase
-		T Mass_vec[9];
-		Mass_vec[0] = MetaDataBase::DataBase()->getBodyMass();
-		Mass_vec[1] = MetaDataBase::DataBase()->getWheelMassFrontLeft();
-		Mass_vec[2] = MetaDataBase::DataBase()->getTyreMassFrontLeft();
-		Mass_vec[3] = MetaDataBase::DataBase()->getWheelMassFrontRight();
-		Mass_vec[4] = MetaDataBase::DataBase()->getTyreMassFrontRight();
-		Mass_vec[5] = MetaDataBase::DataBase()->getWheelMassRearLeft();
-		Mass_vec[6] = MetaDataBase::DataBase()->getTyreMassRearLeft();
-		Mass_vec[7] = MetaDataBase::DataBase()->getWheelMassRearRight();
-		Mass_vec[8] = MetaDataBase::DataBase()->getTyreMassRearRight();
-		T* I_CG = MetaDataBase::DataBase()->getMomentOfInertiaVector();
+		T* Mass_vec = _car->massComponents;
+		T* I_CG = _car->momentOfInertia;
 		// construct M
 		M_h2[0] = Mass_vec[0];
 		M_h2[Constants::DOF + 1] = I_CG[0];
 		M_h2[2 * Constants::DOF + 2] = I_CG[4];
+		// M_h2 = M
 		mkl<T>::copy(Constants::DOF - 3, Mass_vec + 1, 1, M_h2 + 3 * (Constants::DOF + 1), Constants::DOF + 1); // M_h2 = diagonal matrix
+		// M_h2 = M / (h * h)
 		mkl<T>::scal(Constants::DOF, 1 / (_h * _h), M_h2, Constants::DOF + 1);
 	}
 	/**
@@ -122,6 +122,7 @@ protected:
 	*
 	* this is only done once in the initalisation the matrix is used to calculated th springLenght with blas3
 	*/
+	/*
 	void constructMatSpringLenghts() {
 		Mat_springLength[0] = 1;
 		Mat_springLength[1] = _car->l_lat[0];
@@ -148,11 +149,13 @@ protected:
 		Mat_springLength[7 * Constants::DOF + 9] = 1;
 		Mat_springLength[7 * Constants::DOF + 10] = -1;
 	}
+	*/
 	/**
 	* \brief stores the normal spring lengths
 	*
 	* called in the constructor
 	*/
+	/*
 	void populateSpringLengthsNormal() {
 		springLengthsNormal[0] = MetaDataBase::DataBase()->getBodySpringLengthFrontLeft();
 		springLengthsNormal[1] = MetaDataBase::DataBase()->getBodySpringLengthFrontLeft();
@@ -162,12 +165,13 @@ protected:
 		springLengthsNormal[5] = MetaDataBase::DataBase()->getBodySpringLengthRearLeft();
 		springLengthsNormal[6] = MetaDataBase::DataBase()->getBodySpringLengthRearRight();
 		springLengthsNormal[7] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
-	}
+	}*/
 	/**
 	* \brief stores the initial spring lengths
 	*
 	* called in the constructor
 	*/
+	/*
 	void initSpringLengths() {
 		springLengths[0] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontLeft();
 		springLengths[1] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontLeft();
@@ -178,7 +182,7 @@ protected:
 		springLengths[6] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
 		springLengths[7] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
 	}
-
+	*/
 	/**
 	* \brief initialise the vectors u_n, u_n_m_1, u_n_p_1
 	*
@@ -190,6 +194,7 @@ protected:
 	*/
 	void initPosVectors() {
 		// u_n
+		/*
 		u_n[0] = 0;
 		u_n[1] = MetaDataBase::DataBase()->getBodyInitialOrientation()[0];
 		u_n[2] = MetaDataBase::DataBase()->getBodyInitialOrientation()[1];
@@ -214,22 +219,24 @@ protected:
 		temp[8] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[2];
 		temp[9] = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight()[2];
 		temp[10] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[2];
+		*/
+		// u_n
+		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n,1);
 		// u_n_m_1 = u_n - _h * velocity
-		mkl<T>::copy(Constants::DOF, temp, 1, u_n_m_1, 1);
+		mkl<T>::copy(Constants::DOF, _car->currentVelocityTwoTrackModel, 1, u_n_m_1, 1);
 		mkl<T>::scal(Constants::DOF, -_h, u_n_m_1, 1);
 		mkl<T>::axpy(Constants::DOF, 1, u_n, 1, u_n_m_1, 1);
-		// u_n_p_1 = u_n
-		mkl<T>::copy(Constants::DOF, u_n, 1, u_n_p_1, 1);
 	}
 
 public:
+	TwoTrackModelBE() : TwoTrackModelParent<T>() {}
 	/**
 	* \brief Constructor
 	*/
-	Linear11dofBE(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation): lookupStiffness(stiffnessInterpolation), lookupDamping(dampingInterpolation), _car(input_car) {
+	TwoTrackModelBE(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation): TwoTrackModelParent<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
 		u_n_m_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // velocity
 		u_n = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // position
-		u_n_p_1 = (T*)mkl_calloc(Constants::DOF, sizeof(T), Constants::ALIGNMENT);
+		u_n_p_1 = _car->currentDisplacementTwoTrackModel;
 
 		A = (T*)mkl_malloc(Constants::DOFDOF * sizeof(T), Constants::ALIGNMENT);
 		B = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
@@ -244,42 +251,25 @@ public:
 		Mat_springLength = (T*)mkl_calloc( 2 * Constants::NUM_LEGS * Constants::DOF, sizeof(T), Constants::ALIGNMENT);
 		springLengths = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
 		springLengthsNormal = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
-		if (Constants::USEINTERPOLATION) {
-			J = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-			dKdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-			dDdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-			dkdl = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
-			dddl = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
-			residual = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
-		}
-
+#ifdef INTERPOLATION
+		J = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
+		dKdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
+		dDdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
+		dkdl = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
+		dddl = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
+		residual = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
+#endif
 		_h = MetaDataBase::DataBase()->getTimeStepSize();
 		factor_h = 1 / _h;
-		populateSpringLengthsNormal();
-		initSpringLengths();
-		constructMatSpringLenghts();
+		// populateSpringLengthsNormal();
+		// initSpringLengths();
+		// constructMatSpringLenghts();
 
 		// if interpolation is used we need alll the lengths to interpolate damping and stiffness if not we have to define them
-		if (!Constants::USEINTERPOLATION) {
-			// populate kVec
-			kVec[0] = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
-			kVec[1] = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
-			kVec[2] = MetaDataBase::DataBase()->getBodyStiffnessFrontRight();
-			kVec[3] = MetaDataBase::DataBase()->getTyreStiffnessFrontRight();
-			kVec[4] = MetaDataBase::DataBase()->getBodyStiffnessRearLeft();
-			kVec[5] = MetaDataBase::DataBase()->getTyreStiffnessRearLeft();
-			kVec[6] = MetaDataBase::DataBase()->getBodyStiffnessRearRight();
-			kVec[7] = MetaDataBase::DataBase()->getTyreStiffnessRearRight();
-			// populate dVec
-			dVec[0] = MetaDataBase::DataBase()->getBodyDampingFrontLeft();
-			dVec[1] = MetaDataBase::DataBase()->getBodyDampingFrontLeft();
-			dVec[2] = MetaDataBase::DataBase()->getBodyDampingFrontRight();
-			dVec[3] = MetaDataBase::DataBase()->getBodyDampingFrontRight();
-			dVec[4] = MetaDataBase::DataBase()->getBodyDampingRearLeft();
-			dVec[5] = MetaDataBase::DataBase()->getBodyDampingRearLeft();
-			dVec[6] = MetaDataBase::DataBase()->getBodyDampingRearRight();
-			dVec[7] = MetaDataBase::DataBase()->getBodyDampingRearRight();
-		}
+		// populate kVec
+		kVec = _car->kVec;
+		// populate dVec
+		dVec = _car->dVec;
 
 		initPosVectors();
 		constructMassMatrix();
@@ -291,12 +281,11 @@ public:
 	/*
 	Destructor
 	*/
-	virtual ~Linear11dofBE() {
+	virtual ~TwoTrackModelBE() {
 		mkl_free(A);
 		mkl_free(B);
 		mkl_free(u_n);
 		mkl_free(u_n_m_1);
-		mkl_free(u_n_p_1);
 		mkl_free(M_h2);
 		mkl_free(K);
 		mkl_free(D);
@@ -307,14 +296,14 @@ public:
 		mkl_free(springLengths);
 		mkl_free(springLengthsNormal);
 		mkl_free(Mat_springLength);
-		if (Constants::USEINTERPOLATION) {
-			mkl_free(J);
-			mkl_free(dkdl);
-			mkl_free(dddl);
-			mkl_free(dKdxx);
-			mkl_free(dDdxx);
-			mkl_free(residual);
-		}
+#ifdef INTERPOLATION
+		mkl_free(J);
+		mkl_free(dkdl);
+		mkl_free(dddl);
+		mkl_free(dKdxx);
+		mkl_free(dDdxx);
+		mkl_free(residual);
+#endif
 	}
 
 	/*
@@ -322,20 +311,12 @@ public:
 	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
 	*/
 	virtual void update_step(T* force, T* solution) {
-		if (Constants::USEINTERPOLATION) {
+		MathLibrary::Solvers<T, Linear11dofBE>::Linear_Backward_Euler(A, B, M_h2, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
+#ifdef INTERPOLATION
 			MathLibrary::Solvers<T, Linear11dofBE>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
-		}
-		else {
-			MathLibrary::Solvers<T, Linear11dofBE>::Linear_Backward_Euler(A, B, M_h2, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
-		}
-		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
-		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
+#endif
 		// solutio = solution[t_n] = u_n_p_1
 		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
-
-		//std::cout << "sol vector:" << std::endl;
-		//MathLibrary::write_vector(u_n_p_1,11);
-
 
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_1
 		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and u_n_p_1 point to u_n_m_1 now
@@ -346,7 +327,7 @@ public:
 	* residual = A*x[n+1] - B * x[n] + M_h2 * x[n-1] - forces
 	* res_norm = norm(residual)
 	*/
-	void calcResidual(
+	virtual void calcResidual(
 		T* force /**< pointer to forces vector size of DOF*/
 	) {
 		// residual = A*x[n+1]
@@ -367,16 +348,14 @@ public:
 	* this has to be called every newton iteraton
 	* J = M_h2 + D / _h + K + dKdx*x[n+1] + 1/h_ * dDdx ( x[n+1] - x[n] )
 	*/
-	void constructJacobien() {
+	virtual void constructJacobien() {
 		// first update the derivative 
-		lookupStiffness->getDerivative(springLengths, dkdl);
-		lookupDamping->getDerivative(springLengths, dddl);
+		lookupStiffness->getDerivative(_car->currentSpringsLength, dkdl);
+		lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
 		// construct the derivative (tensor) times a pos vector
 		constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
-		// J = A
+		// J = A =  M_h2 + D / _h + K
 		mkl<T>::copy(Constants::DOFDOF, A, 1, J, 1);
-		// J += dDdx * x[n+1]
-		mkl<T>::axpy(Constants::DOFDOF, 1.0, dDdxx, 1, J, 1);
 		// J += dKdx * x[n+1]
 		mkl<T>::axpy(Constants::DOFDOF, 1.0, dKdxx, 1, J, 1);
 		// temp = x[n+1]
@@ -394,7 +373,7 @@ public:
 	* add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h D - K + 1/h dDdx * x[n]]
 	* therefore J = M_h2 for the tyre positions
 	*/
-	void constructFixedJacobien() {
+	virtual void constructFixedJacobien() {
 		for (auto i = 0; i < Constants::NUM_LEGS) {
 			mkl<T>::copy(Constants::DOF, M_h2 + ( 4 + 2 * i ) * Constants::DOF,1, J + (4 + 2 * i) * Constants::DOF, 1);
 		}
@@ -404,8 +383,9 @@ public:
 	*
 	* only needed in case of lookup Tables
 	*/
-	void updateSystem() {
-		constructSpringLengths();
+	virtual void updateSystem() {
+		// constructSpringLengths();
+		_car->updateLengthsTwoTrackModel();
 		constructStiffnessMatrix();
 		constructDampingMatrix();
 		constructAMatrix();
@@ -417,9 +397,9 @@ public:
 	* this has to be called every newton iteraton and the spring lengtvector has to be updated before
 	*/
 	void constructStiffnessMatrix() {
-		if (Constants::USEINTERPOLATION) {
-			lookupStiffness->getInterpolation(springLengths, kVec);
-		}
+#ifdef INTERPOLATION
+		lookupStiffness->getInterpolation(_car->currentSpringLength, kVec);
+#endif
 		temp[0] = kVec[0] + kVec[2] + kVec[4] + kVec[6];
 		K[1] = kVec[0] * _car->l_lat[0] - kVec[2] * _car->l_lat[1] + kVec[4] * _car->l_lat[2] - kVec[6] * _car->l_lat[3];
 		K[2] = -kVec[0] * _car->l_long[0] - kVec[2] * _car->l_long[1] + kVec[4] * _car->l_long[2] + kVec[6] * _car->l_long[3];
@@ -519,9 +499,9 @@ public:
 	* this has to be called every newton iteraton and the spring lengtvector has to be updated before
 	*/
 	void constructDampingMatrix() {
-		if (Constants::USEINTERPOLATION) {
-			lookupDamping->getInterpolation(springLengths, dVec);
-		}
+#ifdef INTERPOLATION
+			lookupDamping->getInterpolation(_car->currentSpringLength, dVec);
+#endif
 		temp[0] = dVec[0] + dVec[2] + dVec[4] + dVec[6];
 		D[1] = dVec[0] * _car->l_lat[0] - dVec[2] * _car->l_lat[1] + dVec[4] * _car->l_lat[2] - dVec[6] * _car->l_lat[3];
 		D[2] = -dVec[0] * _car->l_long[0] - dVec[2] * _car->l_long[1] + dVec[4] * _car->l_long[2] + dVec[6] * _car->l_long[3];
@@ -622,13 +602,14 @@ public:
 	* this has to be called every newton iteraton
 	* springLengths = Mat_SpringLenghts * x + springLengthsNormal
 	*/
+	/*
 	void constructSpringLengths() {
 		// springLengths = springLengthsNormal
 		mkl<T>::copy(Constants::NUM_LEGS * 2, springLengthsNormal, 1, springLengths, 1);
 		// springLengths += Mat_SpringLenghts * x
-		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::NUM_LEGS * 2, Constants::DOF, 1.0, Mat_springLength, Constants::DOF,
-			u_n_p_1, 1.0, 1.0, springLengths, 1.0);
+		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::NUM_LEGS * 2, Constants::DOF, 1.0, Mat_springLength, Constants::DOF, u_n_p_1, 1.0, 1.0, springLengths, 1.0);
 	}
+	*/
 	/**
 	* \brief construct The derivative of the stiffness lookupTable times a position vector
 	*
@@ -735,20 +716,20 @@ public:
 };
 
 template <typename T>
-class Linear11dofBDF2 : public Linear11dofBE<T> {
+class TwoTrackModelBDF2 : public TwoTrackModelBE<T> {
 private:
 	T* C, *D, *E;
 	T* bVec; /**< this vector is used to store the whole constants part on the rhs apart from the force */
 	T* u_n_m_2, *u_n_m_3;
 	size_t time_step_count = 0;
-	void(Linear11dofBDF2<T>::*_active_executor)(T*, T*);
+	void(TwoTrackModelBDF2<T>::*_active_executor)(T*, T*);
 	
 	/**
 	* \brief construct A
 	*
 	* A = 9/4h^2 * M + 3/2h * D + K
 	*/
-	void constructAMatrix() {
+	virtual void constructAMatrix() {
 		// A = M/h^2
 		mkl<T>::copy(Constants::DOFDOF, M_h2, 1, A, 1);
 		// A *= 9/4
@@ -759,10 +740,10 @@ private:
 		mkl<T>::axpy(Constants::DOFDOF, 1, K, 1, A, 1);
 	}
 	/**
-	* \brief construct B
+	* \brief construct bVec
 	*
 	* this has to be called every time step for interpolation and is only used in case of interpolation
-	* B = 1/h^2 * M * (6 * x[n] - 11/2 * x[n-1] + 2 * x[n-2] - 1/4 * x[n-3]) + 1/h * D * (2 * x[n] - 1/2 * x[n-1])
+	* bVec = 1/h^2 * M * (6 * x[n] - 11/2 * x[n-1] + 2 * x[n-2] - 1/4 * x[n-3]) + 1/h * D * (2 * x[n] - 1/2 * x[n-1])
 	*/
 	void constructbVec() {
 		// temp = x[n]
@@ -788,10 +769,11 @@ private:
 	}
 
 public:
+	TwoTrackModelBDF2(): TwoTrackModelBE<T>() {}
 	/*
 	Constructor
 	*/
-	Linear11dofBDF2(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation) : Linear11dofBE<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
+	TwoTrackModelBDF2(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation) : TwoTrackModelBE<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
 		C = (T*)mkl_calloc(Constants::DOFDOF,  sizeof(T), Constants::ALIGNMENT);
 		D = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		E = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
@@ -800,51 +782,49 @@ public:
 		bVec = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
 		_active_executor = &Linear11dofBDF2<T>::first_two_steps;
 
-		if (!Constants::USEINTERPOLATION) {
-			// C = (-11/2)*(1/(h*h))*M + (-1/(2*h))*D
-			mkl<T>::axpy(Constants::DOFDOF, (-11.0 / 2.0), M_h2, 1, C, 1);
-			mkl<T>::axpy(Constants::DOFDOF, (-1.0 / 2.0) * factor_h, D, 1, C, 1);
+#ifndef INTERPOLATION
+		// C = (-11/2)*(1/(h*h))*M + (-1/(2*h))*D
+		mkl<T>::axpy(Constants::DOFDOF, (-11.0 / 2.0), M_h2, 1, C, 1);
+		mkl<T>::axpy(Constants::DOFDOF, (-1.0 / 2.0) * factor_h, D, 1, C, 1);
 
-			// D = (2/(h*h))*M
-			mkl<T>::axpy(Constants::DOFDOF, 2.0, M_h2, 1, D, 1);
+		// D = (2/(h*h))*M
+		mkl<T>::axpy(Constants::DOFDOF, 2.0, M_h2, 1, D, 1);
 
-			// E = (-1/4)*(1/(h*h))*M
-			mkl<T>::axpy(Constants::DOFDOF, (-1.0 / 4.0), M_h2, 1, E, 1);
+		// E = (-1/4)*(1/(h*h))*M
+		mkl<T>::axpy(Constants::DOFDOF, (-1.0 / 4.0), M_h2, 1, E, 1);
 
-			mkl<T>::copy(Constants::DOF, _car->u_prev_linear, 1, u_n, 1);
-			mkl<T>::copy(Constants::DOF, _car->velocity_current_linear, 1, u_n_m_1, 1);
+		mkl<T>::copy(Constants::DOF, _car->u_prev_linear, 1, u_n, 1);
+		mkl<T>::copy(Constants::DOF, _car->velocity_current_linear, 1, u_n_m_1, 1);
 
-			mkl<T>::scal(Constants::DOF, -_h, u_n_m_1, 1);
-			mkl<T>::axpy(Constants::DOF, 1, u_n, 1, u_n_m_1, 1);
-		}
+		mkl<T>::scal(Constants::DOF, -_h, u_n_m_1, 1);
+		mkl<T>::axpy(Constants::DOF, 1, u_n, 1, u_n_m_1, 1);
+#endif // INTERPOLATION
 	}
 
 	void first_two_steps(T* force, T* solution) {
 		
 		if (time_step_count == 0) {
 			mkl<T>::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
-			Linear11dofBE<T>::update_step(force, solution);
+			TwoTrackModelBE<T>::update_step(force, solution);
 		}
 		else if (time_step_count == 1) {
 			mkl<T>::copy(Constants::DOF, u_n_m_2, 1, u_n_m_3, 1);
 			mkl<T>::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
-			Linear11dofBE<T>::update_step(force, solution);
+			TwoTrackModelBE<T>::update_step(force, solution);
 		}
 		else {
 			mkl<T>::copy(Constants::DOF, u_n_m_2, 1, u_n_m_3, 1);
 			mkl<T>::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
 			// construct A
 			constructAMatrix();
-			if (Constants::USEINTERPOLATION) {
-				constructbVec();
-			}
-			else {
-				// B = (6/(h*h))*M + (2/h)*D
-				mkl<T>::scal(Constants::DOFDOF, 0.0, B, 1);
-				mkl<T>::axpy(Constants::DOFDOF, 6, M_h2, 1, B, 1);
-				mkl<T>::axpy(Constants::DOFDOF, 2 * factor_h, D, 1, B, 1);
-			}
-
+#ifdef INTERPOLATION
+			constructbVec();
+#else
+			// B = (6/(h*h))*M + (2/h)*D
+			mkl<T>::scal(Constants::DOFDOF, 0.0, B, 1);
+			mkl<T>::axpy(Constants::DOFDOF, 6, M_h2, 1, B, 1);
+			mkl<T>::axpy(Constants::DOFDOF, 2 * factor_h, D, 1, B, 1);
+#endif // INTERPOLATION
 			update_step_bdf2(force, solution);
 			_active_executor = &Linear11dofBDF2<T>::update_step_bdf2;
 		}
@@ -862,12 +842,10 @@ public:
 	*/
 	void update_step_bdf2(T* force, T* solution) {
 		//cblas_dscal(DOF, 0.0, force, 1);
-		if (Constants::USEINTERPOLATION) {
+		MathLibrary::Solvers<T, Linear11dofBDF2>::Linear_BDF2(A, B, C, D, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
+#ifdef INTERPOLATION
 			MathLibrary::Solvers<T, Linear11dofBDF2>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
-		}
-		else {
-			MathLibrary::Solvers<T, Linear11dofBDF2>::Linear_BDF2(A, B, C, D, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
-		}
+#endif
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
 		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
@@ -883,7 +861,7 @@ public:
 	* residual = A*x[n+1] - bVec - forces
 	* res_norm = norm(residual)
 	*/
-	void calcResidual(
+	virtual void calcResidual(
 		T* force /**< pointer to forces vector size of DOF*/
 	) {
 		// residual = A*x[n+1]
@@ -900,8 +878,9 @@ public:
 	*
 	* only needed in case of lookup Tables
 	*/
-	void updateSystem() {
-		constructSpringLengths();
+	virtual void updateSystem() {
+		// constructSpringLengths();
+		_car->updateLengthsTwoTrackModel();
 		constructStiffnessMatrix();
 		constructDampingMatrix();
 		constructAMatrix();
@@ -913,10 +892,10 @@ public:
 	* this has to be called every newton iteraton
 	* J = 9/4 * M_h2 + 3/2h * D + K + dKdx*x[n+1] + 1/h * dDdx * (3/2 * x[n+1] - 2 * x[n] + 1/2 * x[n-1])
 	*/
-	void constructJacobien() {
+	virtual void constructJacobien() {
 		// first update the derivative 
-		lookupStiffness->getDerivative(springLengths, dkdl);
-		lookupDamping->getDerivative(springLengths, dddl);
+		lookupStiffness->getDerivative(_car->currentSpringLength, dkdl);
+		lookupDamping->getDerivative(_car->currentSpringLength, dddl);
 		// construct the derivative (tensor) times a pos vector
 		constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
 		// J = A
@@ -939,7 +918,7 @@ public:
 	/*
 	Destructor
 	*/
-	virtual ~Linear11dofBDF2() {
+	virtual ~TwoTrackModelBDF2() {
 		mkl_free(C);
 		mkl_free(D);
 		mkl_free(E);
@@ -952,10 +931,10 @@ public:
 /*
 For testing purposes
 */
-template <typename T>
-class Linear11dofFull : public Linear11dofBDF2<T> {
+template <typename T, typename C>
+class TwoTrackModelFull : public C {
 public:
-	Linear11dofFull(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation) :Linear11dofBDF2<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
+	TwoTrackModelFull(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation): C(input_car, stiffnessInterpolation, dampingInterpolation) {
 
 		tend_ = MetaDataBase::DataBase()->getNumberOfTimeIterations() * _h;
 		int sol_size = (floor(tend_ / _h) + 1);
@@ -1017,84 +996,8 @@ public:
 	}
 
 
-	virtual ~Linear11dofFull() {
+	virtual ~TwoTrackModelFull() {
 		mkl_free(u_sol);
-		mkl_free(f_n_p_1);
-	}
-
-private:
-	T tend_;
-	T* u_sol, * f_n_p_1;
-	int condition_type;
-};
-
-/*
-For testing purposes
-*/
-template <typename T>
-class Linear11dofFullBE : public Linear11dofBE<T> {
-public:
-	Linear11dofFullBE(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation): Linear11dofBE<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
-
-		tend_ = MetaDataBase::DataBase()->getNumberOfTimeIterations() * _h;
-		f_n_p_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
-
-
-		f_n_p_1[0] = MetaDataBase::DataBase()->getBodyExternalForce()[2];
-		f_n_p_1[3] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[2];
-		f_n_p_1[4] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[2];
-		f_n_p_1[5] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[2];
-		f_n_p_1[6] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[2];
-		f_n_p_1[7] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[2];
-		f_n_p_1[8] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[2];
-		f_n_p_1[9] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[2];
-		f_n_p_1[10] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[2];
-
-		//std::cout << "force vector:" << std::endl;
-		//MathLibrary::write_vector(f_n_p_1,11);
-
-	}
-	void apply_boundary_condition(int s) {
-		condition_type = s;
-		if (s == NONFIXED) {
-			// don't do anything, proceed as usual (solve full 11DOF system)
-		}
-		else {
-			throw "Incorrect boundary condition";
-		}
-	}
-	void solve(T* sol_vect) {
-		int iter = 1;
-		T t = _h;
-		double eps = _h / 100;
-
-		while (std::abs(t - (tend_ + _h)) > eps) {
-			//solution_vect = u_sol + iter * (DOF);
-			update_step(f_n_p_1, sol_vect);
-
-			iter++;
-			t += _h;
-		}
-		//cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
-	}
-
-	void print_final_results(T* sln) {
-		std::cout.precision(15);
-		std::cout << std::scientific;
-		std::cout << "linear11DOF: orientation angles=\n\t[" << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
-		std::cout << "linear11DOF: car body position pc=\n\t[" << sln[0] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-right wheel position pw1=\n\t[" << sln[9] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-left wheel position pw2=\n\t[" << sln[7] << "]" << std::endl;
-		std::cout << "linear11DOF: front-left wheel position pw3=\n\t[" << sln[3] << "]" << std::endl;
-		std::cout << "linear11DOF: front-right wheel position pw4=\n\t[" << sln[5] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-right tyre position pt1=\n\t[" << sln[10] << "]" << std::endl;
-		std::cout << "linear11DOF: rear-left tyre position pt2=\n\t[" << sln[8] << "]" << std::endl;
-		std::cout << "linear11DOF: front-left tyre position pt3=\n\t[" << sln[4] << "]" << std::endl;
-		std::cout << "linear11DOF: front-right tyre position pt4=\n\t[" << sln[6] << "]" << std::endl;
-	}
-
-
-	virtual ~Linear11dofFullBE() {
 		mkl_free(f_n_p_1);
 	}
 

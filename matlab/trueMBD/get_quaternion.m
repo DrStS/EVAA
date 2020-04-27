@@ -26,6 +26,7 @@ end
 %
 eps = 1e-13;
 if norm(rotation_axis) < eps
+    angle = 0;  
     if abs(v1(3)) > 1e-8 
         rotation_axis = [-1; -1; (v1(1) + v1(2)) / v1(3) ];
     elseif abs(v1(2)) > 1e-8
@@ -37,7 +38,16 @@ if norm(rotation_axis) < eps
     end
 end
 
-q = calculate_quaternion_from_axis_angle(rotation_axis, angle);
+rotation_axis = rotation_axis / norm(rotation_axis);
+
+
+q = [rotation_axis(1) * sin(angle / 2); ...
+     rotation_axis(2) * sin(angle / 2); ...
+     rotation_axis(3) * sin(angle / 2); ...
+     cos(angle / 2)];
+
+% normalize the quaternion
+    q = q / norm(q);
 
 %% verify if the rotation is correct (this might be quite expensive an seems never to happen, so can probably be removed)
 % get rotation matrix R
