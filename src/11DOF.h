@@ -95,7 +95,7 @@ private:
 	*/
 	void constructBMatrix() {
 		mkl<T>::scal(Constants::DOFDOF, 0.0, B, 1);
-		mkl<T>::axpy(Constants::DOF, 2, M_h2, Constants::DOF + 1, B, Constants::DOF + 1);
+		mkl<T>::axpy(Constants::DOFDOF, 2, M_h2, 1, B, 1);
 		mkl<T>::axpy(Constants::DOFDOF, factor_h, D, 1, B, 1);
 	}
 	/**
@@ -125,7 +125,7 @@ protected:
 		// M_h2 = M
 		mkl<T>::copy(Constants::DOF - 3, Mass_vec + 1, 1, M_h2 + 3 * (Constants::DOF + 1), Constants::DOF + 1); // M_h2 = diagonal matrix
 		// M_h2 = M / (h * h)
-		mkl<T>::scal(Constants::DOF, 1 / (_h * _h), M_h2, Constants::DOF + 1);
+		mkl<T>::scal(Constants::DOF, 1.0 / (_h * _h), M_h2, Constants::DOF + 1);
 	}
 	/**
 	* \brief construct Mat_springLength
@@ -192,6 +192,7 @@ protected:
 		springLengths[6] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
 		springLengths[7] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
 	}
+	
 	*/
 	/**
 	* \brief initialise the vectors u_n, u_n_m_1, u_n_p_1
@@ -239,14 +240,14 @@ protected:
 	}
 
 public:
-	TwoTrackModelBE() : TwoTrackModelParent<T>() {}
+	
 	/**
 	* \brief Constructor
 	*/
 	TwoTrackModelBE(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation): TwoTrackModelParent<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
 		u_n_m_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // velocity
 		u_n = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // position
-		u_n_p_1 = _car->currentDisplacementTwoTrackModel;
+		u_n_p_1 = _car->currentDisplacementTwoTrackModel; // position
 
 		A = (T*)mkl_malloc(Constants::DOFDOF * sizeof(T), Constants::ALIGNMENT);
 		B = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
@@ -261,11 +262,12 @@ public:
 		springLengths = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
 		springLengthsNormal = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
 #ifdef INTERPOLATION
+//		ABuffer = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		J = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		dKdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		dDdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		dkdl = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
-		dddl = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
+		dddl = (T*)mkl_calloc(Constants::NUM_LEGS * 2, sizeof(T), Constants::ALIGNMENT);
 		residual = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
 #endif
 		_h = MetaDataBase::DataBase()->getTimeStepSize();
@@ -297,6 +299,7 @@ public:
 		mkl_free(C);
 		mkl_free(u_n);
 		mkl_free(u_n_m_1);
+//		mkl_free(u_n_p_1);
 		mkl_free(M_h2);
 		mkl_free(K);
 		mkl_free(D);
@@ -306,6 +309,7 @@ public:
 		mkl_free(springLengthsNormal);
 		mkl_free(Mat_springLength);
 #ifdef INTERPOLATION
+//		mkl_free(ABuffer);
 		mkl_free(J);
 		mkl_free(dkdl);
 		mkl_free(dddl);
@@ -320,15 +324,19 @@ public:
 	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
 	*/
 	virtual void update_step(T* force, T* solution) {
-		MathLibrary::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
-		constructAMatrix(); // has to be reconstructed as cholesky decomposition is stored in A
+		//mkl<T>::scal(Constants::DOF, -1.0, u_n_m_1, Constants::INCX);
+		MathLibrary::Solvers<T, TwoTrackModelBE<T> >::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
+		constructAMatrix();
 #ifdef INTERPOLATION
-			MathLibrary::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
+			MathLibrary::Solvers<T, TwoTrackModelBE<T> >::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
 #endif
 		// solutio = solution[t_n] = u_n_p_1
 		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
+		// copy update to car
 
-		MathLibrary::swap_address<T>(u_n, u_n_m_1);
+		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_1
+//		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and u_n_p_1 point to u_n_m_1 now
+		// do not swap just copy
 		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
 	}
 	/**
@@ -340,6 +348,7 @@ public:
 	void calcResidual(
 		T* force /**< pointer to forces vector size of DOF*/
 	) {
+		
 		// residual = A*x[n+1]
 		mkl<T>::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1, A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
 		// residual -= B*x[n]
@@ -361,7 +370,7 @@ public:
 	void constructJacobien() {
 		// first update the derivative 
 		lookupStiffness->getDerivative(_car->currentSpringsLength, dkdl);
-		lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
+	//	lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
 		// construct the derivative (tensor) times a pos vector
 		constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
 		// J = A =  M_h2 + D / _h + K
@@ -373,9 +382,9 @@ public:
 		// temp += -x[n]
 		mkl<T>::axpy(Constants::DOF, -1, u_n, 1, temp, 1);
 		// calc dDdxx with (x[n+1] - x[n])
-		constructLookupDerivativeX(dddl, temp, dDdxx);
+//		constructLookupDerivativeX(dddl, temp, dDdxx);
 		// J += 1/_h * dDdxx
-		mkl<T>::axpy(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
+//		mkl<T>::axpy(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
 	}
 	/**
 	* \brief construct Jacobien for fixed to road
@@ -388,6 +397,9 @@ public:
 			mkl<T>::copy(Constants::DOF, M_h2 + ( 4 + 2 * i ) * Constants::DOF,1, J + (4 + 2 * i) * Constants::DOF, 1);
 		}
 	}
+
+	
+
 	/**
 	* \brief update all dependent matrices on the position vector
 	*
@@ -510,7 +522,7 @@ public:
 	*/
 	void constructDampingMatrix() {
 #ifdef INTERPOLATION
-			lookupDamping->getInterpolation(_car->currentSpringsLength, dVec);
+	//		lookupDamping->getInterpolation(_car->currentSpringsLength, dVec);
 #endif
 		temp[0] = dVec[0] + dVec[2] + dVec[4] + dVec[6];
 		D[1] = dVec[0] * _car->l_lat[0] - dVec[2] * _car->l_lat[1] + dVec[4] * _car->l_lat[2] - dVec[6] * _car->l_lat[3];
@@ -795,7 +807,7 @@ private:
 	}
 
 public:
-	TwoTrackModelBDF2(): TwoTrackModelBE<T>() {}
+	
 	/*
 	Constructor
 	*/
@@ -922,7 +934,7 @@ public:
 	void constructJacobien() {
 		// first update the derivative 
 		lookupStiffness->getDerivative(_car->currentSpringsLength, dkdl);
-		lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
+//		lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
 		// construct the derivative (tensor) times a pos vector
 		constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
 		// J = A

@@ -1039,6 +1039,7 @@ namespace MathLibrary {
 			T delta_norm = 1, delta_norm2 = 0;
 			lapack_int status;
 			obj->calcResidual(force);
+
 			do {
 				count++;
 				//std::cout << "iter: " << count << std::endl;
@@ -1158,7 +1159,7 @@ namespace MathLibrary {
 			status = mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
 
 			check_status<lapack_int>(status);
-			// u_n_p_1 += B * u_n
+			// u_n_p_1 = B * u_n
 			mkl<T>::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1.0, B, dim, x_prev, 1, 0, x, 1);
 			// u_n_p_1 += C * u_n_m_1 <=> u_n_p_1 += ((1/(h*h))*M)*(-u_n_m_1)
 			mkl<T>::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1.0, C, dim, x_prev_prev, 1, 1, x, 1);

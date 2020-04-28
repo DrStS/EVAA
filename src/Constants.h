@@ -9,7 +9,7 @@ namespace Constants {
 	constexpr int DOF = 11; /**< Degrees of Freedom in the Eulerian Frame */
 	using floatEVAA = double;
 	constexpr bool USEINTERPOLATION = true;
-	constexpr floatEVAA TOLERANCE = 1.0e-10;
+	constexpr floatEVAA TOLERANCE = 1.0e-8;
 	constexpr int DOFDOF = 121;
 	//size_t alignment;											/**< alignment for mkl malloc */
 	//const int dim = 3;											/**< dimension of solution space */
