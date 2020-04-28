@@ -60,24 +60,18 @@ private:
 	/*
 	Construct corner initilizer
 	*/
-	void ConstructCorner(T* posCG, T* corners) {
-		T c = std::cos(angle_CG[2]);
-		T s = std::sin(angle_CG[2]);
-
-		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
-			mkl<T>::copy(Constants::DIM, posCG, Constants::INCX, corners + i, Constants::NUM_LEGS);
-		}
-		corners[0] += + l_long[0] * c - l_lat[0] * s; // fl
-		corners[4] += + l_lat[0] * c + l_long[0] * s; // fl
+	void ConstructCornerRelativeToCG(T* corners) {
+		corners[0] = + l_long[0]; // fl
+		corners[4] = + l_lat[0]; // fl
 	
-		corners[1] += + l_long[1] * c + l_lat[1] * s; // fr
-		corners[5] += - l_lat[1] * c + l_long[1] * s; // fr
+		corners[1] = + l_long[1]; // fr
+		corners[5] = - l_lat[1]; // fr
 	
-		corners[2] += - l_long[2] * c - l_lat[2] * s; // rl
-		corners[6] += + l_lat[2] * c - l_long[2] * s; // rl
+		corners[2] = - l_long[2]; // rl
+		corners[6] = + l_lat[2]; // rl
 	
-		corners[3] += - l_long[3] * c + l_lat[3] * s; // rr
-		corners[7] += - l_lat[3] * c - l_long[3] * s; // rr
+		corners[3] = - l_long[3]; // rr
+		corners[7] = - l_lat[3]; // rr
 	}
 
 	/*
@@ -89,9 +83,21 @@ private:
 		// zz, yy, xx
 		MathLibrary::get_rotation_matrix(angles[2], angles[1], angles[0], rotation_mat_buffer);
 
+//		std::cout << "Rotation matrix" << std::endl;
+//		MathLibrary::write_matrix(rotation_mat_buffer, 3);
 		// do rotation: rotationMat * r
 		//void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const double beta, double* c, const MKL_INT ldc);
 		mkl<T>::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DIM, Constants::NUM_LEGS, Constants::DIM, 1, rotation_mat_buffer, Constants::DIM, initial_corners, Constants::NUM_LEGS, 0, updated_corners, Constants::NUM_LEGS);
+	}
+	/**
+	* \breif This function computes conter position about CG
+	\param corner: Array of corners about origin in column major format
+	\param center: Array of coordinate of center of mass
+	*/
+	void CornerAboutCenter(T* corner, T* center) {
+		for (size_t i = 0; i < Constants::NUM_LEGS; ++i) {
+			mkl<T>::axpy(Constants::DIM, 1.0, center, 1, corner + i, Constants::NUM_LEGS);
+		}
 	}
 
 	/*
@@ -100,12 +106,23 @@ private:
 	void UpdateCorners11DOF() {
 		pos_buffer[0] = currentPositionLagrangian[0];
 		pos_buffer[1] = currentPositionLagrangian[1];
-		pos_buffer[2] = initialPositionGlobal[2] + currentDisplacementTwoTrackModel[0];
-		angle_buffer[0] = initialAngleGlobal[0] + currentDisplacementTwoTrackModel[1];
-		angle_buffer[1] = initialAngleGlobal[1] + currentDisplacementTwoTrackModel[2];
+		pos_buffer[2] = unexcitedPositionTwoTrackModel[0] + currentDisplacementTwoTrackModel[0];
+		angle_buffer[0] = unexcitedPositionTwoTrackModel[1] + currentDisplacementTwoTrackModel[1];
+		angle_buffer[1] = unexcitedPositionTwoTrackModel[2] + currentDisplacementTwoTrackModel[2];
 		angle_buffer[2] = *currentAngleLagrangian;
-		ConstructCorner(pos_buffer, initialCornerPositions);
-		UpdateCorners11DOF(angle_buffer, currentRotationMatrix, initialCornerPositions, currentCornerPositions);
+//		std::cout << "displacement vector" << std::endl;
+//		MathLibrary::write_vector(currentDisplacementTwoTrackModel, 11);
+//		std::cout << "pos_buffer = " << std::endl;
+//		MathLibrary::write_vector(pos_buffer, 3);
+//		std::cout << "angle_buffer = " << std::endl;
+//		MathLibrary::write_vector(angle_buffer, 3);
+		ConstructCornerRelativeToCG(relativeCornerPositions);
+//		std::cout << "initial corner pos = " << std::endl;
+//		MathLibrary::write_vector(relativeCornerPositions, 12);
+		UpdateCorners11DOF(angle_buffer, currentRotationMatrix, relativeCornerPositions, currentCornerPositions);
+		CornerAboutCenter(currentCornerPositions, pos_buffer);
+//		std::cout << "current corner pos = " << std::endl;
+//		MathLibrary::write_vector(currentCornerPositions, 12);
 	}
 
 	/*
@@ -164,7 +181,7 @@ public:
 	T* initialVelocityGlobal;         // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ, T_fr:XYZ, W_rl:XYZ, T_rl:XYZ, W_rr:XYZ, T_rr:XYZ] !!! global 
 	T* initialAngleGlobal;            // [XYZ]
 	T* initialAngularVelocityGlobal;  // [XYZ]
-	T* initialCornerPositions;        // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]
+	T* relativeCornerPositions;        // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]
 
 	// vectors to use in regular iteration
 	// For 11DOF
@@ -257,7 +274,7 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		currentCornerPositions = (T*)mkl_malloc(Constants::NUM_LEGS * dimAllocSize, Constants::ALIGNMENT); // 12 Constants::DIM
 		currentRotationMatrix = (T*)mkl_malloc(Constants::DIM * dimAllocSize, Constants::ALIGNMENT); // 9 Constants::DIM
-		initialCornerPositions = (T*)mkl_malloc(Constants::NUM_LEGS * dimAllocSize, Constants::ALIGNMENT); // 12 Constants::DIM
+		relativeCornerPositions = (T*)mkl_malloc(Constants::NUM_LEGS * dimAllocSize, Constants::ALIGNMENT); // 12 Constants::DIM
 		angle_buffer = (T*)mkl_malloc(dimAllocSize, Constants::ALIGNMENT); // 3 Constants::DIM
 		pos_buffer = (T*)mkl_malloc(dimAllocSize, Constants::ALIGNMENT); // 3 Constants::DIM
 
@@ -332,11 +349,12 @@ public:
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// read init corners vectors into matrix
 
-		ConstructCorner(initialPositionGlobal, initialCornerPositions); // only CG position is used to construct corners
+		ConstructCornerRelativeToCG(relativeCornerPositions); // only CG position is used to construct corners
 		mkl<T>::copy(Constants::DIM, initialAngleGlobal, 1, angle_buffer, 1);
 		//angle_buffer[2] = 0;
-		UpdateCorners11DOF(angle_buffer, currentRotationMatrix, initialCornerPositions, currentCornerPositions);
-
+		UpdateCorners11DOF(angle_buffer, currentRotationMatrix, relativeCornerPositions, currentCornerPositions);
+		CornerAboutCenter(currentCornerPositions, initialPositionGlobal);
+//		MathLibrary::write_vector(currentCornerPositions, 12);
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////// Remaining position initialization ////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -806,8 +824,8 @@ public:
 		currentCornerPositions = nullptr;
 		mkl_free(currentRotationMatrix);
 		currentRotationMatrix = nullptr;
-		mkl_free(initialCornerPositions);
-		initialCornerPositions = nullptr;
+		mkl_free(relativeCornerPositions);
+		relativeCornerPositions = nullptr;
 		mkl_free(angle_buffer);
 		mkl_free(pos_buffer);
 		*/

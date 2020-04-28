@@ -357,7 +357,6 @@ public:
 		mkl<T>::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1, M_h2, Constants::DOF, u_n_m_1, 1, 1, residual, 1);
 		// residual -= force
 		mkl<T>::axpy(Constants::DOF, -1, force, 1, residual, 1);
-		MathLibrary::write_vector<T>(residual, 11);
 		// res = norm(residual)
 		res_norm = mkl<T>::nrm2(Constants::DOF, residual, 1);
 	}
@@ -992,10 +991,16 @@ public:
 		//cblas_dcopy(DOF, _car->u_prev_linear, 1, solution_vect, 1);
 		while (std::abs(t - (tend_ + _h)) > eps) {
 			//solution_vect = u_sol + iter * (DOF);
+//			std::cout << "Running time step = " << iter << std::endl;
 			update_step(f_n_p_1, sol_vect);
+/*			if (iter > 3900) {
+				MathLibrary::write_vector(sol_vect, 11);
+			}
+			*/
 			iter++;
 			t += _h;
 		}
+		MathLibrary::write_vector(_car->currentSpringsLength, 8);
 		//cblas_dcopy(DOF, u_sol + (iter - 1)*(DOF), 1, sol_vect, 1);
 	}
 

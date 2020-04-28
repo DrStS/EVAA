@@ -177,9 +177,9 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1e3;
+num_iter = 1e5;
 delta_t = 1e-3; 
-t = 0:delta_t:(num_iter-1)*delta_t;
+t = 0:delta_t:(num_iter - 1)*delta_t;
 
 tol = 1e-8;
 y = zeros(length(t),11);
@@ -238,7 +238,8 @@ M_div_h2 = M / (delta_t * delta_t);
 fixed = false;
 %% time steps
 idx = [1 2 3 4 6 8 10];
-f_newton = @(y_curr,y1,y2,K,rhs)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
+f_newton_BE = @(y_curr,y1,y2,K,rhs)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
+f_newton_Bdf2 = @(y_curr,y1,y2,K,rhs)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
 %dKcols_dk = eval(dKcols_dk); % evaluate it numerically
 condition = [];
 d = 0;
@@ -261,7 +262,7 @@ for i = 1: length(t)
     end
     u_n_p_1 = ( M_div_h2 + K )\ (2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs);
     K = get_K();
-    r = f_newton(u_n_p_1, u_n, u_n_m_1, K,rhs);
+    r = f_newton_BE(u_n_p_1, u_n, u_n_m_1, K,rhs);
    % i
     iter = 0;
     err = [];
@@ -308,7 +309,7 @@ for i = 1: length(t)
             rhs(9) = newForce(9);
             rhs(11) = newForce(11); 
         end
-        r = f_newton(u_n_p_1, u_n, u_n_m_1, K,rhs);
+        r = f_newton_BE(u_n_p_1, u_n, u_n_m_1, K,rhs);
         %( M_div_h2 + K )\(2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs)-u_n_p_1
         err(iter) = norm(r);
         if (iter == 100)
@@ -332,6 +333,9 @@ for i = 1: length(t)
     u_n_m_1 = u_n;
     u_n = u_n_p_1;
     y(i,:) = u_n_p_1;
+%    if i>=3900
+%        disp(u_n_p_1)
+%    end
 end
 d
 %order
