@@ -177,7 +177,7 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1e2;
+num_iter = 1e5;
 delta_t = 1e-3; 
 t = 0:delta_t:(num_iter - 1)*delta_t;
 
@@ -281,11 +281,9 @@ for i = 1: length(t)
     end
     if euler
         u_n_p_1 = ( M_div_h2 + K )\ (2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs);
-        if bdf2 && i==3
-            euler=false;
-        end
     elseif bdf2
-        u_n_p_1 = ((9/4)*M_div_h2 + K)\ (B*u_n + C*u_n_m_1 + D*u_n_m_2 + E*u_n_m_3 + rhs);
+        vec_rhs = B*u_n + C*u_n_m_1 + D*u_n_m_2 + E*u_n_m_3;
+        u_n_p_1 = ((9/4)*M_div_h2 + K)\ (vec_rhs + rhs);
     end
     K = get_K();
     if euler
@@ -376,6 +374,9 @@ for i = 1: length(t)
     if bdf2
         u_n_m_3 = u_n_m_2;
         u_n_m_2 = u_n_m_1;
+        if i==2
+            euler=false;
+        end
     end
     u_n_m_1 = u_n;
     u_n = u_n_p_1;

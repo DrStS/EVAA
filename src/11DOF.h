@@ -127,73 +127,7 @@ protected:
 		// M_h2 = M / (h * h)
 		mkl<T>::scal(Constants::DOF, 1.0 / (_h * _h), M_h2, Constants::DOF + 1);
 	}
-	/**
-	* \brief construct Mat_springLength
-	*
-	* this is only done once in the initalisation the matrix is used to calculated th springLenght with blas3
-	*/
-	/*
-	void constructMatSpringLenghts() {
-		Mat_springLength[0] = 1;
-		Mat_springLength[1] = _car->l_lat[0];
-		Mat_springLength[2] = -_car->l_long[0];
-		Mat_springLength[3] = -1;
-		Mat_springLength[Constants::DOF + 3] = 1;
-		Mat_springLength[Constants::DOF + 4] = -1;
-		Mat_springLength[2 * Constants::DOF] = 1;
-		Mat_springLength[2 * Constants::DOF + 1] = -_car->l_lat[1];
-		Mat_springLength[2 * Constants::DOF + 2] = -_car->l_long[1];
-		Mat_springLength[2 * Constants::DOF + 5] = -1;
-		Mat_springLength[3 * Constants::DOF + 5] = 1;
-		Mat_springLength[3 * Constants::DOF + 6] = -1;
-		Mat_springLength[4 * Constants::DOF] = 1;
-		Mat_springLength[4 * Constants::DOF + 1] = _car->l_lat[2];
-		Mat_springLength[4 * Constants::DOF + 2] = _car->l_long[2];
-		Mat_springLength[4 * Constants::DOF + 7] = -1;
-		Mat_springLength[5 * Constants::DOF + 7] = 1;
-		Mat_springLength[5 * Constants::DOF + 8] = -1;
-		Mat_springLength[6 * Constants::DOF] = 1;
-		Mat_springLength[6 * Constants::DOF + 1] = -_car->l_lat[3];
-		Mat_springLength[6 * Constants::DOF + 2] = _car->l_long[3];
-		Mat_springLength[6 * Constants::DOF + 9] = -1;
-		Mat_springLength[7 * Constants::DOF + 9] = 1;
-		Mat_springLength[7 * Constants::DOF + 10] = -1;
-	}
-	*/
-	/**
-	* \brief stores the normal spring lengths
-	*
-	* called in the constructor
-	*/
-	/*
-	void populateSpringLengthsNormal() {
-		springLengthsNormal[0] = MetaDataBase::DataBase()->getBodySpringLengthFrontLeft();
-		springLengthsNormal[1] = MetaDataBase::DataBase()->getBodySpringLengthFrontLeft();
-		springLengthsNormal[2] = MetaDataBase::DataBase()->getBodySpringLengthFrontRight();
-		springLengthsNormal[3] = MetaDataBase::DataBase()->getBodySpringLengthFrontRight();
-		springLengthsNormal[4] = MetaDataBase::DataBase()->getBodySpringLengthRearLeft();
-		springLengthsNormal[5] = MetaDataBase::DataBase()->getBodySpringLengthRearLeft();
-		springLengthsNormal[6] = MetaDataBase::DataBase()->getBodySpringLengthRearRight();
-		springLengthsNormal[7] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
-	}*/
-	/**
-	* \brief stores the initial spring lengths
-	*
-	* called in the constructor
-	*/
-	/*
-	void initSpringLengths() {
-		springLengths[0] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontLeft();
-		springLengths[1] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontLeft();
-		springLengths[2] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontRight();
-		springLengths[3] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontRight();
-		springLengths[4] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearLeft();
-		springLengths[5] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearLeft();
-		springLengths[6] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
-		springLengths[7] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
-	}
 	
-	*/
 	/**
 	* \brief initialise the vectors u_n, u_n_m_1, u_n_p_1
 	*
@@ -204,33 +138,6 @@ protected:
 	* tempVector is used for velocity
 	*/
 	void initPosVectors() {
-		// u_n
-		/*
-		u_n[0] = 0;
-		u_n[1] = MetaDataBase::DataBase()->getBodyInitialOrientation()[0];
-		u_n[2] = MetaDataBase::DataBase()->getBodyInitialOrientation()[1];
-		u_n[3] = springLengthsNormal[0] + u_n[0] + _car->l_lat[0] * u_n[1] - _car->l_long[0] * u_n[2] - springLengths[0];
-		u_n[4] = springLengthsNormal[1] + u_n[3] - springLengths[1];
-		u_n[5] = springLengthsNormal[2] + u_n[0] - _car->l_lat[0] * u_n[1] - _car->l_long[0] * u_n[2] - springLengths[2];
-		u_n[6] = springLengthsNormal[3] + u_n[5] - springLengths[3];
-		u_n[7] = springLengthsNormal[4] + u_n[0] + _car->l_lat[0] * u_n[1] + _car->l_long[0] * u_n[2] - springLengths[4];
-		u_n[8] = springLengthsNormal[5] + u_n[7] - springLengths[5];
-		u_n[9] = springLengthsNormal[6] + u_n[0] - _car->l_lat[0] * u_n[1] + _car->l_long[0] * u_n[2] - springLengths[6];
-		u_n[10] = springLengthsNormal[7] + u_n[9] - springLengths[7];
-		
-		// store velocity in temp
-		temp[0] = MetaDataBase::DataBase()->getBodyInitialVelocity()[2];
-		temp[1] = MetaDataBase::DataBase()->getBodyInitialAngularVelocity()[0];
-		temp[2] = MetaDataBase::DataBase()->getBodyInitialAngularVelocity()[1];
-		temp[3] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft()[2];
-		temp[4] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft()[2];
-		temp[5] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight()[2];
-		temp[6] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight()[2];
-		temp[7] = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft()[2];
-		temp[8] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[2];
-		temp[9] = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight()[2];
-		temp[10] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[2];
-		*/
 		// u_n
 		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n,1);
 		// u_n_m_1 = u_n - _h * velocity
@@ -272,9 +179,6 @@ public:
 #endif
 		_h = MetaDataBase::DataBase()->getTimeStepSize();
 		factor_h = 1 / _h;
-		// populateSpringLengthsNormal();
-		// initSpringLengths();
-		// constructMatSpringLenghts();
 
 		// if interpolation is used we need alll the lengths to interpolate damping and stiffness if not we have to define them
 		// populate kVec
@@ -299,7 +203,6 @@ public:
 		mkl_free(C);
 		mkl_free(u_n);
 		mkl_free(u_n_m_1);
-//		mkl_free(u_n_p_1);
 		mkl_free(M_h2);
 		mkl_free(K);
 		mkl_free(D);
@@ -309,7 +212,6 @@ public:
 		mkl_free(springLengthsNormal);
 		mkl_free(Mat_springLength);
 #ifdef INTERPOLATION
-//		mkl_free(ABuffer);
 		mkl_free(J);
 		mkl_free(dkdl);
 		mkl_free(dddl);
@@ -339,6 +241,7 @@ public:
 		// do not swap just copy
 		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
 	}
+
 	/**
 	* \brief calculate the residual(Newton Function) + res_norm
 	*
@@ -619,20 +522,6 @@ public:
 	}
 
 	/**
-	* \brief construct springLengths
-	*
-	* this has to be called every newton iteraton
-	* springLengths = Mat_SpringLenghts * x + springLengthsNormal
-	*/
-	/*
-	void constructSpringLengths() {
-		// springLengths = springLengthsNormal
-		mkl<T>::copy(Constants::NUM_LEGS * 2, springLengthsNormal, 1, springLengths, 1);
-		// springLengths += Mat_SpringLenghts * x
-		mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::NUM_LEGS * 2, Constants::DOF, 1.0, Mat_springLength, Constants::DOF, u_n_p_1, 1.0, 1.0, springLengths, 1.0);
-	}
-	*/
-	/**
 	* \brief construct The derivative of the stiffness lookupTable times a position vector
 	*
 	* this has to be called every newton iteraton
@@ -796,6 +685,7 @@ private:
 	void getInitialGuess(
 		T* forces
 	) {
+		constructbVec();
 		lapack_int status;
 		status = mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DOF, A, Constants::DOF);
 		MathLibrary::check_status<lapack_int>(status);
@@ -844,26 +734,18 @@ public:
 			mkl<T>::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
 			TwoTrackModelBE<T>::update_step(force, solution);
 		}
-		else if (time_step_count == 1) {
-			mkl<T>::copy(Constants::DOF, u_n_m_2, 1, u_n_m_3, 1);
-			mkl<T>::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
-			TwoTrackModelBE<T>::update_step(force, solution);
-		}
 		else {
 			mkl<T>::copy(Constants::DOF, u_n_m_2, 1, u_n_m_3, 1);
 			mkl<T>::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
+			TwoTrackModelBE<T>::update_step(force, solution);
 			// construct A
 			constructAMatrix();
-#ifdef INTERPOLATION
-			constructbVec();
-#else
+#ifndef INTERPOLATION
 			// B = (6/(h*h))*M + (2/h)*D
 			mkl<T>::scal(Constants::DOFDOF, 0.0, B, 1);
 			mkl<T>::axpy(Constants::DOFDOF, 6, M_h2, 1, B, 1);
 			mkl<T>::axpy(Constants::DOFDOF, 2 * factor_h, D, 1, B, 1);
 #endif // INTERPOLATION
-			
-			update_step_bdf2(force, solution);
 			_active_executor = &TwoTrackModelBDF2<T>::update_step_bdf2;
 		}
 		
@@ -893,7 +775,6 @@ public:
 		MathLibrary::swap_address<T>(u_n_m_1, u_n_m_2); // u_n_m_2 points to u_n_m_1 and u_n_m_1 points to u_n_m_3
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_3
 		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
-
 	}
 	/**
 	* \brief calculate the residual(Newton Function) + res_norm
@@ -1010,10 +891,8 @@ public:
 		//cblas_dcopy(DOF, _car->u_prev_linear, 1, solution_vect, 1);
 		while (std::abs(t - (tend_ + _h)) > eps) {
 			//solution_vect = u_sol + iter * (DOF);
-			std::cout << "Running time step = " << iter << std::endl;
+//			std::cout << "Running time step = " << iter << std::endl;
 			update_step(f_n_p_1, sol_vect);
-			MathLibrary::write_vector(sol_vect, 11);
-			
 			iter++;
 			t += _h;
 		}

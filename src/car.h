@@ -110,19 +110,19 @@ private:
 		angle_buffer[0] = unexcitedPositionTwoTrackModel[1] + currentDisplacementTwoTrackModel[1];
 		angle_buffer[1] = unexcitedPositionTwoTrackModel[2] + currentDisplacementTwoTrackModel[2];
 		angle_buffer[2] = *currentAngleLagrangian;
-		std::cout << "displacement vector" << std::endl;
-		MathLibrary::write_vector(currentDisplacementTwoTrackModel, 11);
-		std::cout << "pos_buffer = " << std::endl;
-		MathLibrary::write_vector(pos_buffer, 3);
-		std::cout << "angle_buffer = " << std::endl;
-		MathLibrary::write_vector(angle_buffer, 3);
+//		std::cout << "displacement vector" << std::endl;
+//		MathLibrary::write_vector(currentDisplacementTwoTrackModel, 11);
+//		std::cout << "pos_buffer = " << std::endl;
+//		MathLibrary::write_vector(pos_buffer, 3);
+//		std::cout << "angle_buffer = " << std::endl;
+//		MathLibrary::write_vector(angle_buffer, 3);
 		ConstructCornerRelativeToCG(relativeCornerPositions);
-		std::cout << "initial corner pos = " << std::endl;
-		MathLibrary::write_vector(relativeCornerPositions, 12);
+//		std::cout << "initial corner pos = " << std::endl;
+//		MathLibrary::write_vector(relativeCornerPositions, 12);
 		UpdateCorners11DOF(angle_buffer, currentRotationMatrix, relativeCornerPositions, currentCornerPositions);
 		CornerAboutCenter(currentCornerPositions, pos_buffer);
-		std::cout << "current corner pos = " << std::endl;
-		MathLibrary::write_vector(currentCornerPositions, 12);
+//		std::cout << "current corner pos = " << std::endl;
+//		MathLibrary::write_vector(currentCornerPositions, 12);
 	}
 
 	/*
