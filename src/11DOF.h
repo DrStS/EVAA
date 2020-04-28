@@ -708,24 +708,6 @@ public:
 		u_n_m_3 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
 		bVec = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
 		_active_executor = &TwoTrackModelBDF2<T>::first_two_steps;
-
-#ifndef INTERPOLATION
-		// C = (-11/2)*(1/(h*h))*M + (-1/(2*h))*D
-		mkl<T>::axpy(Constants::DOFDOF, (-11.0 / 2.0), M_h2, 1, C, 1);
-		mkl<T>::axpy(Constants::DOFDOF, (-1.0 / 2.0) * factor_h, D, 1, C, 1);
-
-		// D = (2/(h*h))*M
-		mkl<T>::axpy(Constants::DOFDOF, 2.0, M_h2, 1, Dmat, 1);
-
-		// E = (-1/4)*(1/(h*h))*M
-		mkl<T>::axpy(Constants::DOFDOF, (-1.0 / 4.0), M_h2, 1, E, 1);
-
-		mkl<T>::copy(Constants::DOF, _car->u_prev_linear, 1, u_n, 1);
-		mkl<T>::copy(Constants::DOF, _car->velocity_current_linear, 1, u_n_m_1, 1);
-
-		mkl<T>::scal(Constants::DOF, -_h, u_n_m_1, 1);
-		mkl<T>::axpy(Constants::DOF, 1, u_n, 1, u_n_m_1, 1);
-#endif // INTERPOLATION
 	}
 
 	void first_two_steps(T* force, T* solution) {
@@ -740,12 +722,6 @@ public:
 			TwoTrackModelBE<T>::update_step(force, solution);
 			// construct A
 			constructAMatrix();
-#ifndef INTERPOLATION
-			// B = (6/(h*h))*M + (2/h)*D
-			mkl<T>::scal(Constants::DOFDOF, 0.0, B, 1);
-			mkl<T>::axpy(Constants::DOFDOF, 6, M_h2, 1, B, 1);
-			mkl<T>::axpy(Constants::DOFDOF, 2 * factor_h, D, 1, B, 1);
-#endif // INTERPOLATION
 			_active_executor = &TwoTrackModelBDF2<T>::update_step_bdf2;
 		}
 		
@@ -762,11 +738,9 @@ public:
 	*/
 	void update_step_bdf2(T* force, T* solution) {
 		// cblas_dscal(DOF, 0.0, force, 1);
-#ifdef INTERPOLATION
 		getInitialGuess(force);
+#ifdef INTERPOLATION
 		MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
-#else
-		MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Linear_BDF2(A, B, C, Dmat, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
 #endif
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
