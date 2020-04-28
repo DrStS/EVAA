@@ -856,11 +856,13 @@ public:
 			constructAMatrix();
 #ifdef INTERPOLATION
 			constructbVec();
-#endif // INTERPOLATION
+#else
 			// B = (6/(h*h))*M + (2/h)*D
 			mkl<T>::scal(Constants::DOFDOF, 0.0, B, 1);
 			mkl<T>::axpy(Constants::DOFDOF, 6, M_h2, 1, B, 1);
 			mkl<T>::axpy(Constants::DOFDOF, 2 * factor_h, D, 1, B, 1);
+#endif // INTERPOLATION
+			
 			update_step_bdf2(force, solution);
 			_active_executor = &TwoTrackModelBDF2<T>::update_step_bdf2;
 		}
@@ -878,12 +880,11 @@ public:
 	*/
 	void update_step_bdf2(T* force, T* solution) {
 		// cblas_dscal(DOF, 0.0, force, 1);
-		MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Linear_BDF2(A, B, C, Dmat, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
 #ifdef INTERPOLATION
-	//	getInitialGuess(force);
-	//	MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
+		getInitialGuess(force);
+		MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
 #else
-		
+		MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Linear_BDF2(A, B, C, Dmat, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
 #endif
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
