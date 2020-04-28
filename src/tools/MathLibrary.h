@@ -1038,7 +1038,6 @@ namespace MathLibrary {
 			int count = 0;
 			T delta_norm = 1, delta_norm2 = 0;
 			lapack_int status;
-			//std::cout << "bin drin" << std::endl;
 			obj->calcResidual(force);
 			do {
 				count++;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LookupHandler>
   <LookupTableGenerator>
-    <Size>1001</Size>
+    <Size>101</Size>
     <Magnitude>
       <Tyre>
         <ReerRight>260e3</ReerRight>
