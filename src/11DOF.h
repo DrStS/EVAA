@@ -98,7 +98,6 @@ private:
 		mkl<T>::axpy(Constants::DOFDOF, 2, M_h2, 1, B, 1);
 		mkl<T>::axpy(Constants::DOFDOF, factor_h, D, 1, B, 1);
 	}
-
 	/**
 	* \brief construct C
 	*
@@ -106,7 +105,7 @@ private:
 	* C = -1/h^2 M
 	*/
 	void constructCMatrix() {
-		mkl<T>::copy(Constants::DOFDOF, M_h2, 1, C, 1);
+		mkl<T>::copy(Constants::DOFDOF,M_h2, 1, C,1);
 		mkl<T>::scal(Constants::DOFDOF, -1, C, 1);
 	}
 protected:
@@ -358,6 +357,7 @@ public:
 		mkl<T>::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1, M_h2, Constants::DOF, u_n_m_1, 1, 1, residual, 1);
 		// residual -= force
 		mkl<T>::axpy(Constants::DOF, -1, force, 1, residual, 1);
+		MathLibrary::write_vector<T>(residual, 11);
 		// res = norm(residual)
 		res_norm = mkl<T>::nrm2(Constants::DOF, residual, 1);
 	}
@@ -741,7 +741,7 @@ public:
 template <typename T>
 class TwoTrackModelBDF2 : public TwoTrackModelBE<T> {
 private:
-	T* C, *Dmat, *E;
+	T*Dmat, *E;
 	T* bVec; /**< this vector is used to store the whole constants part on the rhs apart from the force */
 	T* u_n_m_2, *u_n_m_3;
 	size_t time_step_count = 0;
@@ -797,7 +797,6 @@ public:
 	Constructor
 	*/
 	TwoTrackModelBDF2(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation) : TwoTrackModelBE<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
-		C = (T*)mkl_calloc(Constants::DOFDOF,  sizeof(T), Constants::ALIGNMENT);
 		Dmat = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		E = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		u_n_m_2 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
@@ -867,7 +866,7 @@ public:
 		//cblas_dscal(DOF, 0.0, force, 1);
 		MathLibrary::Solvers<T, TwoTrackModelBDF2>::Linear_BDF2(A, B, C, Dmat, E, u_n, u_n_m_1, u_n_m_2, u_n_m_3, force, u_n_p_1, Constants::DOF);
 #ifdef INTERPOLATION
-			MathLibrary::Solvers<T, TwoTrackModelBDF2>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
+			MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
 #endif
 		/*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
 		apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
@@ -875,7 +874,7 @@ public:
 		MathLibrary::swap_address<T>(u_n_m_2, u_n_m_3); // u_n_m_2 points to u_n_m_3 and u_n_m_3 points to u_n_m_2
 		MathLibrary::swap_address<T>(u_n_m_1, u_n_m_2); // u_n_m_2 points to u_n_m_1 and u_n_m_1 points to u_n_m_3
 		MathLibrary::swap_address<T>(u_n, u_n_m_1); // u_n_m_1 points to u_n and u_n points to u_n_m_3
-		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and u_n_p_1 point to u_n_m_3 now
+		mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
 
 	}
 	/**
@@ -942,7 +941,6 @@ public:
 	Destructor
 	*/
 	virtual ~TwoTrackModelBDF2() {
-		mkl_free(C);
 		mkl_free(Dmat);
 		mkl_free(E);
 		mkl_free(u_n_m_2);
