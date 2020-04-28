@@ -100,11 +100,10 @@ private:
 	void UpdateCorners11DOF() {
 		pos_buffer[0] = currentPositionLagrangian[0];
 		pos_buffer[1] = currentPositionLagrangian[1];
-		pos_buffer[2] = Position_vec[2] + currentDisplacementTwoTrackModel[0];
-		angle_buffer[0] = angle_CG[1] + currentDisplacementTwoTrackModel[1];
-		angle_buffer[1] = angle_CG[2] + currentDisplacementTwoTrackModel[2];
-		angle_buffer[2] = 0;
-		
+		pos_buffer[2] = initialPositionGlobal[2] + currentDisplacementTwoTrackModel[0];
+		angle_buffer[0] = initialAngleGlobal[0] + currentDisplacementTwoTrackModel[1];
+		angle_buffer[1] = initialAngleGlobal[1] + currentDisplacementTwoTrackModel[2];
+		angle_buffer[2] = *currentAngleLagrangian;
 		ConstructCorner(pos_buffer, initialCornerPositions);
 		UpdateCorners11DOF(angle_buffer, currentRotationMatrix, initialCornerPositions, currentCornerPositions);
 	}
@@ -243,7 +242,7 @@ public:
 		currentDisplacementTwoTrackModel = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // 11 Constants::DIM
 		currentVelocityTwoTrackModel = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT); // 3 Constants::DIM
 		kVec = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
-		dVec = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
+		dVec = (T*)mkl_calloc(Constants::NUM_LEGS * 2 , sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
 		l_lat = (T*)mkl_malloc(Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
 		l_long = (T*)mkl_malloc(Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 4 Constants::DIM
 		unexcitedSpringsLength = (T*)mkl_malloc(2 * Constants::NUM_LEGS * sizeof(T), Constants::ALIGNMENT); // 8 Constants::DIM
@@ -334,8 +333,8 @@ public:
 		// read init corners vectors into matrix
 
 		ConstructCorner(initialPositionGlobal, initialCornerPositions); // only CG position is used to construct corners
-		mkl<T>::copy(Constants::DIM, angle_CG, 1, angle_buffer, 1);
-		angle_buffer[2] = 0;
+		mkl<T>::copy(Constants::DIM, initialAngleGlobal, 1, angle_buffer, 1);
+		//angle_buffer[2] = 0;
 		UpdateCorners11DOF(angle_buffer, currentRotationMatrix, initialCornerPositions, currentCornerPositions);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -470,7 +469,7 @@ public:
 
 #ifdef INTERPOLATION
 			_lookupStiffness->getInterpolation(currentSpringsLength, kVec);
-			_lookupDamping->getInterpolation(currentSpringsLength, dVec);
+//			_lookupDamping->getInterpolation(currentSpringsLength, dVec);
 #else
 			kVec[0] = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
 			kVec[1] = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
@@ -624,13 +623,12 @@ public:
 	*/
 	void updateLengthsTwoTrackModel() {
 		UpdateCorners11DOF();
-		
 		// global vector update
 		updateGlobalTwoTrackVectors();
 
 		// compute current spring lengths
 		computeCurrentSpringLength();
-
+		
 		// Compute CIR distances
 		updateRadiusToCIR();
 	}
@@ -650,26 +648,17 @@ public:
 	/** \brief flush the result to the output (checkpointing) || combine with function above
 	*/
 	void combine_results() { 
+		mkl<T>::copy((Constants::VEC_DIM)*(Constants::DIM), initialPositionGlobal, 1, Position_vec, 1);
 		ConvertALEToGlobal(currentPositionLagrangian, Position_vec);
 		Convert11DOFToGlobal(currentDisplacementTwoTrackModel, Position_vec);
 
 		// Angles manually
-		angle_CG[0] = currentDisplacementTwoTrackModel[1];
-		angle_CG[1] = currentDisplacementTwoTrackModel[2];
+		angle_CG[0] = initialAngleGlobal[0] + currentDisplacementTwoTrackModel[1];
+		angle_CG[1] = initialAngleGlobal[1] + currentDisplacementTwoTrackModel[2];
 		angle_CG[2] = *currentAngleLagrangian;
 		w_CG[2] = *currentAngularVelocityLagrangian;
 		ConvertALEToGlobal(currentVelocityLagrangian, Velocity_vec);
 	}
-
-//	void get_Position_vec(T* Pos) {
-//		mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, Position_vec, 1, Pos, 1);
-//	}
-	//void set_Position_vec(const T* Pos) {		
-	//	mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, Pos, 1, Position_vec, 1);
-	//}
-	//void get_Position_vec_CG(T* Pos_CG) {
-	//	mkl<T>::copy(Constants::DIM, Position_vec, 1, Pos_CG, 1);
-	//}
 
 	// Sums up all the 9 masses
 	inline T getMassFullCar() {
@@ -678,31 +667,10 @@ public:
 			massComponents[5] + massComponents[6] + massComponents[7] + massComponents[8]);
 	}
 
-	//void set_Position_vec_CG(const T* Pos_CG) {
-	//	mkl<T>::copy(Constants::DIM, Pos_CG, 1, Position_vec, 1);
-	//}
-
-	//void get_Velocity_vec(T* Vel) {
-	//	mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, Velocity_vec, 1, Vel, 1);
-	//}
 
 	void get_Velocity_vec_xy(T* Vel) {
 		mkl<T>::copy((Constants::DIM - 1) * Constants::VEC_DIM, currentVelocityLagrangian, 1, Vel, 1);
 	}
-
-	//void get_Position_vec_xy(T* Vel) {
-	//	mkl<T>::copy((Constants::DIM - 1) * Constants::VEC_DIM, currentPositionLagrangian, 1, Vel, 1);
-	//}
-
-	//void set_Velocity_vec(const T* Vel) {
-	//	mkl<T>::copy(Constants::DIM * Constants::VEC_DIM, Vel, 1, Velocity_vec, 1);
-	//}
-	//void get_Velocity_vec_CG(T* Vel_CG) {
-	//	mkl<T>::copy(Constants::DIM, Velocity_vec, 1, Vel_CG, 1);
-	//}
-	//void set_Velocity_vec_CG(const T* Vel_CG) {
-	//	mkl<T>::copy(Constants::DIM, Vel_CG, 1, Velocity_vec, 1);
-	//}
 
 	void get_k_vec(T* k) {
 		mkl<T>::copy(2 * Constants::NUM_LEGS, kVec, 1, k, 1);
@@ -714,19 +682,10 @@ public:
 		mkl<T>::copy(Constants::NUM_LEGS, kVec, 2, k, 1);
 	}
 
-	//void set_k_vec(const T* k) {
-	//	mkl<T>::copy(2 * Constants::NUM_LEGS, k, 1, k_vec, 1);
-	//}
 
 	void get_Mass_vec(T* M) {
 		mkl<T>::copy(Constants::VEC_DIM, massComponents, 1, M, 1);
 	}
-	//T get_Mass_vec_CG() const {
-	//	return massComponents[0];
-	//}
-	//void set_Mass_vec(const T* M) {
-	//	mkl<T>::copy(Constants::VEC_DIM, M, 1, massComponents, 1);
-	//}
 
 	/*
 	 get distance vector from each important Point of the car (9: CG, 4*W_i, 4*T_i)
@@ -740,19 +699,6 @@ public:
 		mkl<T>::vSub((Constants::DIM-1) * Constants::VEC_DIM, currentPositionLagrangian, dist_vector, dist_vector);
 	}
 
-	//void get_dist_vector(T* Point_P, T* dist_vector) {
-	//	for (auto i = 0; i < Constants::VEC_DIM; ++i) {		// broadcasting
-	//		mkl<T>::copy(Constants::DIM-1, Point_P, Constants::INCX, &dist_vector[Constants::DIM * i], Constants::INCX);
-	//	}
-	//	mkl<T>::axpy(Constants::VEC_DIM, -1, currentPositionLagrangian, 2, dist_vector, 3);     // calculate the vector from 
-	//	mkl<T>::axpy(Constants::VEC_DIM, -1, currentPositionLagrangian + 1, 2, dist_vector, 3);
-	//} // 9 * 3 - from each important point to a fixed Point_P
-
-	//void get_dist_vector_CG(T* Point_P, T* dist_vector) {
-	//	// get distance vector from Center of Gravity of the car to a Point P 
-	//	// source: Point_P, dest: CG
-	//	mkl<T>::vSub(Constants::DIM, Position_vec, Point_P, dist_vector);
-	//} // 3 - from Center of Gravity of a fixed Point_P
 
 	void get_ALE_change(T* current_ALE_vect, T* global_vect, T* change_vect) {
 		change_vect[0] = current_ALE_vect[0] - global_vect[0];

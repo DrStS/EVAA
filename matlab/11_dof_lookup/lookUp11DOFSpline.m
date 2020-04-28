@@ -177,8 +177,8 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1e1;
-delta_t = 1e-1; 
+num_iter = 1e3;
+delta_t = 1e-3; 
 t = 0:delta_t:(num_iter-1)*delta_t;
 
 tol = 1e-8;
@@ -195,11 +195,11 @@ l_lat_fr=1.6916;
 l_lat_rl=1.68;
 l_lat_rr=1.68;
 mass_Body=1936;
-I_body_xx=640;
+I_body_xx=6400;
 I_body_yy=4800;
-mass_wheel_fl=67.5;
+mass_wheel_fl=72.5;
 mass_tyre_fl=30;
-mass_wheel_fr=67.5;
+mass_wheel_fr=72.5;
 mass_tyre_fr=30;
 mass_wheel_rl=67.5;
 mass_tyre_rl=30;
@@ -231,7 +231,7 @@ u_n_m_1 = u_n;
 u_n_m_1(1)=u_n(1);
 u_n_p_1=u_n;
 
-rhs =-[mass_Body; 0; 0; mass_wheel_fl; 0; mass_wheel_fr; 0; mass_wheel_rl; 0; mass_wheel_rr; 0];
+rhs =[1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 %%
@@ -259,8 +259,10 @@ for i = 1: length(t)
         rhs(9) = newForce(9);
         rhs(11) = newForce(11);
     end
+    u_n_p_1 = ( M_div_h2 + K )\ (2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs);
+    K = get_K();
     r = f_newton(u_n_p_1, u_n, u_n_m_1, K,rhs);
-    i
+   % i
     iter = 0;
     err = [];
     delta = [];
@@ -297,6 +299,7 @@ for i = 1: length(t)
         l6 = eval(l6_sym);
         l7 = eval(l7_sym);
         l8 = eval(l8_sym);
+        len = [l1;l2;l3;l4;l5;l6;l7;l8];
         K = get_K();
         if fixed
             newForce = K * u_n_p_1;

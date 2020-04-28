@@ -15,28 +15,28 @@
     <force_body>
       <x>0</x>
       <y>0</y>
-      <z>-1936</z>
+      <z>1.1e3</z>
     </force_body>
     <force_wheel>
       <ReerRight>
         <x>0</x>
         <y>0</y>
-        <z>-67.5</z>
+        <z>0</z>
       </ReerRight>
       <ReerLeft>
         <x>0</x>
         <y>0</y>
-        <z>-67.5</z>
+        <z>0</z>
       </ReerLeft>
       <FrontLeft>
         <x>0</x>
         <y>0</y>
-        <z>-67.5</z>
+        <z>0</z>
       </FrontLeft>
       <FrontRight>
         <x>0</x>
         <y>0</y>
-        <z>-67.5</z>
+        <z>0</z>
       </FrontRight>
     </force_wheel>
     <force_tyre>
