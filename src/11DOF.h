@@ -32,7 +32,7 @@ protected:
 
 	// solution in current timestep
 	T* u_n;
-	T* A, * B;                                                  /**< pointer to matrices used for the backward euler */
+	T* A, * B, *C;                                                  /**< pointer to matrices used for the backward euler */
 	T* M_h2, * K, * D, * Mat_temp, * Mat_springLength;
 
 	T* kVec, * dVec, * temp;
@@ -97,6 +97,16 @@ private:
 		mkl<T>::scal(Constants::DOFDOF, 0.0, B, 1);
 		mkl<T>::axpy(Constants::DOF, 2, M_h2, Constants::DOF + 1, B, Constants::DOF + 1);
 		mkl<T>::axpy(Constants::DOFDOF, factor_h, D, 1, B, 1);
+	}
+	/**
+	* \brief construct C
+	*
+	* this has to be called only once
+	* C = -1/h^2 M
+	*/
+	void constructCMatrix() {
+		mkl<T>::copy(Constants::DOFDOF,M_h2, 1, C,1);
+		mkl<T>::scal(Constants::DOFDOF, -1, C, 1);
 	}
 protected:
 	/**
@@ -240,6 +250,7 @@ public:
 
 		A = (T*)mkl_malloc(Constants::DOFDOF * sizeof(T), Constants::ALIGNMENT);
 		B = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
+		C = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		M_h2 = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		K = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		D = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
@@ -275,6 +286,7 @@ public:
 		constructDampingMatrix();
 		constructAMatrix();
 		constructBMatrix();
+		constructCMatrix();
 	}
 	/*
 	Destructor
@@ -282,6 +294,7 @@ public:
 	virtual ~TwoTrackModelBE() {
 		mkl_free(A);
 		mkl_free(B);
+		mkl_free(C);
 		mkl_free(u_n);
 		mkl_free(u_n_m_1);
 		mkl_free(M_h2);
@@ -307,8 +320,8 @@ public:
 	\param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
 	*/
 	virtual void update_step(T* force, T* solution) {
-		// TODO: pass on either (-u_n_m_1) or (-M_h2) // could be done by having a C matrix
-		MathLibrary::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, M_h2, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
+		MathLibrary::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
+		constructAMatrix(); // has to be reconstructed as cholesky decomposition is stored in A
 #ifdef INTERPOLATION
 			MathLibrary::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
 #endif
@@ -335,6 +348,7 @@ public:
 		mkl<T>::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1, M_h2, Constants::DOF, u_n_m_1, 1, 1, residual, 1);
 		// residual -= force
 		mkl<T>::axpy(Constants::DOF, -1, force, 1, residual, 1);
+		MathLibrary::write_vector<T>(residual, 11);
 		// res = norm(residual)
 		res_norm = mkl<T>::nrm2(Constants::DOF, residual, 1);
 	}
@@ -715,7 +729,7 @@ public:
 template <typename T>
 class TwoTrackModelBDF2 : public TwoTrackModelBE<T> {
 private:
-	T* C, *Dmat, *E;
+	T*Dmat, *E;
 	T* bVec; /**< this vector is used to store the whole constants part on the rhs apart from the force */
 	T* u_n_m_2, *u_n_m_3;
 	size_t time_step_count = 0;
@@ -771,7 +785,6 @@ public:
 	Constructor
 	*/
 	TwoTrackModelBDF2(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation, EVAALookup<T>* dampingInterpolation) : TwoTrackModelBE<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
-		C = (T*)mkl_calloc(Constants::DOFDOF,  sizeof(T), Constants::ALIGNMENT);
 		Dmat = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		E = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 		u_n_m_2 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
@@ -917,7 +930,6 @@ public:
 	Destructor
 	*/
 	virtual ~TwoTrackModelBDF2() {
-		mkl_free(C);
 		mkl_free(Dmat);
 		mkl_free(E);
 		mkl_free(u_n_m_2);
