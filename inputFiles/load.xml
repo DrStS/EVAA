@@ -1,23 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <EVAA_load_module>
-	<boundary_description>
-		<BoundaryConditions>nonfixed</BoundaryConditions>
-    <circular>
-			<radius>50</radius>
-			<center>
-				<x>0</x>
-				<y>0</y>
-				<z>0</z>
-			</center>
-	</circular>
-	</boundary_description>
+  <!--roadProfile>
+    <fixedTyre></fixedTyre>
+  </roadProfile-->
+  <!--roadProfile>
+    <detachedTyre></detachedTyre>
+  </roadProfile-->
+  <!--roadProfile>
+    <circularRoadProfile>
+      <radius>50</radius>
+      <center>
+        <x>3</x>
+        <y>2</y>
+        <z>0</z>
+      </center>
+    </circularRoadProfile>
+  </roadProfile-->
+  <roadProfile>
+    <arbitraryRoadProfile>
+      <horizontalProfile>
+        <wayPoint X="0"   Y="0"   time="0"/>
+        <wayPoint X="10"  Y="0"   time="5"/>
+      </horizontalProfile>
+      <verticalProfile>
+        <sinusoidalProfile>
+          <rightTyre amplitude="0.2" period="2" shift="0"/>
+          <leftTyre amplitude="0.2" period="2" shift="1"/>
+        </sinusoidalProfile>
+      </verticalProfile>
+    </arbitraryRoadProfile>
+  </roadProfile>
   <forces>
-    <force_body>
+    <forceBody>
       <x>0</x>
       <y>0</y>
-      <z>1.1e3</z>
-    </force_body>
-    <force_wheel>
+      <z>0</z>
+    </forceBody>
+    <forceWheel>
       <ReerRight>
         <x>0</x>
         <y>0</y>
@@ -38,8 +57,8 @@
         <y>0</y>
         <z>0</z>
       </FrontRight>
-    </force_wheel>
-    <force_tyre>
+    </forceWheel>
+    <forceTyre>
       <ReerRight>
         <x>0</x>
         <y>0</y>
@@ -60,6 +79,6 @@
         <y>0</y>
         <z>0</z>
       </FrontRight>
-    </force_tyre>
+    </forceTyre>
   </forces>
 </EVAA_load_module>

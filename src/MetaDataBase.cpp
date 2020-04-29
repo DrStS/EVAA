@@ -126,9 +126,9 @@ void MetaDataBase::readParameters(const std::string& filename) {
     // Load simulation parameters
     const auto simulation = settings->SimulationParametersXML();
 
-    readVector(gravity, simulation.GeneralSettingsXML().GravityXML());
-    num_time_iter = simulation.GeneralSettingsXML().NumberOfIterationsXML();
-    timestep = simulation.GeneralSettingsXML().TimestepSizeXML();
+    readVector(_gravity, simulation.GeneralSettingsXML().GravityXML());
+    _num_time_iter = simulation.GeneralSettingsXML().NumberOfIterationsXML();
+    _timestep = simulation.GeneralSettingsXML().TimestepSizeXML();
 
     max_num_iter = simulation.MultyBodyDynamicsXML().MaximalIterationNumberXML();
     tolerance = simulation.MultyBodyDynamicsXML().ToleranceXML();
@@ -161,30 +161,66 @@ void MetaDataBase::readLoadParameters(const std::string& filename) {
     // Load external parameters
     const auto load_data = EVAA_load_module(filename, xml_schema::flags::dont_validate);
 
-    std::string boundary_conditions = load_data->boundary_description().BoundaryConditions();
-    if (boundary_conditions == "fixed") {
-        boundary_condition_road = FIXED;
+
+   if (load_data->roadProfile().fixedTyre().present()) {
+        _boundary_condition_road = BoundaryConditionRoad::FIXED;
         std::cout << "Run the simulation with fixed tyres" << std::endl;
     }
-    else if (boundary_conditions == "nonfixed") {
-        boundary_condition_road = NONFIXED;
+   else if (load_data->roadProfile().detachedTyre().present()) {
+        _boundary_condition_road = BoundaryConditionRoad::NONFIXED;
         std::cout << "Run the simulation without any tyre constraints" << std::endl;
     }
-    else if (boundary_conditions == "circle") {
-        boundary_condition_road = CIRCULAR;
+   else if (load_data->roadProfile().circularRoadProfile().present()) {
+        _boundary_condition_road = BoundaryConditionRoad::CIRCULAR;
         std::cout << "Run the simulation on a circular road" << std::endl;
+        _profile_radius = load_data->roadProfile().circularRoadProfile()->radius();
+        readVector(_profile_center, load_data->roadProfile().circularRoadProfile()->center());
     }
+   else if (load_data->roadProfile().arbitraryRoadProfile().present()) {
+       _boundary_condition_road = BoundaryConditionRoad::ARBITRARY;
+       std::cout << "Run the simulation on an arbitrary road" << std::endl;
+       _trajectory = new arbitraryTrajectory<double>(_num_time_iter, _timestep,
+           load_data->roadProfile().arbitraryRoadProfile().get().verticalProfile().sinusoidalProfile().rightTyre().amplitude(),
+           load_data->roadProfile().arbitraryRoadProfile().get().verticalProfile().sinusoidalProfile().leftTyre().amplitude(),
+           load_data->roadProfile().arbitraryRoadProfile().get().verticalProfile().sinusoidalProfile().rightTyre().period(),
+           load_data->roadProfile().arbitraryRoadProfile().get().verticalProfile().sinusoidalProfile().leftTyre().period(),
+           load_data->roadProfile().arbitraryRoadProfile().get().verticalProfile().sinusoidalProfile().rightTyre().shift(),
+           load_data->roadProfile().arbitraryRoadProfile().get().verticalProfile().sinusoidalProfile().leftTyre().shift());  // TODO: free memory without leaks
+
+       double initialVelocity = sqrt(_initial_vel_body[0] * _initial_vel_body[0] +
+                                     _initial_vel_body[1] * _initial_vel_body[1]);
+
+       std::vector<double> wayPointsX;
+       std::vector<double> wayPointsY;
+       std::vector<double> wayPointsTimes;
+
+       size_t numWayPoints = 0;
+
+       for (auto    i = load_data->roadProfile().arbitraryRoadProfile().get().horizontalProfile().wayPoint().begin();
+                    i < load_data->roadProfile().arbitraryRoadProfile().get().horizontalProfile().wayPoint().end(); ++i) {
+           numWayPoints++;
+           wayPointsX.push_back(i->X());
+           wayPointsY.push_back(i->Y());
+           wayPointsTimes.push_back(i->time());
+       }
+
+       _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(), wayPointsTimes.data(), initialVelocity);
+
+       _trajectory->calculateTyreShifts( _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
+                                         _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT]);
+
+
+
+   }
+
     else {
         throw std::logic_error(
             "Wrong boundary conditions. Implemented so far: circle, fixed, nonfixed.");
     }
-    if (load_data->boundary_description().circular().present()) {
-        profile_radius = load_data->boundary_description().circular()->radius();
-        readVector(profile_center, load_data->boundary_description().circular()->center());
-    }
-    readVectorLegs(external_force_tyre, load_data->forces().force_tyre());
-    readVectorLegs(external_force_wheel, load_data->forces().force_wheel());
-    readVector(external_force_body, load_data->forces().force_body());
+
+    readVectorLegs(_external_force_tyre, load_data->forces().forceTyre());
+    readVectorLegs(_external_force_wheel, load_data->forces().forceWheel());
+    readVector(_external_force_body, load_data->forces().forceBody());
 }
 
 void MetaDataBase::readLookupParameters(const std::string& filename) {
