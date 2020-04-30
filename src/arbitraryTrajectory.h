@@ -121,8 +121,18 @@ public:
     n=(times(í+1) - times(i)) / delta_t true road points
      */
     void interpolateRoadPoints(size_t numProvidedPoints, T* providedPointsX, T* providedPointsY,
-                               T* providedTimes, T initialVelocity) {
+                               T* providedTimes/*, T initialVelocity*/) {
+        
+        if( _numIterations*_delta_t < providedTimes[numProvidedPoints-1){
+        
+        } else exit
+
+        
         // update _roadPointsX[j] and _roadPointsY[j]
+        _numIerations;
+        _delta_t;
+
+
     }
 
     /**
