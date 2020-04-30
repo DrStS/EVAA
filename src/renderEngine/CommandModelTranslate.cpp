@@ -26,6 +26,8 @@
 #include "Model.h"
 #include "QVTKFramebufferObjectRenderer.h"
 
+namespace EVAA {
+
 CommandModelTranslate::CommandModelTranslate(QVTKFramebufferObjectRenderer *vtkFboRenderer,
                                              const TranslateParams_t &translateData,
                                              bool inTransition) :
@@ -65,3 +67,5 @@ void CommandModelTranslate::execute()
     m_translateParams.model->translateToPosition(m_translateParams.targetPositionX,
                                                  m_translateParams.targetPositionY);
 }
+
+}  // namespace EVAA

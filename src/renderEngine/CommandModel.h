@@ -27,6 +27,8 @@
 
 #pragma once
 
+namespace EVAA {
+
 class QVTKFramebufferObjectRenderer;
 class CommandModel {
 public:
@@ -39,3 +41,5 @@ public:
 protected:
     QVTKFramebufferObjectRenderer *m_vtkFboRenderer;
 };
+
+}  // namespace EVAA

@@ -33,6 +33,8 @@
 #include "QVTKFramebufferObjectItem.h"
 #include "QVTKFramebufferObjectRenderer.h"
 
+namespace EVAA {
+
 EVAAMainWindow::EVAAMainWindow(int argc, char **argv)
 {
     QApplication app(argc, argv);
@@ -222,3 +224,5 @@ void EVAAMainWindow::setModelColorR(const int colorR) { m_vtkFboItem->setModelCo
 void EVAAMainWindow::setModelColorG(const int colorG) { m_vtkFboItem->setModelColorG(colorG); }
 
 void EVAAMainWindow::setModelColorB(const int colorB) { m_vtkFboItem->setModelColorB(colorB); }
+
+}  // namespace EVAA

@@ -33,6 +33,8 @@
 
 #include "CommandModel.h"
 
+namespace EVAA {
+
 class Model;
 class ProcessingEngine;
 class QVTKFramebufferObjectRenderer;
@@ -62,3 +64,5 @@ private:
 
     bool m_ready = false;
 };
+
+}  // namespace EVAA

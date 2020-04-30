@@ -12,6 +12,8 @@
 #include "MathLibrary.h"
 #include "MetaDataBase.h"
 
+namespace EVAA {
+
 /**
  * Handles the whole MBD simulation (from the Matlab code)
  */
@@ -2254,3 +2256,5 @@ public:
         mkl_free(A_rem);
     }
 };
+
+}  // namespace EVAA

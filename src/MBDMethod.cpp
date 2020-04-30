@@ -1,6 +1,8 @@
 
 #include "MBDMethod.h"
 
+namespace EVAA {
+
 #if MIGHT_BE_USEFUL
 
 void create_basis_car(floatEVAA* qc, floatEVAA* basis_c)
@@ -89,3 +91,5 @@ void get_quaternion_derivative(floatEVAA* qc, floatEVAA* Qc)
     Qc[11] = -0.5 * qc[2];
 }
 #endif
+
+}  // namespace EVAA

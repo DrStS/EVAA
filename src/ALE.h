@@ -8,6 +8,8 @@
 #include "LoadModule.h"
 #include "RoadProfile.h"
 
+namespace EVAA {
+
 /** Implements the ALE method to extend the linear 11DOF system */
 template <class T>
 class ALE {
@@ -277,3 +279,5 @@ public:
                   << "\n\t " << sln[14] << "]" << std::endl;
     }
 };
+
+}  // namespace EVAA

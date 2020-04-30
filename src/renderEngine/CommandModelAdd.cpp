@@ -25,6 +25,8 @@
 #include "ProcessingEngine.h"
 #include "QVTKFramebufferObjectRenderer.h"
 
+namespace EVAA {
+
 CommandModelAdd::CommandModelAdd(QVTKFramebufferObjectRenderer *vtkFboRenderer,
                                  std::shared_ptr<ProcessingEngine> processingEngine,
                                  QUrl modelPath) :
@@ -55,3 +57,5 @@ void CommandModelAdd::execute()
 
     emit done();
 }
+
+}  // namespace EVAA

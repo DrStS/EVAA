@@ -3,6 +3,7 @@
 #pragma once
 #include <mkl.h>
 
+namespace EVAA {
 template <typename T>
 class mkl {
 public:
@@ -1226,3 +1227,5 @@ public:
 #endif
     }
 };
+
+}  // namespace EVAA

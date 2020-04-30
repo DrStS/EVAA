@@ -14,6 +14,8 @@
 #include "Constants.h"
 #include "mkl.h"
 
+namespace EVAA {
+
 /**
  * function returns a readable output for mkl errors
  */
@@ -441,3 +443,5 @@ not defined (code %d).\n", num); break;
     }
 }
 #endif
+
+}  // namespace EVAA

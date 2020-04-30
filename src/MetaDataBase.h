@@ -16,6 +16,8 @@
 #include "EVAALookup.h"
 #endif
 
+namespace EVAA {
+
 enum boundary_condition_road { FIXED, NONFIXED, CIRCULAR };
 
 /**
@@ -327,3 +329,5 @@ public:
 
     int getRoadConditions() { return boundary_condition_road; }
 };
+
+}  // namespace EVAA

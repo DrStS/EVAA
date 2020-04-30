@@ -38,6 +38,8 @@
 #include "BLAS.h"
 #endif
 
+namespace EVAA {
+
 /**
  * Implements several useful math functions and solvers
  */
@@ -1307,4 +1309,6 @@ public:
         mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x_n_p_1, 1);
     }
 };
+
 }  // namespace MathLibrary
+}  // namespace EVAA

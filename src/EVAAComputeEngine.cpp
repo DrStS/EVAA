@@ -57,6 +57,7 @@ typedef float floatEVAA;
 typedef double floatEVAA;
 #endif
 
+namespace EVAA {
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) :
     _xmlCarFileName(xmlCarFileName),
     _xmlLoadFileName(xmlLoadFileName),
@@ -880,3 +881,5 @@ void EVAAComputeEngine::compare_ALE_MBD(void)
     mkl_free(complete_soln2);
 }
 #endif
+
+}  // namespace EVAA

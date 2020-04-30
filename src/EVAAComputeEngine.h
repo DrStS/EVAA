@@ -40,6 +40,8 @@
 #include "MBDMethod.h"
 #include "MathLibrary.h"
 
+namespace EVAA {
+
 /**
  * \brief Class ComputeEngine the core of STACCATO
  */
@@ -127,3 +129,5 @@ private:
     EVAALookup<Constants::floatEVAA>* _lookupStiffness;
     EVAALookup<Constants::floatEVAA>* _lookupDamping;
 };
+
+}  // namespace EVAA

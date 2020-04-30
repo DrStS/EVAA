@@ -9,6 +9,8 @@
 #include "Constants.h"
 #include "MathLibrary.h"
 
+namespace EVAA {
+
 /**
  * Parent class for generic road profiles
  */
@@ -412,3 +414,5 @@ public:
         // don't change them
     };
 };
+
+}  // namespace EVAA

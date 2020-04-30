@@ -32,6 +32,8 @@
 
 #include "AuxiliaryParameters.h"
 
+namespace EVAA {
+
 class AuxiliaryFunctions {
 public:
     /**
@@ -54,3 +56,5 @@ public:
      */
     static void dummy(std::string _fileName, std::vector<double> &_vector);
 };
+
+}  // namespace EVAA

@@ -29,6 +29,8 @@
 #include <chrono>
 #include <iostream>
 
+namespace EVAA {
+
 /**
  * \brief This manages the timings for delta output
  */
@@ -99,3 +101,5 @@ extern Timer linearSolverTimer02;
 extern Timer exportCSRTimer01;
 extern Timer mklTimer01;
 extern Timer mklSparseTimer01;
+
+}  // namespace EVAA

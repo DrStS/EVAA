@@ -16,6 +16,8 @@
 #include "MathLibrary.h"
 #include "MetaDataBase.h"
 
+namespace EVAA {
+
 /**
  * \brief class to compute one timestep of the linear 11 dof system in small angle approximation
  */
@@ -1078,3 +1080,5 @@ private:
     T *u_sol, *f_n_p_1;
     int condition_type;
 };
+
+}  // namespace EVAA

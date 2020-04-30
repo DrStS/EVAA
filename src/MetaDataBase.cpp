@@ -13,6 +13,8 @@
 #include <iostream>
 #include <string>
 
+namespace EVAA {
+
 MetaDataBase* MetaDataBase::_database = NULL;
 
 MetaDataBase* MetaDataBase::DataBase()
@@ -315,3 +317,5 @@ void MetaDataBase::ReadLookupParameters(EVAALookup<Constants::floatEVAA>** looku
         delete[] k_tyre;
     }
 }
+
+}  // namespace EVAA

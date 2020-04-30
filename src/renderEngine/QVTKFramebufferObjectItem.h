@@ -34,6 +34,8 @@
 
 #include "CommandModelTranslate.h"
 
+namespace EVAA {
+
 class CommandModel;
 class Model;
 class ProcessingEngine;
@@ -127,3 +129,5 @@ private:
     int m_modelColorG = 169;
     int m_modelColorB = 244;
 };
+
+}  // namespace EVAA

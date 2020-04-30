@@ -36,6 +36,8 @@
 
 #include "Model.h"
 
+namespace EVAA {
+
 ProcessingEngine::ProcessingEngine() {}
 
 const std::shared_ptr<Model>& ProcessingEngine::addModel(const QUrl& modelFilePath)
@@ -149,3 +151,5 @@ std::shared_ptr<Model> ProcessingEngine::getModelFromActor(
     // Raise exception instead
     return nullptr;
 }
+
+}  // namespace EVAA

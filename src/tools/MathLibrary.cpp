@@ -26,6 +26,7 @@
 
 #include <iostream>
 
+namespace EVAA {
 namespace MathLibrary {
 
 void printMKLInfo()
@@ -65,3 +66,4 @@ void computeDenseVectorAddition(double *vec1, double *vec2, const double a, cons
 }
 
 }  // namespace MathLibrary
+}  // namespace EVAA

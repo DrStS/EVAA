@@ -26,6 +26,8 @@
 #include <iostream>
 #include <limits>
 
+namespace EVAA {
+
 AuxiliaryFunctions::AuxiliaryFunctions() {}
 
 AuxiliaryFunctions::~AuxiliaryFunctions() {}
@@ -44,3 +46,5 @@ void AuxiliaryFunctions::dummy(std::string _fileName, std::vector<double> &_vect
     myfile << std::endl;
     myfile.close();
 }
+
+}  // namespace EVAA

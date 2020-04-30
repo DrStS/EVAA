@@ -27,6 +27,8 @@
 #include "ProcessingEngine.h"
 #include "QVTKFramebufferObjectRenderer.h"
 
+namespace EVAA {
+
 QVTKFramebufferObjectItem::QVTKFramebufferObjectItem()
 {
     m_lastMouseLeftButton = std::make_shared<QMouseEvent>(QEvent::None, QPointF(0, 0), Qt::NoButton,
@@ -276,3 +278,5 @@ bool QVTKFramebufferObjectItem::isCommandsQueueEmpty() const { return m_commands
 void QVTKFramebufferObjectItem::lockCommandsQueueMutex() { m_commandsQueueMutex.lock(); }
 
 void QVTKFramebufferObjectItem::unlockCommandsQueueMutex() { m_commandsQueueMutex.unlock(); }
+
+}  // namespace EVAA

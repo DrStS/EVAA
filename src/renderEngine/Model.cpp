@@ -28,6 +28,8 @@
 
 #include <QDebug>
 
+namespace EVAA {
+
 QColor Model::m_defaultModelColor = QColor{"#0277bd"};
 QColor Model::m_selectedModelColor = QColor{"#03a9f4"};
 
@@ -154,3 +156,5 @@ void Model::setMouseDeltaXY(const double deltaX, const double deltaY)
     m_mouseDeltaX = deltaX;
     m_mouseDeltaY = deltaY;
 }
+
+}  // namespace EVAA

@@ -47,6 +47,8 @@
 #include <mutex>
 #include <vector>
 
+namespace EVAA {
+
 class Model;
 class QVTKFramebufferObjectItem;
 class ProcessingEngine;
@@ -144,3 +146,5 @@ private:
     double m_modelsOpacity = 1.0;
     bool m_modelsGouraudInterpolation = false;
 };
+
+}  // namespace EVAA

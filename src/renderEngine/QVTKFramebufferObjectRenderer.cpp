@@ -44,6 +44,8 @@
 #include "ProcessingEngine.h"
 #include "QVTKFramebufferObjectItem.h"
 
+namespace EVAA {
+
 QVTKFramebufferObjectRenderer::QVTKFramebufferObjectRenderer()
 {
     // Renderer
@@ -587,3 +589,5 @@ void QVTKFramebufferObjectRenderer::resetCamera()
     m_renderer->GetActiveCamera()->SetViewUp(0.0, 0.0, 1.0);
     m_renderer->ResetCameraClippingRange();
 }
+
+}  // namespace EVAA

@@ -8,6 +8,8 @@
 #include <limits>
 #include <string>
 
+namespace EVAA {
+
 namespace IO {
 template <typename T>
 void write_matrix(T* mat, std::string fname, size_t rows, size_t cols)
@@ -47,4 +49,6 @@ void writeLookUpGridPlusInterpolateValues(
     }
     myfile.close();
 }
+
 };  // namespace IO
+}  // namespace EVAA

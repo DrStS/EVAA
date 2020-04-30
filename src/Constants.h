@@ -2,6 +2,7 @@
 
 #pragma once
 
+namespace EVAA {
 namespace Constants {
 /** alignment for mkl malloc */
 constexpr int ALIGNMENT = 64;
@@ -33,3 +34,4 @@ constexpr floatEVAA TOLERANCE = 1.0e-8;
 constexpr int DOFDOF = 121;
 
 };  // namespace Constants
+}  // namespace EVAA

@@ -31,6 +31,8 @@
 #include <QUrl>
 #include <memory>
 
+namespace EVAA {
+
 class ProcessingEngine;
 class QVTKFramebufferObjectItem;
 /**
@@ -87,3 +89,5 @@ private:
     bool m_draggingMouse = false;
     bool m_showFileDialog = false;
 };
+
+}  // namespace EVAA

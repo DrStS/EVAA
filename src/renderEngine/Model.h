@@ -37,6 +37,8 @@
 #include <memory>
 #include <mutex>
 
+namespace EVAA {
+
 class Model : public QObject {
     Q_OBJECT
 
@@ -89,3 +91,5 @@ private:
     double m_mouseDeltaX = 0.0;
     double m_mouseDeltaY = 0.0;
 };
+
+}  // namespace EVAA

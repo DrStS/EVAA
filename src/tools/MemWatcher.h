@@ -40,6 +40,8 @@
 
 #endif
 
+namespace EVAA {
+
 /**
  * \brief This helps to analyse the memory footprint
  */
@@ -97,3 +99,5 @@ private:
 };
 
 extern MemWatcher memWatcher;
+
+}  // namespace EVAA

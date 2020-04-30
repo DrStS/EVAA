@@ -38,6 +38,8 @@
 #include <mutex>
 #include <vector>
 
+namespace EVAA {
+
 class Model;
 
 class ProcessingEngine {
@@ -61,3 +63,5 @@ private:
 
     std::vector<std::shared_ptr<Model>> m_models;
 };
+
+}  // namespace EVAA

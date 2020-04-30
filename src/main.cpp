@@ -75,9 +75,10 @@ int main(int argc, char **argv)
     }
     // allArgs[0] = "EVAA.exe"
     if (allArgs.size() > 2) {
-        EVAAComputeEngine *myComputeEngine = new EVAAComputeEngine(allArgs[1], allArgs[2]);
+        EVAA::EVAAComputeEngine *myComputeEngine =
+            new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
     }
-    EVAAComputeEngine *myComputeEngine =
+    EVA::EVAAComputeEngine *myComputeEngine =
         new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml",
                               "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
     myComputeEngine->printInfo();
@@ -87,24 +88,20 @@ int main(int argc, char **argv)
     myComputeEngine->computeMKL11DOF();
     anaysisTimer01.stop();
     std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec()
-              << " ms to run the
-                 solver(MKL)
-                     .\n\n\n " << std::endl; anaysisTimer01.start();
-                 myComputeEngine->computeEigen11DOF();
+              << " ms to run the solver(MKL) .\n\n\n " << std::endl;
+    anaysisTimer01.start();
+    myComputeEngine->computeEigen11DOF();
     anaysisTimer01.stop();
     std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec()
-              << " ms to run the
-                 solver(Eigen)
-                     .\n\n\n " << std::endl; anaysisTimer01.start();
-                 myComputeEngine->computeBlaze11DOF();
+              << " ms to run the solver(Eigen) .\n\n\n " << std::endl;
+    anaysisTimer01.start();
+    myComputeEngine->computeBlaze11DOF();
     anaysisTimer01.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
-              << " ms to run the
-                 solver(Blaze)
-                     .\n\n\n " << std::endl;
+              << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
 #endif
 
-                 anaysisTimer01.start();
+    anaysisTimer01.start();
     // myComputeEngine->computeMKLTwoTrackModel();
     anaysisTimer01.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec()

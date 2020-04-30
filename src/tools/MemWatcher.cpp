@@ -21,5 +21,9 @@
 
 #include "MemWatcher.h"
 
+namespace EVAA {
+
 // Instantiate the timer object
 MemWatcher memWatcher;
+
+}  // namespace EVAA

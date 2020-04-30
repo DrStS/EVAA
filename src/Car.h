@@ -11,6 +11,8 @@
 #include "MathLibrary.h"
 #include "MetaDataBase.h"
 
+namespace EVAA {
+
 template <typename T>
 class Car {
 private:
@@ -897,3 +899,5 @@ public:
         */
     }
 };
+
+}  // namespace EVAA

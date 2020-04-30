@@ -8,6 +8,8 @@
 #include "MetaDataBase.h"
 #include "RoadProfile.h"
 
+namespace EVAA {
+
 template <typename T>
 class LoadModule {
 private:
@@ -219,3 +221,5 @@ public:
         mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1);
     }
 };
+
+}  // namespace EVAA

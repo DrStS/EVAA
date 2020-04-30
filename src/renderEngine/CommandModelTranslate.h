@@ -31,6 +31,8 @@
 
 #include "CommandModel.h"
 
+namespace EVAA {
+
 class Model;
 class QVTKFramebufferObjectRenderer;
 
@@ -59,3 +61,5 @@ private:
     bool m_inTransition;
     bool m_needsTransformation = true;
 };
+
+}  // namespace EVAA
