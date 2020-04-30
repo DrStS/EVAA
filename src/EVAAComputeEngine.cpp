@@ -48,27 +48,9 @@ using Eigen::VectorXd;
 
 namespace EVAA {
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) {
-    std::ifstream f(xmlCarFileName.c_str());
-    if (f.good()) {
-        std::cout << "Read general simulation parameters and car input data at " << xmlCarFileName
-                  << std::endl;
-        // remove cout!
-    }
-    else {
-        std::cout << "XML file at " << xmlCarFileName
-                  << " for general and car settings does not exist!" << std::endl;
-        exit(2);
-    }
+    IO::checkFileExists(xmlCarFileName);
+    IO::checkFileExists(xmlLoadFileName);
 
-    std::ifstream ff(xmlLoadFileName.c_str());
-    if (ff.good()) {
-        std::cout << "Read load parameters in file: " << xmlLoadFileName << std::endl;
-    }
-    else {
-        std::cout << "XML file at " << xmlLoadFileName << " for load parameters does not exist!"
-                  << std::endl;
-        exit(2);
-    }
     MetaDataBase::getDataBase().readParameters(xmlCarFileName);
     MetaDataBase::getDataBase().readLoadParameters(xmlLoadFileName);
 }

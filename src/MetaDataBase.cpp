@@ -92,16 +92,7 @@ void MetaDataBase::readParameters(const std::string& filename) {
         readLegs(k_body, twoTrackModel.StiffnessXML().ConstantXML().get().BodyXML());
     }
     else {
-        auto lookupFilename = twoTrackModel.StiffnessXML().LookupTableXML().get().FilePathXML();
-        std::ifstream f(lookupFilename.c_str());
-        if (f.good()) {
-            std::cout << "Read lookup table from " << lookupFilename << std::endl;
-        }
-        else {
-            std::cout << "Lookup table at " << lookupFilename << " does not exist!" << std::endl;
-            exit(2);
-        }
-        readLookupParameters(lookupFilename);
+        readLookupParameters(twoTrackModel.StiffnessXML().LookupTableXML().get().FilePathXML());
     }
     readLegs(c_tyre, twoTrackModel.DampingCoefficientsXML().TyreXML());
     readLegs(c_body, twoTrackModel.DampingCoefficientsXML().BodyXML());
@@ -199,6 +190,7 @@ void MetaDataBase::readLoadParameters(const std::string& filename) {
 }
 
 void MetaDataBase::readLookupParameters(const std::string& filename) {
+    IO::checkFileExists(filename);
     const auto lookup = LookupHandler(filename, xml_schema::flags::dont_validate);
 
     const auto generator = lookup->LookupTableGenerator();

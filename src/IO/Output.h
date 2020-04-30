@@ -48,5 +48,12 @@ void writeLookUpGridPlusInterpolateValues(
     myfile.close();
 }
 
+/**
+ * Checks if a file exists.
+ * \param[in] filename The name of the file to be checked.
+ * \throw std::system_error if the file does not exist.
+ */
+void checkFileExists(const std::string& filename);
+
 };  // namespace IO
 }  // namespace EVAA
