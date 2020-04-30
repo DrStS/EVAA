@@ -308,8 +308,7 @@ public:
             }
         }
         else {
-            std::cout << "Please Provide Tyre Index" << std::endl;
-            exit(2);
+            throw std::logic_error("Call set_fixed_index before calling this method");
         }
     }
 

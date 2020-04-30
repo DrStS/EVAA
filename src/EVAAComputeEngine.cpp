@@ -709,11 +709,7 @@ void EVAAComputeEngine::computeALE(void) {
         roadProfile->set_fixed_index(car->tyre_index_set);
         break;
     default:
-        std::cout << "ALE will only work with a circular path, fixed or nonfixed boundaries, "
-                     "computation skipped!"
-                  << std::endl;
-        delete car;
-        exit(5);
+        throw std::logic_error("MetaDataBase not read? It should throw on invalid file content.");
         break;
     }
 
@@ -795,11 +791,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
         Road_Profile->set_fixed_index(Car1->tyre_index_set);
     }
     else {
-        std::cout << "ALE will only work with a circular path, fixed or nonfixed boundaries, "
-                     "computation skipped "
-                  << std::endl;
-        delete Car1;
-        exit(5);
+        throw std::logic_error("MetaDataBase not read? It should throw on invalid file content.");
     }
 
     solution_dim = Constants::DIM * Constants::VEC_DIM;

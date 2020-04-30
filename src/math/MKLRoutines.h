@@ -7,7 +7,6 @@
 
 #include <mkl.h>
 
-#include <cassert>
 #include <string>
 
 #include "Constants.h"
@@ -313,6 +312,14 @@ TEMPLATE_FLOAT_TYPE
 inline lapack_int potrf(int matrix_layout, char uplo, lapack_int n, T* a, lapack_int lda) {
     return invokeFD(LAPACKE_spotrf, LAPACKE_dpotrf, matrix_layout, uplo, n, a, lda);
 }
+
+/**
+ * Checks if a status is an error for Math::potrf.
+ * \param status the status to be checked.
+ * \throw std::domain_error If the status reports a potrf failure.
+ * \note: consider putting the status check inside Math::potrf.
+ */
+void potrfCheckStatus(lapack_int status);
 
 /** Wraps LAPACKE_spotrs and LAPACKE_dpotrs. */
 TEMPLATE_FLOAT_TYPE
@@ -705,6 +712,12 @@ inline void vMinMag(const MKL_INT n, const T* a, const T* b, T* y) {
 
 // Data Fitting
 
+/**
+ * Checks if an MKL data fitting return is signling an error.
+ * \throw std::domain_error if num is a known MKL error code or less than 0.
+ */
+void dfCheckError(const int num);
+
 /** Wraps dfsNewTask1D and dfdNewTask1D. */
 TEMPLATE_FLOAT_TYPE
 inline int dfNewTask1D(DFTaskPtr* task, const MKL_INT nx, const T* x, const MKL_INT xhint,
@@ -722,9 +735,15 @@ inline int dfEditPPSpline1D(DFTaskPtr task, const MKL_INT s_order, const MKL_INT
 }
 
 /** Wraps dfsConstruct1D and dfdConstruct1D. */
-TEMPLATE_FLOAT_TYPE
-inline int dfConstruct1D(DFTaskPtr task, const MKL_INT s_format, const MKL_INT method) {
-    return invokeFD(dfsConstruct1D, dfsConstruct1D, task, s_format, method);
+template<typename T>
+inline int dfConstruct1D(DFTaskPtr task, const MKL_INT s_format, const MKL_INT method);
+
+template<> inline int dfConstruct1D<float>(DFTaskPtr task, const MKL_INT s_format, const MKL_INT method) {
+    return dfsConstruct1D(task, s_format, method);
+}
+
+template<> inline int dfConstruct1D<double>(DFTaskPtr task, const MKL_INT s_format, const MKL_INT method) {
+    return dfdConstruct1D(task, s_format, method);
 }
 
 /** Wraps dfsInterpolate1D and dfdInterpolate1D. */

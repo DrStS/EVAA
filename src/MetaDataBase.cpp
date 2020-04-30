@@ -151,10 +151,9 @@ void MetaDataBase::readParameters(const std::string& filename) {
         MBD_solver = BROYDEN_BDF2;
     }
     else {
-        std::cerr << "Wrong MBD-solver specified in the XML! Please type: \n   -explicit_Euler \n  "
-                     " -RK4\n   -Broyden_Euler\n   -Broyden_CN\n   -Broyden_BDF2"
-                  << std::endl;
-        exit(2);
+        throw std::logic_error(
+            "Wrong MBD-solver in XML: " + solver + ". Must be one of: "
+            "explicit_Euler, RK4, Broyden_Euler, Broyden_CN, Broyden_BDF2");
     }
 }
 
@@ -176,9 +175,8 @@ void MetaDataBase::readLoadParameters(const std::string& filename) {
         std::cout << "Run the simulation on a circular road" << std::endl;
     }
     else {
-        std::cerr << "Wrong boundary conditions! Only circle, fixed and nonfixed implemented so far"
-                  << std::endl;
-        exit(2);
+        throw std::logic_error(
+            "Wrong boundary conditions. Implemented so far: circle, fixed, nonfixed.");
     }
     if (load_data->boundary_description().circular().present()) {
         profile_radius = load_data->boundary_description().circular()->radius();

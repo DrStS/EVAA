@@ -819,7 +819,7 @@ private:
         constructbVec();
         lapack_int status;
         status = Math::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DOF, A, Constants::DOF);
-        Math::check_status<lapack_int>(status);
+        Math::potrfCheckStatus(status);
         Math::vAdd(Constants::DOF, bVec, forces, u_n_p_1);
         // u_n_p_1=A\(b+f)
         Math::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, A, Constants::DOF, u_n_p_1, 1);

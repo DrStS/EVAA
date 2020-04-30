@@ -132,17 +132,6 @@ void diagonal_matrix(T* mat, size_t dim, T val) {
 /**
  * outputs the determinant
  */
-template <typename T>
-void check_status(T status) {
-    if (status == 1) {
-        std::cout << "Matrix non Positive Definite" << std::endl;
-        exit(5);
-    }
-    else if (status == -1) {
-        std::cout << "Matrix contain illegal value" << std::endl;
-        exit(5);
-    }
-}
 
 /**
  * Broken function (not safe to use)
@@ -327,7 +316,6 @@ void write_vector(T* vect, int count) {
         std::cout << std::scientific << vect[i] << std::endl;
         // printf("%1.15f\n", vect[i]);
     }
-    // exit(5);
 }
 
 /**
@@ -347,7 +335,6 @@ void write_matrix(T* vect, int count) {
         std::cout << "\n" << std::endl;
         // printf("%1.15f\n", vect[i]);
     }
-    // exit(5);
 }
 
 /**
@@ -1066,7 +1053,7 @@ public:
 
             // get J=LL^T
             status = Math::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
-            check_status<lapack_int>(status);
+            Math::potrfCheckStatus(status);
             // residual=J\residual -> residual = delta
             Math::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, res, 1);
             // u_n_p_1 -= delta
@@ -1177,7 +1164,7 @@ public:
         // get A=LL^T
         status = Math::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
 
-        check_status<lapack_int>(status);
+        Math::potrfCheckStatus(status);
         // u_n_p_1 = B * u_n
         Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., B, dim, x_prev, 1, 0., x, 1);
         // u_n_p_1 += C * u_n_m_1 <=> u_n_p_1 += ((1/(h*h))*M)*(-u_n_m_1)
@@ -1206,7 +1193,7 @@ public:
         lapack_int status;
         // get A=LL^T
         status = Math::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
-        check_status<lapack_int>(status);
+        Math::potrfCheckStatus(status);
         // u_n_p_1 += B * u_n
         Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., B, dim, x_prev, 1, 0, x, 1);
 
@@ -1259,7 +1246,7 @@ public:
         lapack_int status;
         // get A=LL^T
         status = Math::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
-        check_status<lapack_int>(status);
+        Math::potrfCheckStatus(status);
         // u_n_p_1 += B * u_n
         Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., B, dim, x_n, 1, 0, x_n_p_1, 1);
         // u_n_p_1 += C * u_n_m_1 <=> u_n_p_1 += ((1/(h*h))*M)*(-u_n_m_1)
