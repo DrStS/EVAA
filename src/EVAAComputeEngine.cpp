@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "11DOF.h"
-#include "car.h"
+#include "Car.h"
 #include "Constants.h"
 #include "EVAAComputeEngine.h"
 #include "LoadModule.h"

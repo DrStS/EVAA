@@ -34,7 +34,7 @@
 #include "EVAALookup.h"
 #endif
 #include "MathLibrary.h"
-#include "MBD_method.h"
+#include "MBDMethod.h"
 
 
 /********//**
