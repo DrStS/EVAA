@@ -82,14 +82,14 @@ private:
 
     std::mutex m_propertiesMutex;
 
-    double m_positionX{0.0};
-    double m_positionY{0.0};
-    double m_positionZ{0.0};
+    double m_positionX{0.};
+    double m_positionY{0.};
+    double m_positionZ{0.};
 
     bool m_selected = false;
 
-    double m_mouseDeltaX = 0.0;
-    double m_mouseDeltaY = 0.0;
+    double m_mouseDeltaX = 0.;
+    double m_mouseDeltaY = 0.;
 };
 
 }  // namespace EVAA

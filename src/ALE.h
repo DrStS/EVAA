@@ -5,7 +5,7 @@
 #include "Constants.h"
 #include "EVAAComputeEngine.h"
 #include "LoadModule.h"
-#include "Math.h"
+#include "MathLibrary.h"
 #include "RoadProfile.h"
 
 namespace EVAA {
@@ -104,7 +104,7 @@ public:
         Load_module_obj->update_force(t, force_vector, new_centripetal_force);
         Load_module_obj->update_torque(t, new_torque, force_vector);
 
-        mkl<T>::scal(2, -1, new_centripetal_force, 1);
+        Math::scal(2, -1., new_centripetal_force, 1);
 
         // 1. Update global X,Y velocities
         Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
@@ -177,7 +177,7 @@ public:
             Load_module_obj->update_force(t, force_vector, centripetal_force);
             Load_module_obj->update_torque(t, torque, force_vector);
             // convert centrifugal force to centripetal (only for x, y direction)
-            mkl<T>::scal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
+            Math::scal(centripetal_force_dimensions - 1, -1., centripetal_force, 1);
             if (iter == 100) Math::write_vector(centripetal_force, centripetal_force_dimensions);
             global_frame_solver(t);
 
@@ -198,8 +198,8 @@ public:
             iter++;
         }
 
-        mkl<T>::copy((Constants::VEC_DIM * Constants::DIM),
-                     u_sol + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
+        Math::copy((Constants::VEC_DIM * Constants::DIM),
+                   u_sol + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
         Car_obj->combine_results();
 
         mkl_free(time_vec);

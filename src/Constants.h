@@ -29,7 +29,7 @@ using floatEVAA = double;
 
 constexpr bool USEINTERPOLATION = true;
 
-constexpr floatEVAA TOLERANCE = 1.0e-8;
+constexpr floatEVAA TOLERANCE = 1.e-8;
 
 constexpr int DOFDOF = 121;
 

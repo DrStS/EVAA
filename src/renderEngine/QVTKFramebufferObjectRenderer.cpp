@@ -65,12 +65,12 @@ QVTKFramebufferObjectRenderer::QVTKFramebufferObjectRenderer() {
     vtkSmartPointer<vtkInteractorStyleTrackballCamera> style =
         vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
     style->SetDefaultRenderer(m_renderer);
-    style->SetMotionFactor(10.0);
+    style->SetMotionFactor(10.);
     m_vtkRenderWindowInteractor->SetInteractorStyle(style);
 
     // Picker
     m_picker = vtkSmartPointer<vtkCellPicker>::New();
-    m_picker->SetTolerance(0.0);
+    m_picker->SetTolerance(0.);
 
     update();
 }
@@ -217,7 +217,7 @@ void QVTKFramebufferObjectRenderer::render() {
     }
 
     // Reset the view-up vector. This improves the interaction of the camera with the plate.
-    m_renderer->GetActiveCamera()->SetViewUp(0.0, 0.0, 1.0);
+    m_renderer->GetActiveCamera()->SetViewUp(0., 0., 1.);
 
     // Extra actions
     m_processingEngine->setModelsRepresentation(m_modelsRepresentationOption);
@@ -286,7 +286,7 @@ void QVTKFramebufferObjectRenderer::initScene() {
 
     // Axes
     vtkSmartPointer<vtkAxesActor> axes = vtkSmartPointer<vtkAxesActor>::New();
-    double axes_length = 20.0;
+    double axes_length = 20.;
     int16_t axes_label_font_size = 20;
     axes->SetTotalLength(axes_length, axes_length, axes_length);
     axes->GetXAxisCaptionActor2D()->GetTextActor()->SetTextScaleModeToNone();
@@ -352,7 +352,7 @@ void QVTKFramebufferObjectRenderer::updatePlatform() {
         m_platformModel->SetXLength(m_platformWidth);
         m_platformModel->SetYLength(m_platformDepth);
         m_platformModel->SetZLength(m_platformThickness);
-        m_platformModel->SetCenter(0.0, 0.0, -m_platformThickness / 2);
+        m_platformModel->SetCenter(0., 0., -m_platformThickness / 2);
     }
 
     // Platform Grid
@@ -513,25 +513,25 @@ const bool QVTKFramebufferObjectRenderer::screenToWorld(const int16_t screenX,
     vtkSmartPointer<vtkPlane> boundingPlanes[4];
 
     boundingPlanes[0] = vtkSmartPointer<vtkPlane>::New();
-    boundingPlanes[0]->SetOrigin(0.0, 1000.0, 0.0);
-    boundingPlanes[0]->SetNormal(0.0, -1.0, 0.0);
+    boundingPlanes[0]->SetOrigin(0., 1000., 0.);
+    boundingPlanes[0]->SetNormal(0., -1., 0.);
 
     boundingPlanes[1] = vtkSmartPointer<vtkPlane>::New();
-    boundingPlanes[1]->SetOrigin(0.0, -1000.0, 0.0);
-    boundingPlanes[1]->SetNormal(0.0, 1.0, 0.0);
+    boundingPlanes[1]->SetOrigin(0., -1000., 0.);
+    boundingPlanes[1]->SetNormal(0., 1., 0.);
 
     boundingPlanes[2] = vtkSmartPointer<vtkPlane>::New();
-    boundingPlanes[2]->SetOrigin(1000.0, 0.0, 0.0);
-    boundingPlanes[2]->SetNormal(-1.0, 0.0, 0.0);
+    boundingPlanes[2]->SetOrigin(1000., 0., 0.);
+    boundingPlanes[2]->SetNormal(-1., 0., 0.);
 
     boundingPlanes[3] = vtkSmartPointer<vtkPlane>::New();
-    boundingPlanes[3]->SetOrigin(-1000.0, 0.0, 0.0);
-    boundingPlanes[3]->SetNormal(1.0, 0.0, 0.0);
+    boundingPlanes[3]->SetOrigin(-1000., 0., 0.);
+    boundingPlanes[3]->SetNormal(1., 0., 0.);
 
     // Create projection plane parallel platform and Z coordinate from clicked position in model
     vtkSmartPointer<vtkPlane> plane = vtkSmartPointer<vtkPlane>::New();
-    plane->SetOrigin(0.0, 0.0, m_clickPositionZ);
-    plane->SetNormal(0.0, 0.0, 1.0);
+    plane->SetOrigin(0., 0., m_clickPositionZ);
+    plane->SetNormal(0., 0., 1.);
 
     // Set projection and bounding planes to placer
     vtkSmartPointer<vtkBoundedPlanePointPlacer> placer =
@@ -564,8 +564,8 @@ void QVTKFramebufferObjectRenderer::resetCamera() {
     m_camPositionY = -392.348;
     m_camPositionZ = 369.477;
     m_renderer->GetActiveCamera()->SetPosition(m_camPositionX, m_camPositionY, m_camPositionZ);
-    m_renderer->GetActiveCamera()->SetFocalPoint(0.0, 0.0, 0.0);
-    m_renderer->GetActiveCamera()->SetViewUp(0.0, 0.0, 1.0);
+    m_renderer->GetActiveCamera()->SetFocalPoint(0., 0., 0.);
+    m_renderer->GetActiveCamera()->SetViewUp(0., 0., 1.);
     m_renderer->ResetCameraClippingRange();
 }
 

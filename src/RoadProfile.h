@@ -6,7 +6,7 @@
 
 #include "Car.h"
 #include "Constants.h"
-#include "Math.h"
+#include "MathLibrary.h"
 
 namespace EVAA {
 
@@ -73,7 +73,7 @@ public:
 
         // Position
         Position = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT);
-        mkl<T>::copy(Constants::DIM, Pos, 1, Position, 1);
+        Math::copy(Constants::DIM, Pos, 1, Position, 1);
 
         Radius = Rad;
 
@@ -94,13 +94,13 @@ public:
         mkl_free(dist_car_center);
     }
 
-    void get_Position(T* Pos) { mkl<T>::copy(Constants::DIM, Position, 1, pos, 1); }
+    void get_Position(T* Pos) { Math::copy(Constants::DIM, Position, 1, pos, 1); }
 
     inline T get_Radius() const { return Radius; }
 
     inline void set_Radius(const T& Rad) { Radius = rad; }
 
-    void set_Position(const T* Pos) { mkl<T>::copy(Constants::DIM, pos, 1, Position, 1); }
+    void set_Position(const T* Pos) { Math::copy(Constants::DIM, pos, 1, Position, 1); }
 
     /**
      * calculates the force in a body only with respect to its velocity, mass and Position
@@ -111,24 +111,24 @@ public:
      * \note the rotation is always around the origin!
      */
     void get_centrifugal_force(T* Fr, T* v, T& m, T* p) {
-        mkl<T>::copy(Constants::DIM, p, 1, Fr, 1);
+        Math::copy(Constants::DIM, p, 1, Fr, 1);
 
         Fr[2] = 0;  // path only in xy-plane
 
         // corresponds to the (inverse) Radius of the trajectory at the considered body
-        T inv_radius = 1.0 / mkl<T>::nrm2(Constants::DIM, p, 1);
+        T inv_radius = 1. / Math::nrm2(Constants::DIM, p, 1);
 
-        // Raffi: mkl<T>::scal(Constants::DIM, -inv_radius, fr, 1); - centripetal force
-        mkl<T>::scal(Constants::DIM, inv_radius, Fr, 1);  // centrifugal force
+        // Raffi: Math::scal(Constants::DIM, -inv_radius, fr, 1); - centripetal force
+        Math::scal(Constants::DIM, inv_radius, Fr, 1);  // centrifugal force
 
         Math::crossProduct_unitvecZ(Fr, velocity_direction);
 
-        // T velocity_magnitude = mkl<T>::dot(Constants::DIM, v, 1, velocity_direction, 1);
-        T velocity_magnitude = mkl<T>::nrm2(Constants::DIM, v, 1);
+        // T velocity_magnitude = Math::dot(Constants::DIM, v, 1, velocity_direction, 1);
+        T velocity_magnitude = Math::nrm2(Constants::DIM, v, 1);
 
         T force_magnitude = m * velocity_magnitude * velocity_magnitude * inv_radius;
 
-        mkl<T>::scal(Constants::DIM, force_magnitude, Fr, 1);
+        Math::scal(Constants::DIM, force_magnitude, Fr, 1);
     }
 
     /**
@@ -137,12 +137,12 @@ public:
     void get_centrifugal_force_ALE(T* Fr, T* v, T& m, T* p) {
         // REFACTOR TO GENERAL DIRECTIONS * Adapted for the 2D now!!!
 
-        mkl<T>::copy(Constants::DIM - 1, p, 1, Fr, 1);
+        Math::copy(Constants::DIM - 1, p, 1, Fr, 1);
 
         // corresponds to the (inverse) Radius of the trajectory at the considered body
-        T inv_radius = 1.0 / mkl<T>::nrm2(Constants::DIM - 1, p, 1);
+        T inv_radius = 1. / Math::nrm2(Constants::DIM - 1, p, 1);
 
-        mkl<T>::scal(Constants::DIM - 1, inv_radius, Fr, 1);  // centrifugal force
+        Math::scal(Constants::DIM - 1, inv_radius, Fr, 1);  // centrifugal force
 
         // Math::crossProduct(Fr, unit_y_vector, velocity_direction);
         // * REFACTOR TO GENERAL DIRECTIONS * this is only for z direction
@@ -150,12 +150,12 @@ public:
         velocity_direction[1] = -Fr[0];
 
         // const MKL_INT int_ddot = DIM - 1;
-        // T velocity_magnitude = mkl<T>::dot(int_ddot, v, 1, velocity_direction, 1);
-        T velocity_magnitude = mkl<T>::nrm2(Constants::DIM - 1, v, 1);
+        // T velocity_magnitude = Math::dot(int_ddot, v, 1, velocity_direction, 1);
+        T velocity_magnitude = Math::nrm2(Constants::DIM - 1, v, 1);
 
         T force_magnitude = m * velocity_magnitude * velocity_magnitude * inv_radius;
 
-        mkl<T>::scal(Constants::DIM - 1, force_magnitude, Fr, 1);
+        Math::scal(Constants::DIM - 1, force_magnitude, Fr, 1);
     }
 
     /**
@@ -198,9 +198,9 @@ public:
 
         // compute centripetal part of the global normal force
         // n = f_cg + f_w1 + f_t1 + f_w2 + f_t2 + f_w3 + f_t3 + f_w4 + f_t4
-        mkl<T>::copy(Constants::DIM, F_vec, 1, Normal_ext, 1);
+        Math::copy(Constants::DIM, F_vec, 1, Normal_ext, 1);
         for (auto i = 1; i < Constants::VEC_DIM; ++i) {
-            mkl<T>::vAdd(Constants::DIM, Normal_ext, &F_vec[Constants::DIM * i], Normal_ext);
+            Math::vAdd(Constants::DIM, Normal_ext, &F_vec[Constants::DIM * i], Normal_ext);
         }
     }
 
@@ -264,8 +264,8 @@ public:
         radial_vector[1] = Car1->Position_vec[1] - this->Position[1];
         radial_vector[2] = 0;
 
-        T radius = mkl<T>::nrm2(Constants::DIM, radial_vector, 1);
-        if (abs(radius - this->Radius) > 0.01)
+        T radius = Math::nrm2(Constants::DIM, radial_vector, 1);
+        if (abs(radius - this->Radius) > 0.1)
             std::cout
                 << "Warning! the initial position of the car is not on the trajectory provided in "
                    "\the circular path. \n The expected radius is "
@@ -277,14 +277,14 @@ public:
 
         T inv_radius = 1. / radius;
 
-        mkl<T>::scal(Constants::DIM, inv_radius, radial_vector, 1);
+        Math::scal(Constants::DIM, inv_radius, radial_vector, 1);
         Math::crossProduct_unitvecZ(radial_vector, tangential_dir);
-        T magnitude = mkl<T>::dot(Constants::DIM, Car1->Velocity_vec, 1, tangential_dir, 1);
-        mkl<T>::copy(Constants::DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
-        mkl<T>::scal(Constants::DIM, magnitude, Car1->Velocity_vec, 1);
-        mkl<T>::scal(Constants::DIM, radius, radial_vector, 1);
+        T magnitude = Math::dot(Constants::DIM, Car1->Velocity_vec, 1, tangential_dir, 1);
+        Math::copy(Constants::DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
+        Math::scal(Constants::DIM, magnitude, Car1->Velocity_vec, 1);
+        Math::scal(Constants::DIM, radius, radial_vector, 1);
         Math::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
-        mkl<T>::scal(Constants::DIM, inv_radius * inv_radius, Car1->w_CG, 1);
+        Math::scal(Constants::DIM, inv_radius * inv_radius, Car1->w_CG, 1);
 
         mkl_free(tangential_dir);
         mkl_free(radial_vector);

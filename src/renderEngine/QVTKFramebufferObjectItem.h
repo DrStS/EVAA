@@ -123,7 +123,7 @@ private:
     std::shared_ptr<QWheelEvent> m_lastMouseWheel;
 
     int m_modelsRepresentationOption = 2;
-    double m_modelsOpacity = 1.0;
+    double m_modelsOpacity = 1.;
     bool m_gouraudInterpolation = false;
     int m_modelColorR = 3;
     int m_modelColorG = 169;

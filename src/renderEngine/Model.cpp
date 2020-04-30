@@ -60,7 +60,7 @@ Model::Model(vtkSmartPointer<vtkPolyData> modelData) : m_modelData{modelData} {
     m_modelActor->GetProperty()->SetSpecular(0.3);
     this->setColor(m_defaultModelColor);
 
-    m_modelActor->SetPosition(0.0, 0.0, 0.0);
+    m_modelActor->SetPosition(0., 0., 0.);
 }
 
 const vtkSmartPointer<vtkActor> &Model::getModelActor() const { return m_modelActor; }

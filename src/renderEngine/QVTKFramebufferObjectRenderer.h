@@ -114,8 +114,8 @@ private:
     vtkSmartPointer<vtkActor> m_selectedActor = nullptr;
     bool m_isModelSelected = false;
 
-    double m_selectedModelPositionX = 0.0;
-    double m_selectedModelPositionY = 0.0;
+    double m_selectedModelPositionX = 0.;
+    double m_selectedModelPositionY = 0.;
 
     std::shared_ptr<QMouseEvent> m_mouseLeftButton = nullptr;
     std::shared_ptr<QMouseEvent> m_mouseEvent = nullptr;
@@ -127,9 +127,9 @@ private:
     vtkSmartPointer<vtkActor> m_platformModelActor;
     vtkSmartPointer<vtkActor> m_platformGridActor;
 
-    double m_platformWidth = 200.0;
-    double m_platformDepth = 200.0;
-    double m_platformHeight = 200.0;
+    double m_platformWidth = 200.;
+    double m_platformDepth = 200.;
+    double m_platformHeight = 200.;
     double m_platformThickness = 2.0;
     double m_gridBottomHeight = 0.15;
     uint16_t m_gridSize = 10;
@@ -138,12 +138,12 @@ private:
     double m_camPositionY;
     double m_camPositionZ;
 
-    double m_clickPositionZ = 0.0;
+    double m_clickPositionZ = 0.;
 
     bool m_firstRender = true;
 
     int m_modelsRepresentationOption = 0;
-    double m_modelsOpacity = 1.0;
+    double m_modelsOpacity = 1.;
     bool m_modelsGouraudInterpolation = false;
 };
 

@@ -77,51 +77,52 @@ int main(int argc, char **argv) {
         EVAA::EVAAComputeEngine *myComputeEngine =
             new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
     }
-    EVA::EVAAComputeEngine *myComputeEngine =
-        new EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml",
-                              "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
+    EVAA::EVAAComputeEngine *myComputeEngine =
+        new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml",
+                                    "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
     myComputeEngine->printInfo();
 
+    auto &timer1 = EVAA::anaysisTimer01;
 #if MIGHT_BE_USEFUL
-    anaysisTimer01.start();
+    timer1.start();
     myComputeEngine->computeMKL11DOF();
-    anaysisTimer01.stop();
+    timer1.stop();
     std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec()
               << " ms to run the solver(MKL) .\n\n\n " << std::endl;
-    anaysisTimer01.start();
+    timer1.start();
     myComputeEngine->computeEigen11DOF();
-    anaysisTimer01.stop();
+    timer1.stop();
     std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec()
               << " ms to run the solver(Eigen) .\n\n\n " << std::endl;
-    anaysisTimer01.start();
+    timer1.start();
     myComputeEngine->computeBlaze11DOF();
-    anaysisTimer01.stop();
+    timer1.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
               << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
 #endif
 
-    anaysisTimer01.start();
+    timer1.start();
     // myComputeEngine->computeMKLTwoTrackModel();
-    anaysisTimer01.stop();
-    std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
+    timer1.stop();
+    std::cout << "It took " << timer1.getDurationMilliSec()
               << " ms to run the solver(computeMKLlinear11dof).\n\n\n"
               << std::endl;
-    anaysisTimer01.start();
+    timer1.start();
     // myComputeEngine->computeALE();
-    anaysisTimer01.stop();
-    std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
+    timer1.stop();
+    std::cout << "It took " << timer1.getDurationMilliSec()
               << " ms to run the solver(computeALE).\n\n\n"
               << std::endl;
-    anaysisTimer01.start();
+    timer1.start();
     // myComputeEngine->computeMBD();
-    anaysisTimer01.stop();
-    std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
+    timer1.stop();
+    std::cout << "It took " << timer1.getDurationMilliSec()
               << " ms to run the solver(computeMBD).\n\n\n"
               << std::endl;
-    anaysisTimer01.start();
+    timer1.start();
     // myComputeEngine->compare_ALE_MBD();
-    anaysisTimer01.stop();
-    std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
+    timer1.stop();
+    std::cout << "It took " << timer1.getDurationMilliSec()
               << " ms to run the solver(Compare).\n\n\n"
               << std::endl;
     myComputeEngine->clean();
@@ -130,10 +131,10 @@ int main(int argc, char **argv) {
     myComputeEngine->clean();
     */
 
-    anaysisTimer01.start();
+    timer1.start();
     myComputeEngine->computeMKLTwoTrackModelBE();
-    anaysisTimer01.stop();
-    std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
+    timer1.stop();
+    std::cout << "It took " << timer1.getDurationMilliSec()
               << " ms to run the solver 11dofBE.\n\n\n"
               << std::endl;
 
