@@ -411,7 +411,7 @@ public:
      * \param iteration index of the current time iteration
      * \return vector the 2D vector to be written too [GC:XY]
      */
-    void getLagrangianAccelerations(size_t iteration, T* vector) {
+    void getLagrangianAccelerationsCenterOfGravity(size_t iteration, T* vector) {
         vector[0] = _roadAccelerationX[i];
         vector[1] = _roadAccelerationY[i];
     }
@@ -423,9 +423,45 @@ public:
 
     /**
      * \param iteration index of the current time iteration
+     * \return vector the 2D vector to be written too [leg:XY]
+     */
+    void getLagrangianAccelerationsFrontLeft(size_t iteration, T* vector) {
+        vector[0] = _tyreAccelerationsX_fl[i];
+        vector[1] = _tyreAccelerationsY_fl[i];
+    }
+
+    /**
+     * \param iteration index of the current time iteration
+     * \return vector the 2D vector to be written too [leg:XY]
+     */
+    void getLagrangianAccelerationsFrontRight(size_t iteration, T* vector) {
+        vector[0] = _tyreAccelerationsX_fr[i];
+        vector[1] = _tyreAccelerationsY_fr[i];
+    }
+
+    /**
+     * \param iteration index of the current time iteration
+     * \return vector the 2D vector to be written too [leg:XY]
+     */
+    void getLagrangianAccelerationsRearLeft(size_t iteration, T* vector) {
+        vector[0] = _tyreAccelerationsX_rl[i];
+        vector[1] = _tyreAccelerationsY_rl[i];
+    }
+
+    /**
+     * \param iteration index of the current time iteration
+     * \return vector the 2D vector to be written too [leg:XY]
+     */
+    void getLagrangianAccelerationsRearRight(size_t iteration, T* vector) {
+        vector[0] = _tyreAccelerationsX_rr[i];
+        vector[1] = _tyreAccelerationsY_rr[i];
+    }
+
+    /**
+     * \param iteration index of the current time iteration
      * \return vector the 2D vector to be written too [GC:XY]
      */
-    void getLagrangianPosition(size_t iteration, T* vector) {
+    void getLagrangianPositionCenterOfGravity(size_t iteration, T* vector) {
         vector[0] = _roadPointsX[i];
         vector[1] = _roadPointsY[i];
     }
