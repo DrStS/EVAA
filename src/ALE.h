@@ -71,7 +71,7 @@ public:
         u_sol = Math::malloc<T>(sol_size * (Constants::VEC_DIM * Constants::DIM));
     }
 
-    ~ALE() { Math::free(u_sol); }
+    ~ALE() { Math::free<T>(u_sol); }
 
     /**
      * Applies the Verlet_Stoermer algorithm to update the global XY position of the car and its Z
@@ -97,7 +97,7 @@ public:
         Load_module_obj->update_force(t, force_vector, new_centripetal_force);
         Load_module_obj->update_torque(t, new_torque, force_vector);
 
-        Math::scal(2, -1., new_centripetal_force, 1);
+        Math::scal<T>(2, -1., new_centripetal_force, 1);
 
         // 1. Update global X,Y velocities
         Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
@@ -162,8 +162,8 @@ public:
             Load_module_obj->update_force(t, force_vector, centripetal_force);
             Load_module_obj->update_torque(t, torque, force_vector);
             // convert centrifugal force to centripetal (only for x, y direction)
-            Math::scal(centripetal_force_dimensions - 1, -1., centripetal_force, 1);
-            if (iter == 100) Math::write_vector(centripetal_force, centripetal_force_dimensions);
+            Math::scal<T>(centripetal_force_dimensions - 1, -1., centripetal_force, 1);
+            if (iter == 100) Math::write_vector<T>(centripetal_force, centripetal_force_dimensions);
             global_frame_solver(t);
 
             // translate 27 force vector + 3 torques into 11DOF
@@ -183,21 +183,21 @@ public:
             iter++;
         }
 
-        Math::copy(Constants::VEC_DIM * Constants::DIM,
-                   u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect,
-                   1);
+        Math::copy<T>(Constants::VEC_DIM * Constants::DIM,
+                      u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect,
+                      1);
         Car_obj->combine_results();
 
-        Math::free(time_vec);
+        Math::free<T>(time_vec);
 
-        Math::free(force_vector);
-        Math::free(centripetal_force);
-        Math::free(new_centripetal_force);
-        Math::free(Delta_x_vec);
-        Math::free(force_vector_11dof);
+        Math::free<T>(force_vector);
+        Math::free<T>(centripetal_force);
+        Math::free<T>(new_centripetal_force);
+        Math::free<T>(Delta_x_vec);
+        Math::free<T>(force_vector_11dof);
 
-        Math::free(torque);
-        Math::free(new_torque);
+        Math::free<T>(torque);
+        Math::free<T>(new_torque);
     }
 
     /**

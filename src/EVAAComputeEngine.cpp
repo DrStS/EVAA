@@ -58,7 +58,8 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
 void EVAAComputeEngine::printInfo(void) {
     Math::printMKLInfo();
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
-    std::cout << "\n\nCalculate the solution after "
+    std::cout << "BCP sizeof: " << sizeof(Constants::floatEVAA)
+              << "\n\nCalculate the solution after "
               << db.getNumberOfTimeIterations() * db.getTimeStepSize()
               << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations()
               << " iterations\n\n\n";
@@ -68,45 +69,45 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
 
     // K stiffness
-    double k_11 = db.getBodyStiffnessFrontLeft();
-    double k_12 = db.getTyreStiffnessFrontLeft();
-    double k_21 = db.getBodyStiffnessFrontRight();
-    double k_22 = db.getTyreStiffnessFrontRight();
-    double k_31 = db.getBodyStiffnessRearLeft();
-    double k_32 = db.getTyreStiffnessRearLeft();
-    double k_41 = db.getBodyStiffnessRearRight();
-    double k_42 = db.getTyreStiffnessRearRight();
-    double l_1 = db.getLatidudalLegPositionFrontLeft();
-    double l_2 = db.getLatidudalLegPositionRearLeft();
-    double l_3 = db.getLongitudalLegPositionFrontLeft();
-    double l_4 = db.getLongitudalLegPositionRearLeft();
+    Constants::floatEVAA k_11 = db.getBodyStiffnessFrontLeft();
+    Constants::floatEVAA k_12 = db.getTyreStiffnessFrontLeft();
+    Constants::floatEVAA k_21 = db.getBodyStiffnessFrontRight();
+    Constants::floatEVAA k_22 = db.getTyreStiffnessFrontRight();
+    Constants::floatEVAA k_31 = db.getBodyStiffnessRearLeft();
+    Constants::floatEVAA k_32 = db.getTyreStiffnessRearLeft();
+    Constants::floatEVAA k_41 = db.getBodyStiffnessRearRight();
+    Constants::floatEVAA k_42 = db.getTyreStiffnessRearRight();
+    Constants::floatEVAA l_1 = db.getLatidudalLegPositionFrontLeft();
+    Constants::floatEVAA l_2 = db.getLatidudalLegPositionRearLeft();
+    Constants::floatEVAA l_3 = db.getLongitudalLegPositionFrontLeft();
+    Constants::floatEVAA l_4 = db.getLongitudalLegPositionRearLeft();
 
     // D - damping matrix
-    double d_11 = db.getBodyDampingFrontLeft();
-    double d_12 = db.getTyreDampingFrontLeft();
-    double d_21 = db.getBodyDampingFrontRight();
-    double d_22 = db.getTyreDampingFrontRight();
-    double d_31 = db.getBodyDampingRearLeft();
-    double d_32 = db.getTyreDampingRearLeft();
-    double d_41 = db.getBodyDampingRearRight();
-    double d_42 = db.getTyreDampingRearRight();
-    double d_l1 = 0.1 * l_1;
-    double d_l2 = 0.1 * l_2;
-    double d_l3 = 0.1 * l_3;
-    double d_l4 = 0.1 * l_4;
+    Constants::floatEVAA d_11 = db.getBodyDampingFrontLeft();
+    Constants::floatEVAA d_12 = db.getTyreDampingFrontLeft();
+    Constants::floatEVAA d_21 = db.getBodyDampingFrontRight();
+    Constants::floatEVAA d_22 = db.getTyreDampingFrontRight();
+    Constants::floatEVAA d_31 = db.getBodyDampingRearLeft();
+    Constants::floatEVAA d_32 = db.getTyreDampingRearLeft();
+    Constants::floatEVAA d_41 = db.getBodyDampingRearRight();
+    Constants::floatEVAA d_42 = db.getTyreDampingRearRight();
+    Constants::floatEVAA d_l1 = 0.1 * l_1;
+    Constants::floatEVAA d_l2 = 0.1 * l_2;
+    Constants::floatEVAA d_l3 = 0.1 * l_3;
+    Constants::floatEVAA d_l4 = 0.1 * l_4;
 
     // M - mass matrix
-    double m_1 = db.getBodyMass();
-    double m_2 = db.getMomentOfInertiaXX();
-    double m_3 = db.getMomentOfInertiaYY();
-    double m_4 = db.getWheelMassFrontLeft();
-    double m_5 = db.getTyreMassFrontLeft();
-    double m_6 = db.getWheelMassFrontRight();
-    double m_7 = db.getTyreMassFrontRight();
-    double m_8 = db.getWheelMassRearLeft();
-    double m_9 = db.getTyreMassRearLeft();
-    double m_10 = db.getWheelMassRearRight();
-    double m_11 = db.getTyreMassRearRight();
+    Constants::floatEVAA m_1 = db.getBodyMass();
+    Constants::floatEVAA m_2 = db.getMomentOfInertiaXX();
+    Constants::floatEVAA m_3 = db.getMomentOfInertiaYY();
+    Constants::floatEVAA m_4 = db.getWheelMassFrontLeft();
+    Constants::floatEVAA m_5 = db.getTyreMassFrontLeft();
+    Constants::floatEVAA m_6 = db.getWheelMassFrontRight();
+    Constants::floatEVAA m_7 = db.getTyreMassFrontRight();
+    Constants::floatEVAA m_8 = db.getWheelMassRearLeft();
+    Constants::floatEVAA m_9 = db.getTyreMassRearLeft();
+    Constants::floatEVAA m_10 = db.getWheelMassRearRight();
+    Constants::floatEVAA m_11 = db.getTyreMassRearRight();
 
     MatrixXd A(Constants::DOF, Constants::DOF);
     MatrixXd B(Constants::DOF, Constants::DOF);
@@ -136,17 +137,16 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
     // Define the stiffness matrix
     K << k_11 + k_21 + k_31 + k_41, -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2,
-        -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4, -k_11, 0., -k_21, 0., -k_31, 0., -k_41,
-        0., 0., l_1 * l_1 * k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41,
-        l_1 * l_3 * k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41, l_1 * k_11, 0.,
-        -l_2 * k_21, 0., -l_2 * k_31, 0., l_1 * k_41, 0., 0., 0.,
-        l_3 * l_3 * k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41, l_3 * k_11, 0.,
-        l_3 * k_21, 0., -l_4 * k_31, 0., -l_4 * k_41, 0., 0., 0., 0., k_11 + k_12, -k_12, 0., 0.,
-        0., 0., 0., 0., 0., 0., 0., 0., k_12, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-        k_21 + k_22, -k_22, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., k_22, 0., 0., 0., 0., 0., 0.,
-        0., 0., 0., 0., 0., k_31 + k_32, -k_32, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., k_32, 0.,
-        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., k_41 + k_42, -k_42, 0., 0., 0., 0., 0., 0., 0., 0.,
-        0., 0., k_42;
+        -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4, -k_11, 0, -k_21, 0, -k_31, 0, -k_41, 0,
+        0, l_1 * l_1 * k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41,
+        l_1 * l_3 * k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41, l_1 * k_11, 0,
+        -l_2 * k_21, 0, -l_2 * k_31, 0, l_1 * k_41, 0, 0, 0,
+        l_3 * l_3 * k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41, l_3 * k_11, 0,
+        l_3 * k_21, 0, -l_4 * k_31, 0, -l_4 * k_41, 0, 0, 0, 0, k_11 + k_12, -k_12, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, k_12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_21 + k_22, -k_22, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, k_22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_31 + k_32, -k_32, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, k_32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_41 + k_42, -k_42, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, k_42;
     MatrixXd K_diag(Constants::DOF, Constants::DOF);
     K_aux = K + K.transpose();
     K_aux.diagonal() -= K.diagonal();
@@ -154,17 +154,16 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
     // Define the damping matrix
     D << d_11 + d_21 + d_31 + d_41, -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2,
-        -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4, -d_11, 0., -d_21, 0., -d_31, 0., -d_41,
-        0., 0., l_1 * l_1 * d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41,
-        l_1 * l_3 * d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41, l_1 * d_11, 0.,
-        -l_2 * d_21, 0., -l_2 * d_31, 0., l_1 * d_41, 0., 0., 0.,
-        l_3 * l_3 * d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41, l_3 * d_11, 0.,
-        l_3 * d_21, 0., -l_4 * d_31, 0., -l_4 * d_41, 0., 0., 0., 0., d_11 + d_12, -d_12, 0., 0.,
-        0., 0., 0., 0., 0., 0., 0., 0., d_12, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-        d_21 + d_22, -d_22, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., d_22, 0., 0., 0., 0., 0., 0.,
-        0., 0., 0., 0., 0., d_31 + d_32, -d_32, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., d_32, 0.,
-        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., d_41 + d_42, -d_42, 0., 0., 0., 0., 0., 0., 0., 0.,
-        0., 0., d_42;
+        -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4, -d_11, 0, -d_21, 0, -d_31, 0, -d_41, 0,
+        0, l_1 * l_1 * d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41,
+        l_1 * l_3 * d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41, l_1 * d_11, 0,
+        -l_2 * d_21, 0, -l_2 * d_31, 0, l_1 * d_41, 0, 0, 0,
+        l_3 * l_3 * d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41, l_3 * d_11, 0,
+        l_3 * d_21, 0, -l_4 * d_31, 0, -l_4 * d_41, 0, 0, 0, 0, d_11 + d_12, -d_12, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, d_12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_21 + d_22, -d_22, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, d_22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_31 + d_32, -d_32, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, d_32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_41 + d_42, -d_42, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, d_42;
     MatrixXd D_diag(Constants::DOF, Constants::DOF);
     D_aux = D + D.transpose();
     D_aux.diagonal() -= D.diagonal();
@@ -179,7 +178,7 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
 
     int numTimeSteps = db.getNumberOfTimeIterations();
     // time step size
-    double h = db.getTimeStepSize();
+    Constants::floatEVAA h = db.getTimeStepSize();
     std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
     /// Build dynamic stiffness matrix
@@ -219,48 +218,48 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
 
     // K stiffness
-    double k_11 = db.getBodyStiffnessFrontLeft();
-    double k_12 = db.getTyreStiffnessFrontLeft();
-    double k_21 = db.getBodyStiffnessFrontRight();
-    double k_22 = db.getTyreStiffnessFrontRight();
-    double k_31 = db.getBodyStiffnessRearLeft();
-    double k_32 = db.getTyreStiffnessRearLeft();
-    double k_41 = db.getBodyStiffnessRearRight();
-    double k_42 = db.getTyreStiffnessRearRight();
-    double l_1 = db.getLatidudalLegPositionFrontLeft();
-    double l_2 = db.getLatidudalLegPositionRearLeft();
-    double l_3 = db.getLongitudalLegPositionFrontLeft();
-    double l_4 = db.getLongitudalLegPositionRearLeft();
+    Constants::floatEVAA k_11 = db.getBodyStiffnessFrontLeft();
+    Constants::floatEVAA k_12 = db.getTyreStiffnessFrontLeft();
+    Constants::floatEVAA k_21 = db.getBodyStiffnessFrontRight();
+    Constants::floatEVAA k_22 = db.getTyreStiffnessFrontRight();
+    Constants::floatEVAA k_31 = db.getBodyStiffnessRearLeft();
+    Constants::floatEVAA k_32 = db.getTyreStiffnessRearLeft();
+    Constants::floatEVAA k_41 = db.getBodyStiffnessRearRight();
+    Constants::floatEVAA k_42 = db.getTyreStiffnessRearRight();
+    Constants::floatEVAA l_1 = db.getLatidudalLegPositionFrontLeft();
+    Constants::floatEVAA l_2 = db.getLatidudalLegPositionRearLeft();
+    Constants::floatEVAA l_3 = db.getLongitudalLegPositionFrontLeft();
+    Constants::floatEVAA l_4 = db.getLongitudalLegPositionRearLeft();
 
     // D - damping matrix
-    double d_11 = db.getBodyDampingFrontLeft();
-    double d_12 = db.getTyreDampingFrontLeft();
-    double d_21 = db.getBodyDampingFrontRight();
-    double d_22 = db.getTyreDampingFrontRight();
-    double d_31 = db.getBodyDampingRearLeft();
-    double d_32 = db.getTyreDampingRearLeft();
-    double d_41 = db.getBodyDampingRearRight();
-    double d_42 = db.getTyreDampingRearRight();
-    double d_l1 = 0.1 * l_1;
-    double d_l2 = 0.1 * l_2;
-    double d_l3 = 0.1 * l_3;
-    double d_l4 = 0.1 * l_4;
+    Constants::floatEVAA d_11 = db.getBodyDampingFrontLeft();
+    Constants::floatEVAA d_12 = db.getTyreDampingFrontLeft();
+    Constants::floatEVAA d_21 = db.getBodyDampingFrontRight();
+    Constants::floatEVAA d_22 = db.getTyreDampingFrontRight();
+    Constants::floatEVAA d_31 = db.getBodyDampingRearLeft();
+    Constants::floatEVAA d_32 = db.getTyreDampingRearLeft();
+    Constants::floatEVAA d_41 = db.getBodyDampingRearRight();
+    Constants::floatEVAA d_42 = db.getTyreDampingRearRight();
+    Constants::floatEVAA d_l1 = 0.1 * l_1;
+    Constants::floatEVAA d_l2 = 0.1 * l_2;
+    Constants::floatEVAA d_l3 = 0.1 * l_3;
+    Constants::floatEVAA d_l4 = 0.1 * l_4;
 
     // M - mass matrix
-    double m_1 = db.getBodyMass();
-    double m_2 = db.getMomentOfInertiaXX();
-    double m_3 = db.getMomentOfInertiaYY();
-    double m_4 = db.getWheelMassFrontLeft();
-    double m_5 = db.getTyreMassFrontLeft();
-    double m_6 = db.getWheelMassFrontRight();
-    double m_7 = db.getTyreMassFrontRight();
-    double m_8 = db.getWheelMassRearLeft();
-    double m_9 = db.getTyreMassRearLeft();
-    double m_10 = db.getWheelMassRearRight();
-    double m_11 = db.getTyreMassRearRight();
+    Constants::floatEVAA m_1 = db.getBodyMass();
+    Constants::floatEVAA m_2 = db.getMomentOfInertiaXX();
+    Constants::floatEVAA m_3 = db.getMomentOfInertiaYY();
+    Constants::floatEVAA m_4 = db.getWheelMassFrontLeft();
+    Constants::floatEVAA m_5 = db.getTyreMassFrontLeft();
+    Constants::floatEVAA m_6 = db.getWheelMassFrontRight();
+    Constants::floatEVAA m_7 = db.getTyreMassFrontRight();
+    Constants::floatEVAA m_8 = db.getWheelMassRearLeft();
+    Constants::floatEVAA m_9 = db.getTyreMassRearLeft();
+    Constants::floatEVAA m_10 = db.getWheelMassRearRight();
+    Constants::floatEVAA m_11 = db.getTyreMassRearRight();
 
     // Using symmetric matrix enforce the symmetry and is safer
-    SymmetricMatrix<DynamicMatrix<double>, rowMajor> K(Constants::DOF);
+    SymmetricMatrix<DynamicMatrix<Constants::floatEVAA>, rowMajor> K(Constants::DOF);
 
     K(0, 0) = k_11 + k_21 + k_31 + k_41;
     K(0, 1) = -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2;
@@ -293,7 +292,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     K(9, 10) = -k_42;
     K(10, 10) = k_42;
 
-    SymmetricMatrix<DynamicMatrix<double>, rowMajor> D(Constants::DOF);
+    SymmetricMatrix<DynamicMatrix<Constants::floatEVAA>, rowMajor> D(Constants::DOF);
     D(0, 0) = d_11 + d_21 + d_31 + d_41;
     D(0, 1) = -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2;
     D(0, 2) = -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4;
@@ -325,7 +324,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     D(9, 10) = -d_42;
     D(10, 10) = d_42;
 
-    SymmetricMatrix<DynamicMatrix<double>, rowMajor> M(Constants::DOF);
+    SymmetricMatrix<DynamicMatrix<Constants::floatEVAA>, rowMajor> M(Constants::DOF);
     M(0, 0) = m_1;
     M(1, 1) = m_2;
     M(2, 2) = m_3;
@@ -339,17 +338,17 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     M(10, 10) = m_11;
 
     // Define the solution vectors
-    DynamicVector<double, columnVector> u_n_p_1(
-        Constants::DOF, (double)0.);  // initialize vector of dimension 11 and null elements
-    DynamicVector<double, columnVector> u_n(
-        Constants::DOF, (double)0.);  // initialize vector of dimension 11 and null elements
-    DynamicVector<double, columnVector> u_n_m_1(
-        Constants::DOF, (double)0.);  // initialize vector of dimension 11 and null elements
+    DynamicVector<Constants::floatEVAA, columnVector> u_n_p_1(
+        Constants::DOF, 0);  // initialize vector of dimension 11 and null elements
+    DynamicVector<Constants::floatEVAA, columnVector> u_n(
+        Constants::DOF, 0);  // initialize vector of dimension 11 and null elements
+    DynamicVector<Constants::floatEVAA, columnVector> u_n_m_1(
+        Constants::DOF, 0);  // initialize vector of dimension 11 and null elements
 
     // Perform the iterations
     int numTimeSteps = db.getNumberOfTimeIterations();
     // time step size
-    double h = db.getTimeStepSize();
+    Constants::floatEVAA h = db.getTimeStepSize();
 
     std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
@@ -359,17 +358,17 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 
     /// Build dynamic stiffness matrix
     // A = (1./(h*h))*M + (1./h)*D + K
-    DynamicMatrix<double, rowMajor> A(Constants::DOF, Constants::DOF);
+    DynamicMatrix<Constants::floatEVAA, rowMajor> A(Constants::DOF, Constants::DOF);
     A = 1. / (h * h) * M + 1. / h * D + K;
 
     /// Build rhs for BE integrator
     // B = (2.0 / (h*h))*M + 1. / h * D + B
-    DynamicMatrix<double, rowMajor> B(Constants::DOF, Constants::DOF);
+    DynamicMatrix<Constants::floatEVAA, rowMajor> B(Constants::DOF, Constants::DOF);
     B = 2. / (h * h) * M + 1. / h * D;
 
     // LU Decomposition
     DynamicVector<int, columnVector> ipiv(Constants::DOF);  // Pivoting indices
-    DynamicMatrix<double, rowMajor> A_LU(A);                // Temporary matrix to be decomposed
+    DynamicMatrix<Constants::floatEVAA, rowMajor> A_LU(A);  // Temporary matrix to be decomposed
 
     getrf(A_LU, ipiv.data());
     M *= -1. / (h * h);
@@ -389,59 +388,60 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 }
 
 void EVAAComputeEngine::computeMKL11DOF(void) {
+#if TODO_TEMPLATE_JIT_DONE
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
 
     // K stiffness
-    double k_11 = db.getBodyStiffnessFrontLeft();
-    double k_12 = db.getTyreStiffnessFrontLeft();
-    double k_21 = db.getBodyStiffnessFrontRight();
-    double k_22 = db.getTyreStiffnessFrontRight();
-    double k_31 = db.getBodyStiffnessRearLeft();
-    double k_32 = db.getTyreStiffnessRearLeft();
-    double k_41 = db.getBodyStiffnessRearRight();
-    double k_42 = db.getTyreStiffnessRearRight();
-    double l_1 = db.getLatidudalLegPositionFrontLeft();
-    double l_2 = db.getLatidudalLegPositionRearLeft();
-    double l_3 = db.getLongitudalLegPositionFrontLeft();
-    double l_4 = db.getLongitudalLegPositionRearLeft();
+    Constants::floatEVAA k_11 = db.getBodyStiffnessFrontLeft();
+    Constants::floatEVAA k_12 = db.getTyreStiffnessFrontLeft();
+    Constants::floatEVAA k_21 = db.getBodyStiffnessFrontRight();
+    Constants::floatEVAA k_22 = db.getTyreStiffnessFrontRight();
+    Constants::floatEVAA k_31 = db.getBodyStiffnessRearLeft();
+    Constants::floatEVAA k_32 = db.getTyreStiffnessRearLeft();
+    Constants::floatEVAA k_41 = db.getBodyStiffnessRearRight();
+    Constants::floatEVAA k_42 = db.getTyreStiffnessRearRight();
+    Constants::floatEVAA l_1 = db.getLatidudalLegPositionFrontLeft();
+    Constants::floatEVAA l_2 = db.getLatidudalLegPositionRearLeft();
+    Constants::floatEVAA l_3 = db.getLongitudalLegPositionFrontLeft();
+    Constants::floatEVAA l_4 = db.getLongitudalLegPositionRearLeft();
 
     // D - damping matrix
-    double d_11 = db.getBodyDampingFrontLeft();
-    double d_12 = db.getTyreDampingFrontLeft();
-    double d_21 = db.getBodyDampingFrontRight();
-    double d_22 = db.getTyreDampingFrontRight();
-    double d_31 = db.getBodyDampingRearLeft();
-    double d_32 = db.getTyreDampingRearLeft();
-    double d_41 = db.getBodyDampingRearRight();
-    double d_42 = db.getTyreDampingRearRight();
-    double d_l1 = 0.1 * l_1;
-    double d_l2 = 0.1 * l_2;
-    double d_l3 = 0.1 * l_3;
-    double d_l4 = 0.1 * l_4;
+    Constants::floatEVAA d_11 = db.getBodyDampingFrontLeft();
+    Constants::floatEVAA d_12 = db.getTyreDampingFrontLeft();
+    Constants::floatEVAA d_21 = db.getBodyDampingFrontRight();
+    Constants::floatEVAA d_22 = db.getTyreDampingFrontRight();
+    Constants::floatEVAA d_31 = db.getBodyDampingRearLeft();
+    Constants::floatEVAA d_32 = db.getTyreDampingRearLeft();
+    Constants::floatEVAA d_41 = db.getBodyDampingRearRight();
+    Constants::floatEVAA d_42 = db.getTyreDampingRearRight();
+    Constants::floatEVAA d_l1 = 0.1 * l_1;
+    Constants::floatEVAA d_l2 = 0.1 * l_2;
+    Constants::floatEVAA d_l3 = 0.1 * l_3;
+    Constants::floatEVAA d_l4 = 0.1 * l_4;
 
     // M - mass matrix
-    double m_1 = db.getBodyMass();
-    double m_2 = db.getMomentOfInertiaXX();
-    double m_3 = db.getMomentOfInertiaYY();
-    double m_4 = db.getWheelMassFrontLeft();
-    double m_5 = db.getTyreMassFrontLeft();
-    double m_6 = db.getWheelMassFrontRight();
-    double m_7 = db.getTyreMassFrontRight();
-    double m_8 = db.getWheelMassRearLeft();
-    double m_9 = db.getTyreMassRearLeft();
-    double m_10 = db.getWheelMassRearRight();
-    double m_11 = db.getTyreMassRearRight();
+    Constants::floatEVAA m_1 = db.getBodyMass();
+    Constants::floatEVAA m_2 = db.getMomentOfInertiaXX();
+    Constants::floatEVAA m_3 = db.getMomentOfInertiaYY();
+    Constants::floatEVAA m_4 = db.getWheelMassFrontLeft();
+    Constants::floatEVAA m_5 = db.getTyreMassFrontLeft();
+    Constants::floatEVAA m_6 = db.getWheelMassFrontRight();
+    Constants::floatEVAA m_7 = db.getTyreMassFrontRight();
+    Constants::floatEVAA m_8 = db.getWheelMassRearLeft();
+    Constants::floatEVAA m_9 = db.getTyreMassRearLeft();
+    Constants::floatEVAA m_10 = db.getWheelMassRearRight();
+    Constants::floatEVAA m_11 = db.getTyreMassRearRight();
 
     // allocate matrices of zeros
-    double* B = Math::calloc<double>(Constants::DOFDOF);
-    double* M = Math::calloc<double>(Constants::DOFDOF);
-    double* D = Math::calloc<double>(Constants::DOFDOF);
-    double* K = Math::calloc<double>(Constants::DOFDOF);
+    Constants::floatEVAA* B = Math::calloc<Constants::floatEVAA>(Constants::DOFDOF);
+    Constants::floatEVAA* M = Math::calloc<Constants::floatEVAA>(Constants::DOFDOF);
+    Constants::floatEVAA* D = Math::calloc<Constants::floatEVAA>(Constants::DOFDOF);
+    Constants::floatEVAA* K = Math::calloc<Constants::floatEVAA>(Constants::DOFDOF);
 
-    double* u_n_p_1 = Math::calloc<double>(Constants::DOF);
-    double* u_n = Math::calloc<double>(Constants::DOF);
-    double* u_n_m_1 = Math::calloc<double>(Constants::DOF);
-    double* tmp = Math::calloc<double>(Constants::DOF);
+    Constants::floatEVAA* u_n_p_1 = Math::calloc<Constants::floatEVAA>(Constants::DOF);
+    Constants::floatEVAA* u_n = Math::calloc<Constants::floatEVAA>(Constants::DOF);
+    Constants::floatEVAA* u_n_m_1 = Math::calloc<Constants::floatEVAA>(Constants::DOF);
+    Constants::floatEVAA* tmp = Math::calloc<Constants::floatEVAA>(Constants::DOF);
 
     // Mass matrix initialization
     M[0] = m_1;
@@ -535,42 +535,42 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
     mkl_set_num_threads(8);
     int numTimeSteps = db.getNumberOfTimeIterations();
     // time step size
-    double h = db.getTimeStepSize();
+    Constants::floatEVAA h = db.getTimeStepSize();
     std::cout << "Time step h is: " << h << std::scientific << std::endl;
     /// Build dynamic stiffness matrix
     // gets written in rear vector
     // K' <- (1./(h*h))*M + K
-    //	Math::computeDenseVectorAddition(M.data(), K.data(), (1. / (h*h)), 9);
-    Math::axpy(121, (1. / (h * h)), M, 1, K, 1);
+    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(M.data(), K.data(), (1. / (h*h)), 9);
+    Math::axpy<Constants::floatEVAA>(121, (1. / (h * h)), M, 1, K, 1);
     // K <- (1./h)*D + K'
-    //	Math::computeDenseVectorAddition(D.data(), K.data(), (1. / h), 121);
-    Math::axpy(121, (1. / h), D, 1, K, 1);
+    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(D.data(), K.data(), (1. / h), 121);
+    Math::axpy<Constants::floatEVAA>(121, (1. / h), D, 1, K, 1);
     /// K holds now dynamic stiffness matrix  for BE integrator
     /// Build rhs for BE integrator
     // B' <-(2.0 / (h*h))*M + B
-    //	Math::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
-    Math::axpy(Constants::DOFDOF, (2.0 / (h * h)), M, 1, B, 1);
+    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(M.data(), B.data(), (2.0 / (h*h)),
+    // 121);
+    Math::axpy<Constants::floatEVAA>(Constants::DOFDOF, (2.0 / (h * h)), M, 1, B, 1);
 
     // B <-(1. / (h))*D + B'
-    //	Math::computeDenseVectorAddition(D.data(), B.data(), (1. / h), 121);
-    Math::axpy(Constants::DOFDOF, (1. / h), D, 1, B, 1);
+    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(D.data(), B.data(), (1. / h), 121);
+    Math::axpy<Constants::floatEVAA>(Constants::DOFDOF, (1. / h), D, 1, B, 1);
     // A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE
 
     std::vector<int> pivot(Constants::DOF);
     // LU Decomposition
-    //	Math::computeDenseSymLUFactorisation(11, K, pivot);
-    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, Constants::DOF, Constants::DOF, K, Constants::DOF,
-                   pivot.data());
+    //	Math::computeDenseSymLUFactorisation<Constants::floatEVAA>(11, K, pivot);
+    Math::getrf(LAPACK_ROW_MAJOR, Constants::DOF, Constants::DOF, K, Constants::DOF, pivot.data());
 
     // Time loop
-    double tmpScalar = (-1. / (h * h));
+    Constants::floatEVAA tmpScalar = (-1. / (h * h));
     for (int i = 0; i < Constants::DOF; ++i) M[(Constants::DOF + 1) * i] *= tmpScalar;
 
     void* jitter;
     // adds matrix matrix product to scalar matrix product
     std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS,
-                                      Constants::DOF, 1, Constants::DOF, 1., Constants::DOF,
-                                      Constants::DOF, 0., Constants::DOF)
+                                      Constants::DOF, 1, Constants::DOF, 1, Constants::DOF,
+                                      Constants::DOF, 0, Constants::DOF)
               << std::endl;
     dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
 
@@ -582,31 +582,34 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
         /* void cblas_dgemv(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE trans, const MKL_INT m,
                 const MKL_INT n, const double alpha, const double* a, const MKL_INT lda, const
            double* x, const MKL_INT incx, const double beta, double* y, const MKL_INT incy); */
-        Math::gemv(CblasColMajor, CblasNoTrans, 11, 11, 1., B, 11, u_n, 1, 0., u_n_p_1, 1);
+        Math::gemv<Constants::floatEVAA>(CblasColMajor, CblasNoTrans, 11, 11, 1, B, 11, u_n, 1, 0,
+                                         u_n_p_1, 1);
 #endif
 #ifdef USE_GEMM
-        // cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1., B, 11, u_n, 11,
-        // 0., u_n_p_1, 11);
+        // cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11,1, B, 11, u_n, 11,
+        // 0, u_n_p_1, 11);
         myDGEMMKernel(jitter, B, u_n, u_n_p_1);
 #endif
         // y: = alpha*A*x + beta*y
         // tmp = ((-1. / (h*h))*M) * u_n_m_1
 #ifndef USE_GEMM
-        Math::gemv(CblasColMajor, CblasNoTrans, Constants::DOF, Constants::DOF, (-1. / (h * h)), M,
-                   Constants::DOF, u_n_m_1, 1, 0., tmp, 1);
+        Math::gemv<Constants::floatEVAA>(CblasColMajor, CblasNoTrans, Constants::DOF,
+                                         Constants::DOF, (-1. / (h * h)), M, Constants::DOF,
+                                         u_n_m_1, 1, 0, tmp, 1);
 #endif
 #ifdef USE_GEMM
-        // cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1., M, 11, u_n_m_1,
-        // 11, 0., tmp, 11);
+        // cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11,1, M, 11, u_n_m_1,
+        // 11,0, tmp, 11);
         myDGEMMKernel(jitter, M, u_n_m_1, tmp);
 #endif
         // u_n_p_1 <- 1. tmp + u_n_p_1
-        //		Math::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.,
+        //		Math::computeDenseVectorAddition<Constants::floatEVAA>(tmp.data(),
+        // u_n_p_1.data(),1,
         // 11); void cblas_daxpy (const MKL_INT n, const double a, const double *x, const MKL_INT
         // incx, double *y, const MKL_INT incy);
-        Math::axpy(Constants::DOF, 1., tmp, 1, u_n_p_1, 1);
+        Math::axpy<Constants::floatEVAA>(Constants::DOF, 1, tmp, 1, u_n_p_1, 1);
         // Solve system
-        //		Math::computeDenseSymSolution(11, K, pivot, u_n_p_1);
+        //		Math::computeDenseSymSolution<Constants::floatEVAA>(11, K, pivot, u_n_p_1);
         // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans , lapack_int n , lapack_int
         // nrhs , const double * a , lapack_int lda , const lapack_int * ipiv , double * b ,
         // lapack_int ldb );
@@ -624,15 +627,16 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
     }
 
     // free the memory
-    Math::free(B);
-    Math::free(M);
-    Math::free(D);
-    Math::free(K);
+    Math::free<Constants::floatEVAA>(B);
+    Math::free<Constants::floatEVAA>(M);
+    Math::free<Constants::floatEVAA>(D);
+    Math::free<Constants::floatEVAA>(K);
 
-    Math::free(u_n_p_1);
-    Math::free(u_n);
-    Math::free(u_n_m_1);
-    Math::free(tmp);
+    Math::free<Constants::floatEVAA>(u_n_p_1);
+    Math::free<Constants::floatEVAA>(u_n);
+    Math::free<Constants::floatEVAA>(u_n_m_1);
+    Math::free<Constants::floatEVAA>(tmp);
+#endif  // TODO_TEMPLATE_JIT_DONE
 }
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
@@ -647,7 +651,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 
         solver.print_final_results(sol);
 
-        Math::free(sol);
+        Math::free<Constants::floatEVAA>(sol);
         delete car;
     }
     else {
@@ -669,7 +673,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModel() {
 
         solver.print_final_results(sol);
 
-        Math::free(sol);
+        Math::free<Constants::floatEVAA>(sol);
         delete car;
     }
     else {
@@ -688,7 +692,7 @@ void EVAAComputeEngine::computeMBD(void) {
 
     solver.solve(sol);
     solver.print_final_result(sol);
-    Math::free(sol);
+    Math::free<Constants::floatEVAA>(sol);
 }
 
 void EVAAComputeEngine::computeALE(void) {
@@ -735,7 +739,7 @@ void EVAAComputeEngine::computeALE(void) {
     delete TwoTrackModel_obj;
     delete ale;
 
-    Math::free(sol);
+    Math::free<Constants::floatEVAA>(sol);
 }
 
 void EVAAComputeEngine::computeALEtest(void) {
@@ -772,8 +776,8 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
     IO::write_matrix(complete_soln, "MBD_result.dat", (num_iter + 1), solution_dim);
 #endif
     // IO
-    Math::scal(solution_dim, 0., soln, 1);
-    Math::free(complete_soln);
+    Math::scal<Constants::floatEVAA>(solution_dim, 0, soln, 1);
+    Math::free<Constants::floatEVAA>(complete_soln);
     // ALE call
 
     Profile* Road_Profile;
@@ -822,8 +826,8 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
     delete TwoTrackModel_sys;
     delete Ale_sys;
 
-    Math::free(soln);
-    Math::free(complete_soln2);
+    Math::free<Constants::floatEVAA>(soln);
+    Math::free<Constants::floatEVAA>(complete_soln2);
 #endif
 }
 

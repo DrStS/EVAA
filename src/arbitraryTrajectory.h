@@ -2,7 +2,6 @@
 #pragma once
 
 #include <cmath>
-
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -69,21 +68,21 @@ public:
      * Destructor
      */
     ~arbitraryTrajectory() {
-        Math::free(_roadPointsX);
-        Math::free(_roadPointsY);
-        Math::free(_roadAccelerationX);
-        Math::free(_roadAccelerationY);
-        Math::free(_roadAngles);
-        Math::free(_roadAngularAcceleration);
-        Math::free(_normedDistance);
-        Math::free(_tyreAccelerationsX_fl);
-        Math::free(_tyreAccelerationsX_fr);
-        Math::free(_tyreAccelerationsX_rl);
-        Math::free(_tyreAccelerationsX_rr);
-        Math::free(_tyreAccelerationsY_fl);
-        Math::free(_tyreAccelerationsY_fr);
-        Math::free(_tyreAccelerationsY_rl);
-        Math::free(_tyreAccelerationsY_rr);
+        Math::free<T>(_roadPointsX);
+        Math::free<T>(_roadPointsY);
+        Math::free<T>(_roadAccelerationX);
+        Math::free<T>(_roadAccelerationY);
+        Math::free<T>(_roadAngles);
+        Math::free<T>(_roadAngularAcceleration);
+        Math::free<T>(_normedDistance);
+        Math::free<T>(_tyreAccelerationsX_fl);
+        Math::free<T>(_tyreAccelerationsX_fr);
+        Math::free<T>(_tyreAccelerationsX_rl);
+        Math::free<T>(_tyreAccelerationsX_rr);
+        Math::free<T>(_tyreAccelerationsY_fl);
+        Math::free<T>(_tyreAccelerationsY_fr);
+        Math::free<T>(_tyreAccelerationsY_rl);
+        Math::free<T>(_tyreAccelerationsY_rr);
     }
 
     /**
@@ -104,8 +103,8 @@ public:
     * \param providedTimes times, at which the XML points should be reached
     * \param initialVelocity such that in the first segment the acceleration is calculated correctly
 
-    * This means, that between two XML points  [X(i), Y(i)] and [X(ì+1), Y(i+1)], there will be
-    n=(times(í+1) - times(i)) / delta_t true road points
+    * This means, that between two XML points  [X(i), Y(i)] and [X(ï¿½+1), Y(i+1)], there will be
+    n=(times(ï¿½+1) - times(i)) / delta_t true road points
      */
     void interpolateRoadPoints(size_t numProvidedPoints, T* providedPointsX, T* providedPointsY,
                                T* providedTimes, T initialVelocity) {
@@ -255,15 +254,15 @@ public:
         calculateAccelerations(_tyreAccelerationsY_rr, legPointsY_rr);
 
         // delete leg positions
-        Math::free(legPointsX_fl);
-        Math::free(legPointsX_fr);
-        Math::free(legPointsX_rl);
-        Math::free(legPointsX_rr);
+        Math::free<T>(legPointsX_fl);
+        Math::free<T>(legPointsX_fr);
+        Math::free<T>(legPointsX_rl);
+        Math::free<T>(legPointsX_rr);
 
-        Math::free(legPointsY_fl);
-        Math::free(legPointsY_fr);
-        Math::free(legPointsY_rl);
-        Math::free(legPointsY_rr);
+        Math::free<T>(legPointsY_fl);
+        Math::free<T>(legPointsY_fr);
+        Math::free<T>(legPointsY_rl);
+        Math::free<T>(legPointsY_rr);
     }
 
     /**
@@ -470,8 +469,6 @@ private:
                                   // gravity at all iterations
 
     T* _normedDistance;  // absolute distance since the beginning of the road
-
-    
 
     /**
      * \brief use a second order scheme to calculate all Accelerations

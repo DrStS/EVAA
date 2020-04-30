@@ -81,7 +81,8 @@ public:
                                    int k) {
 #pragma loop(ivdep)
         for (auto i = 0; i < size; i++) {
-            axis[i] = (1 + cos((2 * i + 1) / (2 * size) * Constants::PI)) / 2 * (l_max - l_min) + l_min;
+            axis[i] =
+                (1 + cos((2 * i + 1) / (2 * size) * Constants::PI)) / 2 * (l_max - l_min) + l_min;
         }
         for (auto j = 0; j < k; j++) {
             for (auto i = 0; i < size; i++) {
@@ -159,7 +160,7 @@ public:
         int err = 0;
         for (auto i = 0; i < ny; i++) {
             /* Create Data Fitting task */
-            err = Math::dfNewTask1D(&task[i], nx, axis, xhint, 1, &grid[i * nx], yhint);
+            err = Math::dfNewTask1D<T>(&task[i], nx, axis, xhint, 1, &grid[i * nx], yhint);
             Math::dfCheckError(err);
 
             /* Edit task parameters for look up interpolant */
@@ -175,7 +176,7 @@ public:
         // for debugging purposes
         generateLookupOutputFile(l_min, l_max, a[0]);
 
-        Math::free(grid);
+        Math::free<T>(grid);
     }
 
     /**
@@ -188,9 +189,9 @@ public:
         for (auto i = 0; i < ny; i++) {
             dfDeleteTask(&task[i]);
         }
-        Math::free(axis);
-        Math::free(scoeff);
-        Math::free(task);
+        Math::free<T>(axis);
+        Math::free<T>(scoeff);
+        Math::free<DFTaskPtr>(task);
     }
     /**
      * \brief interpolates the ny = k grids ob the lookuptable
@@ -258,7 +259,7 @@ public:
         IO::writeLookUpGridPlusInterpolateValues<T>(
             axis, grid, nx, interpolationPoints, interpolation, 2 * nx - 1,
             "LookupTablePlusInterpolation" + std::to_string(add) + ".txt");
-        Math::free(interpolation);
+        Math::free<T>(interpolation);
     }
 };
 

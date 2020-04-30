@@ -139,12 +139,12 @@ void diagonal_matrix(T* mat, size_t dim, T val) {
 template <typename T>
 void elementwise_inversion(T* vect, size_t dim) {
     T* temp = Math::calloc<T>(dim);
-    Math::vInv(dim, vect, temp);
-    Math::copy(dim, temp, 1, vect, 1);
+    Math::vInv<T>(dim, vect, temp);
+    Math::copy<T>(dim, temp, 1, vect, 1);
     // for (size_t i = 0; i < dim; ++i) {
     //	vect[i] = 1. / vect[i];
     //}
-    Math::free(temp);
+    Math::free<T>(temp);
 }
 
 /**
@@ -166,7 +166,7 @@ void swap_address(T*& a, T*& b) {
  */
 template <typename T>
 void allocate_to_diagonal(T* matrix, T* vector, size_t dim) {
-    Math::copy(dim, vector, 1, matrix, dim + 1);
+    Math::copy<T>(dim, vector, 1, matrix, dim + 1);
     /*for (int i = 0; i < dim; ++i) {
             matrix[i*dim + i] = vector[i];
     }*/
@@ -290,11 +290,11 @@ template <typename T>
 T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim) {
     T angle;
     T nrm_v1, nrm_v2;
-    nrm_v1 = Math::nrm2(dim, v1, 1);
-    nrm_v2 = Math::nrm2(dim, v2, 1);
+    nrm_v1 = Math::nrm2<T>(dim, v1, 1);
+    nrm_v2 = Math::nrm2<T>(dim, v2, 1);
     const MKL_INT DIM = dim;
     const MKL_INT incx = 1;
-    angle = Math::dot(DIM, v1, incx, v2, incx);
+    angle = Math::dot<T>(DIM, v1, incx, v2, incx);
     // angle = dot_product<T>(v1, v2, dim);
     angle = angle / (nrm_v1 * nrm_v2);
     angle = angle >= 1 ? 1. : angle;
@@ -348,12 +348,12 @@ void write_matrix(T* vect, int count) {
 template <typename T>
 void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t dim_) {
     T nrm_v1, nrm_v2, ra_nrm, q_nrm;
-    nrm_v1 = Math::nrm2(dim_, v1, 1);
-    nrm_v2 = Math::nrm2(dim_, v2, 1);
+    nrm_v1 = Math::nrm2<T>(dim_, v1, 1);
+    nrm_v2 = Math::nrm2<T>(dim_, v2, 1);
     crossProduct(v1, v2, rotation_axis);
-    Math::scal(dim_, 1. / (nrm_v1 * nrm_v2), rotation_axis, 1);
+    Math::scal<T>(dim_, 1. / (nrm_v1 * nrm_v2), rotation_axis, 1);
     *angle = compute_angle_using_dot_product<T>(v1, v2, dim_);
-    ra_nrm = Math::nrm2(dim_, rotation_axis, 1);
+    ra_nrm = Math::nrm2<T>(dim_, rotation_axis, 1);
     T eps = 1e-8;
     if (ra_nrm < eps) {
         *angle = 0.;
@@ -377,9 +377,9 @@ void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t
             rotation_axis[1] = 0;
             rotation_axis[2] = 0;
         }
-        ra_nrm = Math::nrm2(dim_, rotation_axis, 1);
+        ra_nrm = Math::nrm2<T>(dim_, rotation_axis, 1);
     }
-    Math::scal(dim_, 1. / (ra_nrm), rotation_axis, 1);
+    Math::scal<T>(dim_, 1. / (ra_nrm), rotation_axis, 1);
 }
 
 /**
@@ -398,8 +398,8 @@ void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis, 
     q[1] = rotation_axis[1] * std::sin(*angle / 2.0);
     q[2] = rotation_axis[2] * std::sin(*angle / 2.0);
     q[3] = std::cos(*angle / 2.0);
-    q_nrm = Math::nrm2(4, q, 1);
-    Math::scal(4, 1. / (q_nrm), q, 1);
+    q_nrm = Math::nrm2<T>(4, q, 1);
+    Math::scal<T>(4, 1. / (q_nrm), q, 1);
 }
 
 /**
@@ -416,9 +416,9 @@ void get_basis(const T* initial_orientation, T* transfrormed_basis) {
     // s = 1 / norm(q) ^ 2;      %normalizer, only to remove numerical stuffy stuff
     size_t quad_dim = 4;
     size_t dim = 3;
-    T nrm = Math::nrm2(quad_dim, initial_orientation, 1);
+    T nrm = Math::nrm2<T>(quad_dim, initial_orientation, 1);
     T s = 1. / (nrm * nrm);
-    Math::scal(dim * dim, 0., transfrormed_basis, 1);
+    Math::scal<T>(dim * dim, 0, transfrormed_basis, 1);
     size_t i, j;
 
     T quad_sum = 0.;
@@ -527,7 +527,7 @@ public:
         double nrm = 0.01;
         T t = 0.;
         T val = 0.;
-        Math::copy(x_len, x_previous, 1, x_vector_new, 1);
+        Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);
         for (size_t i = 1; i <= num_time_iter; ++i) {
             // set the pointer to the start of previous timestep
             it_start = x_vector_new + (i - 1) * x_len;
@@ -545,71 +545,72 @@ public:
             // x = x_previous + dt * f_old';
             // f_new = f(t(n), x');
             t += dt;
-            Math::copy(x_len, it_start, 1, x, 1);
-            Math::axpy(x_len, dt, f_old, 1, x, 1);
+            Math::copy<T>(x_len, it_start, 1, x, 1);
+            Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
             obj->compute_f3D_reduced(x, t, f_new);
 
             // Initial approximation of the Jacobian
             // dx = x - x_previous;
-            Math::copy(x_len, x, 1, dx, 1);
-            Math::axpy(x_len, -1., it_start, 1, dx, 1);
+            Math::copy<T>(x_len, x, 1, dx, 1);
+            Math::axpy<T>(x_len, -1., it_start, 1, dx, 1);
             // df = f_new' - f_old';
-            Math::copy(x_len, f_new, 1, df, 1);
-            Math::axpy(x_len, -1., f_old, 1, df, 1);
+            Math::copy<T>(x_len, f_new, 1, df, 1);
+            Math::axpy<T>(x_len, -1., f_old, 1, df, 1);
 
             // approximate J(x_0)
             // J = eye(length(df)) - delta_t*((1./dx)'*df)';
-            Math::scal(x_len * x_len, 0., J, 1);
-            diagonal_matrix(J, x_len, 1.);
-            Math::copy(x_len, dx, 1, dx_inv, 1);
+            Math::scal<T>(x_len * x_len, 0, J, 1);
+            diagonal_matrix<T>(J, x_len, 1);
+            Math::copy<T>(x_len, dx, 1, dx_inv, 1);
             elementwise_inversion(dx_inv, x_len);
-            Math::ger(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
+            Math::ger<T>(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
 
             // calculate initial F for stopping condition
             // x_dot = f_new';
             // F = dx - delta_t * x_dot;
-            Math::copy(x_len, dx, 1, F, 1);
-            Math::axpy(x_len, -dt, f_new, 1, F, 1);
+            Math::copy<T>(x_len, dx, 1, F, 1);
+            Math::axpy<T>(x_len, -dt, f_new, 1, F, 1);
 
             // Broyden's Method
             for (size_t j = 0; j < max_iter; ++j) {
-                if (Math::nrm2(x_len, F, 1) < tol) {
+                if (Math::nrm2<T>(x_len, F, 1) < tol) {
                     break;
                 }
 
                 // x(i+1) = x(i) - J^(-1)*g(x(i))
-                Math::copy(x_len * x_len, J, 1, J_tmp, 1);
-                Math::getrf(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
-                Math::copy(x_len, F, 1, x_new, 1);
-                Math::getrs(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-                Math::axpy(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
-                Math::scal(x_len, -1., x_new, 1);
+                Math::copy<T>(x_len * x_len, J, 1, J_tmp, 1);
+                Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
+                Math::copy<T>(x_len, F, 1, x_new, 1);
+                Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
+                Math::axpy<T>(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
+                Math::scal<T>(x_len, -1., x_new, 1);
 
                 // Calculate new derivative
                 obj->compute_f3D_reduced(x_new, t, f_new);
 
                 // F_new = x_new - x_previous - delta_t * x_dot
-                Math::copy(x_len, x_new, 1, F_new, 1);
-                Math::axpy(x_len, -1., it_start, 1, F_new, 1);
-                Math::axpy(x_len, -dt, f_new, 1, F_new, 1);
+                Math::copy<T>(x_len, x_new, 1, F_new, 1);
+                Math::axpy<T>(x_len, -1., it_start, 1, F_new, 1);
+                Math::axpy<T>(x_len, -dt, f_new, 1, F_new, 1);
 
                 // dF = (F_new - F)'
-                Math::copy(x_len, F_new, 1, dF, 1);
-                Math::axpy(x_len, -1., F, 1, dF, 1);
+                Math::copy<T>(x_len, F_new, 1, dF, 1);
+                Math::axpy<T>(x_len, -1., F, 1, dF, 1);
 
                 // dx = (x_new - x)';
-                Math::copy(x_len, x_new, 1, dx, 1);
-                Math::axpy(x_len, -1., x, 1, dx, 1);
+                Math::copy<T>(x_len, x_new, 1, dx, 1);
+                Math::axpy<T>(x_len, -1., x, 1, dx, 1);
 
                 // J(n+1) = J(n) + (dF - J * dx) * dx' / norm(dx)^2
                 // scaling dx and dF by norm(dx)
-                nrm = Math::nrm2(x_len, dx, 1);
-                Math::scal(x_len, 1. / nrm, dx, 1);
-                Math::scal(x_len, 1. / nrm, dF, 1);
+                nrm = Math::nrm2<T>(x_len, dx, 1);
+                Math::scal<T>(x_len, 1. / nrm, dx, 1);
+                Math::scal<T>(x_len, 1. / nrm, dF, 1);
                 // y := alpha*A*x + beta*y, dgemv operation
-                Math::gemv(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1., dF,
-                           1);  // using dF to store data
-                Math::ger(CblasRowMajor, x_len, x_len, 1., dF, 1, dx, 1, J, x_len);
+                Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1,
+                              dF,
+                              1);  // using dF to store data
+                Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
                 // F = F_new; interchanging pointers to avoid copy
                 swap_address(F, F_new);
@@ -619,22 +620,22 @@ public:
             // x_vector_new(n,:) = x;
             // start position of new time step
             curr_time_start_pos = x_vector_new + i * x_len;
-            Math::copy(x_len, x, 1, curr_time_start_pos, 1);
+            Math::copy<T>(x_len, x, 1, curr_time_start_pos, 1);
         }
 
-        Math::free(f_old);
-        Math::free(f_new);
-        Math::free(dx);
-        Math::free(dx_inv);
-        Math::free(df);
-        Math::free(x);
-        Math::free(F);
-        Math::free(F_new);
-        Math::free(dF);
-        Math::free(J);
-        Math::free(J_tmp);
-        Math::free(piv);
-        Math::free(x_new);
+        Math::free<T>(f_old);
+        Math::free<T>(f_new);
+        Math::free<T>(dx);
+        Math::free<T>(dx_inv);
+        Math::free<T>(df);
+        Math::free<T>(x);
+        Math::free<T>(F);
+        Math::free<T>(F_new);
+        Math::free<T>(dF);
+        Math::free<T>(J);
+        Math::free<T>(J_tmp);
+        Math::free<lapack_int>(piv);
+        Math::free<T>(x_new);
     }
 
     /**
@@ -669,7 +670,7 @@ public:
         double nrm = 0.01;
         T t = 0.;
         T val = 0.;
-        Math::copy(x_len, x_previous, 1, x_vector_new, 1);
+        Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);
 
         size_t i = 1;
 
@@ -688,71 +689,71 @@ public:
         // x = x_previous + dt * f_old';
         // f_new = f(t(n), x');
         t += dt;
-        Math::copy(x_len, it_start, 1, x, 1);
-        Math::axpy(x_len, dt, f_old, 1, x, 1);
+        Math::copy<T>(x_len, it_start, 1, x, 1);
+        Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
         obj->compute_f3D_reduced(x, t, f_new);
 
         // Initial approximation of the Jacobian
         // dx = x - x_previous;
-        Math::copy(x_len, x, 1, dx, 1);
-        Math::axpy(x_len, -1., it_start, 1, dx, 1);
+        Math::copy<T>(x_len, x, 1, dx, 1);
+        Math::axpy<T>(x_len, -1., it_start, 1, dx, 1);
         // df = f_new' - f_old';
-        Math::copy(x_len, f_new, 1, df, 1);
-        Math::axpy(x_len, -1., f_old, 1, df, 1);
+        Math::copy<T>(x_len, f_new, 1, df, 1);
+        Math::axpy<T>(x_len, -1., f_old, 1, df, 1);
 
         // approximate J(x_0)
         // J = eye(length(df)) - delta_t*((1./dx)'*df)';
-        Math::scal(x_len * x_len, 0., J, 1);
-        diagonal_matrix(J, x_len, 1.);
-        Math::copy(x_len, dx, 1, dx_inv, 1);
+        Math::scal<T>(x_len * x_len, 0, J, 1);
+        diagonal_matrix<T>(J, x_len, 1);
+        Math::copy<T>(x_len, dx, 1, dx_inv, 1);
         elementwise_inversion(dx_inv, x_len);
-        Math::ger(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
+        Math::ger<T>(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
 
         // calculate initial F for stopping condition
         // x_dot = f_new';
         // F = dx - delta_t * x_dot;
-        Math::copy(x_len, dx, 1, F, 1);
-        Math::axpy(x_len, -dt, f_new, 1, F, 1);
+        Math::copy<T>(x_len, dx, 1, F, 1);
+        Math::axpy<T>(x_len, -dt, f_new, 1, F, 1);
 
         // Broyden's Method
         for (size_t j = 0; j < max_iter; ++j) {
-            if (Math::nrm2(x_len, F, 1) < tol) {
+            if (Math::nrm2<T>(x_len, F, 1) < tol) {
                 break;
             }
 
             // x(i+1) = x(i) - J^(-1)*g(x(i))
-            Math::copy(x_len * x_len, J, 1, J_tmp, 1);
-            Math::getrf(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
-            Math::copy(x_len, F, 1, x_new, 1);
-            Math::getrs(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-            Math::axpy(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
-            Math::scal(x_len, -1., x_new, 1);
+            Math::copy<T>(x_len * x_len, J, 1, J_tmp, 1);
+            Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
+            Math::copy<T>(x_len, F, 1, x_new, 1);
+            Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
+            Math::axpy<T>(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
+            Math::scal<T>(x_len, -1., x_new, 1);
 
             // Calculate new derivative
             obj->compute_f3D_reduced(x_new, t, f_new);
 
             // F_new = x_new - x_previous - delta_t * x_dot
-            Math::copy(x_len, x_new, 1, F_new, 1);
-            Math::axpy(x_len, -1., it_start, 1, F_new, 1);
-            Math::axpy(x_len, -dt, f_new, 1, F_new, 1);
+            Math::copy<T>(x_len, x_new, 1, F_new, 1);
+            Math::axpy<T>(x_len, -1., it_start, 1, F_new, 1);
+            Math::axpy<T>(x_len, -dt, f_new, 1, F_new, 1);
 
             // dF = (F_new - F)'
-            Math::copy(x_len, F_new, 1, dF, 1);
-            Math::axpy(x_len, -1., F, 1, dF, 1);
+            Math::copy<T>(x_len, F_new, 1, dF, 1);
+            Math::axpy<T>(x_len, -1., F, 1, dF, 1);
 
             // dx = (x_new - x)';
-            Math::copy(x_len, x_new, 1, dx, 1);
-            Math::axpy(x_len, -1., x, 1, dx, 1);
+            Math::copy<T>(x_len, x_new, 1, dx, 1);
+            Math::axpy<T>(x_len, -1., x, 1, dx, 1);
 
             // J(n+1) = J(n) + (dF - J * dx) * dx' / norm(dx)^2
             // scaling dx and dF by norm(dx)
-            nrm = Math::nrm2(x_len, dx, 1);
-            Math::scal(x_len, 1. / nrm, dx, 1);
-            Math::scal(x_len, 1. / nrm, dF, 1);
+            nrm = Math::nrm2<T>(x_len, dx, 1);
+            Math::scal<T>(x_len, 1. / nrm, dx, 1);
+            Math::scal<T>(x_len, 1. / nrm, dF, 1);
             // y := alpha*A*x + beta*y, dgemv operation
-            Math::gemv(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1., dF,
-                       1);  // using dF to store data
-            Math::ger(CblasRowMajor, x_len, x_len, 1., dF, 1, dx, 1, J, x_len);
+            Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1, dF,
+                          1);  // using dF to store data
+            Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
             // F = F_new; interchanging pointers to avoid copy
             swap_address(F, F_new);
@@ -762,7 +763,7 @@ public:
         // x_vector_new(n,:) = x;
         // start position of new time step
         curr_time_start_pos = x_vector_new + i * x_len;
-        Math::copy(x_len, x, 1, curr_time_start_pos, 1);
+        Math::copy<T>(x_len, x, 1, curr_time_start_pos, 1);
 
         if (num_time_iter >= 2) {
             // PDF 2 Method
@@ -782,75 +783,75 @@ public:
                 // x = x_previous + dt * f_old';
                 // f_new = f(t(n), x');
                 t += dt;
-                Math::copy(x_len, it_start, 1, x, 1);
-                Math::axpy(x_len, dt, f_old, 1, x, 1);
+                Math::copy<T>(x_len, it_start, 1, x, 1);
+                Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
                 obj->compute_f3D_reduced(x, t, f_new);
 
                 // Initial approximation of the Jacobian
                 // dx = x - x_previous;
-                Math::copy(x_len, x, 1, dx, 1);
-                Math::axpy(x_len, -1., it_start, 1, dx, 1);
+                Math::copy<T>(x_len, x, 1, dx, 1);
+                Math::axpy<T>(x_len, -1., it_start, 1, dx, 1);
                 // df = f_new' - f_old';
-                Math::copy(x_len, f_new, 1, df, 1);
-                Math::axpy(x_len, -1., f_old, 1, df, 1);
+                Math::copy<T>(x_len, f_new, 1, df, 1);
+                Math::axpy<T>(x_len, -1., f_old, 1, df, 1);
 
                 // approximate J(x_0)
                 // J = eye(length(df)) - delta_t*((1./dx)'*df)';
-                Math::scal(x_len * x_len, 0., J, 1);
-                diagonal_matrix(J, x_len, 1.);
-                Math::copy(x_len, dx, 1, dx_inv, 1);
+                Math::scal<T>(x_len * x_len, 0, J, 1);
+                diagonal_matrix<T>(J, x_len, 1);
+                Math::copy<T>(x_len, dx, 1, dx_inv, 1);
                 elementwise_inversion(dx_inv, x_len);
-                Math::ger(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
+                Math::ger<T>(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
 
                 // calculate initial F for stopping condition
                 // x_dot = f_new';
                 // F = x - 4/3 * x_previous + 1/3 * x_previous_previous - 2/3 * delta_t * x_dot;
-                Math::copy(x_len, dx, 1, F, 1);
-                Math::axpy(x_len, -1. / 3.0, it_start, 1, F, 1);
-                Math::axpy(x_len, 1. / 3.0, prev_prev_pos, 1, F, 1);
-                Math::axpy(x_len, (-2.0 / 3.0) * dt, f_new, 1, F, 1);
+                Math::copy<T>(x_len, dx, 1, F, 1);
+                Math::axpy<T>(x_len, -1. / 3.0, it_start, 1, F, 1);
+                Math::axpy<T>(x_len, 1. / 3.0, prev_prev_pos, 1, F, 1);
+                Math::axpy<T>(x_len, (-2.0 / 3.0) * dt, f_new, 1, F, 1);
 
                 // Broyden's Method
                 for (size_t j = 0; j < max_iter; ++j) {
-                    if (Math::nrm2(x_len, F, 1) < tol) {
+                    if (Math::nrm2<T>(x_len, F, 1) < tol) {
                         break;
                     }
 
                     // x(i+1) = x(i) - J^(-1)*g(x(i))
-                    Math::copy(x_len * x_len, J, 1, J_tmp, 1);
-                    Math::getrf(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
-                    Math::copy(x_len, F, 1, x_new, 1);
-                    Math::getrs(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-                    Math::axpy(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
-                    Math::scal(x_len, -1., x_new, 1);
+                    Math::copy<T>(x_len * x_len, J, 1, J_tmp, 1);
+                    Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
+                    Math::copy<T>(x_len, F, 1, x_new, 1);
+                    Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
+                    Math::axpy<T>(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
+                    Math::scal<T>(x_len, -1., x_new, 1);
 
                     // Calculate new derivative
                     obj->compute_f3D_reduced(x_new, t - dt, f_new);
 
                     // F_new = x_new - 4/3 * x_previous + 1/3 * x_previous_previous - 2/3 * delta_t
                     // * x_dot;
-                    Math::copy(x_len, x_new, 1, F_new, 1);
-                    Math::axpy(x_len, -4.0 / 3.0, it_start, 1, F_new, 1);
-                    Math::axpy(x_len, 1. / 3.0, prev_prev_pos, 1, F_new, 1);
-                    Math::axpy(x_len, (-2.0 / 3.0) * dt, f_new, 1, F_new, 1);
+                    Math::copy<T>(x_len, x_new, 1, F_new, 1);
+                    Math::axpy<T>(x_len, -4.0 / 3.0, it_start, 1, F_new, 1);
+                    Math::axpy<T>(x_len, 1. / 3.0, prev_prev_pos, 1, F_new, 1);
+                    Math::axpy<T>(x_len, (-2.0 / 3.0) * dt, f_new, 1, F_new, 1);
 
                     // dF = (F_new - F)'
-                    Math::copy(x_len, F_new, 1, dF, 1);
-                    Math::axpy(x_len, -1., F, 1, dF, 1);
+                    Math::copy<T>(x_len, F_new, 1, dF, 1);
+                    Math::axpy<T>(x_len, -1., F, 1, dF, 1);
 
                     // dx = (x_new - x)';
-                    Math::copy(x_len, x_new, 1, dx, 1);
-                    Math::axpy(x_len, -1., x, 1, dx, 1);
+                    Math::copy<T>(x_len, x_new, 1, dx, 1);
+                    Math::axpy<T>(x_len, -1., x, 1, dx, 1);
 
                     // J(n+1) = J(n) + (dF - J * dx) * dx' / norm(dx)^2
                     // scaling dx and dF by norm(dx)
-                    nrm = Math::nrm2(x_len, dx, 1);
-                    Math::scal(x_len, 1. / nrm, dx, 1);
-                    Math::scal(x_len, 1. / nrm, dF, 1);
+                    nrm = Math::nrm2<T>(x_len, dx, 1);
+                    Math::scal<T>(x_len, 1. / nrm, dx, 1);
+                    Math::scal<T>(x_len, 1. / nrm, dF, 1);
                     // y := alpha*A*x + beta*y, dgemv operation
-                    Math::gemv(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1.,
-                               dF, 1);  // using dF to store data
-                    Math::ger(CblasRowMajor, x_len, x_len, 1., dF, 1, dx, 1, J, x_len);
+                    Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1,
+                                  1, dF, 1);  // using dF to store data
+                    Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
                     // F = F_new; interchanging pointers to avoid copy
                     swap_address(F, F_new);
@@ -860,22 +861,22 @@ public:
                 // x_vector_new(n,:) = x;
                 // start position of new time step
                 curr_time_start_pos = x_vector_new + i * x_len;
-                Math::copy(x_len, x, 1, curr_time_start_pos, 1);
+                Math::copy<T>(x_len, x, 1, curr_time_start_pos, 1);
             }
         }
-        Math::free(f_old);
-        Math::free(f_new);
-        Math::free(dx);
-        Math::free(dx_inv);
-        Math::free(df);
-        Math::free(x);
-        Math::free(F);
-        Math::free(F_new);
-        Math::free(dF);
-        Math::free(J);
-        Math::free(J_tmp);
-        Math::free(piv);
-        Math::free(x_new);
+        Math::free<T>(f_old);
+        Math::free<T>(f_new);
+        Math::free<T>(dx);
+        Math::free<T>(dx_inv);
+        Math::free<T>(df);
+        Math::free<T>(x);
+        Math::free<T>(F);
+        Math::free<T>(F_new);
+        Math::free<T>(dF);
+        Math::free<T>(J);
+        Math::free<T>(J_tmp);
+        Math::free<lapack_int>(piv);
+        Math::free<T>(x_new);
     }
 
     /**
@@ -912,7 +913,7 @@ public:
         double nrm = 0.01;
         T t = 0.;
         T val = 0.;
-        Math::copy(x_len, x_previous, 1, x_vector_new, 1);
+        Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);
         for (size_t i = 1; i <= num_time_iter; ++i) {
             // set the pointer to the start of previous timestep
             // std::cout << "executing iter = " << i << std::endl;
@@ -931,76 +932,77 @@ public:
             // x = x_previous + dt * f_old';
             // f_new = f(t(n), x');
             t += dt;
-            Math::copy(x_len, it_start, 1, x, 1);
-            Math::axpy(x_len, dt, f_old, 1, x, 1);
+            Math::copy<T>(x_len, it_start, 1, x, 1);
+            Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
             obj->compute_f3D_reduced(x, t, f_new);
 
             // Initial approximation of the Jacobian
             // dx = x - x_previous;
-            Math::copy(x_len, x, 1, dx, 1);
-            Math::axpy(x_len, -1., it_start, 1, dx, 1);
+            Math::copy<T>(x_len, x, 1, dx, 1);
+            Math::axpy<T>(x_len, -1., it_start, 1, dx, 1);
 
             // df = f_new' - f_old';
-            Math::copy(x_len, f_new, 1, df, 1);
-            Math::axpy(x_len, -1., f_old, 1, df, 1);
+            Math::copy<T>(x_len, f_new, 1, df, 1);
+            Math::axpy<T>(x_len, -1., f_old, 1, df, 1);
 
             // approximate J(x_0)
             // J = eye(length(df)) - delta_t*0.5 *((1./dx)'*df)';
-            Math::scal(x_len * x_len, 0., J, 1);
-            diagonal_matrix(J, x_len, 1.);
-            Math::copy(x_len, dx, 1, dx_inv, 1);
+            Math::scal<T>(x_len * x_len, 0, J, 1);
+            diagonal_matrix<T>(J, x_len, 1);
+            Math::copy<T>(x_len, dx, 1, dx_inv, 1);
             elementwise_inversion(dx_inv, x_len);
             // write_vector(dx_inv, x_len);
-            Math::ger(CblasRowMajor, x_len, x_len, -dt / 2.0, df, 1, dx_inv, 1, J, x_len);
+            Math::ger<T>(CblasRowMajor, x_len, x_len, -dt / 2.0, df, 1, dx_inv, 1, J, x_len);
 
             // calculate initial F for stopping condition
             // x_dot = f_new';
             // x_dot_previous = f_old';
             // F = dx - delta_t * 0.5 * (x_dot + x_dot_previous);
-            Math::copy(x_len, dx, 1, F, 1);
-            Math::axpy(x_len, -dt / 2.0, f_new, 1, F, 1);
-            Math::axpy(x_len, -dt / 2.0, f_old, 1, F, 1);
+            Math::copy<T>(x_len, dx, 1, F, 1);
+            Math::axpy<T>(x_len, -dt / 2.0, f_new, 1, F, 1);
+            Math::axpy<T>(x_len, -dt / 2.0, f_old, 1, F, 1);
 
             // Broyden's Method
             for (size_t j = 0; j < max_iter; ++j) {
-                if (Math::nrm2(x_len, F, 1) < tol) {
+                if (Math::nrm2<T>(x_len, F, 1) < tol) {
                     break;
                 }
 
                 // x(i+1) = x(i) - J^(-1)*g(x(i))
-                Math::copy(x_len * x_len, J, 1, J_tmp, 1);
-                Math::getrf(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
-                Math::copy(x_len, F, 1, x_new, 1);
-                Math::getrs(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-                Math::axpy(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
-                Math::scal(x_len, -1., x_new, 1);
+                Math::copy<T>(x_len * x_len, J, 1, J_tmp, 1);
+                Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
+                Math::copy<T>(x_len, F, 1, x_new, 1);
+                Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
+                Math::axpy<T>(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
+                Math::scal<T>(x_len, -1., x_new, 1);
 
                 // Calculate new derivative
                 obj->compute_f3D_reduced(x_new, t, f_new);
 
                 // F_new = x_new - x_previous - delta_t * 0.5 * (x_dot + x_dot_previous);
-                Math::copy(x_len, x_new, 1, F_new, 1);
-                Math::axpy(x_len, -1., it_start, 1, F_new, 1);
-                Math::axpy(x_len, -dt / 2.0, f_new, 1, F_new, 1);
-                Math::axpy(x_len, -dt / 2.0, f_old, 1, F_new, 1);
+                Math::copy<T>(x_len, x_new, 1, F_new, 1);
+                Math::axpy<T>(x_len, -1., it_start, 1, F_new, 1);
+                Math::axpy<T>(x_len, -dt / 2.0, f_new, 1, F_new, 1);
+                Math::axpy<T>(x_len, -dt / 2.0, f_old, 1, F_new, 1);
 
                 // dF = (F_new - F)'
-                Math::copy(x_len, F_new, 1, dF, 1);
-                Math::axpy(x_len, -1., F, 1, dF, 1);
+                Math::copy<T>(x_len, F_new, 1, dF, 1);
+                Math::axpy<T>(x_len, -1., F, 1, dF, 1);
 
                 // dx = (x_new - x)';
-                Math::copy(x_len, x_new, 1, dx, 1);
-                Math::axpy(x_len, -1., x, 1, dx, 1);
+                Math::copy<T>(x_len, x_new, 1, dx, 1);
+                Math::axpy<T>(x_len, -1., x, 1, dx, 1);
 
                 // J(n+1) = J(n) + (dF - J * dx) * dx' / norm(dx)^2
                 // scaling dx and dF by norm(dx)
-                nrm = Math::nrm2(x_len, dx, 1);
-                Math::scal(x_len, 1. / nrm, dx, 1);
-                Math::scal(x_len, 1. / nrm, dF, 1);
+                nrm = Math::nrm2<T>(x_len, dx, 1);
+                Math::scal<T>(x_len, 1. / nrm, dx, 1);
+                Math::scal<T>(x_len, 1. / nrm, dF, 1);
                 // y := alpha*A*x + beta*y, dgemv operation
-                Math::gemv(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1., dF,
-                           1);  // using dF to store data
-                Math::ger(CblasRowMajor, x_len, x_len, 1., dF, 1, dx, 1, J, x_len);
+                Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1,
+                              dF,
+                              1);  // using dF to store data
+                Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
                 // F = F_new; interchanging pointers to avoid copy
                 swap_address(F, F_new);
@@ -1011,22 +1013,22 @@ public:
             // x_vector_new(n,:) = x;
             // start position of new time step
             curr_time_start_pos = x_vector_new + i * x_len;
-            Math::copy(x_len, x, 1, curr_time_start_pos, 1);
+            Math::copy<T>(x_len, x, 1, curr_time_start_pos, 1);
         }
         // std::cout << "Broyden cleaning!\n" << std::endl;
-        Math::free(f_old);
-        Math::free(f_new);
-        Math::free(dx);
-        Math::free(dx_inv);
-        Math::free(df);
-        Math::free(x);
-        Math::free(F);
-        Math::free(F_new);
-        Math::free(dF);
-        Math::free(J);
-        Math::free(J_tmp);
-        Math::free(piv);
-        Math::free(x_new);
+        Math::free<T>(f_old);
+        Math::free<T>(f_new);
+        Math::free<T>(dx);
+        Math::free<T>(dx_inv);
+        Math::free<T>(df);
+        Math::free<T>(x);
+        Math::free<T>(F);
+        Math::free<T>(F_new);
+        Math::free<T>(dF);
+        Math::free<T>(J);
+        Math::free<T>(J_tmp);
+        Math::free<lapack_int>(piv);
+        Math::free<T>(x_new);
 
         // std::cout << "Exiting Broyden!\n" << std::endl;
     }
@@ -1052,13 +1054,13 @@ public:
             obj->constructJacobien();
 
             // get J=LL^T
-            status = Math::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
+            status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
             Math::potrfCheckStatus(status);
             // residual=J\residual -> residual = delta
-            Math::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, res, 1);
+            Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, res, 1);
             // u_n_p_1 -= delta
-            Math::axpy(Constants::DOF, -1., res, 1, u_n_p_1, 1);
-            delta_norm = Math::nrm2(Constants::DOF, res, 1);
+            Math::axpy<T>(Constants::DOF, -1., res, 1, u_n_p_1, 1);
+            delta_norm = Math::nrm2<T>(Constants::DOF, res, 1);
 
             // update all the matrices
             obj->updateSystem();
@@ -1066,9 +1068,9 @@ public:
             obj->calcResidual(force);
             // copy the new residual to a temp to check if newton has converged without losing
             // residual
-            Math::copy(Constants::DOF, res, 1, temp, 1);
-            Math::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
-            delta_norm2 = Math::nrm2(Constants::DOF, temp, 1);
+            Math::copy<T>(Constants::DOF, res, 1, temp, 1);
+            Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
+            delta_norm2 = Math::nrm2<T>(Constants::DOF, temp, 1);
         } while (*res_norm > Constants::TOLERANCE && delta_norm2 < delta_norm && count < 10);
     }
 
@@ -1097,52 +1099,52 @@ public:
         coeff2 = 2.0 / 6.0;
         coeff3 = 2.0 / 6.0;
         coeff4 = 1. / 6.0;
-        Math::copy(x_len, x_previous, 1, x_vector_new, 1);
+        Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);
         for (size_t i = 1; i <= num_time_iter; ++i) {
             it_start = x_vector_new + (i - 1) * x_len;
             curr_time_start_pos = x_vector_new + (i)*x_len;
             // k1 = delta_t * f(t_prev, x_previous')';
             obj->compute_f3D_reduced(it_start, t, f_old);
-            Math::copy(x_len, f_old, 1, k1, 1);
-            Math::scal(x_len, dt, k1, 1);
+            Math::copy<T>(x_len, f_old, 1, k1, 1);
+            Math::scal<T>(x_len, dt, k1, 1);
 
             // k2 = delta_t * f(t_prev + delta_t/2, x_previous' + k1'/2)';
-            Math::copy(x_len, k1, 1, x, 1);
-            Math::scal(x_len, 1. / 2.0, x, 1);
-            Math::axpy(x_len, 1., it_start, 1, x, 1);
+            Math::copy<T>(x_len, k1, 1, x, 1);
+            Math::scal<T>(x_len, 1. / 2.0, x, 1);
+            Math::axpy<T>(x_len, 1, it_start, 1, x, 1);
             obj->compute_f3D_reduced(x, t + dt / 2.0, f_old);
-            Math::copy(x_len, f_old, 1, k2, 1);
-            Math::scal(x_len, dt, k2, 1);
+            Math::copy<T>(x_len, f_old, 1, k2, 1);
+            Math::scal<T>(x_len, dt, k2, 1);
 
             // k3 = delta_t * f(t_prev + delta_t/2, x_previous' + k2'/2)';
-            Math::copy(x_len, k2, 1, x, 1);
-            Math::scal(x_len, 1. / 2.0, x, 1);
-            Math::axpy(x_len, 1., it_start, 1, x, 1);
+            Math::copy<T>(x_len, k2, 1, x, 1);
+            Math::scal<T>(x_len, 1. / 2.0, x, 1);
+            Math::axpy<T>(x_len, 1, it_start, 1, x, 1);
             obj->compute_f3D_reduced(x, t + dt / 2.0, f_old);
-            Math::copy(x_len, f_old, 1, k3, 1);
-            Math::scal(x_len, dt, k3, 1);
+            Math::copy<T>(x_len, f_old, 1, k3, 1);
+            Math::scal<T>(x_len, dt, k3, 1);
 
             // k4 = delta_t * f(t_prev + delta_t, x_previous' + k3')';
-            Math::copy(x_len, k3, 1, x, 1);
-            Math::axpy(x_len, 1., it_start, 1, x, 1);
+            Math::copy<T>(x_len, k3, 1, x, 1);
+            Math::axpy<T>(x_len, 1, it_start, 1, x, 1);
             obj->compute_f3D_reduced(x, t + dt, f_old);
-            Math::copy(x_len, f_old, 1, k4, 1);
-            Math::scal(x_len, dt, k4, 1);
+            Math::copy<T>(x_len, f_old, 1, k4, 1);
+            Math::scal<T>(x_len, dt, k4, 1);
 
             // x_vector_new(n,:) = x_previous + 1/6 * (k1 + 2*k2 + 2*k3 + k4);
-            Math::copy(x_len, it_start, 1, curr_time_start_pos, 1);
-            Math::axpy(x_len, coeff1, k1, 1, curr_time_start_pos, 1);
-            Math::axpy(x_len, coeff2, k2, 1, curr_time_start_pos, 1);
-            Math::axpy(x_len, coeff3, k3, 1, curr_time_start_pos, 1);
-            Math::axpy(x_len, coeff4, k4, 1, curr_time_start_pos, 1);
+            Math::copy<T>(x_len, it_start, 1, curr_time_start_pos, 1);
+            Math::axpy<T>(x_len, coeff1, k1, 1, curr_time_start_pos, 1);
+            Math::axpy<T>(x_len, coeff2, k2, 1, curr_time_start_pos, 1);
+            Math::axpy<T>(x_len, coeff3, k3, 1, curr_time_start_pos, 1);
+            Math::axpy<T>(x_len, coeff4, k4, 1, curr_time_start_pos, 1);
             t += dt;
         }
-        Math::free(f_old);
-        Math::free(k1);
-        Math::free(k2);
-        Math::free(k3);
-        Math::free(k4);
-        Math::free(x);
+        Math::free<T>(f_old);
+        Math::free<T>(k1);
+        Math::free<T>(k2);
+        Math::free<T>(k3);
+        Math::free<T>(k4);
+        Math::free<T>(x);
     }
 
     /**
@@ -1162,17 +1164,17 @@ public:
          */
         lapack_int status;
         // get A=LL^T
-        status = Math::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
+        status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
 
         Math::potrfCheckStatus(status);
         // u_n_p_1 = B * u_n
-        Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., B, dim, x_prev, 1, 0., x, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, dim, dim, 1, B, dim, x_prev, 1, 0, x, 1);
         // u_n_p_1 += C * u_n_m_1 <=> u_n_p_1 += ((1/(h*h))*M)*(-u_n_m_1)
-        Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., C, dim, x_prev_prev, 1, 1., x, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, dim, dim, 1, C, dim, x_prev_prev, 1, 1, x, 1);
         // u_n_p_1 += x <=> u_n_p_1 += f_n_p_1
-        Math::axpy(dim, 1., b, 1, x, 1);
+        Math::axpy<T>(dim, 1, b, 1, x, 1);
         // u_n_p_1=A\u_n_p_1
-        Math::potrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
+        Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
     }
 
     /**
@@ -1192,21 +1194,21 @@ public:
          */
         lapack_int status;
         // get A=LL^T
-        status = Math::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
+        status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
         Math::potrfCheckStatus(status);
         // u_n_p_1 += B * u_n
-        Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., B, dim, x_prev, 1, 0, x, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, dim, dim, 1, B, dim, x_prev, 1, 0, x, 1);
 
         // u_n_p_1 += C * u_n_m_1 <=> u_n_p_1 += ((1/(h*h))*M)*(-u_n_m_1)
-        // cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., C, dim, x_prev_prev, 1, 1, x, 1);
+        // cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim,1, C, dim, x_prev_prev, 1, 1, x, 1);
         T vec_tmp[11];
-        Math::vMul(dim, C, x_prev_prev, vec_tmp);
-        Math::axpy(dim, 1., vec_tmp, 1, x, 1);
+        Math::vMul<T>(dim, C, x_prev_prev, vec_tmp);
+        Math::axpy<T>(dim, 1, vec_tmp, 1, x, 1);
 
         // u_n_p_1 += x <=> u_n_p_1 += f_n_p_1
-        Math::axpy(dim, 1., b, 1, x, 1);
+        Math::axpy<T>(dim, 1, b, 1, x, 1);
         // u_n_p_1=A\u_n_p_1
-        Math::potrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
+        Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
     }
 
     /**
@@ -1245,19 +1247,19 @@ public:
          */
         lapack_int status;
         // get A=LL^T
-        status = Math::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
+        status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
         Math::potrfCheckStatus(status);
         // u_n_p_1 += B * u_n
-        Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., B, dim, x_n, 1, 0, x_n_p_1, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, dim, dim, 1, B, dim, x_n, 1, 0, x_n_p_1, 1);
         // u_n_p_1 += C * u_n_m_1 <=> u_n_p_1 += ((1/(h*h))*M)*(-u_n_m_1)
-        Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., C, dim, x_n_m_1, 1, 1, x_n_p_1, 1);
-        Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., D, dim, x_n_m_2, 1, 1, x_n_p_1, 1);
-        Math::gemv(CblasRowMajor, CblasNoTrans, dim, dim, 1., E, dim, x_n_m_3, 1, 1, x_n_p_1, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, dim, dim, 1, C, dim, x_n_m_1, 1, 1, x_n_p_1, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, dim, dim, 1, D, dim, x_n_m_2, 1, 1, x_n_p_1, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, dim, dim, 1, E, dim, x_n_m_3, 1, 1, x_n_p_1, 1);
 
         // u_n_p_1 += x <=> u_n_p_1 += f_n_p_1
-        Math::axpy(dim, 1., b, 1, x_n_p_1, 1);
+        Math::axpy<T>(dim, 1, b, 1, x_n_p_1, 1);
         // u_n_p_1=A\u_n_p_1
-        Math::potrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x_n_p_1, 1);
+        Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x_n_p_1, 1);
     }
 };
 

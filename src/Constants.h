@@ -26,9 +26,9 @@ constexpr int DOF = 11;
 
 // TODO: FIX the single precision problem
 #ifdef DOUBLE_PRECISION
-	using floatEVAA = double;
+using floatEVAA = double;
 #elif SINGLE_PRECISION
-	using floatEVAA = float;
+using floatEVAA = float;
 #endif
 
 constexpr floatEVAA TOLERANCE = 1.e-8;

@@ -12,7 +12,7 @@ void checkFileExists(const std::string& filename) {
     std::ifstream f(filename);
 
     if (f.good()) {
-        std::cout << "Filename exists: " << filename <<std::endl;
+        std::cout << "Filename exists: " << filename << std::endl;
         return;
     }
 

@@ -48,7 +48,6 @@ inline auto invokeFD(F1 f1, F2 f2, Args&&... args) -> decltype(f2(args...)) {
  * NOTE: std::is_floating_point does not filter out long double.
  */
 #define TEMPLATE_FLOAT_TYPE \
-                            \
     template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
 
 /** Returns information about MKL. */
@@ -67,11 +66,11 @@ T* malloc(size_t count) {
     }
     // TODO: signal allocation error.
     // See https://software.intel.com/en-us/mkl-developer-reference-c-mkl-malloc
-	T* ptr = (T*)mkl_malloc(count * sizeof(T), Constants::ALIGNMENT);
-	if (ptr == nullptr) {
-		throw "Memory allocation Error in malloc!";
-	}
-	return ptr;
+    T* ptr = (T*)mkl_malloc(count * sizeof(T), Constants::ALIGNMENT);
+    if (ptr == nullptr) {
+        throw "Memory allocation Error in malloc!";
+    }
+    return ptr;
 }
 
 /**
@@ -87,11 +86,11 @@ T* calloc(size_t count) {
     }
     // TODO: signal allocation error.
     // See https://software.intel.com/en-us/mkl-developer-reference-c-mkl-calloc
-	T* ptr = (T*)mkl_calloc(count, sizeof(T), Constants::ALIGNMENT);
-	if (ptr == nullptr) {
-		throw "Memory allocation Error in calloc!";
-	}
-	return ptr;
+    T* ptr = (T*)mkl_calloc(count, sizeof(T), Constants::ALIGNMENT);
+    if (ptr == nullptr) {
+        throw "Memory allocation Error in calloc!";
+    }
+    return ptr;
 }
 
 /**

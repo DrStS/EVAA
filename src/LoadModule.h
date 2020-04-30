@@ -59,46 +59,46 @@ public:
         // set_External_force();
 
         // copy the center of mass position
-        Math::copy(Constants::DIM, db.getBodyExternalForce(), 1, External_force, 1);
+        Math::copy<T>(Constants::DIM, db.getBodyExternalForce(), 1, External_force, 1);
 
         T *xml_start, *position_start;
         xml_start = db.getWheelExternalForceFrontLeft();
         position_start = External_force + 3;
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // W2 = W_fr
         xml_start = db.getWheelExternalForceFrontRight();
         position_start += 6;  // skip 3 for tyre
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // W3 = W_rl
         xml_start = db.getWheelExternalForceRearLeft();
         position_start += 6;  // skip 3 for tyre
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // W2 = W_rr
         xml_start = db.getWheelExternalForceRearRight();
         position_start += 6;  // skip 3 for tyre
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
 
         // T1 = T_fl
         xml_start = db.getTyreExternalForceFrontLeft();
         position_start = External_force + 6;  // skip 3 for center of mass and 3 for the wheel
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // T2 = T_fr
         xml_start = db.getTyreExternalForceFrontRight();
         position_start += 6;  // skip 3 for the wheel
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // T3 = T_rl
         xml_start = db.getTyreExternalForceRearLeft();
         position_start += 6;  // skip 3 for the wheel
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // T4 = T_rr
         xml_start = db.getTyreExternalForceRearRight();
         position_start += 6;  // skip 3 for the wheel
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
     }
     ~LoadModule() {
-        Math::free(Normal_ext);
-        Math::free(k_vec);
-        Math::free(External_force);
+        Math::free<T>(Normal_ext);
+        Math::free<T>(k_vec);
+        Math::free<T>(External_force);
     }
     void set_Profile(Profile<T>* Profile_type) {
         // not called
@@ -118,22 +118,22 @@ public:
      * \return Normal_ext external forces acting on the whole car system [XYZ]
      */
     void update_force(T time_t, T* F_vec, T* Normal_ext) {
-        Math::scal(Constants::DIM * Constants::VEC_DIM, 0., F_vec, 1);
-        Math::scal(Constants::DIM, 0., Normal_ext, 1);
+        Math::scal<T>(Constants::DIM * Constants::VEC_DIM, 0, F_vec, 1);
+        Math::scal<T>(Constants::DIM, 0, Normal_ext, 1);
         // fix this so TEOOOOOOOOOO
         // why did Shubham tell me to comment everything out ?
         Active_Profile->get_Profile_force_ALE(Car_obj, F_vec, Normal_ext);
         /* Modify the profile to know where the ground is and apply normal force accordingly */
         // F_Ti += -0.25 * N; [F[2], F[4], F[6], F[8]]
         for (auto i = 2; i < Constants::VEC_DIM; i += 2) {
-            Math::axpy(Constants::DIM, -0.25, Normal_ext, 1, &F_vec[i * Constants::DIM], 1);
+            Math::axpy<T>(Constants::DIM, -0.25, Normal_ext, 1, &F_vec[i * Constants::DIM], 1);
         }
         // PAY ATTENTION to THIS
         // N += external_force
         // this formulation is WRONG (!!!) if done before computing following steps, should be done
         // at the end. external force doesn't necessarily have to create a normal force it can
         // create acceleration, ex: when car flies
-        vdAdd(Constants::DIM, External_force, Normal_ext, Normal_ext);
+        Math::vAdd<T>(Constants::DIM, External_force, Normal_ext, Normal_ext);
         // PAY ATTENTION to THIS
 
         // get stiffnesses vector k_vec
@@ -143,23 +143,24 @@ public:
         for (auto i = 0; i < (Constants::VEC_DIM - 1); i += 2) {
             // use the elastic forces at wheels F_CG += k_wi * delta_x_i
             F_vec[2] += 0. * k_vec[i] * Delta_x_vec[i];
-            Math::axpy(DIM, k_vec[i], &Delta_x_vec[DIM * i], 1, F_vec, 1);
-            F_W_i += -k_wi * delta_x_i Math::axpy(DIM, -k_vec[i], &Delta_x_vec[DIM * i], 1,
-                                                  &F_vec[DIM(i + 1)], 1);
+            Math::axpy<T>(DIM, k_vec[i], &Delta_x_vec[DIM * i], 1, F_vec, 1);
+            F_W_i += -k_wi * delta_x_i Math::axpy<T>(DIM, -k_vec[i], &Delta_x_vec[DIM * i], 1,
+                                                     &F_vec[DIM(i + 1)], 1);
             F_vec[Constants::DIM * (i + 1) + 2] -= 0. * k_vec[i] * Delta_x_vec[i];
 
             // use the elastic forces at tyres F_W_i += k_t_i * delta_x_{i+1}
-            Math::axpy(DIM, k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1, &F_vec[DIM * (i + 1)], 1);
+            Math::axpy<T>(DIM, k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1, &F_vec[DIM * (i + 1)],
+                          1);
             F_vec[Constants::DIM * (i + 1) + 2] += 0. * k_vec[i + 1] * Delta_x_vec[(i + 1)];
             // F_T_i += -k_t_i * delta_x_{i+1}
-            Math::axpy(DIM, -k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1, &F_vec[DIM * (i + 2)],
-                       1);
+            Math::axpy<T>(DIM, -k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1, &F_vec[DIM * (i + 2)],
+                          1);
             F_vec[Constants::DIM * (i + 2) + 2] -= 0. * k_vec[i + 1] * Delta_x_vec[(i + 1)];
         }
 #endif
 
         // test add
-        Math::axpy(Constants::DIM, 1., External_force, 1, F_vec, 1);
+        Math::axpy<T>(Constants::DIM, 1, External_force, 1, F_vec, 1);
     }
 
     /**
@@ -182,40 +183,40 @@ public:
         auto& db = MetaDataBase<T>::getDataBase();
 
         // copy the center of mass position
-        Math::copy(Constants::DIM, db.getBodyExternalForce(), 1, External_force, 1);
+        Math::copy<T>(Constants::DIM, db.getBodyExternalForce(), 1, External_force, 1);
         T *xml_start, *position_start;
         xml_start = db.getWheelExternalForceFrontLeft();
         position_start = External_force + 3;
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // W2 = W_fr
         xml_start = db.getWheelExternalForceFrontRight();
         position_start += 6;  // skip 3 for tyre
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // W3 = W_rl
         xml_start = db.getWheelExternalForceRearLeft();
         position_start += 6;  // skip 3 for tyre
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // W2 = W_rr
         xml_start = db.getWheelExternalForceRearRight();
         position_start += 6;  // skip 3 for tyre
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
 
         // T1 = T_fl
         xml_start = db.getTyreExternalForceFrontLeft();
         position_start = External_force + 6;  // skip 3 for center of mass and 3 for the wheel
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // T2 = T_fr
         xml_start = db.getTyreExternalForceFrontRight();
         position_start += 6;  // skip 3 for the wheel
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // T3 = T_rl
         xml_start = db.getTyreExternalForceRearLeft();
         position_start += 6;  // skip 3 for the wheel
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
         // T4 = T_rr
         xml_start = db.getTyreExternalForceRearRight();
         position_start += 6;  // skip 3 for the wheel
-        Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
     }
 };
 
