@@ -58,6 +58,10 @@ public:
         _roadAngles = Math::malloc<T>(numIterations);
         _roadTorque = Math::malloc<T>(numIterations);
         _normedDistance = Math::malloc<T>(numIterations);
+        _tyreForces_fl = Math::malloc<T>(numIterations);
+        _tyreForces_fr = Math::malloc<T>(numIterations);
+        _tyreForces_rl = Math::malloc<T>(numIterations);
+        _tyreForces_rr = Math::malloc<T>(numIterations);
     }
 
     /**
@@ -71,6 +75,10 @@ public:
         Math::free(_roadAngles);
         Math::free(_roadTorque);
         Math::free(_normedDistance);
+        Math::free(_tyreForces_fl);
+        Math::free(_tyreForces_fr);
+        Math::free(_tyreForces_rl);
+        Math::free(_tyreForces_rr);
     }
 
     /**
@@ -209,30 +217,102 @@ public:
         }
     }
  
-    
-    /**
-     * \brief calculates the force acting on the tyre due to bumpy road
-     * \param time at which this happens
+  
+       /**
+     * \brief use a second order scheme to calculate the forces that act on the tyre on the trajectory
+     * points
      */
-    T getVerticalRoadForcesFrontLeft(size_t iteration) {}
+    void calculateVerticalForces() {
+        T invDeltaT = 1. / (_delta_t * _delta_t);
+        if (_numIterations > 4) {
+            T pos_fl_prev = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[0] + _phaseShift_fl));
+            T pos_fr_prev = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[0] + _phaseShift_fr));
+            T pos_rl_prev = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[0] + _phaseShift_rl));
+            T pos_rr_prev = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[0] + _phaseShift_rr));
+
+            T pos_fl = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[1] + _phaseShift_fl));
+            T pos_fr = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[1] + _phaseShift_fr));
+            T pos_rl = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[1] + _phaseShift_rl));
+            T pos_rr = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[1] + _phaseShift_rr));
+
+            T pos_fl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[2] + _phaseShift_fl));
+            T pos_fr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[2] + _phaseShift_fr));
+            T pos_rl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[2] + _phaseShift_rl));
+            T pos_rr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[2] + _phaseShift_rr));
+
+            T pos_fl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[3] + _phaseShift_fl));
+            T pos_fr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[3] + _phaseShift_fr));
+            T pos_rl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[3] + _phaseShift_rl));
+            T pos_rr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[3] + _phaseShift_rr));
+
+            _tyreForces_fl[0] = (2 * pos_fl_prev + 5 * pos_fl + 4 * pos_fl_next + pos_fl_nnext) * invDeltaT;
+            _tyreForces_fr[0] = (2 * pos_fr_prev + 5 * pos_fr + 4 * pos_fr_next + pos_fr_nnext) * invDeltaT;
+            _tyreForces_rl[0] = (2 * pos_rl_prev + 5 * pos_rl + 4 * pos_rl_next + pos_rl_nnext) * invDeltaT;
+            _tyreForces_rr[0] = (2 * pos_rr_prev + 5 * pos_rr + 4 * pos_rr_next + pos_rr_nnext) * invDeltaT;
+
+            for (int i = 1; i < _numIterations - 1; ++i) {
+                pos_fl_prev = pos_fl;
+                pos_fl = pos_fl_next;
+                pos_fl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i + 1] + _phaseShift_fl));
+                pos_fr_prev = pos_fr;
+                pos_fr = pos_fr_next;
+                pos_fr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[i + 1] + _phaseShift_fr));
+                pos_rl_prev = pos_rl;
+                pos_rl = pos_rl_next;
+                pos_rl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i + 1] + _phaseShift_rl));
+                pos_rr_prev = pos_rr;
+                pos_rr = pos_rr_next;
+                pos_rr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[i + 1] + _phaseShift_rr));
+
+                _tyreForces_fl[i] = (pos_fl_prev - 2 * pos_fl + pos_fl_next) * invDeltaT;
+                _tyreForces_fr[i] = (pos_fr_prev - 2 * pos_fr + pos_fr_next) * invDeltaT;
+                _tyreForces_rl[i] = (pos_rl_prev - 2 * pos_rl + pos_rl_next) * invDeltaT;
+                _tyreForces_rr[i] = (pos_rr_prev - 2 * pos_rr + pos_rr_next) * invDeltaT;
+            }
+            T pos_fl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[_numIterations - 1] + _phaseShift_fl));
+            T pos_fr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[_numIterations - 1] + _phaseShift_fr));
+            T pos_rl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[_numIterations - 1] + _phaseShift_rl));
+            T pos_rr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[_numIterations - 1] + _phaseShift_rr));
+
+            _tyreForces_fl[_numIterations - 1] = (2 * pos_fl_nnext + 5 * pos_fl_next + 4 * pos_fl + pos_fl_prev) * invDeltaT;
+            _tyreForces_fr[_numIterations - 1] = (2 * pos_fr_nnext + 5 * pos_fr_next + 4 * pos_fr + pos_fr_prev) * invDeltaT;
+            _tyreForces_rl[_numIterations - 1] = (2 * pos_rl_nnext + 5 * pos_rl_next + 4 * pos_rl + pos_rl_prev) * invDeltaT;
+            _tyreForces_rr[_numIterations - 1] = (2 * pos_rr_nnext + 5 * pos_rr_next + 4 * pos_rr + pos_rr_prev) * invDeltaT;
+        }
+        else {
+            for (int i = 0; i < _numIterations; ++i) {
+                _tyreForces_fl[i] = 0;
+                _tyreForces_fr[i] = 0;
+                _tyreForces_rl[i] = 0;
+                _tyreForces_rr[i] = 0;
+            }
+        }
+    }
+ 
 
     /**
      * \brief calculates the force acting on the tyre due to bumpy road
      * \param time at which this happens
      */
-    T getVerticalRoadForcesFrontRight(size_t iteration) {}
+    T getVerticalRoadForcesFrontLeft(size_t iteration) { return _tyreForces_fl[iteration]; }
 
     /**
      * \brief calculates the force acting on the tyre due to bumpy road
      * \param time at which this happens
      */
-    T getVerticalRoadForcesRearLeft(size_t iteration) {}
+    T getVerticalRoadForcesFrontRight(size_t iteration) { return _tyreForces_rl[iteration]; }
 
     /**
      * \brief calculates the force acting on the tyre due to bumpy road
      * \param time at which this happens
      */
-    T getVerticalRoadForcesRearRight(size_t iteration) {}
+    T getVerticalRoadForcesRearLeft(size_t iteration) { return _tyreForces_fr[iteration]; }
+
+    /**
+     * \brief calculates the force acting on the tyre due to bumpy road
+     * \param time at which this happens
+     */
+    T getVerticalRoadForcesRearRight(size_t iteration) { return _tyreForces_rr[iteration]; }
 
     /**
      * \param iteration index of the current time iteration
@@ -274,6 +354,11 @@ private:
     T _phaseShift_rl;  // phase shift of the sinusoidal curve acting on the rear_left tyres
     T _phaseShift_rr;  // phase shift of the sinusoidal curve acting on the rear_right tyres
 
+    T* _tyreForces_fl; // force that acts on the tyre in Z direction
+    T* _tyreForces_fr; // force that acts on the tyre in Z direction
+    T* _tyreForces_rl; // force that acts on the tyre in Z direction
+    T* _tyreForces_rr; // force that acts on the tyre in Z direction    
+
     // Lagrangian frame
     T* _roadPointsX;  // X-coordinates of the trajectory at all iterations
     T* _roadPointsY;  // Y-coordinates of the trajectory at all iterations
@@ -286,6 +371,9 @@ private:
     T* _roadTorque;  // Z-components of the torque acting on the center of gravity at all iterations
 
     T* _normedDistance;                        // absolute distance since the beginning of the road
+
+
+
     const double PI = 3.141592653589793238463; // TODO: add this into constants
 };
 
