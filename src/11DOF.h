@@ -349,13 +349,13 @@ public:
         K[2] = -kVec[0] * _car->l_long[0] - kVec[2] * _car->l_long[1] + kVec[4] * _car->l_long[2] +
                kVec[6] * _car->l_long[3];
         K[3] = -kVec[0];
-        K[4] = 0.;
+        K[4] = 0;
         K[5] = -kVec[2];
-        K[6] = 0.;
+        K[6] = 0;
         K[7] = -kVec[4];
-        K[8] = 0.;
+        K[8] = 0;
         K[9] = -kVec[6];
-        K[10] = 0.;
+        K[10] = 0;
 
         temp[1] =
             _car->l_lat[0] * _car->l_lat[0] * kVec[0] + _car->l_lat[1] * _car->l_lat[1] * kVec[2] +
@@ -464,13 +464,13 @@ public:
         D[2] = -dVec[0] * _car->l_long[0] - dVec[2] * _car->l_long[1] + dVec[4] * _car->l_long[2] +
                dVec[6] * _car->l_long[3];
         D[3] = -dVec[0];
-        D[4] = 0.;
+        D[4] = 0;
         D[5] = -dVec[2];
-        D[6] = 0.;
+        D[6] = 0;
         D[7] = -dVec[4];
-        D[8] = 0.;
+        D[8] = 0;
         D[9] = -dVec[6];
-        D[10] = 0.;
+        D[10] = 0;
 
         temp[1] =
             _car->l_lat[0] * _car->l_lat[0] * dVec[0] + _car->l_lat[1] * _car->l_lat[1] * dVec[2] +
@@ -602,13 +602,13 @@ public:
                    der[4] * _car->l_lat[2] * _car->l_long[2] * x[1] -
                    der[6] * _car->l_lat[3] * _car->l_long[3] * x[1];
         dMdxx[3] = -der[0] * (x[0] - x[3] + _car->l_lat[0] * x[1] - _car->l_long[0] * x[2]);
-        dMdxx[4] = 0.;
+        dMdxx[4] = 0;
         dMdxx[5] = der[2] * (x[5] - x[0] + _car->l_lat[1] * x[1] + _car->l_long[1] * x[2]);
-        dMdxx[6] = 0.;
+        dMdxx[6] = 0;
         dMdxx[7] = -der[4] * (x[0] - x[7] + _car->l_lat[2] * x[1] + _car->l_long[2] * x[2]);
-        dMdxx[8] = 0.;
+        dMdxx[8] = 0;
         dMdxx[9] = -der[6] * (x[0] - x[9] - _car->l_lat[3] * x[1] + _car->l_long[3] * x[2]);
-        dMdxx[10] = 0.;
+        dMdxx[10] = 0;
 
         temp[1] = der[2] * _car->l_lat[1] * _car->l_lat[1] * x[0] -
                   der[2] * _car->l_lat[1] * _car->l_lat[1] * _car->l_lat[1] * x[1] -

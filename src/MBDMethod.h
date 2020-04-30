@@ -681,21 +681,21 @@ private:
      * \result Fr The only force acting on the tyre
      */
     void get_fixed_road_force(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr) {
-        Fr_fl[0] = 0.;
-        Fr_fl[1] = 0.;
-        Fr_fl[2] = 0.;
+        Fr_fl[0] = 0;
+        Fr_fl[1] = 0;
+        Fr_fl[2] = 0;
 
-        Fr_fr[0] = 0.;
-        Fr_fr[1] = 0.;
-        Fr_fr[2] = 0.;
+        Fr_fr[0] = 0;
+        Fr_fr[1] = 0;
+        Fr_fr[2] = 0;
 
-        Fr_rl[0] = 0.;
-        Fr_rl[1] = 0.;
-        Fr_rl[2] = 0.;
+        Fr_rl[0] = 0;
+        Fr_rl[1] = 0;
+        Fr_rl[2] = 0;
 
-        Fr_rr[0] = 0.;
-        Fr_rr[1] = 0.;
-        Fr_rr[2] = 0.;
+        Fr_rr[0] = 0;
+        Fr_rr[1] = 0;
+        Fr_rr[2] = 0;
     }
 
     /**
@@ -741,9 +741,9 @@ private:
         Math::scal<T>(Constants::DIM, -inv_radius, Fr, 1);
 
         // perpendicular to the motion and radius
-        unit_z_vector[0] = 0.;
-        unit_z_vector[1] = 0.;
-        unit_z_vector[2] = 1.;
+        unit_z_vector[0] = 0;
+        unit_z_vector[1] = 0;
+        unit_z_vector[2] = 1;
 
         // get normalized direction of motion
         Math::crossProduct<T>(Fr, unit_z_vector, velocity_direction_tyre);
@@ -857,9 +857,9 @@ private:
         cf_Tc = Math::calloc<T>(Constants::DIM);
         cf_wc_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
 
-        cf_Tc[0] = 0.;
-        cf_Tc[1] = 0.;
-        cf_Tc[2] = 0.;
+        cf_Tc[0] = 0;
+        cf_Tc[1] = 0;
+        cf_Tc[2] = 0;
 
         cf_b_rem = Math::calloc<T>(Constants::DIM * Constants::DIM * Constants::DIM);
         cf_Qc = Math::calloc<T>(Constants::NUM_LEGS * Constants::DIM);

@@ -356,7 +356,7 @@ void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t
     ra_nrm = Math::nrm2<T>(dim_, rotation_axis, 1);
     T eps = 1e-8;
     if (ra_nrm < eps) {
-        *angle = 0.;
+        *angle = 0;
         if ((v1[2] >= 0 ? v1[2] : -v1[2]) > eps) {
             rotation_axis[0] = -1;
             rotation_axis[1] = -1;
@@ -421,7 +421,7 @@ void get_basis(const T* initial_orientation, T* transfrormed_basis) {
     Math::scal<T>(dim * dim, 0, transfrormed_basis, 1);
     size_t i, j;
 
-    T quad_sum = 0.;
+    T quad_sum = 0;
     for (i = 0; i < dim; ++i) {
         quad_sum += initial_orientation[i] * initial_orientation[i];
     }
@@ -525,8 +525,8 @@ public:
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
-        T t = 0.;
-        T val = 0.;
+        T t = 0;
+        T val = 0;
         Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);
         for (size_t i = 1; i <= num_time_iter; ++i) {
             // set the pointer to the start of previous timestep
@@ -667,8 +667,8 @@ public:
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
-        T t = 0.;
-        T val = 0.;
+        T t = 0;
+        T val = 0;
         Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);
 
         size_t i = 1;
@@ -910,8 +910,8 @@ public:
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
-        T t = 0.;
-        T val = 0.;
+        T t = 0;
+        T val = 0;
         Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);
         for (size_t i = 1; i <= num_time_iter; ++i) {
             // set the pointer to the start of previous timestep
@@ -1091,7 +1091,7 @@ public:
 
         T *it_start, *curr_time_start_pos;
         T* switcher;  // used for interchanging adresses between F and F_new
-        T t = 0.;
+        T t = 0;
         T coeff1, coeff2, coeff3, coeff4;
         coeff1 = 1. / 6.0;
         coeff2 = 2.0 / 6.0;

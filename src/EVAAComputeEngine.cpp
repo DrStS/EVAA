@@ -529,8 +529,8 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
         for (int j = 0; j < i; ++j) D[i * Constants::DOF + j] = D[j * Constants::DOF + i];
 
     // Initial conditions
-    u_n[0] = 1.;
-    u_n_m_1[0] = 1.;
+    u_n[0] = 1;
+    u_n_m_1[0] = 1;
 
     mkl_set_num_threads(8);
     int numTimeSteps = db.getNumberOfTimeIterations();
