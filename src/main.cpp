@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
               << " ms to run the solver(computeALE).\n\n\n"
               << std::endl;
     timer1.start();
-    // myComputeEngine->computeMBD();
+    myComputeEngine->computeMBD();
     timer1.stop();
     std::cout << "It took " << timer1.getDurationMilliSec()
               << " ms to run the solver(computeMBD).\n\n\n"

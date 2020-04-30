@@ -35,7 +35,7 @@ private:
 
     // Car Definition
 
-    bool use_interpolation;
+   // bool use_interpolation;
     T k_body_fl;
     T k_tyre_fl;
     T k_body_fr;
@@ -378,7 +378,7 @@ private:
         used_solver = db.getUsedSolverForMBD();
         boundary_conditions = db.getRoadConditions();
         radius_circular_path = db.getCircularRoadRadius();
-        use_interpolation = db.getUseInterpolation();
+        //use_interpolation = db.getUseInterpolation();
 
         // Car Definition
 
@@ -728,7 +728,7 @@ private:
         const MKL_INT mkl_incy = 1;
 
         // the force is in the same direction as the position vector
-        // TODO: take care of situation when the center of the circle is not at the origin!!
+        // TODO: take care of situation when the center of the circle is not at the origin!! ///// RAFFI
         Math::copy(Constants::DIM, p, 1, Fr, 1);
 
         Fr[2] = 0;  // path only in XZ-plane
@@ -768,7 +768,9 @@ private:
      * The same locations are overwritten at each timestep
      */
     void compute_f_mem_alloc() {
-        // add to members
+        // add to members 
+		///// All the members belong to compute f function and are kind of nasty
+		//// cf_* means parameter used in compute f function
         cf_C_cN = Math::calloc<T>(Constants::DIM * Constants::DIM);
         cf_r_up_fl = Math::calloc<T>(Constants::DIM);
         cf_r_up_fr = Math::calloc<T>(Constants::DIM);
@@ -808,7 +810,7 @@ private:
         cf_lower_dampf_rr = Math::calloc<T>(Constants::DIM);
         cf_temp = Math::calloc<T>(Constants::DIM);
 
-        // TODO: :))) static vars, maybe an array/vector with all.
+        // TODO: :))) static vars, maybe an array/vector with all. 
         cf_upper_angle_fl = new T;
         cf_upper_angle_fr = new T;
         cf_upper_angle_rl = new T;
@@ -1033,7 +1035,7 @@ private:
 
     void apply_stiffness_interpolation() {
         /* Compute stiffness from lookup table*/
-        if (use_interpolation) {
+#ifdef INTERPOLATION
             // populate the lenght_vector
             current_spring_lengths[0] = norm_r_up_fl;
             current_spring_lengths[1] = norm_r_low_fl;
@@ -1056,7 +1058,7 @@ private:
             lower_spring_stiffness[2] = stiffness_vector[5];
             upper_spring_stiffness[3] = stiffness_vector[6];
             lower_spring_stiffness[3] = stiffness_vector[7];
-        }
+#endif // Interpolation compile flag, PLEASE USE THIS ONE ONLY !!!!!!!!!!!!!!!!!!!!!!!!!
     }
 
     void compute_angles() {
@@ -2091,6 +2093,9 @@ public:
      * \param sln solution vector
      */
     void print_final_result(T* sln) {
+		std::cout << std::scientific;
+		std::cout << std::setprecision(15);
+
         std::cout << "MBD: angular velocity w=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t "
                   << sln[2] << "]" << std::endl;
         std::cout << "MBD: car body velocity vc=\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t "

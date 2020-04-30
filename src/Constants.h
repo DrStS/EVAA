@@ -24,17 +24,12 @@ constexpr int NUM_LEGS = 4;
 /** Degrees of Freedom in the Eulerian Frame */
 constexpr int DOF = 11;
 
-// TODO: Get rid of it.
-using floatEVAA = double;
-
-/*
- * TODO: Use only one of:
- * - USEINTERPOLATION constexpr here
- * - INTERPOLATION compile definition
- * - U_Lookup (see MetaDataBase.h includes part)
- * - XML content referencing the lookup filename
- */
-constexpr bool USEINTERPOLATION = true;
+// TODO: FIX the single precision problem
+#ifdef DOUBLE_PRECISION
+	using floatEVAA = double;
+#elif SINGLE_PRECISION
+	using floatEVAA = float;
+#endif
 
 constexpr floatEVAA TOLERANCE = 1.e-8;
 
@@ -52,6 +47,7 @@ constexpr int FRONT_RIGHT = 1;
 constexpr int REAR_LEFT = 2;
 /** Convention order for rear right leg/wheel/tire. */
 constexpr int REAR_RIGHT = 3;
-
+/** It's PI come on */
+const double PI = 3.141592653589793238463;
 };  // namespace Constants
 }  // namespace EVAA

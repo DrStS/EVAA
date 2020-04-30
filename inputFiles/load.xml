@@ -3,20 +3,20 @@
   <!--roadProfile>
     <fixedTyre></fixedTyre>
   </roadProfile-->
-  <!--roadProfile>
+  <roadProfile>
     <detachedTyre></detachedTyre>
-  </roadProfile-->
+  </roadProfile>
   <!--roadProfile>
     <circularRoadProfile>
       <radius>50</radius>
       <center>
-        <x>3</x>
-        <y>2</y>
+        <x>0</x>
+        <y>0</y>
         <z>0</z>
       </center>
     </circularRoadProfile>
   </roadProfile-->
-  <roadProfile>
+  <!--roadProfile>
     <arbitraryRoadProfile>
       <horizontalProfile>
         <wayPoint X="0"   Y="0"   time="0"/>
@@ -33,12 +33,12 @@
         </sinusoidalProfile>
       </verticalProfile>
     </arbitraryRoadProfile>
-  </roadProfile>
+  </roadProfile-->
   <forces>
     <forceBody>
       <x>0</x>
       <y>0</y>
-      <z>0</z>
+      <z>1.1e3</z>
     </forceBody>
     <forceWheel>
       <ReerRight>
