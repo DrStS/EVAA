@@ -269,7 +269,7 @@ ELSEIF(${DataType_Precision} MATCHES "SINGLE")
    MESSAGE("Compiling with SINGLE Precision")
    add_definitions(-DSINGLE_PRECISION)
 ELSE()
-   MESSAGE( SEND_ERROR "Compilation appemted with INVALID datatype" )
+   MESSAGE( SEND_ERROR "Compilation attempted with INVALID datatype" )
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Global compiler flags
