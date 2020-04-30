@@ -40,5 +40,15 @@ constexpr floatEVAA TOLERANCE = 1.e-8;
 
 constexpr int DOFDOF = 121;
 
+/** Convention order for front left leg/wheel/tire. */
+constexpr int FRONT_LEFT = 0;
+/** Convention order for front right leg/wheel/tire. */
+constexpr int FRONT_RIGHT = 1;
+/** Convention order for rear left leg/wheel/tire. */
+constexpr int REAR_LEFT = 2;
+/** Convention order for rear right leg/wheel/tire. */
+constexpr int REAR_RIGHT = 3;
+
+
 };  // namespace Constants
 }  // namespace EVAA

@@ -190,7 +190,7 @@ public:
         dddl = Math::calloc<T>(2 * Constants::NUM_LEGS);
         residual = Math::malloc<T>(Constants::DOF);
 #endif
-        _h = MetaDataBase::getDataBase().getTimeStepSize();
+        _h = MetaDataBase<T>::getDataBase().getTimeStepSize();
         factor_h = 1 / _h;
 
         // if interpolation is used we need all the lengths to interpolate damping and stiffness
@@ -270,13 +270,13 @@ public:
      */
     void calcResidual(T* force) {
         // residual = A*x[n+1]
-        Math::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1,
+        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1,
                    A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
         // residual -= B*x[n]
-        Math::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, -1,
-                   B, Constants::DOF, u_n, 1, 1, residual, 1);
+        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, -1,
+                   B, Constants::DOF, u_n, 1, 1., residual, 1);
         // residual += M_h2 * x[n-1]
-        Math::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1,
+        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1,
                    M_h2, Constants::DOF, u_n_m_1, 1, 1, residual, 1);
         // residual -= force
         Math::axpy(Constants::DOF, -1., force, 1, residual, 1);
@@ -343,7 +343,7 @@ public:
      */
     void constructStiffnessMatrix() {
 #ifdef INTERPOLATION
-        MetaDataBase::getDataBase().getLookupStiffness().getInterpolation(
+        MetaDataBase<T>::getDataBase().getLookupStiffness().getInterpolation(
             _car->currentSpringsLength, kVec);
 #endif
         temp[0] = kVec[0] + kVec[2] + kVec[4] + kVec[6];
@@ -891,7 +891,7 @@ public:
      */
     void calcResidual(T* force) {
         // residual = A*x[n+1]
-        Math::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1,
+        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1,
                    A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
         // residual -= bVec
         Math::axpy(Constants::DOF, -1., bVec, 1, residual, 1);
@@ -962,7 +962,7 @@ template <typename T>
 class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
 public:
     TwoTrackModelFull(Car<T>* input_car) : TwoTrackModelBDF2<T>(input_car) {
-        auto& db = MetaDataBase::getDataBase();
+        auto& db = MetaDataBase<T>::getDataBase();
         tend_ = db.getNumberOfTimeIterations() * _h;
         int sol_size = (floor(tend_ / _h) + 1);
         f_n_p_1 = Math::malloc<T>(Constants::DOF);
@@ -980,13 +980,13 @@ public:
         f_n_p_1[9] = db.getWheelExternalForceRearRight()[2];
         f_n_p_1[10] = db.getTyreExternalForceRearRight()[2];
     }
-    void apply_boundary_condition(int s) {
+    void apply_boundary_condition(BoundaryConditionRoad s) {
         condition_type = s;
-        if (s == NONFIXED) {
+        if (s == BoundaryConditionRoad::NONFIXED) {
             // don't do anything, proceed as usual (solve full 11DOF system)
         }
         else {
-            throw "Incorrect boundary condition";
+            throw std::logic_error("Incorrect boundary condition");
         }
     }
     void solve(T* sol_vect) {
@@ -1036,7 +1036,7 @@ public:
 private:
     T tend_;
     T *u_sol, *f_n_p_1;
-    int condition_type;
+    BoundaryConditionRoad condition_type;
 };
 
 }  // namespace EVAA

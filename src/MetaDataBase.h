@@ -10,7 +10,7 @@
 #include <string>
 
 #include "Constants.h"
-#include "IO/Utils.h"
+#include "IO/Output.h"
 #include "arbitraryTrajectory.h"
 
 // TODO: U_Lookup feels artificial, find a way to not use it.
@@ -59,82 +59,82 @@ public:
         const auto settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
         const auto twoTrackModel = settings->VehicleXML().TwoTrackModelXML();
 
-        mass_body = twoTrackModel.MassXML().BodyXML();
-        readLegs(mass_wheel, twoTrackModel.MassXML().UnsprungMassXML());
-        readLegs(mass_tyre, twoTrackModel.MassXML().TyreXML());
-        I_body[0] = twoTrackModel.InertiaXML().XX();
-        I_body[1] = twoTrackModel.InertiaXML().XY();
-        I_body[2] = twoTrackModel.InertiaXML().XZ();
-        I_body[3] = twoTrackModel.InertiaXML().YX();
-        I_body[4] = twoTrackModel.InertiaXML().YY();
-        I_body[5] = twoTrackModel.InertiaXML().YZ();
-        I_body[6] = twoTrackModel.InertiaXML().ZX();
-        I_body[7] = twoTrackModel.InertiaXML().ZY();
-        I_body[8] = twoTrackModel.InertiaXML().ZZ();
+        _mass_body = twoTrackModel.MassXML().BodyXML();
+        readLegs(_mass_wheel, twoTrackModel.MassXML().UnsprungMassXML());
+        readLegs(_mass_tyre, twoTrackModel.MassXML().TyreXML());
+        _I_body[0] = twoTrackModel.InertiaXML().XX();
+        _I_body[1] = twoTrackModel.InertiaXML().XY();
+        _I_body[2] = twoTrackModel.InertiaXML().XZ();
+        _I_body[3] = twoTrackModel.InertiaXML().YX();
+        _I_body[4] = twoTrackModel.InertiaXML().YY();
+        _I_body[5] = twoTrackModel.InertiaXML().YZ();
+        _I_body[6] = twoTrackModel.InertiaXML().ZX();
+        _I_body[7] = twoTrackModel.InertiaXML().ZY();
+        _I_body[8] = twoTrackModel.InertiaXML().ZZ();
 
         if (twoTrackModel.StiffnessXML().ConstantXML().present()) {
             std::cout << "Take constant stiffness without lookup table" << std::endl;
-            readLegs(k_tyre, twoTrackModel.StiffnessXML().ConstantXML().get().TyreXML());
-            readLegs(k_body, twoTrackModel.StiffnessXML().ConstantXML().get().BodyXML());
+            readLegs(_k_tyre, twoTrackModel.StiffnessXML().ConstantXML().get().TyreXML());
+            readLegs(_k_body, twoTrackModel.StiffnessXML().ConstantXML().get().BodyXML());
         }
         else {
             readLookupParameters(twoTrackModel.StiffnessXML().LookupTableXML().get().FilePathXML());
         }
-        readLegs(c_tyre, twoTrackModel.DampingCoefficientsXML().TyreXML());
-        readLegs(c_body, twoTrackModel.DampingCoefficientsXML().BodyXML());
-        readLegs(l_long, twoTrackModel.GeometryXML().LongitudinalReferenceToWheelXML());
-        readLegs(l_lat, twoTrackModel.GeometryXML().LateralReferenceToWheelXML());
-        readVector(vehicleCIR, twoTrackModel.GeometryXML().RelativeCenterOfInstanteneousRotation());
-        readLegs(lower_spring_length, twoTrackModel.GeometryXML().SuspensionSpringsXML());
-        readLegs(upper_spring_length, twoTrackModel.GeometryXML().TyreSpringsXML());
+        readLegs(_c_tyre, twoTrackModel.DampingCoefficientsXML().TyreXML());
+        readLegs(_c_body, twoTrackModel.DampingCoefficientsXML().BodyXML());
+        readLegs(_l_long, twoTrackModel.GeometryXML().LongitudinalReferenceToWheelXML());
+        readLegs(_l_lat, twoTrackModel.GeometryXML().LateralReferenceToWheelXML());
+        readVector(_vehicleCIR, twoTrackModel.GeometryXML().RelativeCenterOfInstanteneousRotation());
+        readLegs(_lower_spring_length, twoTrackModel.GeometryXML().SuspensionSpringsXML());
+        readLegs(_upper_spring_length, twoTrackModel.GeometryXML().TyreSpringsXML());
 
         // Load initial parameters
         const auto initial = settings->InitialConditionsXML();
 
-        readVector(initial_vel_body, initial.VelocitiesXML().BodyXML());
-        readVector(initial_ang_vel_body, initial.VelocitiesXML().angularBodyXML());
+        readVector(_initial_vel_body, initial.VelocitiesXML().BodyXML());
+        readVector(_initial_ang_vel_body, initial.VelocitiesXML().angularBodyXML());
 
-        readVectorLegs(initial_vel_wheel, initial.VelocitiesXML().UnsprungMassXML());
-        readVectorLegs(initial_vel_tyre, initial.VelocitiesXML().TyreXML());
+        readVectorLegs(_initial_vel_wheel, initial.VelocitiesXML().UnsprungMassXML());
+        readVectorLegs(_initial_vel_tyre, initial.VelocitiesXML().TyreXML());
 
-        readLegs(initial_lower_spring_length, initial.SpringElongationXML().TyreXML());
-        readLegs(initial_upper_spring_length, initial.SpringElongationXML().BodyXML());
+        readLegs(_initial_lower_spring_length, initial.SpringElongationXML().TyreXML());
+        readLegs(_initial_upper_spring_length, initial.SpringElongationXML().BodyXML());
 
-        readVector(initial_pos_body, initial.PositionXML().BodyXML());
+        readVector(_initial_pos_body, initial.PositionXML().BodyXML());
         if (initial.PositionXML().UnsprungMassXML().present()) {
-            initial_leg_flag = 1;
-            readVectorLegs(initial_pos_wheel, initial.PositionXML().UnsprungMassXML().get());
-            readVectorLegs(initial_pos_tyre, initial.PositionXML().TyreXML().get());
+            _initial_leg_flag = 1;
+            readVectorLegs(_initial_pos_wheel, initial.PositionXML().UnsprungMassXML().get());
+            readVectorLegs(_initial_pos_tyre, initial.PositionXML().TyreXML().get());
         }
 
-        readAngles(initialAngleGlobal, initial.OrientationXML());
+        readAngles(_initialAngleGlobal, initial.OrientationXML());
 
         // Load simulation parameters
         const auto simulation = settings->SimulationParametersXML();
 
-        readVector(gravity, simulation.GeneralSettingsXML().GravityXML());
-        num_time_iter = simulation.GeneralSettingsXML().NumberOfIterationsXML();
-        timestep = simulation.GeneralSettingsXML().TimestepSizeXML();
+        readVector(_gravity, simulation.GeneralSettingsXML().GravityXML());
+        _num_time_iter = simulation.GeneralSettingsXML().NumberOfIterationsXML();
+        _timestep = simulation.GeneralSettingsXML().TimestepSizeXML();
 
-        max_num_iter = simulation.MultyBodyDynamicsXML().MaximalIterationNumberXML();
-        tolerance = simulation.MultyBodyDynamicsXML().ToleranceXML();
-        solution_dim = simulation.MultyBodyDynamicsXML().SolutionDimensionXML();
+        _max_num_iter = simulation.MultyBodyDynamicsXML().MaximalIterationNumberXML();
+        _tolerance = simulation.MultyBodyDynamicsXML().ToleranceXML();
+        _solution_dim = simulation.MultyBodyDynamicsXML().SolutionDimensionXML();
         std::string solver = simulation.MultyBodyDynamicsXML().SolverXML();
 
         if (solver == "explicit_Euler") {
-            MBD_solver = EXPLICIT_EULER;
+            _MBD_solver = MBDSolver::EXPLICIT_EULER;
         }
         else if (solver == "RK4") {
-            MBD_solver = RUNGE_KUTTA_4;
+            _MBD_solver = MBDSolver::RUNGE_KUTTA_4;
         }
         else if (solver == "Broyden_Euler") {
-            MBD_solver = BROYDEN_EULER;
+            _MBD_solver = MBDSolver::BROYDEN_EULER;
         }
         else if (solver == "Broyden_CN") {
-            MBD_solver = BROYDEN_CN;
+            _MBD_solver = MBDSolver::BROYDEN_CN;
         }
         else if (solver == "Broyden_BDF2") {
-            MBD_solver = BROYDEN_BDF2;
+            _MBD_solver = MBDSolver::BROYDEN_BDF2;
         }
         else {
             throw std::logic_error("Wrong MBD-solver in XML: " + solver +
@@ -253,6 +253,8 @@ public:
     T getLatidudalLegPositionRearRight() { return _l_lat[Constants::REAR_RIGHT]; }
     // vector in the format fl fr rl rr
     T* getLatidudalLegPositionVector() { return _l_lat; }
+
+    T* getPositionCenterOfInstantaneousRotation() { return _vehicleCIR; }
 
     T getTyreMassFrontLeft() { return _mass_tyre[Constants::FRONT_LEFT]; }
     T getTyreMassFrontRight() { return _mass_tyre[Constants::FRONT_RIGHT]; }
@@ -386,7 +388,7 @@ public:
         return _initial_pos_tyre + Constants::DIM * Constants::REAR_RIGHT;
     }
 
-    T* getBodyInitialOrientation() { return _initial_angle; }
+    T* getBodyInitialOrientation() { return _initialAngleGlobal; }
     bool getFlagInitialLeg() { return _initial_leg_flag; }
 
     bool getUseInterpolation() { return _interpolation; }
@@ -454,13 +456,13 @@ private:
         const auto lookupHandler = LookupHandler(filename, xml_schema::flags::dont_validate);
         if (lookupHandler->LookupTableGenerator().present()) {
             const auto lookupTable = lookupHandler->LookupTableGenerator().get();
-            T *a, *k_body, *k_tyre;
+            T *a, *_k_body, *_k_tyre;
             T b, c, l_min, l_max;
             int size, k, type, order;
 
             a = new (T[8]);
-            k_body = new (T[8]);
-            k_tyre = new (T[8]);
+            _k_body = new (T[8]);
+            _k_tyre = new (T[8]);
 
             std::cout << "Generate look up table from parameters." << std::endl;
 
@@ -473,16 +475,16 @@ private:
             type = lookupTable.InterpolationMethod().type();
             order = lookupTable.InterpolationMethod().order();
 
-            readLegs(k_body, lookupTable.Magnitude().Body());
-            readLegs(k_tyre, lookupTable.Magnitude().Tyre());
-            a[0] = k_body[2];
-            a[1] = k_tyre[0];
-            a[2] = k_body[3];
-            a[3] = k_tyre[1];
-            a[4] = k_body[0];
-            a[5] = k_tyre[2];
-            a[6] = k_body[1];
-            a[7] = k_tyre[3];
+            readLegs(_k_body, lookupTable.Magnitude().Body());
+            readLegs(_k_tyre, lookupTable.Magnitude().Tyre());
+            a[0] = _k_body[2];
+            a[1] = _k_tyre[0];
+            a[2] = _k_body[3];
+            a[3] = _k_tyre[1];
+            a[4] = _k_body[0];
+            a[5] = _k_tyre[2];
+            a[6] = _k_body[1];
+            a[7] = _k_tyre[3];
 
             // TODO: release memory.
             _lookupStiffness =
@@ -500,8 +502,8 @@ private:
                 new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
 
             delete[] a;
-            delete[] k_body;
-            delete[] k_tyre;
+            delete[] _k_body;
+            delete[] _k_tyre;
         }
     }
 
@@ -568,6 +570,7 @@ private:
     T _c_body[Constants::NUM_LEGS];
     T _l_long[Constants::NUM_LEGS];
     T _l_lat[Constants::NUM_LEGS];
+    T _vehicleCIR[Constants::DIM];
     T _mass_body;
     T _I_body[9];
     T _mass_tyre[Constants::NUM_LEGS];
@@ -582,7 +585,7 @@ private:
     T _initial_ang_vel_body[Constants::DIM];
     T _gravity[Constants::DIM];
     T _initial_pos_body[Constants::DIM];
-    T _initial_angle[Constants::NUM_LEGS];
+    T _initialAngleGlobal[Constants::DIM + 1];
     T _initial_pos_wheel[Constants::DIM * Constants::NUM_LEGS];
     T _initial_pos_tyre[Constants::DIM * Constants::NUM_LEGS];  // this has to be removed or used
                                                                 // only if it is prescribed

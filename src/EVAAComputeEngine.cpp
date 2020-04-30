@@ -636,7 +636,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 }
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
-    auto& db = MetaDataBase<Constants::floatEVAA>::DataBase();
+    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
     if (db.getRoadConditions() == BoundaryConditionRoad::NONFIXED) {
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
@@ -697,15 +697,15 @@ void EVAAComputeEngine::computeALE(void) {
 
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
     switch (db.getRoadConditions()) {
-    case CIRCULAR:
+    case BoundaryConditionRoad::CIRCULAR:
         roadProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(),
                                                          db.getCircularRoadRadius());
         break;
-    case NONFIXED:
+    case BoundaryConditionRoad::NONFIXED:
         roadProfile = new Nonfixed<Constants::floatEVAA>(db.getCircularRoadCenter(),
                                                          db.getCircularRoadRadius());
         break;
-    case FIXED:
+    case BoundaryConditionRoad::FIXED:
         roadProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[1]);
         roadProfile->set_fixed_index(car->tyre_index_set);
         break;

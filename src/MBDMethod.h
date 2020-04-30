@@ -25,11 +25,11 @@ private:
     T tol;
     size_t solution_dim;  /// this is by the formulation
     std::string solver_name;
-    int used_solver;
+    MBDSolver used_solver;
 
     // Environment conditions
 
-    int boundary_conditions;
+    BoundaryConditionRoad boundary_conditions;
     T radius_circular_path;
     T* center_of_circle;
 
@@ -368,7 +368,7 @@ private:
 
     void ReadFromXML() {
         // Simulation Parameters
-        auto& db = MetaDataBase::getDataBase();
+        auto& db = MetaDataBase<T>::getDataBase();
 
         h = db.getTimeStepSize();
         num_iter = db.getNumberOfTimeIterations();
@@ -1044,7 +1044,7 @@ private:
             current_spring_lengths[6] = norm_r_up_rr;
             current_spring_lengths[7] = norm_r_low_rr;
             // calculate the new stiffnesses
-            MetaDataBase::getDataBase().getLookupStiffness().getInterpolation(
+            MetaDataBase<T>::getDataBase().getLookupStiffness().getInterpolation(
                 current_spring_lengths, stiffness_vector);
 
             // overwrite stiffness values
@@ -1871,7 +1871,7 @@ public:
                            pt_fr_, pt_rl_, pt_rr_);
 
         // overwrites the initial velocity values
-        if (boundary_conditions == CIRCULAR)
+        if (boundary_conditions == BoundaryConditionRoad::CIRCULAR)
             circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr,
                                          initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_,
                                          pt_rr_, radius_circular_path);
@@ -1976,23 +1976,23 @@ public:
 
         compute_f_mem_alloc();
 
-        if (used_solver == BROYDEN_CN) {
+        if (used_solver == MBDSolver::BROYDEN_CN) {
             Math::Solvers<T, MBDMethod>::Broyden_CN(this, x_vector, complete_vector, this->h,
                                                     this->num_iter, this->tol, this->max_iter);
         }
-        else if (used_solver == RUNGE_KUTTA_4) {
+        else if (used_solver == MBDSolver::RUNGE_KUTTA_4) {
             Math::Solvers<T, MBDMethod>::RK4(this, x_vector, complete_vector, this->h,
                                              this->num_iter, this->tol, this->max_iter);
         }
-        else if (used_solver == BROYDEN_BDF2) {
+        else if (used_solver == MBDSolver::BROYDEN_BDF2) {
             Math::Solvers<T, MBDMethod>::Broyden_PDF2(this, x_vector, complete_vector, this->h,
                                                       this->num_iter, this->tol, this->max_iter);
         }
-        else if (used_solver == BROYDEN_EULER) {
+        else if (used_solver == MBDSolver::BROYDEN_EULER) {
             Math::Solvers<T, MBDMethod>::Broyden_Euler(this, x_vector, complete_vector, this->h,
                                                        this->num_iter, this->tol, this->max_iter);
         }
-        else if (used_solver == EXPLICIT_EULER) {
+        else if (used_solver == MBDSolver::EXPLICIT_EULER) {
             std::cout << "Explicit solver hasn't been implemented, you don't want to use it"
                       << std::endl;
         }
@@ -2057,13 +2057,13 @@ public:
 
         compute_external_forces();
 
-        if (boundary_conditions == FIXED) {
+        if (boundary_conditions == BoundaryConditionRoad::FIXED) {
             get_fixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
-        else if (boundary_conditions == NONFIXED) {
+        else if (boundary_conditions == BoundaryConditionRoad::NONFIXED) {
             get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
-        else if (boundary_conditions == CIRCULAR) {
+        else if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) {
             get_circular_road_force(cf_local_FR_fl, vt_fl_, mass_tyre_rr, pt_fl_);
             get_circular_road_force(cf_local_FR_fr, vt_fr_, mass_tyre_rl, pt_fr_);
             get_circular_road_force(cf_local_FR_rl, vt_rl_, mass_tyre_fl, pt_rl_);

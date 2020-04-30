@@ -290,15 +290,14 @@ public:
         currentVelocityLagrangian = Math::malloc<T>((Constants::DIM - 1) * Constants::VEC_DIM);
 
         // Extract Data from parser
-        auto& db = MetaDataBase::getDataBase();
+        auto& db = MetaDataBase<T>::getDataBase();
 
         Math::copy(Constants::NUM_LEGS, db.getLongitudalLegPositionVector(), 1, l_long, 1);
 
-        Math::copy(Constants::NUM_LEGS, MetaDataBase::getDataBase().getLatidudalLegPositionVector(),
-                   1, l_lat, 1);
+        Math::copy(Constants::NUM_LEGS, db.getLatidudalLegPositionVector(), 1, l_lat, 1);
 
-        Math::copy(Constants::DIM * Constants::DIM,
-                   MetaDataBase::getDataBase().getMomentOfInertiaVector(), 1, momentOfInertia, 1);
+        Math::copy(Constants::DIM * Constants::DIM, db.getMomentOfInertiaVector(), 1,
+                   momentOfInertia, 1);
 
         massComponents[0] = db.getBodyMass();
         massComponents[1] = db.getWheelMassFrontLeft();
@@ -487,8 +486,8 @@ public:
         updateRadiusToCIR();
 
 #ifdef INTERPOLATION
-        db.getLookupStiffness()->getInterpolation(currentSpringsLength, kVec);
-//        db.getlookupDamping()->getInterpolation(currentSpringsLength, dVec);
+        db.getLookupStiffness().getInterpolation(currentSpringsLength, kVec);
+        // db.getlookupDamping().getInterpolation(currentSpringsLength, dVec);
 #else
         kVec[0] = db.getBodyStiffnessFrontLeft();
         kVec[1] = db.getTyreStiffnessFrontLeft();

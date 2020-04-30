@@ -64,8 +64,8 @@ public:
         Load_module_obj = Load_module_val;
         TwoTrackModel_obj = TwoTrackModel_val;
 
-        h_ = MetaDataBase::getDataBase().getTimeStepSize();
-        tend_ = MetaDataBase::getDataBase().getNumberOfTimeIterations() * h_;
+        h_ = MetaDataBase<T>::getDataBase().getTimeStepSize();
+        tend_ = MetaDataBase<T>::getDataBase().getNumberOfTimeIterations() * h_;
 
         size_t sol_size = (floor(tend_ / h_) + 1);
         u_sol = Math::malloc<T>(sol_size * (Constants::VEC_DIM * Constants::DIM));
