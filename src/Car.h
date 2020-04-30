@@ -90,6 +90,11 @@ private:
 
         corners[3] = -l_long[3];  // rr
         corners[7] = -l_lat[3];   // rr
+
+        // TODO: hardcore optimization: set to 0 with mkl.
+        for (auto i = 8; i < 12; i++) {
+            corners[i] = 0;
+        }
     }
 
     /**

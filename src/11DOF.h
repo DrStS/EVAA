@@ -971,14 +971,16 @@ public:
         u_sol = (T*)mkl_calloc((sol_size + 1) * (Constants::DOF), sizeof(T), Constants::ALIGNMENT);
 
         f_n_p_1[0] = db.getBodyExternalForce()[2];
+        f_n_p_1[1] = 0;
+        f_n_p_1[2] = 0;
         f_n_p_1[3] = db.getWheelExternalForceFrontLeft()[2];
         f_n_p_1[4] = db.getTyreExternalForceFrontLeft()[2];
         f_n_p_1[5] = db.getWheelExternalForceFrontRight()[2];
         f_n_p_1[6] = db.getTyreExternalForceFrontRight()[2];
-        f_n_p_1[7] = db.getWheelExternalForceFrontLeft()[2];
-        f_n_p_1[8] = db.getTyreExternalForceFrontLeft()[2];
-        f_n_p_1[9] = db.getWheelExternalForceFrontRight()[2];
-        f_n_p_1[10] = db.getTyreExternalForceFrontRight()[2];
+        f_n_p_1[7] = db.getWheelExternalForceRearLeft()[2];
+        f_n_p_1[8] = db.getTyreExternalForceRearLeft()[2];
+        f_n_p_1[9] = db.getWheelExternalForceRearRight()[2];
+        f_n_p_1[10] = db.getTyreExternalForceRearRight()[2];
     }
     void apply_boundary_condition(int s) {
         condition_type = s;
