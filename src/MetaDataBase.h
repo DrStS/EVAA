@@ -8,9 +8,8 @@
 #include <string>
 
 #include "Constants.h"
-#include "IP_EVAA_XML.h"
-#include "LOAD_EVAA_XML.h"
-#include "LOOKUP_EVAA_XML.h"
+
+// TODO: What's the reason behind U_Lookup?
 #ifndef U_Lookup
 #define U_Lookup
 #include "EVAALookup.h"
@@ -30,20 +29,15 @@ enum solver { EXPLICIT_EULER, RUNGE_KUTTA_4, BROYDEN_EULER, BROYDEN_CN, BROYDEN_
  */
 class MetaDataBase {
 private:
-    MetaDataBase();
+    /** Private constructor for the singleton instance. */
+    MetaDataBase() {}
 
-    // singleton instance
-    static MetaDataBase* _database;
-
-    // filenames
-    std::string _filename;
-    std::string _load_filename;
-    std::string _lookup_filename;
-
-    // pointer to the file parsers
-    std::auto_ptr<car_settings_t> settings;
-    std::auto_ptr<load_t> load_data;
-    std::auto_ptr<lookup_handler_t> lookup_table;
+    /**
+     * Reads and orders params used for the lookup tables and generates the stiffness and damping
+     * lookup tables.
+     * \param[in] filename The XML file.
+     */
+    void readLookupParameters(const std::string& filename);
 
     /**
      * Read 4 legs which contain each 3 vectors
@@ -75,13 +69,12 @@ private:
      * \return storage all components in one vector with 4 elements [XYZW]
      */
     template <typename T>
-    void readangles(double* storage, T vec);
+    void readAngles(double* storage, T vec);
 
     /*
     Holds all general simulation parameters and car specific parameters (such as geometry and
     initial conditions)
     */
-    int DOF;
     double k_tyre[4];
     double k_body[4];
     double c_tyre[4];
@@ -127,44 +120,36 @@ private:
     // boundary condition type
     int boundary_condition_road;
 
+    /** Stiffness lookup from the compute engine. */
+    std::unique_ptr<EVAALookup<Constants::floatEVAA> > _lookupStiffness;
+    /** Damping lookup from the compute engine. */
+    std::unique_ptr<EVAALookup<Constants::floatEVAA> > _lookupDamping;
+
 public:
     /**
-     * \return static pointer to Database
+     * \return The singleton instance of the MetaDataBase.
      */
-    static MetaDataBase* DataBase();
+    static MetaDataBase& getDataBase();
+
+    /** Deleted copy constructor. */
+    MetaDataBase(MetaDataBase const&) = delete;
+
+    /** Deleted copy operator. */
+    void operator=(MetaDataBase const&) = delete;
 
     /**
-     * Initializes the parser for global and car parameters
-     * \param filename
+     * Reads the car, initial and simulation parameters from an XML file.
+     * \param[in] filename The XML file.
      */
-    void setFileName(const std::string& filename);
+    void readParameters(const std::string& filename);
 
     /**
-     * Initializes the parser for environment parameters
-     * \param filename
+     * Reads the load parameters from an XML file.
+     * \param[in] loadFilename The XML file.
      */
-    void setloadFileName(const std::string& filename);
-
-    /**
-     * Read global and car parameters from the XML
-     */
-    void ReadParameters();
-
-    /**
-     * Read environment parameters
-     */
-    void ReadLoadParameters();
-
-    /**
-     * Read lookup table parameters
-     * \param parameters for global simulation parameters
-     * \return lookupStiffness class instance of the lookup handler
-     */
-    void ReadLookupParameters(EVAALookup<Constants::floatEVAA>** lookupStiffness,
-                              EVAALookup<Constants::floatEVAA>** lookupDamping);
+    void readLoadParameters(const std::string& filename);
 
     /* A bunch of getter functions */
-    int getDOF() { return DOF; }
     double getTyreStiffnessFrontLeft() { return k_tyre[0]; }
     double getTyreStiffnessFrontRight() { return k_tyre[1]; }
     double getTyreStiffnessRearLeft() { return k_tyre[2]; }
@@ -328,6 +313,12 @@ public:
     double* getCircularRoadCenter() { return profile_center; }
 
     int getRoadConditions() { return boundary_condition_road; }
+
+    /** Gets the stiffness lookup table. */
+    const EVAALookup<Constants::floatEVAA>& getLookupStiffness() const { return *_lookupStiffness; }
+
+    /** Gets the damping lookup table. */
+    const EVAALookup<Constants::floatEVAA>& getLookupDamping() const { return *_lookupDamping; }
 };
 
 }  // namespace EVAA

@@ -150,10 +150,6 @@ private:
     T norm_r_up_fl, norm_r_up_fr, norm_r_up_rl, norm_r_up_rr;
     T norm_r_low_fl, norm_r_low_fr, norm_r_low_rl, norm_r_low_rr;
 
-    // Lookup table
-
-    EVAALookup<T>* lookupStiffness;
-
     /**
      * Calculate the positions of the tyres and wheels according to the initial orientation of the
      * car The legs always form a 90� angle to the car body, such that the rotational springs are
@@ -383,28 +379,28 @@ private:
 
     void ReadFromXML() {
         // Simulation Parameters
+        auto& db = MetaDataBase::getDataBase();
 
-        h = MetaDataBase::DataBase()->getTimeStepSize();
-        num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
-        max_iter = MetaDataBase::DataBase()->getMaxNumberOfBroydenIterationForMBD();
-        tol = MetaDataBase::DataBase()->getToleranceBroydenIterationForMBD();
-        solution_dim =
-            MetaDataBase::DataBase()->getSolutionVectorSize();  /// this is by the formulation
-        used_solver = MetaDataBase::DataBase()->getUsedSolverForMBD();
-        boundary_conditions = MetaDataBase::DataBase()->getRoadConditions();
-        radius_circular_path = MetaDataBase::DataBase()->getCircularRoadRadius();
-        use_interpolation = MetaDataBase::DataBase()->getUseInterpolation();
+        h = db.getTimeStepSize();
+        num_iter = db.getNumberOfTimeIterations();
+        max_iter = db.getMaxNumberOfBroydenIterationForMBD();
+        tol = db.getToleranceBroydenIterationForMBD();
+        solution_dim = db.getSolutionVectorSize();  /// this is by the formulation
+        used_solver = db.getUsedSolverForMBD();
+        boundary_conditions = db.getRoadConditions();
+        radius_circular_path = db.getCircularRoadRadius();
+        use_interpolation = db.getUseInterpolation();
 
         // Car Definition
 
-        k_body_fl = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
-        k_tyre_fl = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
-        k_body_fr = MetaDataBase::DataBase()->getBodyStiffnessFrontRight();
-        k_tyre_fr = MetaDataBase::DataBase()->getTyreStiffnessFrontRight();
-        k_body_rl = MetaDataBase::DataBase()->getBodyStiffnessRearLeft();
-        k_tyre_rl = MetaDataBase::DataBase()->getTyreStiffnessRearLeft();
-        k_body_rr = MetaDataBase::DataBase()->getBodyStiffnessRearRight();
-        k_tyre_rr = MetaDataBase::DataBase()->getTyreStiffnessRearRight();
+        k_body_fl = db.getBodyStiffnessFrontLeft();
+        k_tyre_fl = db.getTyreStiffnessFrontLeft();
+        k_body_fr = db.getBodyStiffnessFrontRight();
+        k_tyre_fr = db.getTyreStiffnessFrontRight();
+        k_body_rl = db.getBodyStiffnessRearLeft();
+        k_tyre_rl = db.getTyreStiffnessRearLeft();
+        k_body_rr = db.getBodyStiffnessRearRight();
+        k_tyre_rr = db.getTyreStiffnessRearRight();
 
         k_body_rot_fl = 1e5;
         k_body_rot_fr = 1e5;
@@ -415,51 +411,51 @@ private:
         k_tyre_rot_rl = 1e5;
         k_tyre_rot_rr = 1e5;
 
-        c_body_fl = MetaDataBase::DataBase()->getBodyDampingFrontLeft();
-        c_tyre_fl = MetaDataBase::DataBase()->getTyreDampingFrontLeft();
-        c_body_fr = MetaDataBase::DataBase()->getBodyDampingFrontRight();
-        c_tyre_fr = MetaDataBase::DataBase()->getTyreDampingFrontRight();
-        c_body_rl = MetaDataBase::DataBase()->getBodyDampingRearLeft();
-        c_tyre_rl = MetaDataBase::DataBase()->getTyreDampingRearLeft();
-        c_body_rr = MetaDataBase::DataBase()->getBodyDampingRearRight();
-        c_tyre_rr = MetaDataBase::DataBase()->getTyreDampingRearRight();
+        c_body_fl = db.getBodyDampingFrontLeft();
+        c_tyre_fl = db.getTyreDampingFrontLeft();
+        c_body_fr = db.getBodyDampingFrontRight();
+        c_tyre_fr = db.getTyreDampingFrontRight();
+        c_body_rl = db.getBodyDampingRearLeft();
+        c_tyre_rl = db.getTyreDampingRearLeft();
+        c_body_rr = db.getBodyDampingRearRight();
+        c_tyre_rr = db.getTyreDampingRearRight();
 
-        l_long_fl = MetaDataBase::DataBase()->getLongitudalLegPositionFrontLeft();
-        l_long_fr = MetaDataBase::DataBase()->getLongitudalLegPositionFrontRight();
-        l_long_rl = MetaDataBase::DataBase()->getLongitudalLegPositionRearLeft();
-        l_long_rr = MetaDataBase::DataBase()->getLongitudalLegPositionRearRight();
+        l_long_fl = db.getLongitudalLegPositionFrontLeft();
+        l_long_fr = db.getLongitudalLegPositionFrontRight();
+        l_long_rl = db.getLongitudalLegPositionRearLeft();
+        l_long_rr = db.getLongitudalLegPositionRearRight();
 
-        l_lat_fl = MetaDataBase::DataBase()->getLatidudalLegPositionFrontLeft();
-        l_lat_fr = MetaDataBase::DataBase()->getLatidudalLegPositionFrontRight();
-        l_lat_rl = MetaDataBase::DataBase()->getLatidudalLegPositionRearLeft();
-        l_lat_rr = MetaDataBase::DataBase()->getLatidudalLegPositionRearRight();
+        l_lat_fl = db.getLatidudalLegPositionFrontLeft();
+        l_lat_fr = db.getLatidudalLegPositionFrontRight();
+        l_lat_rl = db.getLatidudalLegPositionRearLeft();
+        l_lat_rr = db.getLatidudalLegPositionRearRight();
 
-        mass = MetaDataBase::DataBase()->getBodyMass();
+        mass = db.getBodyMass();
 
-        I_body_xx = MetaDataBase::DataBase()->getMomentOfInertiaXX();
-        I_body_yy = MetaDataBase::DataBase()->getMomentOfInertiaYY();
-        I_body_zz = MetaDataBase::DataBase()->getMomentOfInertiaZZ();
+        I_body_xx = db.getMomentOfInertiaXX();
+        I_body_yy = db.getMomentOfInertiaYY();
+        I_body_zz = db.getMomentOfInertiaZZ();
 
-        mass_wheel_fl = MetaDataBase::DataBase()->getWheelMassFrontLeft();
-        mass_tyre_fl = MetaDataBase::DataBase()->getTyreMassFrontLeft();
-        mass_wheel_fr = MetaDataBase::DataBase()->getWheelMassFrontRight();
-        mass_tyre_fr = MetaDataBase::DataBase()->getTyreMassFrontRight();
-        mass_wheel_rl = MetaDataBase::DataBase()->getWheelMassRearLeft();
-        mass_tyre_rl = MetaDataBase::DataBase()->getTyreMassRearLeft();
-        mass_wheel_rr = MetaDataBase::DataBase()->getWheelMassRearRight();
-        mass_tyre_rr = MetaDataBase::DataBase()->getTyreMassRearRight();
+        mass_wheel_fl = db.getWheelMassFrontLeft();
+        mass_tyre_fl = db.getTyreMassFrontLeft();
+        mass_wheel_fr = db.getWheelMassFrontRight();
+        mass_tyre_fr = db.getTyreMassFrontRight();
+        mass_wheel_rl = db.getWheelMassRearLeft();
+        mass_tyre_rl = db.getTyreMassRearLeft();
+        mass_wheel_rr = db.getWheelMassRearRight();
+        mass_tyre_rr = db.getTyreMassRearRight();
 
-        upper_spring_length_fl = MetaDataBase::DataBase()->getBodySpringLengthFrontLeft();
-        upper_spring_length_fr = MetaDataBase::DataBase()->getBodySpringLengthFrontRight();
-        upper_spring_length_rl = MetaDataBase::DataBase()->getBodySpringLengthRearLeft();
-        upper_spring_length_rr = MetaDataBase::DataBase()->getBodySpringLengthRearRight();
+        upper_spring_length_fl = db.getBodySpringLengthFrontLeft();
+        upper_spring_length_fr = db.getBodySpringLengthFrontRight();
+        upper_spring_length_rl = db.getBodySpringLengthRearLeft();
+        upper_spring_length_rr = db.getBodySpringLengthRearRight();
 
-        lower_spring_length_fl = MetaDataBase::DataBase()->getTyreSpringLengthFrontLeft();
-        lower_spring_length_fr = MetaDataBase::DataBase()->getTyreSpringLengthFrontRight();
-        lower_spring_length_rl = MetaDataBase::DataBase()->getTyreSpringLengthRearLeft();
-        lower_spring_length_rr = MetaDataBase::DataBase()->getTyreSpringLengthRearRight();
+        lower_spring_length_fl = db.getTyreSpringLengthFrontLeft();
+        lower_spring_length_fr = db.getTyreSpringLengthFrontRight();
+        lower_spring_length_rl = db.getTyreSpringLengthRearLeft();
+        lower_spring_length_rr = db.getTyreSpringLengthRearRight();
 
-        g = MetaDataBase::DataBase()->getGravityField()[2];
+        g = db.getGravityField()[2];
 
         // Fill up vectors
         int i;
@@ -481,31 +477,29 @@ private:
         upper_spring_damping[i] = c_body_fl;
         lower_spring_damping[i] = c_tyre_fl;
 
-        initial_upper_spring_length[i] =
-            MetaDataBase::DataBase()->getBodySpringInitialLengthFrontLeft();
-        initial_lower_spring_length[i] =
-            MetaDataBase::DataBase()->getTyreSpringInitialLengthFrontLeft();
-        initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
-        vc[i] = MetaDataBase::DataBase()->getBodyInitialVelocity()[i];
-        vw_fl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft()[i];
-        vw_fr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight()[i];
-        vw_rl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft()[i];
-        vw_rr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight()[i];
-        vt_fl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft()[i];
-        vt_fr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight()[i];
-        vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
-        vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
-        pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
-        FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i];
-        FT_fl[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[i];
-        FT_fr[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[i];
-        FT_rl[i] = MetaDataBase::DataBase()->getTyreExternalForceRearLeft()[i];
-        FT_rr[i] = MetaDataBase::DataBase()->getTyreExternalForceRearRight()[i];
-        FW_fl[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[i];
-        FW_fr[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[i];
-        FW_rl[i] = MetaDataBase::DataBase()->getWheelExternalForceRearLeft()[i];
-        FW_rr[i] = MetaDataBase::DataBase()->getWheelExternalForceRearRight()[i];
-        center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
+        initial_upper_spring_length[i] = db.getBodySpringInitialLengthFrontLeft();
+        initial_lower_spring_length[i] = db.getTyreSpringInitialLengthFrontLeft();
+        initial_orientation[i] = db.getBodyInitialOrientation()[i];
+        vc[i] = db.getBodyInitialVelocity()[i];
+        vw_fl[i] = db.getWheelInitialVelocityFrontLeft()[i];
+        vw_fr[i] = db.getWheelInitialVelocityFrontRight()[i];
+        vw_rl[i] = db.getWheelInitialVelocityRearLeft()[i];
+        vw_rr[i] = db.getWheelInitialVelocityRearRight()[i];
+        vt_fl[i] = db.getTyreInitialVelocityFrontLeft()[i];
+        vt_fr[i] = db.getTyreInitialVelocityFrontRight()[i];
+        vt_rl[i] = db.getTyreInitialVelocityRearLeft()[i];
+        vt_rr[i] = db.getTyreInitialVelocityRearRight()[i];
+        pcc[i] = db.getBodyInitialPosition()[i];
+        FC[i] = db.getBodyExternalForce()[i];
+        FT_fl[i] = db.getTyreExternalForceFrontLeft()[i];
+        FT_fr[i] = db.getTyreExternalForceFrontRight()[i];
+        FT_rl[i] = db.getTyreExternalForceRearLeft()[i];
+        FT_rr[i] = db.getTyreExternalForceRearRight()[i];
+        FW_fl[i] = db.getWheelExternalForceFrontLeft()[i];
+        FW_fr[i] = db.getWheelExternalForceFrontRight()[i];
+        FW_rl[i] = db.getWheelExternalForceRearLeft()[i];
+        FW_rr[i] = db.getWheelExternalForceRearRight()[i];
+        center_of_circle[i] = db.getCircularRoadCenter()[i];
 
         i = 1;
         r_fl[i] = -l_lat_fl;
@@ -523,31 +517,29 @@ private:
         lower_rotational_stiffness[i] = k_tyre_rot_fr;
         upper_spring_damping[i] = c_body_fr;
         lower_spring_damping[i] = c_tyre_fr;
-        initial_upper_spring_length[i] =
-            MetaDataBase::DataBase()->getBodySpringInitialLengthFrontRight();
-        initial_lower_spring_length[i] =
-            MetaDataBase::DataBase()->getTyreSpringInitialLengthFrontRight();
-        initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
-        vc[i] = MetaDataBase::DataBase()->getBodyInitialVelocity()[i];
-        vw_fl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft()[i];
-        vw_fr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight()[i];
-        vw_rl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft()[i];
-        vw_rr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight()[i];
-        vt_fl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft()[i];
-        vt_fr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight()[i];
-        vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
-        vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
-        pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
-        FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i];
-        FT_fl[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[i];
-        FT_fr[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[i];
-        FT_rl[i] = MetaDataBase::DataBase()->getTyreExternalForceRearLeft()[i];
-        FT_rr[i] = MetaDataBase::DataBase()->getTyreExternalForceRearRight()[i];
-        FW_fl[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[i];
-        FW_fr[i] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[i];
-        FW_rl[i] = MetaDataBase::DataBase()->getWheelExternalForceRearLeft()[i];
-        FW_rr[i] = MetaDataBase::DataBase()->getWheelExternalForceRearRight()[i];
-        center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
+        initial_upper_spring_length[i] = db.getBodySpringInitialLengthFrontRight();
+        initial_lower_spring_length[i] = db.getTyreSpringInitialLengthFrontRight();
+        initial_orientation[i] = db.getBodyInitialOrientation()[i];
+        vc[i] = db.getBodyInitialVelocity()[i];
+        vw_fl[i] = db.getWheelInitialVelocityFrontLeft()[i];
+        vw_fr[i] = db.getWheelInitialVelocityFrontRight()[i];
+        vw_rl[i] = db.getWheelInitialVelocityRearLeft()[i];
+        vw_rr[i] = db.getWheelInitialVelocityRearRight()[i];
+        vt_fl[i] = db.getTyreInitialVelocityFrontLeft()[i];
+        vt_fr[i] = db.getTyreInitialVelocityFrontRight()[i];
+        vt_rl[i] = db.getTyreInitialVelocityRearLeft()[i];
+        vt_rr[i] = db.getTyreInitialVelocityRearRight()[i];
+        pcc[i] = db.getBodyInitialPosition()[i];
+        FC[i] = db.getBodyExternalForce()[i];
+        FT_fl[i] = db.getTyreExternalForceFrontLeft()[i];
+        FT_fr[i] = db.getTyreExternalForceFrontRight()[i];
+        FT_rl[i] = db.getTyreExternalForceRearLeft()[i];
+        FT_rr[i] = db.getTyreExternalForceRearRight()[i];
+        FW_fl[i] = db.getWheelExternalForceFrontLeft()[i];
+        FW_fr[i] = db.getWheelExternalForceFrontRight()[i];
+        FW_rl[i] = db.getWheelExternalForceRearLeft()[i];
+        FW_rr[i] = db.getWheelExternalForceRearRight()[i];
+        center_of_circle[i] = db.getCircularRoadCenter()[i];
 
         i = 2;
         r_fl[i] = 0;
@@ -565,34 +557,29 @@ private:
         lower_rotational_stiffness[i] = k_tyre_rot_rl;
         upper_spring_damping[i] = c_body_rl;
         lower_spring_damping[i] = c_tyre_rl;
-        initial_upper_spring_length[i] =
-            MetaDataBase::DataBase()->getBodySpringInitialLengthRearLeft();
-        initial_lower_spring_length[i] =
-            MetaDataBase::DataBase()->getTyreSpringInitialLengthRearLeft();
-        initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
-        vc[i] = MetaDataBase::DataBase()->getBodyInitialVelocity()[i];
-        vw_fl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft()[i];
-        vw_fr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight()[i];
-        vw_rl[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft()[i];
-        vw_rr[i] = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight()[i];
-        vt_fl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft()[i];
-        vt_fr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight()[i];
-        vt_rl[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft()[i];
-        vt_rr[i] = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight()[i];
-        pcc[i] = MetaDataBase::DataBase()->getBodyInitialPosition()[i];
-        FC[i] = MetaDataBase::DataBase()->getBodyExternalForce()[i] - mass * g;
-        FT_fl[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[i] - mass_tyre_fl * g;
-        FT_fr[i] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[i] - mass_tyre_fr * g;
-        FT_rl[i] = MetaDataBase::DataBase()->getTyreExternalForceRearLeft()[i] - mass_tyre_rl * g;
-        FT_rr[i] = MetaDataBase::DataBase()->getTyreExternalForceRearRight()[i] - mass_tyre_rr * g;
-        FW_fl[i] =
-            MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[i] - mass_wheel_fl * g;
-        FW_fr[i] =
-            MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[i] - mass_wheel_fr * g;
-        FW_rl[i] = MetaDataBase::DataBase()->getWheelExternalForceRearLeft()[i] - mass_wheel_rl * g;
-        FW_rr[i] =
-            MetaDataBase::DataBase()->getWheelExternalForceRearRight()[i] - mass_wheel_rr * g;
-        center_of_circle[i] = MetaDataBase::DataBase()->getCircularRoadCenter()[i];
+        initial_upper_spring_length[i] = db.getBodySpringInitialLengthRearLeft();
+        initial_lower_spring_length[i] = db.getTyreSpringInitialLengthRearLeft();
+        initial_orientation[i] = db.getBodyInitialOrientation()[i];
+        vc[i] = db.getBodyInitialVelocity()[i];
+        vw_fl[i] = db.getWheelInitialVelocityFrontLeft()[i];
+        vw_fr[i] = db.getWheelInitialVelocityFrontRight()[i];
+        vw_rl[i] = db.getWheelInitialVelocityRearLeft()[i];
+        vw_rr[i] = db.getWheelInitialVelocityRearRight()[i];
+        vt_fl[i] = db.getTyreInitialVelocityFrontLeft()[i];
+        vt_fr[i] = db.getTyreInitialVelocityFrontRight()[i];
+        vt_rl[i] = db.getTyreInitialVelocityRearLeft()[i];
+        vt_rr[i] = db.getTyreInitialVelocityRearRight()[i];
+        pcc[i] = db.getBodyInitialPosition()[i];
+        FC[i] = db.getBodyExternalForce()[i] - mass * g;
+        FT_fl[i] = db.getTyreExternalForceFrontLeft()[i] - mass_tyre_fl * g;
+        FT_fr[i] = db.getTyreExternalForceFrontRight()[i] - mass_tyre_fr * g;
+        FT_rl[i] = db.getTyreExternalForceRearLeft()[i] - mass_tyre_rl * g;
+        FT_rr[i] = db.getTyreExternalForceRearRight()[i] - mass_tyre_rr * g;
+        FW_fl[i] = db.getWheelExternalForceFrontLeft()[i] - mass_wheel_fl * g;
+        FW_fr[i] = db.getWheelExternalForceFrontRight()[i] - mass_wheel_fr * g;
+        FW_rl[i] = db.getWheelExternalForceRearLeft()[i] - mass_wheel_rl * g;
+        FW_rr[i] = db.getWheelExternalForceRearRight()[i] - mass_wheel_rr * g;
+        center_of_circle[i] = db.getCircularRoadCenter()[i];
 
         i = 3;
         mass_wheel[i] = mass_wheel_rr;
@@ -605,11 +592,9 @@ private:
         lower_rotational_stiffness[i] = k_tyre_rot_rr;
         upper_spring_damping[i] = c_body_rr;
         lower_spring_damping[i] = c_tyre_rr;
-        initial_upper_spring_length[i] =
-            MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
-        initial_lower_spring_length[i] =
-            MetaDataBase::DataBase()->getTyreSpringInitialLengthRearRight();
-        initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
+        initial_upper_spring_length[i] = db.getBodySpringInitialLengthRearRight();
+        initial_lower_spring_length[i] = db.getTyreSpringInitialLengthRearRight();
+        initial_orientation[i] = db.getBodyInitialOrientation()[i];
     }
 
     void getCholeskyDecomposition() {
@@ -1068,7 +1053,8 @@ private:
             current_spring_lengths[6] = norm_r_up_rr;
             current_spring_lengths[7] = norm_r_low_rr;
             // calculate the new stiffnesses
-            lookupStiffness->getInterpolation(current_spring_lengths, stiffness_vector);
+            MetaDataBase::getDataBase().getLookupStiffness().getInterpolation(
+                current_spring_lengths, stiffness_vector);
 
             // overwrite stiffness values
             upper_spring_stiffness[0] = stiffness_vector[0];
@@ -1807,9 +1793,7 @@ public:
     /**
      * Constructor
      */
-    MBD_method(EVAALookup<Constants::floatEVAA>* interpolator) {
-        lookupStiffness = interpolator;
-
+    MBD_method() {
         MemoryAllocation();
 
         ReadFromXML();

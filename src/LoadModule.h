@@ -47,6 +47,8 @@ public:
         Active_Profile = Profile_type;
         Car_obj = Car1;
 
+        auto& db = MetaDataBase::getDataBase();
+
         // auxiliary vectors
         Normal_ext = (T*)mkl_malloc(sizeof(T) * Constants::DIM,
                                     Constants::ALIGNMENT);  // normal_force, with external forces
@@ -57,39 +59,39 @@ public:
         External_force = (T*)mkl_calloc((Constants::VEC_DIM * Constants::DIM), sizeof(T),
                                         Constants::ALIGNMENT);  // 3 * 9
         // set_External_force();
-        Math::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyExternalForce(), 1,
-                   External_force, 1);  // copy the center of mass position
+        Math::copy(Constants::DIM, db.getBodyExternalForce(), 1, External_force,
+                   1);  // copy the center of mass position
         T *xml_start, *position_start;
-        xml_start = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft();
+        xml_start = db.getWheelExternalForceFrontLeft();
         position_start = External_force + 3;
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // W2 = W_fr
-        xml_start = MetaDataBase::DataBase()->getWheelExternalForceFrontRight();
+        xml_start = db.getWheelExternalForceFrontRight();
         position_start += 6;  // skip 3 for tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // W3 = W_rl
-        xml_start = MetaDataBase::DataBase()->getWheelExternalForceRearLeft();
+        xml_start = db.getWheelExternalForceRearLeft();
         position_start += 6;  // skip 3 for tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // W2 = W_rr
-        xml_start = MetaDataBase::DataBase()->getWheelExternalForceRearRight();
+        xml_start = db.getWheelExternalForceRearRight();
         position_start += 6;  // skip 3 for tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
 
         // T1 = T_fl
-        xml_start = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft();
+        xml_start = db.getTyreExternalForceFrontLeft();
         position_start = External_force + 6;  // skip 3 for center of mass and 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // T2 = T_fr
-        xml_start = MetaDataBase::DataBase()->getTyreExternalForceFrontRight();
+        xml_start = db.getTyreExternalForceFrontRight();
         position_start += 6;  // skip 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // T3 = T_rl
-        xml_start = MetaDataBase::DataBase()->getTyreExternalForceRearLeft();
+        xml_start = db.getTyreExternalForceRearLeft();
         position_start += 6;  // skip 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // T4 = T_rr
-        xml_start = MetaDataBase::DataBase()->getTyreExternalForceRearRight();
+        xml_start = db.getTyreExternalForceRearRight();
         position_start += 6;  // skip 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
     }
@@ -174,40 +176,41 @@ public:
 
     void set_External_force() {
         // in LoadModule constructor commented
+        auto& db = MetaDataBase::getDataBase();
 
-        Math::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyExternalForce(), 1,
-                   External_force, 1);  // copy the center of mass position
+        Math::copy(Constants::DIM, db.getBodyExternalForce(), 1, External_force,
+                   1);  // copy the center of mass position
         T *xml_start, *position_start;
-        xml_start = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft();
+        xml_start = db.getWheelExternalForceFrontLeft();
         position_start = External_force + 3;
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // W2 = W_fr
-        xml_start = MetaDataBase::DataBase()->getWheelExternalForceFrontRight();
+        xml_start = db.getWheelExternalForceFrontRight();
         position_start += 6;  // skip 3 for tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // W3 = W_rl
-        xml_start = MetaDataBase::DataBase()->getWheelExternalForceRearLeft();
+        xml_start = db.getWheelExternalForceRearLeft();
         position_start += 6;  // skip 3 for tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // W2 = W_rr
-        xml_start = MetaDataBase::DataBase()->getWheelExternalForceRearRight();
+        xml_start = db.getWheelExternalForceRearRight();
         position_start += 6;  // skip 3 for tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
 
         // T1 = T_fl
-        xml_start = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft();
+        xml_start = db.getTyreExternalForceFrontLeft();
         position_start = External_force + 6;  // skip 3 for center of mass and 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // T2 = T_fr
-        xml_start = MetaDataBase::DataBase()->getTyreExternalForceFrontRight();
+        xml_start = db.getTyreExternalForceFrontRight();
         position_start += 6;  // skip 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // T3 = T_rl
-        xml_start = MetaDataBase::DataBase()->getTyreExternalForceRearLeft();
+        xml_start = db.getTyreExternalForceRearLeft();
         position_start += 6;  // skip 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
         // T4 = T_rr
-        xml_start = MetaDataBase::DataBase()->getTyreExternalForceRearRight();
+        xml_start = db.getTyreExternalForceRearRight();
         position_start += 6;  // skip 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
     }

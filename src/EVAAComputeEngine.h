@@ -30,12 +30,6 @@
 #include <chrono>
 #include <string>
 
-// TODO: What's the reason behind U_Lookup?
-#ifndef U_Lookup
-#define U_Lookup
-#include "EVAALookup.h"
-#endif
-
 #include "11DOF.h"
 #include "ALE.h"
 #include "MBDMethod.h"
@@ -54,17 +48,11 @@ public:
      * \author Stefan Sicklinger
      */
     EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName);
-    /**
-     * \brief Destructor
-     * \author Stefan Sicklinger
-     */
 
-    ~EVAAComputeEngine();
     /**
      * \brief print info
      * \author Stefan Sicklinger
      */
-
     void printInfo(void);
 
     // EIGEN
@@ -123,12 +111,6 @@ public:
      * \author Stefan Sicklinger
      */
     void clean(void);
-
-private:
-    std::string _xmlCarFileName;
-    std::string _xmlLoadFileName;
-    EVAALookup<Constants::floatEVAA>* _lookupStiffness;
-    EVAALookup<Constants::floatEVAA>* _lookupDamping;
 };
 
 }  // namespace EVAA

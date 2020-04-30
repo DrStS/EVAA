@@ -64,11 +64,7 @@ public:
     /**
      * Constructor
      */
-    TwoTrackModelParent(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation,
-                        EVAALookup<T>* dampingInterpolation) :
-        lookupStiffness(stiffnessInterpolation),
-        lookupDamping(dampingInterpolation),
-        _car(input_car) {}
+    explicit TwoTrackModelParent(Car<T>* input_car) : _car(input_car) {}
 
     /**
      * Performs one timestep of the 11DOF solver
@@ -168,9 +164,7 @@ public:
     /**
      * \brief Constructor
      */
-    TwoTrackModelBE(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation,
-                    EVAALookup<T>* dampingInterpolation) :
-        TwoTrackModelParent<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
+    explicit TwoTrackModelBE(Car<T>* input_car) : TwoTrackModelParent(input_car) {
         u_n_m_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);  // velocity
         u_n = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);      // position
         u_n_p_1 = _car->currentDisplacementTwoTrackModel;                            // position
@@ -198,10 +192,10 @@ public:
         dddl = (T*)mkl_calloc(Constants::NUM_LEGS * 2, sizeof(T), Constants::ALIGNMENT);
         residual = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
 #endif
-        _h = MetaDataBase::DataBase()->getTimeStepSize();
+        _h = MetaDataBase::getDataBase().getTimeStepSize();
         factor_h = 1 / _h;
 
-        // if interpolation is used we need alll the lengths to interpolate damping and stiffness
+        // if interpolation is used we need all the lengths to interpolate damping and stiffness
         // if not we have to define them populate kVec
         kVec = _car->kVec;
         // populate dVec
@@ -351,7 +345,8 @@ public:
      */
     void constructStiffnessMatrix() {
 #ifdef INTERPOLATION
-        lookupStiffness->getInterpolation(_car->currentSpringsLength, kVec);
+        MetaDataBase::getDataBase().getLookupStiffness().getInterpolation(
+            _car->currentSpringsLength, kVec);
 #endif
         temp[0] = kVec[0] + kVec[2] + kVec[4] + kVec[6];
         K[1] = kVec[0] * _car->l_lat[0] - kVec[2] * _car->l_lat[1] + kVec[4] * _car->l_lat[2] -
@@ -465,7 +460,8 @@ public:
      */
     void constructDampingMatrix() {
 #ifdef INTERPOLATION
-        //		lookupDamping->getInterpolation(_car->currentSpringsLength, dVec);
+        // MetaDataBase::getDataBase().getLookupDamping()->getInterpolation(_car->currentSpringsLength,
+        // dVec);
 #endif
         temp[0] = dVec[0] + dVec[2] + dVec[4] + dVec[6];
         D[1] = dVec[0] * _car->l_lat[0] - dVec[2] * _car->l_lat[1] + dVec[4] * _car->l_lat[2] -
@@ -837,9 +833,7 @@ public:
     /**
      * Constructor.
      */
-    TwoTrackModelBDF2(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation,
-                      EVAALookup<T>* dampingInterpolation) :
-        TwoTrackModelBE<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
+    TwoTrackModelBDF2(Car<T>* input_car) : TwoTrackModelBE<T>(input_car) {
         Dmat = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
         E = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
         u_n_m_2 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
@@ -969,23 +963,22 @@ public:
 template <typename T>
 class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
 public:
-    TwoTrackModelFull(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation,
-                      EVAALookup<T>* dampingInterpolation) :
-        TwoTrackModelBDF2<T>(input_car, stiffnessInterpolation, dampingInterpolation) {
-        tend_ = MetaDataBase::DataBase()->getNumberOfTimeIterations() * _h;
+    TwoTrackModelFull(Car<T>* input_car) : TwoTrackModelBDF2<T>(input_car) {
+        auto& db = MetaDataBase::getDataBase();
+        tend_ = db.getNumberOfTimeIterations() * _h;
         int sol_size = (floor(tend_ / _h) + 1);
         f_n_p_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
         u_sol = (T*)mkl_calloc((sol_size + 1) * (Constants::DOF), sizeof(T), Constants::ALIGNMENT);
 
-        f_n_p_1[0] = MetaDataBase::DataBase()->getBodyExternalForce()[2];
-        f_n_p_1[3] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[2];
-        f_n_p_1[4] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[2];
-        f_n_p_1[5] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[2];
-        f_n_p_1[6] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[2];
-        f_n_p_1[7] = MetaDataBase::DataBase()->getWheelExternalForceFrontLeft()[2];
-        f_n_p_1[8] = MetaDataBase::DataBase()->getTyreExternalForceFrontLeft()[2];
-        f_n_p_1[9] = MetaDataBase::DataBase()->getWheelExternalForceFrontRight()[2];
-        f_n_p_1[10] = MetaDataBase::DataBase()->getTyreExternalForceFrontRight()[2];
+        f_n_p_1[0] = db.getBodyExternalForce()[2];
+        f_n_p_1[3] = db.getWheelExternalForceFrontLeft()[2];
+        f_n_p_1[4] = db.getTyreExternalForceFrontLeft()[2];
+        f_n_p_1[5] = db.getWheelExternalForceFrontRight()[2];
+        f_n_p_1[6] = db.getTyreExternalForceFrontRight()[2];
+        f_n_p_1[7] = db.getWheelExternalForceFrontLeft()[2];
+        f_n_p_1[8] = db.getTyreExternalForceFrontLeft()[2];
+        f_n_p_1[9] = db.getWheelExternalForceFrontRight()[2];
+        f_n_p_1[10] = db.getTyreExternalForceFrontRight()[2];
     }
     void apply_boundary_condition(int s) {
         condition_type = s;

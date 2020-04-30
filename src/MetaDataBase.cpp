@@ -13,39 +13,15 @@
 #include <iostream>
 #include <string>
 
+#include "IP_EVAA_XML.h"
+#include "LOAD_EVAA_XML.h"
+#include "LOOKUP_EVAA_XML.h"
+
 namespace EVAA {
 
-MetaDataBase* MetaDataBase::_database = NULL;
-
-MetaDataBase* MetaDataBase::DataBase() {
-    if (!_database) _database = new MetaDataBase;
-    return _database;
-}
-
-/**
- * \brief blank private Constructor
- */
-MetaDataBase::MetaDataBase() {
-    _filename = "";
-    _load_filename = "";
-}
-
-/**
- * \brief setter for the Filename
- * \param[in] reference to the filename
- */
-void MetaDataBase::setFileName(const std::string& filename) {
-    _filename = filename;
-    settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
-}
-
-/**
- * \brief setter for the load Filename
- * \param[in] reference to the load filename
- */
-void MetaDataBase::setloadFileName(const std::string& filename) {
-    _load_filename = filename;
-    load_data = EVAA_load_module(filename, xml_schema::flags::dont_validate);
+MetaDataBase& MetaDataBase::getDataBase() {
+    static MetaDataBase database;
+    return database;
 }
 
 /**
@@ -84,115 +60,89 @@ void MetaDataBase::readLegs(double* storage, T vec) {
  * \brief reads quaternion
  */
 template <typename T>
-void MetaDataBase::readangles(double* storage, T vec) {
+void MetaDataBase::readAngles(double* storage, T vec) {
     storage[0] = vec.x();
     storage[1] = vec.y();
     storage[2] = vec.z();
     storage[3] = vec.w();
 }
 
-/**
- * \brief read car, initial and simulaiton parameter
- */
-void MetaDataBase::ReadParameters() {
+void MetaDataBase::readParameters(const std::string& filename) {
     // Load car parameters
 
-    mass_body = settings->VehicleXML().TwoTrackModelXML().MassXML().BodyXML();
-    readLegs(mass_wheel, settings->VehicleXML().TwoTrackModelXML().MassXML().UnsprungMassXML());
-    readLegs(mass_tyre, settings->VehicleXML().TwoTrackModelXML().MassXML().TyreXML());
-    I_body[0] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().XX();
-    I_body[1] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().XY();
-    I_body[2] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().XZ();
-    I_body[3] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().YX();
-    I_body[4] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().YY();
-    I_body[5] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().YZ();
-    I_body[6] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().ZX();
-    I_body[7] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().ZY();
-    I_body[8] = settings->VehicleXML().TwoTrackModelXML().InertiaXML().ZZ();
-    if (settings->VehicleXML().TwoTrackModelXML().StiffnessXML().ConstantXML().present()) {
+    const auto settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
+    const auto twoTrackModel = settings->VehicleXML().TwoTrackModelXML();
+
+    mass_body = twoTrackModel.MassXML().BodyXML();
+    readLegs(mass_wheel, twoTrackModel.MassXML().UnsprungMassXML());
+    readLegs(mass_tyre, twoTrackModel.MassXML().TyreXML());
+    I_body[0] = twoTrackModel.InertiaXML().XX();
+    I_body[1] = twoTrackModel.InertiaXML().XY();
+    I_body[2] = twoTrackModel.InertiaXML().XZ();
+    I_body[3] = twoTrackModel.InertiaXML().YX();
+    I_body[4] = twoTrackModel.InertiaXML().YY();
+    I_body[5] = twoTrackModel.InertiaXML().YZ();
+    I_body[6] = twoTrackModel.InertiaXML().ZX();
+    I_body[7] = twoTrackModel.InertiaXML().ZY();
+    I_body[8] = twoTrackModel.InertiaXML().ZZ();
+
+    if (twoTrackModel.StiffnessXML().ConstantXML().present()) {
         std::cout << "Take constant stiffness without lookup table" << std::endl;
-        readLegs(
-            k_tyre,
-            settings->VehicleXML().TwoTrackModelXML().StiffnessXML().ConstantXML().get().TyreXML());
-        readLegs(
-            k_body,
-            settings->VehicleXML().TwoTrackModelXML().StiffnessXML().ConstantXML().get().BodyXML());
-        _lookup_filename = "NO_FILE_SPECIFIED";
+        readLegs(k_tyre, twoTrackModel.StiffnessXML().ConstantXML().get().TyreXML());
+        readLegs(k_body, twoTrackModel.StiffnessXML().ConstantXML().get().BodyXML());
     }
     else {
-        _lookup_filename = settings->VehicleXML()
-                               .TwoTrackModelXML()
-                               .StiffnessXML()
-                               .LookupTableXML()
-                               .get()
-                               .FilePathXML();
-        std::ifstream f(_lookup_filename.c_str());
+        auto lookupFilename = twoTrackModel.StiffnessXML().LookupTableXML().get().FilePathXML();
+        std::ifstream f(lookupFilename.c_str());
         if (f.good()) {
-            std::cout << "Read lookup table from " << _lookup_filename << std::endl;
+            std::cout << "Read lookup table from " << lookupFilename << std::endl;
         }
         else {
-            std::cout << "Lookup table at " << _lookup_filename << " does not exist!" << std::endl;
+            std::cout << "Lookup table at " << lookupFilename << " does not exist!" << std::endl;
             exit(2);
         }
+        readLookupParameters(lookupFilename);
     }
-    readLegs(c_tyre, settings->VehicleXML().TwoTrackModelXML().DampingCoefficientsXML().TyreXML());
-    readLegs(c_body, settings->VehicleXML().TwoTrackModelXML().DampingCoefficientsXML().BodyXML());
-    readLegs(
-        l_long,
-        settings->VehicleXML().TwoTrackModelXML().GeometryXML().LongitudinalReferenceToWheelXML());
-    readLegs(l_lat,
-             settings->VehicleXML().TwoTrackModelXML().GeometryXML().LateralReferenceToWheelXML());
-    readVector(vehicleCIR, settings->VehicleXML()
-                               .TwoTrackModelXML()
-                               .GeometryXML()
-                               .RelativeCenterOfInstanteneousRotation());
-    readLegs(lower_spring_length,
-             settings->VehicleXML().TwoTrackModelXML().GeometryXML().SuspensionSpringsXML());
-    readLegs(upper_spring_length,
-             settings->VehicleXML().TwoTrackModelXML().GeometryXML().TyreSpringsXML());
+    readLegs(c_tyre, twoTrackModel.DampingCoefficientsXML().TyreXML());
+    readLegs(c_body, twoTrackModel.DampingCoefficientsXML().BodyXML());
+    readLegs(l_long, twoTrackModel.GeometryXML().LongitudinalReferenceToWheelXML());
+    readLegs(l_lat, twoTrackModel.GeometryXML().LateralReferenceToWheelXML());
+    readVector(vehicleCIR, twoTrackModel.GeometryXML().RelativeCenterOfInstanteneousRotation());
+    readLegs(lower_spring_length, twoTrackModel.GeometryXML().SuspensionSpringsXML());
+    readLegs(upper_spring_length, twoTrackModel.GeometryXML().TyreSpringsXML());
 
     // Load initial parameters
+    const auto initial = settings->InitialConditionsXML();
 
-    readVector(initial_vel_body, settings->InitialConditionsXML().VelocitiesXML().BodyXML());
-    readVector(initial_ang_vel_body,
-               settings->InitialConditionsXML().VelocitiesXML().angularBodyXML());
+    readVector(initial_vel_body, initial.VelocitiesXML().BodyXML());
+    readVector(initial_ang_vel_body, initial.VelocitiesXML().angularBodyXML());
 
-    readVectorLegs(initial_vel_wheel,
-                   settings->InitialConditionsXML().VelocitiesXML().UnsprungMassXML());
-    readVectorLegs(initial_vel_tyre, settings->InitialConditionsXML().VelocitiesXML().TyreXML());
+    readVectorLegs(initial_vel_wheel, initial.VelocitiesXML().UnsprungMassXML());
+    readVectorLegs(initial_vel_tyre, initial.VelocitiesXML().TyreXML());
 
-    readLegs(initial_lower_spring_length,
-             settings->InitialConditionsXML().SpringElongationXML().TyreXML());
-    readLegs(initial_upper_spring_length,
-             settings->InitialConditionsXML().SpringElongationXML().BodyXML());
+    readLegs(initial_lower_spring_length, initial.SpringElongationXML().TyreXML());
+    readLegs(initial_upper_spring_length, initial.SpringElongationXML().BodyXML());
 
-    readVector(initial_pos_body, settings->InitialConditionsXML().PositionXML().BodyXML());
-    if (settings->InitialConditionsXML().PositionXML().UnsprungMassXML().present()) {
+    readVector(initial_pos_body, initial.PositionXML().BodyXML());
+    if (initial.PositionXML().UnsprungMassXML().present()) {
         initial_leg_flag = 1;
-        readVectorLegs(initial_pos_wheel,
-                       settings->InitialConditionsXML().PositionXML().UnsprungMassXML().get());
-        readVectorLegs(initial_pos_tyre,
-                       settings->InitialConditionsXML().PositionXML().TyreXML().get());
+        readVectorLegs(initial_pos_wheel, initial.PositionXML().UnsprungMassXML().get());
+        readVectorLegs(initial_pos_tyre, initial.PositionXML().TyreXML().get());
     }
 
-    readangles(initialAngleGlobal, settings->InitialConditionsXML().OrientationXML());
+    readAngles(initialAngleGlobal, initial.OrientationXML());
 
     // Load simulation parameters
+    const auto simulation = settings->SimulationParametersXML();
 
-    readVector(gravity, settings->SimulationParametersXML().GeneralSettingsXML().GravityXML());
-    num_time_iter =
-        settings->SimulationParametersXML().GeneralSettingsXML().NumberOfIterationsXML();
-    timestep = settings->SimulationParametersXML().GeneralSettingsXML().TimestepSizeXML();
+    readVector(gravity, simulation.GeneralSettingsXML().GravityXML());
+    num_time_iter = simulation.GeneralSettingsXML().NumberOfIterationsXML();
+    timestep = simulation.GeneralSettingsXML().TimestepSizeXML();
 
-    DOF = settings->SimulationParametersXML().LinearALEXML().DOFXML();
-
-    max_num_iter =
-        settings->SimulationParametersXML().MultyBodyDynamicsXML().MaximalIterationNumberXML();
-    tolerance = settings->SimulationParametersXML().MultyBodyDynamicsXML().ToleranceXML();
-    solution_dim =
-        settings->SimulationParametersXML().MultyBodyDynamicsXML().SolutionDimensionXML();
-
-    std::string solver = settings->SimulationParametersXML().MultyBodyDynamicsXML().SolverXML();
+    max_num_iter = simulation.MultyBodyDynamicsXML().MaximalIterationNumberXML();
+    tolerance = simulation.MultyBodyDynamicsXML().ToleranceXML();
+    solution_dim = simulation.MultyBodyDynamicsXML().SolutionDimensionXML();
+    std::string solver = simulation.MultyBodyDynamicsXML().SolverXML();
 
     if (solver == "explicit_Euler") {
         MBD_solver = EXPLICIT_EULER;
@@ -217,11 +167,9 @@ void MetaDataBase::ReadParameters() {
     }
 }
 
-/**
- * \brief read boundary condition and forces on tyres, wheel and body
- */
-void MetaDataBase::ReadLoadParameters() {
+void MetaDataBase::readLoadParameters(const std::string& filename) {
     // Load external parameters
+    const auto load_data = EVAA_load_module(filename, xml_schema::flags::dont_validate);
 
     std::string boundary_conditions = load_data->boundary_description().BoundaryConditions();
     if (boundary_conditions == "fixed") {
@@ -250,38 +198,33 @@ void MetaDataBase::ReadLoadParameters() {
     readVector(external_force_body, load_data->forces().force_body());
 }
 
-/**
- * \brief read and order params used for the loookup tables and generate the stiffness and damping
- * loookup table
- * \param[out] pointer to the pointer to the stiffness lookup from the compute engine
- * \param[out] pointer to the pointer to the damping lookup from the compute engine
- */
-void MetaDataBase::ReadLookupParameters(EVAALookup<Constants::floatEVAA>** lookupStiffness,
-                                        EVAALookup<Constants::floatEVAA>** lookupDamping) {
-    if (_lookup_filename == "NO_FILE_SPECIFIED") return;
-    lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
-    if (lookup_table->LookupTableGenerator().present()) {
+void MetaDataBase::readLookupParameters(const std::string& filename) {
+    const auto lookup = LookupHandler(filename, xml_schema::flags::dont_validate);
+
+    const auto generator = lookup->LookupTableGenerator();
+    if (generator.present()) {
         double *a, *k_body, *k_tyre;
         double b, c, l_min, l_max;
         int size, k, type, order;
 
+        // TODO: statics or mkl_malloc;
         a = new (double[8]);
         k_body = new (double[4]);
         k_tyre = new (double[4]);
 
         std::cout << "Generate look up table from parameters." << std::endl;
 
-        size = lookup_table->LookupTableGenerator().get().Size();
-        b = lookup_table->LookupTableGenerator().get().TableParameters().b();
-        c = lookup_table->LookupTableGenerator().get().TableParameters().c();
-        l_min = lookup_table->LookupTableGenerator().get().Range().l_min();
-        l_max = lookup_table->LookupTableGenerator().get().Range().l_max();
-        k = lookup_table->LookupTableGenerator().get().InterpolationMethod().k();
-        type = lookup_table->LookupTableGenerator().get().InterpolationMethod().type();
-        order = lookup_table->LookupTableGenerator().get().InterpolationMethod().order();
+        size = generator->Size();
+        b = generator->TableParameters().b();
+        c = generator->TableParameters().c();
+        l_min = generator->Range().l_min();
+        l_max = generator->Range().l_max();
+        k = generator->InterpolationMethod().k();
+        type = generator->InterpolationMethod().type();
+        order = generator->InterpolationMethod().order();
 
-        readLegs(k_body, lookup_table->LookupTableGenerator().get().Magnitude().Body());
-        readLegs(k_tyre, lookup_table->LookupTableGenerator().get().Magnitude().Tyre());
+        readLegs(k_body, generator->Magnitude().Body());
+        readLegs(k_tyre, generator->Magnitude().Tyre());
         a[0] = k_body[0];
         a[1] = k_tyre[0];
         a[2] = k_body[1];
@@ -291,16 +234,16 @@ void MetaDataBase::ReadLookupParameters(EVAALookup<Constants::floatEVAA>** looku
         a[6] = k_body[3];
         a[7] = k_tyre[3];
 
-        *lookupStiffness =
-            new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
+        _lookupStiffness = std::make_unique<EVAALookup<Constants::floatEVAA>>(
+            size, a, b, c, l_min, l_max, k, type, order);
         interpolation = 1;  // to switch from constant to interpolation type
 
         // damping is /100 from the stiffness for the start
         for (auto j = 0; j < k; j++) {
             a[j] /= 100;
         }
-        *lookupDamping =
-            new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
+        _lookupDamping = std::make_unique<EVAALookup<Constants::floatEVAA>>(size, a, b, c, l_min,
+                                                                            l_max, k, type, order);
         delete[] a;
         delete[] k_body;
         delete[] k_tyre;

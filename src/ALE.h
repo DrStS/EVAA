@@ -18,11 +18,9 @@ private:
     Car<T>* Car_obj;                 // suppose Interpolation in the Car
     LoadModule<T>* Load_module_obj;  // needs Profile and Car
     TwoTrackModelParent<T>* TwoTrackModel_obj;
-    EVAALookup<Constants::floatEVAA>* interpolator;  // interpolator member of EVAA
     Profile<T>* profile_obj;
 
     // simulation parameters
-    int DOF;
     T tend_;
     T h_;
 
@@ -67,17 +65,13 @@ public:
      * Constructor
      */
     ALE(Car<T>* Car_obj_val, LoadModule<T>* Load_module_val,
-        TwoTrackModelParent<T>* TwoTrackModel_val, EVAALookup<T>* lookup_table) {
+        TwoTrackModelParent<T>* TwoTrackModel_val) {
         Car_obj = Car_obj_val;
         Load_module_obj = Load_module_val;
         TwoTrackModel_obj = TwoTrackModel_val;
-        interpolator = lookup_table;
 
-        // general parameters of the simulation
-        DOF = MetaDataBase::DataBase()->getDOF();
-
-        h_ = MetaDataBase::DataBase()->getTimeStepSize();
-        tend_ = MetaDataBase::DataBase()->getNumberOfTimeIterations() * h_;
+        h_ = MetaDataBase::getDataBase().getTimeStepSize();
+        tend_ = MetaDataBase::getDataBase().getNumberOfTimeIterations() * h_;
     }
 
     /**
@@ -145,7 +139,7 @@ public:
         u_sol = (T*)mkl_calloc(sol_size * (Constants::VEC_DIM * Constants::DIM), sizeof(T),
                                Constants::ALIGNMENT);
         force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), Constants::ALIGNMENT);
-        force_vector_11dof = (T*)mkl_calloc(DOF, sizeof(T), Constants::ALIGNMENT);
+        force_vector_11dof = (T*)mkl_calloc(Constants::DOF, sizeof(T), Constants::ALIGNMENT);
         full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), Constants::ALIGNMENT);
         centripetal_force =
             (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), Constants::ALIGNMENT);

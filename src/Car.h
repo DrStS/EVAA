@@ -222,8 +222,6 @@ public:
     T* currentCornerPositions;  // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]         sorry for
                                 // everyone
 
-    EVAALookup<T>*_lookupStiffness, *_lookupDamping;
-
     // Members from 11 DOF system
 
     T *kVec, *dVec, *l_lat, *l_long;  // to be TEO
@@ -234,10 +232,7 @@ public:
     T *angle_buffer, *pos_buffer;  // to be removed
 
     /* Constructor */
-    Car(EVAALookup<T>* lookupStiffness, EVAALookup<T>* lookupDamping) {
-        _lookupStiffness = lookupStiffness;
-        _lookupDamping = lookupDamping;
-
+    Car() {
         // System Mono
 
         // Memory Allocation and matrix formulation
@@ -315,59 +310,58 @@ public:
         massFullCar = new T;
 
         // Extract Data from parser
+        auto& db = MetaDataBase::getDataBase();
 
-        Math::copy(Constants::NUM_LEGS, MetaDataBase::DataBase()->getLongitudalLegPositionVector(),
-                   1, l_long, 1);
+        Math::copy(Constants::NUM_LEGS, db.getLongitudalLegPositionVector(), 1, l_long, 1);
 
-        Math::copy(Constants::NUM_LEGS, MetaDataBase::DataBase()->getLatidudalLegPositionVector(),
+        Math::copy(Constants::NUM_LEGS, MetaDataBase::getDataBase().getLatidudalLegPositionVector(),
                    1, l_lat, 1);
 
         Math::copy(Constants::DIM * Constants::DIM,
-                   MetaDataBase::DataBase()->getMomentOfInertiaVector(), 1, momentOfInertia, 1);
+                   MetaDataBase::getDataBase().getMomentOfInertiaVector(), 1, momentOfInertia, 1);
 
-        massComponents[0] = MetaDataBase::DataBase()->getBodyMass();
-        massComponents[1] = MetaDataBase::DataBase()->getWheelMassFrontLeft();
-        massComponents[2] = MetaDataBase::DataBase()->getTyreMassFrontLeft();
-        massComponents[3] = MetaDataBase::DataBase()->getWheelMassFrontRight();
-        massComponents[4] = MetaDataBase::DataBase()->getTyreMassFrontRight();
-        massComponents[5] = MetaDataBase::DataBase()->getWheelMassRearLeft();
-        massComponents[6] = MetaDataBase::DataBase()->getTyreMassRearLeft();
-        massComponents[7] = MetaDataBase::DataBase()->getWheelMassRearRight();
-        massComponents[8] = MetaDataBase::DataBase()->getTyreMassRearRight();
+        massComponents[0] = db.getBodyMass();
+        massComponents[1] = db.getWheelMassFrontLeft();
+        massComponents[2] = db.getTyreMassFrontLeft();
+        massComponents[3] = db.getWheelMassFrontRight();
+        massComponents[4] = db.getTyreMassFrontRight();
+        massComponents[5] = db.getWheelMassRearLeft();
+        massComponents[6] = db.getTyreMassRearLeft();
+        massComponents[7] = db.getWheelMassRearRight();
+        massComponents[8] = db.getTyreMassRearRight();
         *massFullCar = getMassFullCar();
 
-        unexcitedSpringsLength[0] = MetaDataBase::DataBase()->getBodySpringLengthFrontLeft();
-        unexcitedSpringsLength[1] = MetaDataBase::DataBase()->getTyreSpringLengthFrontLeft();
-        unexcitedSpringsLength[2] = MetaDataBase::DataBase()->getBodySpringLengthFrontRight();
-        unexcitedSpringsLength[3] = MetaDataBase::DataBase()->getTyreSpringLengthFrontRight();
-        unexcitedSpringsLength[4] = MetaDataBase::DataBase()->getBodySpringLengthRearLeft();
-        unexcitedSpringsLength[5] = MetaDataBase::DataBase()->getTyreSpringLengthRearLeft();
-        unexcitedSpringsLength[6] = MetaDataBase::DataBase()->getBodySpringLengthRearRight();
-        unexcitedSpringsLength[7] = MetaDataBase::DataBase()->getTyreSpringLengthRearRight();
+        unexcitedSpringsLength[0] = db.getBodySpringLengthFrontLeft();
+        unexcitedSpringsLength[1] = db.getTyreSpringLengthFrontLeft();
+        unexcitedSpringsLength[2] = db.getBodySpringLengthFrontRight();
+        unexcitedSpringsLength[3] = db.getTyreSpringLengthFrontRight();
+        unexcitedSpringsLength[4] = db.getBodySpringLengthRearLeft();
+        unexcitedSpringsLength[5] = db.getTyreSpringLengthRearLeft();
+        unexcitedSpringsLength[6] = db.getBodySpringLengthRearRight();
+        unexcitedSpringsLength[7] = db.getTyreSpringLengthRearRight();
 
-        vehicleCIR = MetaDataBase::DataBase()->getPositionCenterOfInstantaneousRotation();
+        vehicleCIR = db.getPositionCenterOfInstantaneousRotation();
 
         // Initial Iteration vector
 
         // Initial Angles
-        Math::ToEulerAngles<T>(MetaDataBase::DataBase()->getBodyInitialOrientation(),
-                               initialAngleGlobal);
+        Math::ToEulerAngles<T>(db.getBodyInitialOrientation(), initialAngleGlobal);
         Math::copy(Constants::DIM, initialAngleGlobal, 1, angle_CG, 1);
 
         // Spring lengths
-        currentSpringsLength[0] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontLeft();
-        currentSpringsLength[1] = MetaDataBase::DataBase()->getTyreSpringInitialLengthFrontLeft();
-        currentSpringsLength[2] = MetaDataBase::DataBase()->getBodySpringInitialLengthFrontRight();
-        currentSpringsLength[3] = MetaDataBase::DataBase()->getTyreSpringInitialLengthFrontRight();
-        currentSpringsLength[4] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearLeft();
-        currentSpringsLength[5] = MetaDataBase::DataBase()->getTyreSpringInitialLengthRearLeft();
-        currentSpringsLength[6] = MetaDataBase::DataBase()->getBodySpringInitialLengthRearRight();
-        currentSpringsLength[7] = MetaDataBase::DataBase()->getTyreSpringInitialLengthRearRight();
+        currentSpringsLength[0] = db.getBodySpringInitialLengthFrontLeft();
+        currentSpringsLength[1] = db.getTyreSpringInitialLengthFrontLeft();
+        currentSpringsLength[2] = db.getBodySpringInitialLengthFrontRight();
+        currentSpringsLength[3] = db.getTyreSpringInitialLengthFrontRight();
+        currentSpringsLength[4] = db.getBodySpringInitialLengthRearLeft();
+        currentSpringsLength[5] = db.getTyreSpringInitialLengthRearLeft();
+        currentSpringsLength[6] = db.getBodySpringInitialLengthRearRight();
+        currentSpringsLength[7] = db.getTyreSpringInitialLengthRearRight();
 
         // Filling the position vector with initial condition
         // CG
-        Math::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialPosition(), 1,
-                   initialPositionGlobal, 1);  // copy the center of mass position
+        Math::copy(Constants::DIM, db.getBodyInitialPosition(), 1, initialPositionGlobal,
+                   1);  // copy the center of mass position
 
         // Interpolator
         // Initialization: read init corners vectors into matrix
@@ -384,40 +378,40 @@ public:
 
         const T* xml_start;
         T* position_start;
-        if (MetaDataBase::DataBase()->getFlagInitialLeg()) {  // DEBUG to  be removed
+        if (db.getFlagInitialLeg()) {  // DEBUG to  be removed
             // if prescribed initial position (add a check for consistency with spring lengths)
             // W1 = W_fl
-            xml_start = MetaDataBase::DataBase()->getWheelInitialPositionFrontLeft();
+            xml_start = db.getWheelInitialPositionFrontLeft();
             position_start = initialPositionGlobal + 3;  //(end at 5)
             Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
             // W2 = W_fr
-            xml_start = MetaDataBase::DataBase()->getWheelInitialPositionFrontRight();
+            xml_start = db.getWheelInitialPositionFrontRight();
             position_start += 6;  // skip 3 for tyre (end at 11)
             Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
             // W3 = W_rl
-            xml_start = MetaDataBase::DataBase()->getWheelInitialPositionRearLeft();
+            xml_start = db.getWheelInitialPositionRearLeft();
             position_start += 6;  // skip 3 for tyre (end at 17)
             Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
             // W2 = W_rr
-            xml_start = MetaDataBase::DataBase()->getWheelInitialPositionRearRight();
+            xml_start = db.getWheelInitialPositionRearRight();
             position_start += 6;  // skip 3 for tyre (end at 23)
             Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
 
             // T1 = T_fl
-            xml_start = MetaDataBase::DataBase()->getTyreInitialPositionFrontLeft();
+            xml_start = db.getTyreInitialPositionFrontLeft();
             position_start =
                 initialPositionGlobal + 6;  // skip 3 for center of mass and 3 for the wheel
             Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 8)
             // T2 = T_fr
-            xml_start = MetaDataBase::DataBase()->getTyreInitialPositionFrontRight();
+            xml_start = db.getTyreInitialPositionFrontRight();
             position_start += 6;                                          // skip 3 for the wheel
             Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 14)
             // T3 = T_rl
-            xml_start = MetaDataBase::DataBase()->getTyreInitialPositionRearLeft();
+            xml_start = db.getTyreInitialPositionRearLeft();
             position_start += 6;                                          // skip 3 for the wheel
             Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 20)
             // T4 = T_rr
-            xml_start = MetaDataBase::DataBase()->getTyreInitialPositionRearRight();
+            xml_start = db.getTyreInitialPositionRearRight();
             position_start += 6;                                          // skip 3 for the wheel
             Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 26)
             Math::copy(Constants::DIM * Constants::VEC_DIM, initialPositionGlobal, 1, Position_vec,
@@ -440,42 +434,41 @@ public:
         }
 
         // Initial Velocity (Reuse the pointers)
-        Math::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialVelocity(), 1,
-                   initialVelocityGlobal, 1);
+        Math::copy(Constants::DIM, db.getBodyInitialVelocity(), 1, initialVelocityGlobal, 1);
         // W1 = W_fl
-        xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityFrontLeft();
+        xml_start = db.getWheelInitialVelocityFrontLeft();
         position_start = initialVelocityGlobal + 3;
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 5)
         // W2 = W_fr
-        xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityFrontRight();
+        xml_start = db.getWheelInitialVelocityFrontRight();
         position_start += 6;                                          // skip 3 for tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 11)
         // W3 = W_rl
-        xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityRearLeft();
+        xml_start = db.getWheelInitialVelocityRearLeft();
         position_start += 6;                                          // skip 3 for tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 17)
         // W2 = W_rr
-        xml_start = MetaDataBase::DataBase()->getWheelInitialVelocityRearRight();
+        xml_start = db.getWheelInitialVelocityRearRight();
         position_start += 6;                                          // skip 3 for tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 23)
 
         // T1 = T_fl
-        xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityFrontLeft();
+        xml_start = db.getTyreInitialVelocityFrontLeft();
         position_start =
             initialVelocityGlobal + 6;  // skip 3 for center of mass and 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 8)
 
         // T2 = T_fr
-        xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityFrontRight();
+        xml_start = db.getTyreInitialVelocityFrontRight();
         position_start += 6;                                          // skip 3 for the Tyre
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 14)
         // T3 = T_rl
-        xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityRearLeft();
+        xml_start = db.getTyreInitialVelocityRearLeft();
         position_start += 6;                                          // skip 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 20)
 
         // T4 = T_rr
-        xml_start = MetaDataBase::DataBase()->getTyreInitialVelocityRearRight();
+        xml_start = db.getTyreInitialVelocityRearRight();
         position_start += 6;                                          // skip 3 for the wheel
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 26)
 
@@ -483,7 +476,7 @@ public:
         Math::copy(Constants::DIM * Constants::VEC_DIM, initialVelocityGlobal, 1, Velocity_vec, 1);
 
         // Initial Angular velocity
-        Math::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyInitialAngularVelocity(), 1,
+        Math::copy(Constants::DIM, db.getBodyInitialAngularVelocity(), 1,
                    initialAngularVelocityGlobal, 1);
         Math::copy(Constants::DIM, initialAngularVelocityGlobal, 1, w_CG, 1);
 
@@ -514,26 +507,26 @@ public:
         updateRadiusToCIR();
 
 #ifdef INTERPOLATION
-        _lookupStiffness->getInterpolation(currentSpringsLength, kVec);
-//      _lookupDamping->getInterpolation(currentSpringsLength, dVec);
+        db.getLookupStiffness()->getInterpolation(currentSpringsLength, kVec);
+//        db.getlookupDamping()->getInterpolation(currentSpringsLength, dVec);
 #else
-        kVec[0] = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
-        kVec[1] = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
-        kVec[2] = MetaDataBase::DataBase()->getBodyStiffnessFrontRight();
-        kVec[3] = MetaDataBase::DataBase()->getTyreStiffnessFrontRight();
-        kVec[4] = MetaDataBase::DataBase()->getBodyStiffnessRearLeft();
-        kVec[5] = MetaDataBase::DataBase()->getTyreStiffnessRearLeft();
-        kVec[6] = MetaDataBase::DataBase()->getBodyStiffnessRearRight();
-        kVec[7] = MetaDataBase::DataBase()->getTyreStiffnessRearRight();
+        kVec[0] = db.getBodyStiffnessFrontLeft();
+        kVec[1] = db.getTyreStiffnessFrontLeft();
+        kVec[2] = db.getBodyStiffnessFrontRight();
+        kVec[3] = db.getTyreStiffnessFrontRight();
+        kVec[4] = db.getBodyStiffnessRearLeft();
+        kVec[5] = db.getTyreStiffnessRearLeft();
+        kVec[6] = db.getBodyStiffnessRearRight();
+        kVec[7] = db.getTyreStiffnessRearRight();
 
-        dVec[0] = MetaDataBase::DataBase()->getBodyDampingFrontLeft();
-        dVec[1] = MetaDataBase::DataBase()->getTyreDampingFrontLeft();
-        dVec[2] = MetaDataBase::DataBase()->getBodyDampingFrontRight();
-        dVec[3] = MetaDataBase::DataBase()->getTyreDampingFrontRight();
-        dVec[4] = MetaDataBase::DataBase()->getBodyDampingRearLeft();
-        dVec[5] = MetaDataBase::DataBase()->getTyreDampingRearLeft();
-        dVec[6] = MetaDataBase::DataBase()->getBodyDampingRearRight();
-        dVec[7] = MetaDataBase::DataBase()->getTyreDampingRearRight();
+        dVec[0] = db.getBodyDampingFrontLeft();
+        dVec[1] = db.getTyreDampingFrontLeft();
+        dVec[2] = db.getBodyDampingFrontRight();
+        dVec[3] = db.getTyreDampingFrontRight();
+        dVec[4] = db.getBodyDampingRearLeft();
+        dVec[5] = db.getTyreDampingRearLeft();
+        dVec[6] = db.getBodyDampingRearRight();
+        dVec[7] = db.getTyreDampingRearRight();
 #endif
 
         // ALE Buffer Initialization

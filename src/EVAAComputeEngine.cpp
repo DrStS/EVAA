@@ -46,118 +46,102 @@ using Eigen::VectorXd;
 #include <blaze/Math.h>
 #endif
 
-#ifdef SINGLE_PRECISION
-typedef float floatEVAA;
-#elif DOUBLE_PRECISION
-typedef double floatEVAA;
-#endif
-
 namespace EVAA {
-EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) :
-    _xmlCarFileName(xmlCarFileName),
-    _xmlLoadFileName(xmlLoadFileName),
-    _lookupStiffness(nullptr),
-    _lookupDamping(nullptr) {
+EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) {
     std::ifstream f(xmlCarFileName.c_str());
-
     if (f.good()) {
-        std::cout << "Read general simulation parameters and car input data at " << _xmlCarFileName
+        std::cout << "Read general simulation parameters and car input data at " << xmlCarFileName
                   << std::endl;
         // remove cout!
     }
     else {
-        std::cout << "XML file at " << _xmlCarFileName
+        std::cout << "XML file at " << xmlCarFileName
                   << " for general and car settings does not exist!" << std::endl;
         exit(2);
     }
 
     std::ifstream ff(xmlLoadFileName.c_str());
     if (ff.good()) {
-        std::cout << "Read load parameters in file: " << _xmlLoadFileName << std::endl;
+        std::cout << "Read load parameters in file: " << xmlLoadFileName << std::endl;
     }
     else {
-        std::cout << "XML file at " << _xmlLoadFileName << " for load parameters does not exist!"
+        std::cout << "XML file at " << xmlLoadFileName << " for load parameters does not exist!"
                   << std::endl;
         exit(2);
     }
-    MetaDataBase::DataBase()->setFileName(xmlCarFileName);
-    MetaDataBase::DataBase()->setloadFileName(xmlLoadFileName);
-    MetaDataBase::DataBase()->ReadParameters();
-    MetaDataBase::DataBase()->ReadLoadParameters();
-    MetaDataBase::DataBase()->ReadLookupParameters(&_lookupStiffness, &_lookupDamping);
+    MetaDataBase::getDataBase().readParameters(xmlCarFileName);
+    MetaDataBase::getDataBase().readLoadParameters(xmlLoadFileName);
 }
-
-EVAAComputeEngine::~EVAAComputeEngine() { delete _lookupStiffness; }
 
 void EVAAComputeEngine::printInfo(void) {
     Math::printMKLInfo();
+
+    auto& db = MetaDataBase::getDataBase();
     std::cout << "\n\nCalculate the solution after "
-              << MetaDataBase::DataBase()->getNumberOfTimeIterations() *
-                     MetaDataBase::DataBase()->getTimeStepSize()
-              << "s with dt = " << MetaDataBase::DataBase()->getTimeStepSize() << " for "
-              << MetaDataBase::DataBase()->getNumberOfTimeIterations() << " iterations\n\n\n";
+              << db.getNumberOfTimeIterations() * db.getTimeStepSize()
+              << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations()
+              << " iterations\n\n\n";
 }
 
 void EVAAComputeEngine::clean(void) {}
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
-    int DOF = MetaDataBase::DataBase()->getDOF();
-
+    auto& db = MetaDataBase::getDataBase();
     // K stiffness
-    double k_11 = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
-    double k_12 = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
-    double k_21 = MetaDataBase::DataBase()->getBodyStiffnessFrontRight();
-    double k_22 = MetaDataBase::DataBase()->getTyreStiffnessFrontRight();
-    double k_31 = MetaDataBase::DataBase()->getBodyStiffnessRearLeft();
-    double k_32 = MetaDataBase::DataBase()->getTyreStiffnessRearLeft();
-    double k_41 = MetaDataBase::DataBase()->getBodyStiffnessRearRight();
-    double k_42 = MetaDataBase::DataBase()->getTyreStiffnessRearRight();
-    double l_1 = MetaDataBase::DataBase()->getLatidudalLegPositionFrontLeft();
-    double l_2 = MetaDataBase::DataBase()->getLatidudalLegPositionRearLeft();
-    double l_3 = MetaDataBase::DataBase()->getLongitudalLegPositionFrontLeft();
-    double l_4 = MetaDataBase::DataBase()->getLongitudalLegPositionRearLeft();
+    double k_11 = db.getBodyStiffnessFrontLeft();
+    double k_12 = db.getTyreStiffnessFrontLeft();
+    double k_21 = db.getBodyStiffnessFrontRight();
+    double k_22 = db.getTyreStiffnessFrontRight();
+    double k_31 = db.getBodyStiffnessRearLeft();
+    double k_32 = db.getTyreStiffnessRearLeft();
+    double k_41 = db.getBodyStiffnessRearRight();
+    double k_42 = db.getTyreStiffnessRearRight();
+    double l_1 = db.getLatidudalLegPositionFrontLeft();
+    double l_2 = db.getLatidudalLegPositionRearLeft();
+    double l_3 = db.getLongitudalLegPositionFrontLeft();
+    double l_4 = db.getLongitudalLegPositionRearLeft();
 
     // D - damping matrix
-    double d_11 = MetaDataBase::DataBase()->getBodyDampingFrontLeft();
-    double d_12 = MetaDataBase::DataBase()->getTyreDampingFrontLeft();
-    double d_21 = MetaDataBase::DataBase()->getBodyDampingFrontRight();
-    double d_22 = MetaDataBase::DataBase()->getTyreDampingFrontRight();
-    double d_31 = MetaDataBase::DataBase()->getBodyDampingRearLeft();
-    double d_32 = MetaDataBase::DataBase()->getTyreDampingRearLeft();
-    double d_41 = MetaDataBase::DataBase()->getBodyDampingRearRight();
-    double d_42 = MetaDataBase::DataBase()->getTyreDampingRearRight();
+    double d_11 = db.getBodyDampingFrontLeft();
+    double d_12 = db.getTyreDampingFrontLeft();
+    double d_21 = db.getBodyDampingFrontRight();
+    double d_22 = db.getTyreDampingFrontRight();
+    double d_31 = db.getBodyDampingRearLeft();
+    double d_32 = db.getTyreDampingRearLeft();
+    double d_41 = db.getBodyDampingRearRight();
+    double d_42 = db.getTyreDampingRearRight();
     double d_l1 = 0.1 * l_1;
     double d_l2 = 0.1 * l_2;
     double d_l3 = 0.1 * l_3;
     double d_l4 = 0.1 * l_4;
 
     // M - mass matrix
-    double m_1 = MetaDataBase::DataBase()->getBodyMass();
-    double m_2 = MetaDataBase::DataBase()->getMomentOfInertiaXX();
-    double m_3 = MetaDataBase::DataBase()->getMomentOfInertiaYY();
-    double m_4 = MetaDataBase::DataBase()->getWheelMassFrontLeft();
-    double m_5 = MetaDataBase::DataBase()->getTyreMassFrontLeft();
-    double m_6 = MetaDataBase::DataBase()->getWheelMassFrontRight();
-    double m_7 = MetaDataBase::DataBase()->getTyreMassFrontRight();
-    double m_8 = MetaDataBase::DataBase()->getWheelMassRearLeft();
-    double m_9 = MetaDataBase::DataBase()->getTyreMassRearLeft();
-    double m_10 = MetaDataBase::DataBase()->getWheelMassRearRight();
-    double m_11 = MetaDataBase::DataBase()->getTyreMassRearRight();
+    double m_1 = db.getBodyMass();
+    double m_2 = db.getMomentOfInertiaXX();
+    double m_3 = db.getMomentOfInertiaYY();
+    double m_4 = db.getWheelMassFrontLeft();
+    double m_5 = db.getTyreMassFrontLeft();
+    double m_6 = db.getWheelMassFrontRight();
+    double m_7 = db.getTyreMassFrontRight();
+    double m_8 = db.getWheelMassRearLeft();
+    double m_9 = db.getTyreMassRearLeft();
+    double m_10 = db.getWheelMassRearRight();
+    double m_11 = db.getTyreMassRearRight();
 
-    MatrixXd A(DOF, DOF);
-    MatrixXd B(DOF, DOF);
-    MatrixXd M(DOF, DOF);
-    MatrixXd D(DOF, DOF);
-    MatrixXd K(DOF, DOF);
-    MatrixXd K_aux(DOF, DOF);
-    MatrixXd D_aux(DOF, DOF);
+    MatrixXd A(Constants::DOF, Constants::DOF);
+    MatrixXd B(Constants::DOF, Constants::DOF);
+    MatrixXd M(Constants::DOF, Constants::DOF);
+    MatrixXd D(Constants::DOF, Constants::DOF);
+    MatrixXd K(Constants::DOF, Constants::DOF);
+    MatrixXd K_aux(Constants::DOF, Constants::DOF);
+    MatrixXd D_aux(Constants::DOF, Constants::DOF);
 
-    VectorXd u_n_p_1(DOF);
-    VectorXd u_n(DOF);
-    VectorXd u_n_m_1(DOF);
+    VectorXd u_n_p_1(Constants::DOF);
+    VectorXd u_n(Constants::DOF);
+    VectorXd u_n_m_1(Constants::DOF);
 
     // Define the mass matrix
-    M = MatrixXd::Zero(DOF, DOF);
+    M = MatrixXd::Zero(Constants::DOF, Constants::DOF);
     M(0, 0) = m_1;
     M(1, 1) = m_2;
     M(2, 2) = m_3;
@@ -183,7 +167,7 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
         0., 0., 0., 0., 0., k_31 + k_32, -k_32, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., k_32, 0.,
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., k_41 + k_42, -k_42, 0., 0., 0., 0., 0., 0., 0., 0.,
         0., 0., k_42;
-    MatrixXd K_diag(DOF, DOF);
+    MatrixXd K_diag(Constants::DOF, Constants::DOF);
     K_aux = K + K.transpose();
     K_aux.diagonal() -= K.diagonal();
     K = K_aux;
@@ -201,21 +185,21 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
         0., 0., 0., 0., 0., d_31 + d_32, -d_32, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., d_32, 0.,
         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., d_41 + d_42, -d_42, 0., 0., 0., 0., 0., 0., 0., 0.,
         0., 0., d_42;
-    MatrixXd D_diag(DOF, DOF);
+    MatrixXd D_diag(Constants::DOF, Constants::DOF);
     D_aux = D + D.transpose();
     D_aux.diagonal() -= D.diagonal();
     D = D_aux;
-    A = MatrixXd::Zero(DOF, DOF);
-    B = MatrixXd::Zero(DOF, DOF);
+    A = MatrixXd::Zero(Constants::DOF, Constants::DOF);
+    B = MatrixXd::Zero(Constants::DOF, Constants::DOF);
 
-    u_n_p_1 = VectorXd::Zero(DOF);
-    u_n = VectorXd::Zero(DOF);
+    u_n_p_1 = VectorXd::Zero(Constants::DOF);
+    u_n = VectorXd::Zero(Constants::DOF);
     u_n(0) = 1;
     u_n_m_1 = u_n;
 
-    int numTimeSteps = MetaDataBase::DataBase()->getNumberOfTimeIterations();
+    int numTimeSteps = db.getNumberOfTimeIterations();
     // time step size
-    double h = MetaDataBase::DataBase()->getTimeStepSize();
+    double h = db.getTimeStepSize();
     std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
     /// Build dynamic stiffness matrix
@@ -252,51 +236,51 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     using blaze::rowMajor;
     using blaze::SymmetricMatrix;
 
-    int DOF = MetaDataBase::DataBase()->getDOF();
+    auto& db = MetaDataBase::getDataBase();
 
     // K stiffness
-    double k_11 = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
-    double k_12 = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
-    double k_21 = MetaDataBase::DataBase()->getBodyStiffnessFrontRight();
-    double k_22 = MetaDataBase::DataBase()->getTyreStiffnessFrontRight();
-    double k_31 = MetaDataBase::DataBase()->getBodyStiffnessRearLeft();
-    double k_32 = MetaDataBase::DataBase()->getTyreStiffnessRearLeft();
-    double k_41 = MetaDataBase::DataBase()->getBodyStiffnessRearRight();
-    double k_42 = MetaDataBase::DataBase()->getTyreStiffnessRearRight();
-    double l_1 = MetaDataBase::DataBase()->getLatidudalLegPositionFrontLeft();
-    double l_2 = MetaDataBase::DataBase()->getLatidudalLegPositionRearLeft();
-    double l_3 = MetaDataBase::DataBase()->getLongitudalLegPositionFrontLeft();
-    double l_4 = MetaDataBase::DataBase()->getLongitudalLegPositionRearLeft();
+    double k_11 = db.getBodyStiffnessFrontLeft();
+    double k_12 = db.getTyreStiffnessFrontLeft();
+    double k_21 = db.getBodyStiffnessFrontRight();
+    double k_22 = db.getTyreStiffnessFrontRight();
+    double k_31 = db.getBodyStiffnessRearLeft();
+    double k_32 = db.getTyreStiffnessRearLeft();
+    double k_41 = db.getBodyStiffnessRearRight();
+    double k_42 = db.getTyreStiffnessRearRight();
+    double l_1 = db.getLatidudalLegPositionFrontLeft();
+    double l_2 = db.getLatidudalLegPositionRearLeft();
+    double l_3 = db.getLongitudalLegPositionFrontLeft();
+    double l_4 = db.getLongitudalLegPositionRearLeft();
 
     // D - damping matrix
-    double d_11 = MetaDataBase::DataBase()->getBodyDampingFrontLeft();
-    double d_12 = MetaDataBase::DataBase()->getTyreDampingFrontLeft();
-    double d_21 = MetaDataBase::DataBase()->getBodyDampingFrontRight();
-    double d_22 = MetaDataBase::DataBase()->getTyreDampingFrontRight();
-    double d_31 = MetaDataBase::DataBase()->getBodyDampingRearLeft();
-    double d_32 = MetaDataBase::DataBase()->getTyreDampingRearLeft();
-    double d_41 = MetaDataBase::DataBase()->getBodyDampingRearRight();
-    double d_42 = MetaDataBase::DataBase()->getTyreDampingRearRight();
+    double d_11 = db.getBodyDampingFrontLeft();
+    double d_12 = db.getTyreDampingFrontLeft();
+    double d_21 = db.getBodyDampingFrontRight();
+    double d_22 = db.getTyreDampingFrontRight();
+    double d_31 = db.getBodyDampingRearLeft();
+    double d_32 = db.getTyreDampingRearLeft();
+    double d_41 = db.getBodyDampingRearRight();
+    double d_42 = db.getTyreDampingRearRight();
     double d_l1 = 0.1 * l_1;
     double d_l2 = 0.1 * l_2;
     double d_l3 = 0.1 * l_3;
     double d_l4 = 0.1 * l_4;
 
     // M - mass matrix
-    double m_1 = MetaDataBase::DataBase()->getBodyMass();
-    double m_2 = MetaDataBase::DataBase()->getMomentOfInertiaXX();
-    double m_3 = MetaDataBase::DataBase()->getMomentOfInertiaYY();
-    double m_4 = MetaDataBase::DataBase()->getWheelMassFrontLeft();
-    double m_5 = MetaDataBase::DataBase()->getTyreMassFrontLeft();
-    double m_6 = MetaDataBase::DataBase()->getWheelMassFrontRight();
-    double m_7 = MetaDataBase::DataBase()->getTyreMassFrontRight();
-    double m_8 = MetaDataBase::DataBase()->getWheelMassRearLeft();
-    double m_9 = MetaDataBase::DataBase()->getTyreMassRearLeft();
-    double m_10 = MetaDataBase::DataBase()->getWheelMassRearRight();
-    double m_11 = MetaDataBase::DataBase()->getTyreMassRearRight();
+    double m_1 = db.getBodyMass();
+    double m_2 = db.getMomentOfInertiaXX();
+    double m_3 = db.getMomentOfInertiaYY();
+    double m_4 = db.getWheelMassFrontLeft();
+    double m_5 = db.getTyreMassFrontLeft();
+    double m_6 = db.getWheelMassFrontRight();
+    double m_7 = db.getTyreMassFrontRight();
+    double m_8 = db.getWheelMassRearLeft();
+    double m_9 = db.getTyreMassRearLeft();
+    double m_10 = db.getWheelMassRearRight();
+    double m_11 = db.getTyreMassRearRight();
 
     // Using symmetric matrix enforce the symmetry and is safer
-    SymmetricMatrix<DynamicMatrix<double>, rowMajor> K(DOF);
+    SymmetricMatrix<DynamicMatrix<double>, rowMajor> K(Constants::DOF);
 
     K(0, 0) = k_11 + k_21 + k_31 + k_41;
     K(0, 1) = -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2;
@@ -329,7 +313,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     K(9, 10) = -k_42;
     K(10, 10) = k_42;
 
-    SymmetricMatrix<DynamicMatrix<double>, rowMajor> D(DOF);
+    SymmetricMatrix<DynamicMatrix<double>, rowMajor> D(Constants::DOF);
     D(0, 0) = d_11 + d_21 + d_31 + d_41;
     D(0, 1) = -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2;
     D(0, 2) = -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4;
@@ -361,7 +345,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     D(9, 10) = -d_42;
     D(10, 10) = d_42;
 
-    SymmetricMatrix<DynamicMatrix<double>, rowMajor> M(DOF);
+    SymmetricMatrix<DynamicMatrix<double>, rowMajor> M(Constants::DOF);
     M(0, 0) = m_1;
     M(1, 1) = m_2;
     M(2, 2) = m_3;
@@ -376,16 +360,16 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 
     // Define the solution vectors
     DynamicVector<double, columnVector> u_n_p_1(
-        DOF, (double)0.);  // initialize vector of dimension 11 and null elements
+        Constants::DOF, (double)0.);  // initialize vector of dimension 11 and null elements
     DynamicVector<double, columnVector> u_n(
-        DOF, (double)0.);  // initialize vector of dimension 11 and null elements
+        Constants::DOF, (double)0.);  // initialize vector of dimension 11 and null elements
     DynamicVector<double, columnVector> u_n_m_1(
-        DOF, (double)0.);  // initialize vector of dimension 11 and null elements
+        Constants::DOF, (double)0.);  // initialize vector of dimension 11 and null elements
 
     // Perform the iterations
-    int numTimeSteps = MetaDataBase::DataBase()->getNumberOfTimeIterations();
+    int numTimeSteps = db.getNumberOfTimeIterations();
     // time step size
-    double h = MetaDataBase::DataBase()->getTimeStepSize();
+    double h = db.getTimeStepSize();
 
     std::cout << "Time step h is: " << h << std::scientific << std::endl;
 
@@ -395,17 +379,17 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 
     /// Build dynamic stiffness matrix
     // A = (1./(h*h))*M + (1./h)*D + K
-    DynamicMatrix<double, rowMajor> A(DOF, DOF);
+    DynamicMatrix<double, rowMajor> A(Constants::DOF, Constants::DOF);
     A = 1. / (h * h) * M + 1. / h * D + K;
 
     /// Build rhs for BE integrator
     // B = (2.0 / (h*h))*M + 1. / h * D + B
-    DynamicMatrix<double, rowMajor> B(DOF, DOF);
+    DynamicMatrix<double, rowMajor> B(Constants::DOF, Constants::DOF);
     B = 2. / (h * h) * M + 1. / h * D;
 
     // LU Decomposition
-    DynamicVector<int, columnVector> ipiv(DOF);  // Pivoting indices
-    DynamicMatrix<double, rowMajor> A_LU(A);     // Temporary matrix to be decomposed
+    DynamicVector<int, columnVector> ipiv(Constants::DOF);  // Pivoting indices
+    DynamicMatrix<double, rowMajor> A_LU(A);                // Temporary matrix to be decomposed
 
     getrf(A_LU, ipiv.data());
     M *= -1. / (h * h);
@@ -425,61 +409,61 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 }
 
 void EVAAComputeEngine::computeMKL11DOF(void) {
-    int DOF = MetaDataBase::DataBase()->getDOF();
+    auto& db = MetaDataBase::getDataBase();
+
+    // TODO: Templated floating type.
 
     // K stiffness
-    double k_11 = MetaDataBase::DataBase()->getBodyStiffnessFrontLeft();
-    double k_12 = MetaDataBase::DataBase()->getTyreStiffnessFrontLeft();
-    double k_21 = MetaDataBase::DataBase()->getBodyStiffnessFrontRight();
-    double k_22 = MetaDataBase::DataBase()->getTyreStiffnessFrontRight();
-    double k_31 = MetaDataBase::DataBase()->getBodyStiffnessRearLeft();
-    double k_32 = MetaDataBase::DataBase()->getTyreStiffnessRearLeft();
-    double k_41 = MetaDataBase::DataBase()->getBodyStiffnessRearRight();
-    double k_42 = MetaDataBase::DataBase()->getTyreStiffnessRearRight();
-    double l_1 = MetaDataBase::DataBase()->getLatidudalLegPositionFrontLeft();
-    double l_2 = MetaDataBase::DataBase()->getLatidudalLegPositionRearLeft();
-    double l_3 = MetaDataBase::DataBase()->getLongitudalLegPositionFrontLeft();
-    double l_4 = MetaDataBase::DataBase()->getLongitudalLegPositionRearLeft();
+    double k_11 = db.getBodyStiffnessFrontLeft();
+    double k_12 = db.getTyreStiffnessFrontLeft();
+    double k_21 = db.getBodyStiffnessFrontRight();
+    double k_22 = db.getTyreStiffnessFrontRight();
+    double k_31 = db.getBodyStiffnessRearLeft();
+    double k_32 = db.getTyreStiffnessRearLeft();
+    double k_41 = db.getBodyStiffnessRearRight();
+    double k_42 = db.getTyreStiffnessRearRight();
+    double l_1 = db.getLatidudalLegPositionFrontLeft();
+    double l_2 = db.getLatidudalLegPositionRearLeft();
+    double l_3 = db.getLongitudalLegPositionFrontLeft();
+    double l_4 = db.getLongitudalLegPositionRearLeft();
 
     // D - damping matrix
-    double d_11 = MetaDataBase::DataBase()->getBodyDampingFrontLeft();
-    double d_12 = MetaDataBase::DataBase()->getTyreDampingFrontLeft();
-    double d_21 = MetaDataBase::DataBase()->getBodyDampingFrontRight();
-    double d_22 = MetaDataBase::DataBase()->getTyreDampingFrontRight();
-    double d_31 = MetaDataBase::DataBase()->getBodyDampingRearLeft();
-    double d_32 = MetaDataBase::DataBase()->getTyreDampingRearLeft();
-    double d_41 = MetaDataBase::DataBase()->getBodyDampingRearRight();
-    double d_42 = MetaDataBase::DataBase()->getTyreDampingRearRight();
+    double d_11 = db.getBodyDampingFrontLeft();
+    double d_12 = db.getTyreDampingFrontLeft();
+    double d_21 = db.getBodyDampingFrontRight();
+    double d_22 = db.getTyreDampingFrontRight();
+    double d_31 = db.getBodyDampingRearLeft();
+    double d_32 = db.getTyreDampingRearLeft();
+    double d_41 = db.getBodyDampingRearRight();
+    double d_42 = db.getTyreDampingRearRight();
     double d_l1 = 0.1 * l_1;
     double d_l2 = 0.1 * l_2;
     double d_l3 = 0.1 * l_3;
     double d_l4 = 0.1 * l_4;
 
     // M - mass matrix
-    double m_1 = MetaDataBase::DataBase()->getBodyMass();
-    double m_2 = MetaDataBase::DataBase()->getMomentOfInertiaXX();
-    double m_3 = MetaDataBase::DataBase()->getMomentOfInertiaYY();
-    double m_4 = MetaDataBase::DataBase()->getWheelMassFrontLeft();
-    double m_5 = MetaDataBase::DataBase()->getTyreMassFrontLeft();
-    double m_6 = MetaDataBase::DataBase()->getWheelMassFrontRight();
-    double m_7 = MetaDataBase::DataBase()->getTyreMassFrontRight();
-    double m_8 = MetaDataBase::DataBase()->getWheelMassRearLeft();
-    double m_9 = MetaDataBase::DataBase()->getTyreMassRearLeft();
-    double m_10 = MetaDataBase::DataBase()->getWheelMassRearRight();
-    double m_11 = MetaDataBase::DataBase()->getTyreMassRearRight();
-
-    int matrixElements = DOF * DOF;
+    double m_1 = db.getBodyMass();
+    double m_2 = db.getMomentOfInertiaXX();
+    double m_3 = db.getMomentOfInertiaYY();
+    double m_4 = db.getWheelMassFrontLeft();
+    double m_5 = db.getTyreMassFrontLeft();
+    double m_6 = db.getWheelMassFrontRight();
+    double m_7 = db.getTyreMassFrontRight();
+    double m_8 = db.getWheelMassRearLeft();
+    double m_9 = db.getTyreMassRearLeft();
+    double m_10 = db.getWheelMassRearRight();
+    double m_11 = db.getTyreMassRearRight();
 
     // allocate matrices of zeros
-    double* B = (double*)mkl_calloc(matrixElements, sizeof(double), Constants::ALIGNMENT);
-    double* M = (double*)mkl_calloc(matrixElements, sizeof(double), Constants::ALIGNMENT);
-    double* D = (double*)mkl_calloc(matrixElements, sizeof(double), Constants::ALIGNMENT);
-    double* K = (double*)mkl_calloc(matrixElements, sizeof(double), Constants::ALIGNMENT);
+    double* B = (double*)mkl_calloc(Constants::DOFDOF, sizeof(double), Constants::ALIGNMENT);
+    double* M = (double*)mkl_calloc(Constants::DOFDOF, sizeof(double), Constants::ALIGNMENT);
+    double* D = (double*)mkl_calloc(Constants::DOFDOF, sizeof(double), Constants::ALIGNMENT);
+    double* K = (double*)mkl_calloc(Constants::DOFDOF, sizeof(double), Constants::ALIGNMENT);
 
-    double* u_n_p_1 = (double*)mkl_calloc(DOF, sizeof(double), Constants::ALIGNMENT);
-    double* u_n = (double*)mkl_calloc(DOF, sizeof(double), Constants::ALIGNMENT);
-    double* u_n_m_1 = (double*)mkl_calloc(DOF, sizeof(double), Constants::ALIGNMENT);
-    double* tmp = (double*)mkl_calloc(DOF, sizeof(double), Constants::ALIGNMENT);
+    double* u_n_p_1 = (double*)mkl_calloc(Constants::DOF, sizeof(double), Constants::ALIGNMENT);
+    double* u_n = (double*)mkl_calloc(Constants::DOF, sizeof(double), Constants::ALIGNMENT);
+    double* u_n_m_1 = (double*)mkl_calloc(Constants::DOF, sizeof(double), Constants::ALIGNMENT);
+    double* tmp = (double*)mkl_calloc(Constants::DOF, sizeof(double), Constants::ALIGNMENT);
 
     // Mass matrix initialization
     M[0] = m_1;
@@ -527,8 +511,8 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
     K[120] = k_42;
 
     // Symmetry
-    for (int i = 1; i < DOF; ++i)
-        for (int j = 0; j < i; ++j) K[i * DOF + j] = K[j * DOF + i];
+    for (int i = 1; i < Constants::DOF; ++i)
+        for (int j = 0; j < i; ++j) K[i * Constants::DOF + j] = K[j * Constants::DOF + i];
 
     // Damping matrix
     D[0] = d_11 + d_21 + d_31 + d_41;
@@ -563,17 +547,17 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
     D[120] = d_42;
 
     // Symmetry
-    for (int i = 1; i < DOF; ++i)
-        for (int j = 0; j < i; ++j) D[i * DOF + j] = D[j * DOF + i];
+    for (int i = 1; i < Constants::DOF; ++i)
+        for (int j = 0; j < i; ++j) D[i * Constants::DOF + j] = D[j * Constants::DOF + i];
 
     // Initial conditions
     u_n[0] = 1.;
     u_n_m_1[0] = 1.;
 
     mkl_set_num_threads(8);
-    int numTimeSteps = MetaDataBase::DataBase()->getNumberOfTimeIterations();
+    int numTimeSteps = db.getNumberOfTimeIterations();
     // time step size
-    double h = MetaDataBase::DataBase()->getTimeStepSize();
+    double h = db.getTimeStepSize();
     std::cout << "Time step h is: " << h << std::scientific << std::endl;
     /// Build dynamic stiffness matrix
     // gets written in rear vector
@@ -587,26 +571,28 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
     /// Build rhs for BE integrator
     // B' <-(2.0 / (h*h))*M + B
     //	Math::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
-    Math::axpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
+    Math::axpy(Constants::DOFDOF, (2.0 / (h * h)), M, 1, B, 1);
 
     // B <-(1. / (h))*D + B'
     //	Math::computeDenseVectorAddition(D.data(), B.data(), (1. / h), 121);
-    Math::axpy(matrixElements, (1. / h), D, 1, B, 1);
+    Math::axpy(Constants::DOFDOF, (1. / h), D, 1, B, 1);
     // A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE
 
-    std::vector<int> pivot(DOF);
+    std::vector<int> pivot(Constants::DOF);
     // LU Decomposition
     //	Math::computeDenseSymLUFactorisation(11, K, pivot);
-    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF, DOF, K, DOF, pivot.data());
+    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, Constants::DOF, Constants::DOF, K, Constants::DOF,
+                   pivot.data());
 
     // Time loop
     double tmpScalar = (-1. / (h * h));
-    for (int i = 0; i < DOF; ++i) M[(DOF + 1) * i] *= tmpScalar;
+    for (int i = 0; i < Constants::DOF; ++i) M[(Constants::DOF + 1) * i] *= tmpScalar;
 
     void* jitter;
     // adds matrix matrix product to scalar matrix product
-    std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, DOF, 1, DOF,
-                                      1., DOF, DOF, 0., DOF)
+    std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS,
+                                      Constants::DOF, 1, Constants::DOF, 1., Constants::DOF,
+                                      Constants::DOF, 0., Constants::DOF)
               << std::endl;
     dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
 
@@ -628,8 +614,8 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
         // y: = alpha*A*x + beta*y
         // tmp = ((-1. / (h*h))*M) * u_n_m_1
 #ifndef USE_GEMM
-        Math::gemv(CblasColMajor, CblasNoTrans, DOF, DOF, (-1. / (h * h)), M, DOF, u_n_m_1, 1, 0.,
-                   tmp, 1);
+        Math::gemv(CblasColMajor, CblasNoTrans, Constants::DOF, Constants::DOF, (-1. / (h * h)), M,
+                   Constants::DOF, u_n_m_1, 1, 0., tmp, 1);
 #endif
 #ifdef USE_GEMM
         // cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11, 1., M, 11, u_n_m_1,
@@ -640,21 +626,22 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
         //		Math::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.,
         // 11); void cblas_daxpy (const MKL_INT n, const double a, const double *x, const MKL_INT
         // incx, double *y, const MKL_INT incy);
-        Math::axpy(DOF, 1., tmp, 1, u_n_p_1, 1);
+        Math::axpy(Constants::DOF, 1., tmp, 1, u_n_p_1, 1);
         // Solve system
         //		Math::computeDenseSymSolution(11, K, pivot, u_n_p_1);
         // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans , lapack_int n , lapack_int
         // nrhs , const double * a , lapack_int lda , const lapack_int * ipiv , double * b ,
         // lapack_int ldb );
-        LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', DOF, 1, K, DOF, pivot.data(), u_n_p_1, 1);
+        LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', Constants::DOF, 1, K, Constants::DOF, pivot.data(),
+                       u_n_p_1, 1);
 
-        for (int i = 0; i < DOF; ++i) {
+        for (int i = 0; i < Constants::DOF; ++i) {
             u_n_m_1[i] = u_n[i];
             u_n[i] = u_n_p_1[i];
         }
     }
     std::cout << "We ran #" << numTimeSteps << " time steps!" << std::endl;
-    for (int i = 0; i < DOF; ++i) {
+    for (int i = 0; i < Constants::DOF; ++i) {
         std::cout << u_n_p_1[i] << std::scientific << std::endl;
     }
 
@@ -671,12 +658,12 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 }
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
-    if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
-        floatEVAA* sol =
-            (floatEVAA*)mkl_calloc(Constants::DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
-        Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness, _lookupDamping);
-        TwoTrackModelFull<floatEVAA> solver(car, _lookupStiffness, _lookupDamping);
-        solver.apply_boundary_condition(MetaDataBase::DataBase()->getRoadConditions());
+    if (MetaDataBase::getDataBase().getRoadConditions() == NONFIXED) {
+        Constants::floatEVAA* sol = (Constants::floatEVAA*)mkl_calloc(
+            Constants::DOF, sizeof(Constants::floatEVAA), Constants::ALIGNMENT);
+        Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
+        TwoTrackModelFull<Constants::floatEVAA> solver(car);
+        solver.apply_boundary_condition(MetaDataBase::getDataBase().getRoadConditions());
         solver.solve(sol);
 
         solver.print_final_results(sol);
@@ -693,13 +680,14 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 
 #if MIGHT_BE_USEFUL
 void EVAAComputeEngine::computeMKLTwoTrackModel() {
-    if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
-        floatEVAA* sol =
-            (floatEVAA*)mkl_calloc(Constants::DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
-        Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness, _lookupDamping);
-        TwoTrackModelFull<floatEVAA, TwoTrackModelBDF2<floatEVAA>> solver(car, _lookupStiffness,
-                                                                          _lookupDamping);
-        solver.apply_boundary_condition(MetaDataBase::DataBase()->getRoadConditions());
+    if (MetaDataBase::getDataBase().getRoadConditions() == NONFIXED) {
+        Constants::floatEVAA* sol = (Constants::floatEVAA*)mkl_calloc(
+            Constants::DOF, sizeof(Constants::floatEVAA), Constants::ALIGNMENT);
+        Car<Constants::floatEVAA>* car =
+            new Car<Constants::floatEVAA>(_lookupStiffness, _lookupDamping);
+        TwoTrackModelFull<Constants::floatEVAA, TwoTrackModelBDF2<Constants::floatEVAA>> solver(
+            car, _lookupStiffness, _lookupDamping);
+        solver.apply_boundary_condition(MetaDataBase::getDataBase().getRoadConditions());
         solver.solve(sol);
 
         solver.print_final_results(sol);
@@ -716,31 +704,33 @@ void EVAAComputeEngine::computeMKLTwoTrackModel() {
 #endif
 
 void EVAAComputeEngine::computeMBD(void) {
-    size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
-    size_t solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize();
-    floatEVAA* sol = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), Constants::ALIGNMENT);
-    MBD_method<floatEVAA> solver(_lookupStiffness);
+    size_t num_iter = MetaDataBase::getDataBase().getNumberOfTimeIterations();
+    size_t solution_dim = MetaDataBase::getDataBase().getSolutionVectorSize();
+    Constants::floatEVAA* sol = (Constants::floatEVAA*)mkl_calloc(
+        solution_dim, sizeof(Constants::floatEVAA), Constants::ALIGNMENT);
+    MBD_method<Constants::floatEVAA> solver;
     solver.solve(sol);
     solver.print_final_result(sol);
     mkl_free(sol);
 }
 
 void EVAAComputeEngine::computeALE(void) {
-    Profile<floatEVAA>* roadProfile;
+    Profile<Constants::floatEVAA>* roadProfile;
 
-    Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness, _lookupDamping);
+    Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 
-    switch (MetaDataBase::DataBase()->getRoadConditions()) {
+    auto& db = MetaDataBase::getDataBase();
+    switch (db.getRoadConditions()) {
     case CIRCULAR:
-        roadProfile = new Circular<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
-                                              MetaDataBase::DataBase()->getCircularRoadRadius());
+        roadProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(),
+                                                         db.getCircularRoadRadius());
         break;
     case NONFIXED:
-        roadProfile = new Nonfixed<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
-                                              MetaDataBase::DataBase()->getCircularRoadRadius());
+        roadProfile = new Nonfixed<Constants::floatEVAA>(db.getCircularRoadCenter(),
+                                                         db.getCircularRoadRadius());
         break;
     case FIXED:
-        roadProfile = new Fixed<floatEVAA>(MetaDataBase::DataBase()->getGravityField()[1]);
+        roadProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[1]);
         roadProfile->set_fixed_index(car->tyre_index_set);
         break;
     default:
@@ -753,13 +743,16 @@ void EVAAComputeEngine::computeALE(void) {
     }
 
     roadProfile->update_initial_condition(car);
-    LoadModule<floatEVAA>* loadModule = new LoadModule<floatEVAA>(roadProfile, car);
-    TwoTrackModelParent<floatEVAA>* TwoTrackModel_obj =
-        new TwoTrackModelBE<floatEVAA>(car, _lookupStiffness, _lookupDamping);
-    ALE<floatEVAA>* ale = new ALE<floatEVAA>(car, loadModule, TwoTrackModel_obj, _lookupStiffness);
+    LoadModule<Constants::floatEVAA>* loadModule =
+        new LoadModule<Constants::floatEVAA>(roadProfile, car);
+    TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj =
+        new TwoTrackModelBE<Constants::floatEVAA>(car);
+    ALE<Constants::floatEVAA>* ale =
+        new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
 
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
-    floatEVAA* sol = (floatEVAA*)mkl_malloc(solutionDim * sizeof(floatEVAA), Constants::ALIGNMENT);
+    Constants::floatEVAA* sol = (Constants::floatEVAA*)mkl_malloc(
+        solutionDim * sizeof(Constants::floatEVAA), Constants::ALIGNMENT);
 
     ale->solve(sol);
 
@@ -775,14 +768,15 @@ void EVAAComputeEngine::computeALE(void) {
 }
 
 void EVAAComputeEngine::computeALEtest(void) {
-    size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
-    size_t solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize();
-    Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness, _lookupDamping);
-    Profile<floatEVAA>* roadProfile =
-        new Circular<floatEVAA>(MetaDataBase::DataBase()->getCircularRoadCenter(),
-                                MetaDataBase::DataBase()->getCircularRoadRadius());
+    auto& db = MetaDataBase::getDataBase();
+    size_t num_iter = db.getNumberOfTimeIterations();
+    size_t solution_dim = db.getSolutionVectorSize();
+    Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
+    Profile<Constants::floatEVAA>* roadProfile =
+        new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
     roadProfile->update_initial_condition(car);
-    LoadModule<floatEVAA>* loadModule = new LoadModule<floatEVAA>(roadProfile, car);
+    LoadModule<Constants::floatEVAA>* loadModule =
+        new LoadModule<Constants::floatEVAA>(roadProfile, car);
     std::cout << "Load module initialized!\n";
     delete loadModule;
     delete roadProfile;
@@ -795,10 +789,12 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
     size_t num_iter = _parameters.num_time_iter;
     const int alignment = 64;
     size_t solution_dim = _parameters.solution_dim;
-    floatEVAA* soln = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), alignment);
-    MBD_method<floatEVAA> solver(_parameters, _loadModuleParameter, _lookupStiffness);
+    Constants::floatEVAA* soln =
+        (Constants::floatEVAA*)mkl_calloc(solution_dim, sizeof(Constants::floatEVAA), alignment);
+    MBD_method<Constants::floatEVAA> solver(_parameters);
     size_t solution_size = (num_iter + 1) * solution_dim;
-    floatEVAA* complete_soln = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
+    Constants::floatEVAA* complete_soln =
+        (Constants::floatEVAA*)mkl_calloc(solution_size, sizeof(Constants::floatEVAA), alignment);
     solver.solve(soln, complete_soln);
     solver.print_final_result(soln);
     std::cout << "(num_iter + 1) = " << (num_iter + 1) << "solution_dim = " << solution_dim
@@ -813,7 +809,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
 
     Profile* Road_Profile;
 
-    Car<floatEVAA>* Car1 = new Car<floatEVAA>(_parameters, _lookupStiffness);
+    Car<Constants::floatEVAA>* Car1 = new Car<Constants::floatEVAA>(_parameters, _lookupStiffness);
 
     if (_loadModuleParameter.boundary_condition_road == CIRCULAR) {
         Road_Profile =
@@ -844,9 +840,10 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
     Road_Profile->update_initial_condition(Car1);
 
     Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _loadModuleParameter);
-    TwoTrackModel<floatEVAA>* TwoTrackModel_sys = new TwoTrackModel<floatEVAA>(Car1);
-    ALE<floatEVAA>* Ale_sys =
-        new ALE<floatEVAA>(Car1, Load_module1, TwoTrackModel_sys, _lookupStiffness, _parameters);
+    TwoTrackModel<Constants::floatEVAA>* TwoTrackModel_sys =
+        new TwoTrackModel<Constants::floatEVAA>(Car1);
+    ALE<Constants::floatEVAA>* Ale_sys = new ALE<Constants::floatEVAA>(
+        Car1, Load_module1, TwoTrackModel_sys, _lookupStiffness, _parameters);
 
     Ale_sys->solve(soln, complete_soln2);
 
