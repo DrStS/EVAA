@@ -35,7 +35,7 @@ private:
 
     // Car Definition
 
-    bool use_interpolation;
+   // bool use_interpolation;
     T k_body_fl;
     T k_tyre_fl;
     T k_body_fr;
@@ -378,7 +378,7 @@ private:
         used_solver = db.getUsedSolverForMBD();
         boundary_conditions = db.getRoadConditions();
         radius_circular_path = db.getCircularRoadRadius();
-        use_interpolation = db.getUseInterpolation();
+        //use_interpolation = db.getUseInterpolation();
 
         // Car Definition
 
@@ -1033,7 +1033,7 @@ private:
 
     void apply_stiffness_interpolation() {
         /* Compute stiffness from lookup table*/
-        if (use_interpolation) {
+#ifdef INTERPOLATION
             // populate the lenght_vector
             current_spring_lengths[0] = norm_r_up_fl;
             current_spring_lengths[1] = norm_r_low_fl;
@@ -1056,7 +1056,7 @@ private:
             lower_spring_stiffness[2] = stiffness_vector[5];
             upper_spring_stiffness[3] = stiffness_vector[6];
             lower_spring_stiffness[3] = stiffness_vector[7];
-        }
+#endif // Interpolation compile flag, PLEASE USE THIS ONE ONLY !!!!!!!!!!!!!!!!!!!!!!!!!
     }
 
     void compute_angles() {

@@ -12,6 +12,7 @@
 #include "Constants.h"
 #include "IO/Output.h"
 #include "arbitraryTrajectory.h"
+#include "MathLibrary.h"
 
 // TODO: U_Lookup feels artificial, find a way to not use it.
 #ifndef U_Lookup
@@ -49,6 +50,33 @@ public:
     /** Deleted copy operator. */
     void operator=(MetaDataBase const&) = delete;
 
+	/*
+	Checks if the xml has correct format with resect to compiler flag
+	*/
+	void CheckStiffnessXML(const bool interpolation, const bool fixspring) {
+#ifdef INTERPOLATION
+		if (interpolation) {
+			std::cout << "Using lookup tables for Stiffness and Damping" << std::endl;
+		}
+		else {
+			throw "Lookup block are not available in the XML!";
+		}
+		if (fixspring) {
+			throw "Cannot use constant block with interpolation. Check the XML!";
+		}
+#else
+		if (fixspring) {
+			std::cout << "Using constant Stiffness and Damping" << std::endl;
+		}
+		else {
+			throw "Constant Stiffness and damping blocks are not available in the XML!";
+		}
+		if (interpolation) {
+			throw "Cannot use lookup block with constant compiler flag. Check the XML!";
+		}
+#endif
+		}
+
     /**
      * Reads the car, initial and simulation parameters from an XML file.
      * \param[in] filename The XML file.
@@ -72,14 +100,23 @@ public:
         _I_body[7] = twoTrackModel.InertiaXML().ZY();
         _I_body[8] = twoTrackModel.InertiaXML().ZZ();
 
-        if (twoTrackModel.StiffnessXML().ConstantXML().present()) {
+		CheckStiffnessXML(twoTrackModel.StiffnessXML().LookupTableXML().present(), twoTrackModel.StiffnessXML().ConstantXML().present());
+
+#ifdef INTERPOLATION
+		readLookupParameters(twoTrackModel.StiffnessXML().LookupTableXML().get().FilePathXML());
+#else
+		readLegs(_k_tyre, twoTrackModel.StiffnessXML().ConstantXML().get().TyreXML());
+		readLegs(_k_body, twoTrackModel.StiffnessXML().ConstantXML().get().BodyXML());
+#endif
+		Math::write_vector(_k_tyre, 4);
+        /*if (twoTrackModel.StiffnessXML().ConstantXML().present()) {
             std::cout << "Take constant stiffness without lookup table" << std::endl;
             readLegs(_k_tyre, twoTrackModel.StiffnessXML().ConstantXML().get().TyreXML());
             readLegs(_k_body, twoTrackModel.StiffnessXML().ConstantXML().get().BodyXML());
         }
         else {
             readLookupParameters(twoTrackModel.StiffnessXML().LookupTableXML().get().FilePathXML());
-        }
+        }*/
         readLegs(_c_tyre, twoTrackModel.DampingCoefficientsXML().TyreXML());
         readLegs(_c_body, twoTrackModel.DampingCoefficientsXML().BodyXML());
         readLegs(_l_long, twoTrackModel.GeometryXML().LongitudinalReferenceToWheelXML());
@@ -153,14 +190,17 @@ public:
         // Load external parameters
         //--------------------------------------------------
         const auto load_data = EVAA_load_module(loadFilename, xml_schema::flags::dont_validate);
-        const auto sinusoidalProfile = load_data->roadProfile()
-                                           .arbitraryRoadProfile()
-                                           .get()
-                                           .verticalProfile()
-                                           .sinusoidalProfile();
-        const auto horizontalProfile =
-            load_data->roadProfile().arbitraryRoadProfile().get().horizontalProfile();
-
+		if (load_data->roadProfile().arbitraryRoadProfile().present()){
+			const auto sinusoidalProfile = load_data->roadProfile()
+											   .arbitraryRoadProfile()
+											   .get()
+											   .verticalProfile()
+											   .sinusoidalProfile();
+		}
+		if (load_data->roadProfile().arbitraryRoadProfile().present()) {
+			const auto horizontalProfile =
+				load_data->roadProfile().arbitraryRoadProfile().get().horizontalProfile();
+		}
         if (load_data->roadProfile().fixedTyre().present()) {
             _boundary_condition_road = BoundaryConditionRoad::FIXED;
             std::cout << "Run the simulation with fixed tyres" << std::endl;
@@ -175,46 +215,46 @@ public:
             _profile_radius = load_data->roadProfile().circularRoadProfile()->radius();
             readVector(_profile_center, load_data->roadProfile().circularRoadProfile()->center());
         }
-        else if (load_data->roadProfile().arbitraryRoadProfile().present()) {
-            _boundary_condition_road = BoundaryConditionRoad::ARBITRARY;
-            std::cout << "Run the simulation on an arbitrary road" << std::endl;
-            _trajectory = new arbitraryTrajectory<T>(
-                _num_time_iter, _timestep, sinusoidalProfile.rightTyre().amplitude(),
-                sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(),
-                sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(),
-                sinusoidalProfile.leftTyre().shift());  // TODO: free memory without leaks
+        //else if (load_data->roadProfile().arbitraryRoadProfile().present()) {
+        //    _boundary_condition_road = BoundaryConditionRoad::ARBITRARY;
+        //    std::cout << "Run the simulation on an arbitrary road" << std::endl;
+        //    _trajectory = new arbitraryTrajectory<T>(
+        //        _num_time_iter, _timestep, sinusoidalProfile.rightTyre().amplitude(),
+        //        sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(),
+        //        sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(),
+        //        sinusoidalProfile.leftTyre().shift());  // TODO: free memory without leaks
 
-            T initialVelocity = sqrt(_initial_vel_body[0] * _initial_vel_body[0] +
-                                     _initial_vel_body[1] * _initial_vel_body[1]);
+        //    T initialVelocity = sqrt(_initial_vel_body[0] * _initial_vel_body[0] +
+        //                             _initial_vel_body[1] * _initial_vel_body[1]);
 
-            std::vector<T> wayPointsX;
-            std::vector<T> wayPointsY;
-            std::vector<T> wayPointsTimes;
+        //    std::vector<T> wayPointsX;
+        //    std::vector<T> wayPointsY;
+        //    std::vector<T> wayPointsTimes;
 
-            size_t numWayPoints = 0;
+        //    size_t numWayPoints = 0;
 
-            for (auto i = horizontalProfile.wayPoint().begin();
-                 i < horizontalProfile.wayPoint().end(); ++i) {
-                numWayPoints++;
-                wayPointsX.push_back(i->X());
-                wayPointsY.push_back(i->Y());
-                wayPointsTimes.push_back(i->time());
-            }
+        //    for (auto i = horizontalProfile.wayPoint().begin();
+        //         i < horizontalProfile.wayPoint().end(); ++i) {
+        //        numWayPoints++;
+        //        wayPointsX.push_back(i->X());
+        //        wayPointsY.push_back(i->Y());
+        //        wayPointsTimes.push_back(i->time());
+        //    }
 
-            _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(),
-                                               wayPointsTimes.data(), initialVelocity);
-            _trajectory->calculateTyreShifts(
-                _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
-                _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT]);
-            _trajectory->calculateTravelledDistance();
-            _trajectory->calculateAngles();
-            _trajectory->calculateAccelerationsCenterOfGravity();
-            _trajectory->calculateAccelerationsLegs(
-                _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
-                _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT],
-                _l_lat[Constants::FRONT_LEFT], _l_lat[Constants::FRONT_RIGHT],
-                _l_lat[Constants::REAR_LEFT], _l_lat[Constants::REAR_RIGHT]);
-        }
+        //    _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(),
+        //                                       wayPointsTimes.data(), initialVelocity);
+        //    _trajectory->calculateTyreShifts(
+        //        _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
+        //        _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT]);
+        //    _trajectory->calculateTravelledDistance();
+        //    _trajectory->calculateAngles();
+        //    _trajectory->calculateAccelerationsCenterOfGravity();
+        //    _trajectory->calculateAccelerationsLegs(
+        //        _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
+        //        _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT],
+        //        _l_lat[Constants::FRONT_LEFT], _l_lat[Constants::FRONT_RIGHT],
+        //        _l_lat[Constants::REAR_LEFT], _l_lat[Constants::REAR_RIGHT]);
+        //}
         else {
             throw std::logic_error(
                 "Wrong boundary conditions. Implemented so far: circle, fixed, nonfixed.");
