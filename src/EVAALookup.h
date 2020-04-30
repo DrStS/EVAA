@@ -50,11 +50,11 @@ public:
      * \param[in] b coefficient for linear part
      * \param[in] c coefficient for quadratic part
      * \param[in] k number of springs
-     * \note: TODO: use Constants. TODO: use #pragma omp.
      */
     static void buildLinearGrid(T* grid, T* axis, int size, T l_min, T l_max, T* a, T b, T c,
                                 int k) {
         T density = (l_max - l_min) / (size - 1);
+#pragma loop(ivdep)
         for (auto i = 0; i < size; i++) {
             axis[i] = l_min + i * density;
         }
@@ -76,12 +76,12 @@ public:
      * \param[in] b coefficient for linear part
      * \param[in] c coefficient for quadratic part
      * \param[in] k number of springs
-     * \note: TODO: use Constants. TODO: use #pragma omp.
      */
     static void buildChebyshevGrid(T* grid, T* axis, int size, T l_min, T l_max, T* a, T b, T c,
                                    int k) {
+#pragma loop(ivdep)
         for (auto i = 0; i < size; i++) {
-            axis[i] = (1 + cos((2 * i + 1) / (2 * size) * M_PI)) / 2 * (l_max - l_min) + l_min;
+            axis[i] = (1 + cos((2 * i + 1) / (2 * size) * Constants::PI)) / 2 * (l_max - l_min) + l_min;
         }
         for (auto j = 0; j < k; j++) {
             for (auto i = 0; i < size; i++) {
@@ -239,18 +239,6 @@ public:
     }
 
     /**
-     * \brief Calculate Matrix for the 11 Dof system with fl,fr,rl,rr notation
-     */
-    void getMatrixInterpolation(
-        T* length /**< [in] pointer to array of size k with lenght values of springs*/,
-        T* inter /**< [out] pointer to array of size k to store interpolation values*/,
-        T* mat /**< [out] pointer to array of size k * k to store interpolation values; TODO: not
-                  used?*/
-    ) {
-        getInterpolation(length, inter);
-    }
-
-    /**
      * \brief interpolate the first task on every point of axis to check for correctnes
      */
     void generateLookupOutputFile(T l_min, T l_max, T add) {
@@ -261,7 +249,7 @@ public:
         T* interpolationPoints = Math::malloc<T>(2 * nx - 1);
         for (auto i = 0; i < (2 * nx - 1); i++) {
             interpolationPoints[i] = l_min + i * (l_max - l_min) / (2 * nx - 2);
-            // TODO: Is it ok to use task[0] ?!
+            // For Debugging
             Math::dfInterpolate1D<T>(task[0], DF_INTERP, DF_METHOD_PP, 1, &interpolationPoints[i],
                                      DF_NO_HINT, ndorder, dorder, nullptr, &interpolation[i], rhint,
                                      0);

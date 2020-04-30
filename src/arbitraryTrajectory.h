@@ -1,10 +1,8 @@
 // TODO: copyright header
 #pragma once
 
-// TODO: remove cstdio
-#include <math.h>
+#include <cmath>
 
-#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -31,23 +29,23 @@ public:
             _frequencyRight = 0;
         }
         else {
-            _frequencyRight = 2 * PI / period_right;
+            _frequencyRight = 2 * Constants::PI / period_right;
         }
 
         if (period_left == 0) {
             _frequencyLeft = 0;
         }
         else {
-            _frequencyLeft = 2 * PI / period_left;
+            _frequencyLeft = 2 * Constants::PI / period_left;
         }
 
         _amplitudeRight = amplitude_right;
         _amplitudeLeft = amplitude_left;
 
-        _phaseShift_fl = 2 * PI / shift_left;
-        _phaseShift_fr = 2 * PI / shift_right;
-        _phaseShift_rl = 2 * PI / shift_left;
-        _phaseShift_rr = 2 * PI / shift_right;
+        _phaseShift_fl = 2 * Constants::PI / shift_left;
+        _phaseShift_fr = 2 * Constants::PI / shift_right;
+        _phaseShift_rl = 2 * Constants::PI / shift_left;
+        _phaseShift_rr = 2 * Constants::PI / shift_right;
 
         // allocate memory
         _roadPointsX = Math::malloc<T>(numIterations);
@@ -473,7 +471,7 @@ private:
 
     T* _normedDistance;  // absolute distance since the beginning of the road
 
-    const double PI = 3.141592653589793238463;  // TODO: add this into constants
+    
 
     /**
      * \brief use a second order scheme to calculate all Accelerations

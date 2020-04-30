@@ -91,15 +91,14 @@ private:
         corners[3] = -l_long[3];  // rr
         corners[7] = -l_lat[3];   // rr
 
-        // TODO: hardcore optimization: set to 0 with mkl.
-        for (auto i = 8; i < 12; i++) {
+		#pragma loop(ivdep)
+		for (auto i = 8; i < 12; i++) {
             corners[i] = 0;
         }
     }
 
     /**
      * Calculates the values of Corners for general angles.
-     * TODO: Consider moving to Math or anonymous namespace.
      */
     void UpdateCorners11DOF(T* angles, T* rotation_mat_buffer, T* initial_corners,
                             T* updated_corners) {
@@ -144,7 +143,7 @@ private:
         CornerAboutCenter(currentCornerPositions, pos_buffer);
     }
 
-    // TODO: Was ist das? Maybe to Math
+    // TODO: Was ist das? Maybe to Math with name 2D to 3D
     void ConvertALEToGlobal(T* vect, T* global_vect) {
 #pragma loop(ivdep)
         for (size_t i = 0; i < Constants::VEC_DIM; ++i) {
@@ -153,7 +152,7 @@ private:
         }
     }
 
-    // TODO: Was ist das? Maybe to Math
+    // TODO: Was ist das? Maybe to Math Sure!!!!!!!
     void Convert11DOFToGlobal(T* vect, T* global_vect) {
         global_vect[2] += vect[0];
 #pragma loop(ivdep)
@@ -763,7 +762,7 @@ public:
         // TODO: consider removing after checking performance.
         mkl_free_buffers();
 
-        /*
+        
         Math::free(Position_vec);
         Math::free(Velocity_vec);
         Velocity_vec = nullptr;
@@ -828,7 +827,7 @@ public:
         relativeCornerPositions = nullptr;
         Math::free(angle_buffer);
         Math::free(pos_buffer);
-        */
+        
     }
 };
 

@@ -728,7 +728,7 @@ private:
         const MKL_INT mkl_incy = 1;
 
         // the force is in the same direction as the position vector
-        // TODO: take care of situation when the center of the circle is not at the origin!!
+        // TODO: take care of situation when the center of the circle is not at the origin!! ///// RAFFI
         Math::copy(Constants::DIM, p, 1, Fr, 1);
 
         Fr[2] = 0;  // path only in XZ-plane
@@ -768,7 +768,9 @@ private:
      * The same locations are overwritten at each timestep
      */
     void compute_f_mem_alloc() {
-        // add to members
+        // add to members 
+		///// All the members belong to compute f function and are kind of nasty
+		//// cf_* means parameter used in compute f function
         cf_C_cN = Math::calloc<T>(Constants::DIM * Constants::DIM);
         cf_r_up_fl = Math::calloc<T>(Constants::DIM);
         cf_r_up_fr = Math::calloc<T>(Constants::DIM);
@@ -808,7 +810,7 @@ private:
         cf_lower_dampf_rr = Math::calloc<T>(Constants::DIM);
         cf_temp = Math::calloc<T>(Constants::DIM);
 
-        // TODO: :))) static vars, maybe an array/vector with all.
+        // TODO: :))) static vars, maybe an array/vector with all. 
         cf_upper_angle_fl = new T;
         cf_upper_angle_fr = new T;
         cf_upper_angle_rl = new T;
@@ -2091,6 +2093,9 @@ public:
      * \param sln solution vector
      */
     void print_final_result(T* sln) {
+		std::cout << std::scientific;
+		std::cout << std::setprecision(15);
+
         std::cout << "MBD: angular velocity w=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t "
                   << sln[2] << "]" << std::endl;
         std::cout << "MBD: car body velocity vc=\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t "

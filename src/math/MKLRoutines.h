@@ -67,7 +67,11 @@ T* malloc(size_t count) {
     }
     // TODO: signal allocation error.
     // See https://software.intel.com/en-us/mkl-developer-reference-c-mkl-malloc
-    return (T*)mkl_malloc(count * sizeof(T), Constants::ALIGNMENT);
+	T* ptr = (T*)mkl_malloc(count * sizeof(T), Constants::ALIGNMENT);
+	if (ptr == nullptr) {
+		throw "Memory allocation Error in malloc!";
+	}
+	return ptr;
 }
 
 /**
@@ -83,7 +87,11 @@ T* calloc(size_t count) {
     }
     // TODO: signal allocation error.
     // See https://software.intel.com/en-us/mkl-developer-reference-c-mkl-calloc
-    return (T*)mkl_calloc(count, sizeof(T), Constants::ALIGNMENT);
+	T* ptr = (T*)mkl_calloc(count, sizeof(T), Constants::ALIGNMENT);
+	if (ptr == nullptr) {
+		throw "Memory allocation Error in calloc!";
+	}
+	return ptr;
 }
 
 /**
