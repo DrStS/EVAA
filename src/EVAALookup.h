@@ -148,10 +148,10 @@ public:
         // we will get the grid aftwards from a file. That why I do not directly write size, l_min,
         // l_max into the variables
         task = Math::malloc<DFTaskPtr>(ny);
-        scoeff = Math::calloc<T>(ny * (nx - 1) * sorder);
+        scoeff = Math::malloc<T>(ny * (nx - 1) * sorder);
 
-        grid = Math::calloc<T>(nx * ny);
-        axis = Math::calloc<T>(nx);
+        grid = Math::malloc<T>(nx * ny);
+        axis = Math::malloc<T>(nx);
 
         /* create grid */
         EVAAComputeGrid<T>::buildLinearGrid(grid, axis, nx, l_min, l_max, a, b, c, ny);

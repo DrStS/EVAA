@@ -31,14 +31,8 @@ private:
     // needed to solve the 11DOF system
     T* force_vector_11dof;
 
-    // Spring stiffnesses in Stefan's ordering
-    T* k_vect;
-
     // Contains the forces in the ordering [GC:XYZ,W1:XYZ,T1:XYZ, ...]
     T* force_vector;
-
-    // Contains he torque in the form [XYZ]
-    T* full_torque;
 
     // Contains the dx in the spring elongation in Stefan's ordering
     T* Delta_x_vec;
@@ -134,20 +128,17 @@ public:
         // initialize solution vector
         int sol_size = (floor(tend_ / h_) + 1);
         int centripetal_force_dimensions = Constants::DIM;  // because update force needs it
-        int full_torque_dimensions = Constants::DIM;
 
         // allocate memory
 
         time_vec = Math::calloc<T>(sol_size);
         force_vector = Math::calloc<T>(Constants::VEC_DIM * Constants::DIM);
         force_vector_11dof = Math::calloc<T>(Constants::DOF);
-        full_torque = Math::calloc<T>(full_torque_dimensions);
         centripetal_force = Math::calloc<T>(centripetal_force_dimensions);
 
         // this was 2 dimensional allocation and update force updates 3 dimension on this
         new_centripetal_force = Math::calloc<T>(centripetal_force_dimensions);
 
-        k_vect = Math::calloc<T>(2 * Constants::NUM_LEGS);
         Delta_x_vec = Math::calloc<T>(2 * Constants::NUM_LEGS);
 
         torque = Math::malloc<T>(Constants::DIM);
@@ -203,6 +194,7 @@ public:
         Math::free(centripetal_force);
         Math::free(new_centripetal_force);
         Math::free(Delta_x_vec);
+        Math::free(force_vector_11dof);
 
         Math::free(torque);
         Math::free(new_torque);

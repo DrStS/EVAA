@@ -666,6 +666,10 @@ private:
         Math::copy(Constants::DIM, vt_fr, 1, vw_fr, 1);
         Math::copy(Constants::DIM, vt_rl, 1, vw_rl, 1);
         Math::copy(Constants::DIM, vt_rr, 1, vw_rr, 1);
+
+        Math::free(perpendicular_dir);
+        Math::free(tangential_dir);
+        Math::free(radial_vector);
     }
 
     /**
@@ -2180,6 +2184,7 @@ public:
         Math::free(FT_rr);
         Math::free(A_Ic);
         Math::free(A_rem);
+        Math::free(center_of_circle);
     }
 };
 
