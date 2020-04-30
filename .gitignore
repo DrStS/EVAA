@@ -1,17 +1,33 @@
-/src/database/IP_EVAA_XML.cpp
-/src/database/IP_EVAA_XML.h
-/src/database/LOAD_EVAA_XML.cpp
-/src/database/LOAD_EVAA_XML.h
-/src/database/LOOKUP_EVAA_XML.cpp
-/src/database/LOOKUP_EVAA_XML.h
-/src/tools/AuxiliaryParameters.cpp
-/src/tmwtypes.h
-/src/xsd.rar
-/build*
-*.asv
+# Generated code for XML read
+src/database/IP_EVAA_XML.cpp
+src/database/IP_EVAA_XML.h
+src/database/LOAD_EVAA_XML.cpp
+src/database/LOAD_EVAA_XML.h
+src/database/LOOKUP_EVAA_XML.cpp
+src/database/LOOKUP_EVAA_XML.h
+
+# Updated by cmake.
+src/tools/AuxiliaryParameters.cpp
+
+# Build artifacts
+build*
+out/
 *.cmake
-/Results/*
-/.vs/*
-/proposed_xml/*
+
+# Matlab
+*.asv
+
+# Results.
+Results/*
+LookupTable*.txt
+
+# Project files
+.vs/
+.vscode/
+CmakeSettings.json
+
+# TODO: see if still needed
+src/tmwtypes.h
+proposed_xml/*
 main.cpp
-/dump/*
+dump/*
