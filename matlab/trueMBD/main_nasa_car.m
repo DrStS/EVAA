@@ -23,11 +23,11 @@ function [t, y_return, y, metrics] = main_nasa_car(r1, r2, r3, r4, mass, mass_wh
                 vw3; ...    % 3 13:15
                 vw4; ...    % 3 16:18
                 vt1; ...    % 3 19:21
-                vt2; ...    % 3 22:24
-                vt3; ...    % 3 25:27
+                vt2; ...    % 3 22:24 Xzy
+                vt3; ...    % 3 25:27 rr rl fl fr
                 vt4; ...    % 3 28:30
                 qc; ...     % 4 31:34
-                pcc; ...    % 3 35:37
+                pcc; ...    % 3 35:37 
                 pw1; ...    % 3 38:40
                 pw2; ...    % 3 41:43
                 pw3; ...    % 3 44:46

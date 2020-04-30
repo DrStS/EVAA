@@ -227,7 +227,7 @@ public:
             }
 
             _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(),
-                                               wayPointsTimes.data(), initialVelocity);
+                                               wayPointsTimes.data());
             _trajectory->calculateTyreShifts(
                 _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
                 _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT]);
@@ -239,6 +239,8 @@ public:
                 _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT],
                 _l_lat[Constants::FRONT_LEFT], _l_lat[Constants::FRONT_RIGHT],
                 _l_lat[Constants::REAR_LEFT], _l_lat[Constants::REAR_RIGHT]);
+
+            _trajectory->calculateVerticalAccelerations();
         }
         else {
             throw std::logic_error(
