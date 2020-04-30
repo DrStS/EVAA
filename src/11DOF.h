@@ -270,14 +270,14 @@ public:
      */
     void calcResidual(T* force) {
         // residual = A*x[n+1]
-        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1,
-                   A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
+        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
+                      1, A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
         // residual -= B*x[n]
-        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, -1,
-                   B, Constants::DOF, u_n, 1, 1., residual, 1);
+        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
+                      -1, B, Constants::DOF, u_n, 1, 1., residual, 1);
         // residual += M_h2 * x[n-1]
-        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1,
-                   M_h2, Constants::DOF, u_n_m_1, 1, 1, residual, 1);
+        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
+                      1, M_h2, Constants::DOF, u_n_m_1, 1, 1, residual, 1);
         // residual -= force
         Math::axpy(Constants::DOF, -1., force, 1, residual, 1);
         // res = norm(residual)
@@ -891,8 +891,8 @@ public:
      */
     void calcResidual(T* force) {
         // residual = A*x[n+1]
-        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1,
-                   A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
+        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
+                      1, A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
         // residual -= bVec
         Math::axpy(Constants::DOF, -1., bVec, 1, residual, 1);
         // residual -= force

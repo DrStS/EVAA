@@ -234,7 +234,7 @@ public:
         const MKL_INT dorder[2] = {0, 1};  // only the derivative values are computed
         for (auto i = 0; i < ny; i++) {
             Math::dfInterpolate1D<T>(task[i], DF_INTERP, DF_METHOD_PP, 1, &length[i], DF_NO_HINT,
-                                      ndorder, dorder, nullptr, &deriv[i], rhint, 0);
+                                     ndorder, dorder, nullptr, &deriv[i], rhint, 0);
         }
     }
 

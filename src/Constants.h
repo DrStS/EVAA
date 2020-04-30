@@ -49,6 +49,5 @@ constexpr int REAR_LEFT = 2;
 /** Convention order for rear right leg/wheel/tire. */
 constexpr int REAR_RIGHT = 3;
 
-
 };  // namespace Constants
 }  // namespace EVAA

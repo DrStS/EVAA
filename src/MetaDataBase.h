@@ -84,7 +84,8 @@ public:
         readLegs(_c_body, twoTrackModel.DampingCoefficientsXML().BodyXML());
         readLegs(_l_long, twoTrackModel.GeometryXML().LongitudinalReferenceToWheelXML());
         readLegs(_l_lat, twoTrackModel.GeometryXML().LateralReferenceToWheelXML());
-        readVector(_vehicleCIR, twoTrackModel.GeometryXML().RelativeCenterOfInstanteneousRotation());
+        readVector(_vehicleCIR,
+                   twoTrackModel.GeometryXML().RelativeCenterOfInstanteneousRotation());
         readLegs(_lower_spring_length, twoTrackModel.GeometryXML().SuspensionSpringsXML());
         readLegs(_upper_spring_length, twoTrackModel.GeometryXML().TyreSpringsXML());
 
