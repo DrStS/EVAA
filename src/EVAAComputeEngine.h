@@ -100,17 +100,7 @@ public:
 
     // just for testing purposes
     void computeALEtest(void);
-    void compare_ALE_MBD(void){};
-
-    // MKL
-    // void computeMKLNasa(void);
-    // void computeMKLNasa_example(void);
-
-    /**
-     * \brief clean compute engine free memory
-     * \author Stefan Sicklinger
-     */
-    void clean(void);
+    void compare_ALE_MBD(void);
 };
 
 }  // namespace EVAA

@@ -125,11 +125,6 @@ int main(int argc, char **argv) {
     std::cout << "It took " << timer1.getDurationMilliSec()
               << " ms to run the solver(Compare).\n\n\n"
               << std::endl;
-    myComputeEngine->clean();
-    /*
-    myComputeEngine->computeMKLNasa_example();
-    myComputeEngine->clean();
-    */
 
     timer1.start();
     myComputeEngine->computeMKLTwoTrackModelBE();

@@ -57,15 +57,12 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
 
 void EVAAComputeEngine::printInfo(void) {
     Math::printMKLInfo();
-
     auto& db = MetaDataBase::getDataBase();
     std::cout << "\n\nCalculate the solution after "
               << db.getNumberOfTimeIterations() * db.getTimeStepSize()
               << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations()
               << " iterations\n\n\n";
 }
-
-void EVAAComputeEngine::clean(void) {}
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
     auto& db = MetaDataBase::getDataBase();
@@ -760,8 +757,8 @@ void EVAAComputeEngine::computeALEtest(void) {
     delete car;
 }
 
-#if MIGHT_BE_USEFUL
 void EVAAComputeEngine::compare_ALE_MBD(void) {
+#if MIGHT_BE_USEFUL
     // MBD Call
     size_t num_iter = _parameters.num_time_iter;
     size_t solution_dim = _parameters.solution_dim;
@@ -833,7 +830,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
 
     Math::free(soln);
     Math::free(complete_soln2);
-}
 #endif
+}
 
 }  // namespace EVAA
