@@ -38,6 +38,10 @@ constexpr bool USEINTERPOLATION = true;
 
 constexpr floatEVAA TOLERANCE = 1.e-8;
 
+/** the only one of the great numbers */
+constexpr floatEVAA PI =
+    3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342; 
+
 constexpr int DOFDOF = 121;
 
 /** Convention order for front left leg/wheel/tire. */
