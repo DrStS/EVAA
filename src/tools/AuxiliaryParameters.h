@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2016, Dr. Stefan Sicklinger, Munich \n
+/*
+ * Copyright &copy; 2016, Dr. Stefan Sicklinger, Munich \n
  *
  *  All rights reserved.
  *
@@ -17,11 +18,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with STACCATO.  If not, see http://www.gnu.org/licenses/.
  */
-/***********************************************************************************************/ /**
-                                                                                                   * \file AuxiliaryParameters.h
-                                                                                                   * This file holds the class of AuxiliaryParameters.
-                                                                                                   * \date 4/2/2016
-                                                                                                   **************************************************************************************************/
+
+/**
+ * \file AuxiliaryParameters.h
+ * This file holds the class of AuxiliaryParameters.
+ * \date 4/2/2016
+ */
+
 #pragma once
 
 #if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || \
@@ -51,9 +54,9 @@
 
 typedef MKL_Complex16 EVAAComplexDouble;
 namespace EVAA {
-/********/ /**
-            * \brief Class AuxiliaryParameters provides a central place for STACCATO wide parameters
-            ***********/
+/**
+ * \brief Class AuxiliaryParameters provides a central place for STACCATO wide parameters
+ */
 class AuxiliaryParameters {
 public:
     /// How many threads are used for linear solver part

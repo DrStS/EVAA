@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+/*
+ * Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
  *
  *  All rights reserved.
  *

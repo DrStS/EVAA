@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+/*
+ * Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
  *
  *  All rights reserved.
  *
@@ -17,11 +18,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
-/***********************************************************************************************/ /**
-                                                                                                   * \file EVAAComputeEngine.h
-                                                                                                   * This file holds the class of ComputeEngine.
-                                                                                                   * \date 6/13/2019
-                                                                                                   **************************************************************************************************/
+
+/**
+ * \file EVAAComputeEngine.h
+ * This file holds the class of ComputeEngine.
+ * \date 6/13/2019
+ */
+
 #pragma once
 #include <mkl.h>
 
@@ -37,69 +40,71 @@
 #include "MBDMethod.h"
 #include "MathLibrary.h"
 
-/********/ /**
-            * \brief Class ComputeEngine the core of STACCATO
-            ***********/
+/**
+ * \brief Class ComputeEngine the core of STACCATO
+ */
 class EVAAComputeEngine {
 public:
-    /***********************************************************************************************
+    /**
      * \brief Reads parameters from XML files.
      * \param[in] file name of xml file to call singelton constructor of metadatabase
      * \author Stefan Sicklinger
-     ***********/
+     */
     EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName);
-    /***********************************************************************************************
+    /**
      * \brief Destructor
      * \author Stefan Sicklinger
-     ***********/
+     */
+
     ~EVAAComputeEngine();
-    /***********************************************************************************************
+    /**
      * \brief print info
      * \author Stefan Sicklinger
-     ***********/
+     */
+
     void printInfo(void);
-    /***********************************************************************************************
-     * \brief compute engine
-     * \author Stefan Sicklinger
-     ***********/
+
     // EIGEN
+    /**
+     * \brief compute engine
+     * \author Stefan Sicklinger
+     */
     void computeEigen11DOF(void);
-    /***********************************************************************************************
-     * \brief compute engine
-     * \author Stefan Sicklinger
-     ***********/
+
     // BLAZE
+    /**
+     * \brief compute engine
+     * \author Stefan Sicklinger
+     */
     void computeBlaze11DOF(void);
-    /***********************************************************************************************
-     * \brief compute engine
-     * \author Stefan Sicklinger
-     ***********/
+
     // MKL
+    /**
+     * \brief compute engine
+     * \author Stefan Sicklinger
+     */
     void computeMKL11DOF(void);
-    /***********************************************************************************************
-     * \brief compute engine
-     * \author Stefan Sicklinger
-     ***********/
+
     // MKL Linear solver
-    void computeMKLTwoTrackModel();
-    /***********************************************************************************************
+    /**
      * \brief compute engine
      * \author Stefan Sicklinger
-     ***********/
+     */
+    void computeMKLTwoTrackModel();
 
     /**
      * \brief compute 11Dof system with BE to prove correctness
      */
     void computeMKLTwoTrackModelBE();
 
-    /*
-    Solve the MBD system
-    */
+    /**
+     * Solve the MBD system
+     */
     void computeMBD(void);
 
-    /*
-    Fancy solver ALE
-    */
+    /**
+     * Fancy solver ALE
+     */
     void computeALE(void);
 
     // just for testing purposes
@@ -107,13 +112,13 @@ public:
     void compare_ALE_MBD(void){};
 
     // MKL
-    /*	void computeMKLNasa(void);
-            void computeMKLNasa_example(void);
-    */
-    /***********************************************************************************************
+    // void computeMKLNasa(void);
+    // void computeMKLNasa_example(void);
+
+    /**
      * \brief clean compute engine free memory
      * \author Stefan Sicklinger
-     ***********/
+     */
     void clean(void);
 
 private:

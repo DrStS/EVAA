@@ -1,4 +1,7 @@
+// TODO: Copyright header
+
 #pragma once
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>

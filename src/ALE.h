@@ -1,5 +1,6 @@
+// TODO: Copyright header
+
 #pragma once
-//#include "Car.h"
 #include "11DOF.h"
 #include "BLAS.h"
 #include "Constants.h"
@@ -7,9 +8,7 @@
 #include "LoadModule.h"
 #include "RoadProfile.h"
 
-/*
-Implements the ALE method to extend the linear 11DOF system
-*/
+/** Implements the ALE method to extend the linear 11DOF system */
 template <class T>
 class ALE {
 private:
@@ -62,9 +61,9 @@ private:
     T global_inertia_Z;
 
 public:
-    /*
-    Constructor
-    */
+    /**
+     * Constructor
+     */
     ALE(Car<T>* Car_obj_val, LoadModule<T>* Load_module_val,
         TwoTrackModelParent<T>* TwoTrackModel_val, EVAALookup<T>* lookup_table)
     {
@@ -80,11 +79,12 @@ public:
         tend_ = MetaDataBase::DataBase()->getNumberOfTimeIterations() * h_;
     }
 
-    /*
-    Applies the Verlet_Stoermer algorithm to update the global XY position of the car and its Z
-    orientation Store the global coordinates in the VelocityXY and PositionXY from the car object
-    \param t current simulation time
-    */
+    /**
+     * Applies the Verlet_Stoermer algorithm to update the global XY position of the car and its Z
+     * orientation
+     * Store the global coordinates in the VelocityXY and PositionXY from the car object
+     * \param t current simulation time
+     */
     void global_frame_solver(T& t)
     {
         // 2. Update global X,Y positions of the car
@@ -119,8 +119,10 @@ public:
             *Car_obj->currentAngularVelocityLagrangian, torque[2], new_torque[2], h_,
             global_inertia_Z);
 
-        /* Idea!! What if we do it at the end, since the displacement is a vector and by triangle
-         * rule sum of all should add up force is computed using on*/
+        /*
+         * Idea!! What if we do it at the end, since the displacement is a vector and by triangle
+         * rule sum of all should add up force is computed using on
+         */
         Car_obj->apply_ALE_change();
 
         // update forces and torque
@@ -169,8 +171,9 @@ public:
         // time iteration
         double eps = h_ / 100;
         while (std::abs(t - (tend_ + h_)) > eps) {
-            ///// This has to be done at each time step//////
-            //////////// update force vector ///////////
+            // This has to be done at each time step
+            //
+            // update force vector
             // Car_obj->compute_dx(Delta_x_vec);
             Load_module_obj->update_force(t, force_vector, centripetal_force);
             Load_module_obj->update_torque(t, torque, force_vector);
@@ -212,10 +215,10 @@ public:
         delete[] new_torque;
     }
 
-    /*
-    Executes the time iteration of the ALE solvers, switches from global position update to solving
-    of the linear 11DOF system
-    */
+    /**
+     * Executes the time iteration of the ALE solvers, switches from global position update to
+     * solving of the linear 11DOF system
+     */
     void solve(T* sol_vect)
     {
         int sol_size = (floor(tend_ / h_) + 1);
@@ -225,9 +228,9 @@ public:
         MKL_free(u_sol);
     }
 
-    /*
-    adds the contribution of the wheels and tyres to the inertia moment of the car
-    */
+    /**
+     * Adds the contribution of the wheels and tyres to the inertia moment of the car
+     */
     void calculate_global_inertia_Z()
     {
         // get the global inertia actiing in Z direction
@@ -246,9 +249,9 @@ public:
             (Car_obj->l_lat[3] * Car_obj->l_lat[3] + Car_obj->l_long[3] * Car_obj->l_long[3]);
     }
 
-    /*
-    Prints all positions and angles in the car object
-    */
+    /**
+     * Prints all positions and angles in the car object
+     */
     void print_final_results()
     {
         T* sln = Car_obj->Position_vec;

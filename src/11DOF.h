@@ -1,8 +1,12 @@
-/***********************************************************************************************/ /**
-                                                                                                   * \file 11DOF.h
-                                                                                                   * This file holds the function declaration and definitions of the linear11dof and the linear11dof_full class.
-                                                                                                   * \date 04/14/2020
-                                                                                                   **************************************************************************************************/
+// TODO: Copyright template
+
+/**
+ * \file 11DOF.h
+ * This file holds the function declaration and definitions of the linear11dof and the
+ * linear11dof_full class.
+ * \date 04/14/2020
+ */
+
 #pragma once
 #include <mkl.h>
 
@@ -18,12 +22,14 @@
 template <typename T>
 class TwoTrackModelParent {
 protected:
-    // main car object
-    Car<T>* _car; /**< pointer to car instance with all important car parameter */
+    /** pointer to car instance with all important car parameter */
+    Car<T>* _car;
 
     // time step related
-    T factor_h; /**< solution in next timestep */
-    T _h;       /**< solution in next timestep */
+    /** solution in next timestep */
+    T factor_h;
+    /** solution in next timestep */
+    T _h;
 
     // solution in next timestep
     T* u_n_p_1;
@@ -33,10 +39,15 @@ protected:
 
     // solution in current timestep
     T* u_n;
-    T *A, *B, *C; /**< pointer to matrices used for the backward euler */
-    T *M_h2, *K, *D, *Mat_temp, *Mat_springLength;
+    T *A, *B, *C; /* pointers to matrices used for the backward euler */
+    T *M_h2, *K, *D;
+    /** used for the constructStiffnesMatrix and constructDampingMatrix. */
+    T* Mat_temp;
+    T* Mat_springLength;
 
-    T *kVec, *dVec, *temp;
+    T *kVec, *dVec;
+    /** used for the constructStiffnesMatrix and constructDampingMatrix as well as for the BE. */
+    T* temp;
     T *springLengths, *springLengthsNormal;
 
     T *J, *dKdxx, *dDdxx;
@@ -50,9 +61,9 @@ protected:
 
 public:
     TwoTrackModelParent() {}
-    /*
-    Constructor
-    */
+    /**
+     * Constructor
+     */
     TwoTrackModelParent(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation,
                         EVAALookup<T>* dampingInterpolation) :
         lookupStiffness(stiffnessInterpolation),
@@ -61,15 +72,16 @@ public:
     {
     }
 
-    /*
-    Performs one timestep of the 11DOF solver
-    \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
-    \return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
-    */
+    /**
+     * Performs one timestep of the 11DOF solver
+     * \param[in] load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+     * \oaram[out] solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+     */
     virtual void update_step(T* force, T* solution) = 0;
-    /*
-    Destructor
-    */
+
+    /**
+     * Destructor
+     */
     virtual ~TwoTrackModelParent() {}
 };
 
@@ -178,21 +190,15 @@ public:
         K = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
         D = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
 
-        temp =
-            (T*)mkl_malloc(Constants::DOF * sizeof(T),
-                           Constants::ALIGNMENT); /**< used for the constructStiffnesMatrix and
-                                                     constructDampingMatrix as well as for the BE*/
-        Mat_temp = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T),
-                                  Constants::ALIGNMENT); /**< used for the constructStiffnesMatrix
-                                                            and constructDampingMatrix*/
+        temp = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
+        Mat_temp = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
         Mat_springLength = (T*)mkl_calloc(2 * Constants::NUM_LEGS * Constants::DOF, sizeof(T),
                                           Constants::ALIGNMENT);
         springLengths = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
         springLengthsNormal =
             (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
 #ifdef INTERPOLATION
-        //		ABuffer = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T),
-        //Constants::ALIGNMENT);
+        // ABuffer = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
         J = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
         dKdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
         dDdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
@@ -203,8 +209,8 @@ public:
         _h = MetaDataBase::DataBase()->getTimeStepSize();
         factor_h = 1 / _h;
 
-        // if interpolation is used we need alll the lengths to interpolate damping and stiffness if
-        // not we have to define them populate kVec
+        // if interpolation is used we need alll the lengths to interpolate damping and stiffness
+        // if not we have to define them populate kVec
         kVec = _car->kVec;
         // populate dVec
         dVec = _car->dVec;
@@ -217,9 +223,10 @@ public:
         constructBMatrix();
         constructCMatrix();
     }
-    /*
-    Destructor
-    */
+
+    /**
+     * Destructor
+     */
     virtual ~TwoTrackModelBE()
     {
         mkl_free(A);
@@ -245,10 +252,10 @@ public:
 #endif
     }
 
-    /*
-    Performs one timestep of the 11DOF solver
-    \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
-    */
+    /**
+     * Performs one timestep of the 11DOF solver
+     * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+     */
     virtual void update_step(T* force, T* solution)
     {
         // mkl<T>::scal(Constants::DOF, -1.0, u_n_m_1, Constants::INCX);
@@ -263,10 +270,11 @@ public:
         mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
         // copy update to car
 
-        MathLibrary::swap_address<T>(u_n,
-                                     u_n_m_1);  // u_n_m_1 points to u_n and u_n points to u_n_m_1
-        //		MathLibrary::swap_address<T>(u_n_p_1, u_n); // u_n points to u_n_p_1 and
-        //u_n_p_1 point to u_n_m_1 now
+        // u_n_m_1 points to u_n and u_n points to u_n_m_1
+        MathLibrary::swap_address<T>(u_n, u_n_m_1);
+        // u_n points to u_n_p_1 and
+        // MathLibrary::swap_address<T>(u_n_p_1, u_n);
+        // u_n_p_1 point to u_n_m_1 now
         // do not swap just copy
         mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
     }
@@ -276,9 +284,9 @@ public:
      *
      * residual = A*x[n+1] - B * x[n] + M_h2 * x[n-1] - forces
      * res_norm = norm(residual)
+     * \param pointer to forces vector size of DOF
      */
-    void calcResidual(T* force /**< pointer to forces vector size of DOF*/
-    )
+    void calcResidual(T* force)
     {
         // residual = A*x[n+1]
         mkl<T>::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
@@ -317,9 +325,9 @@ public:
         // temp += -x[n]
         mkl<T>::axpy(Constants::DOF, -1, u_n, 1, temp, 1);
         // calc dDdxx with (x[n+1] - x[n])
-        //		constructLookupDerivativeX(dddl, temp, dDdxx);
+        // constructLookupDerivativeX(dddl, temp, dDdxx);
         // J += 1/_h * dDdxx
-        //		mkl<T>::axpy(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
+        // mkl<T>::axpy(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
     }
     /**
      * \brief construct Jacobien for fixed to road
@@ -584,13 +592,13 @@ public:
      * \brief construct The derivative of the stiffness lookupTable times a position vector
      *
      * this has to be called every newton iteraton
+     *
+     * \param[in] der pointer to vector with the derivative of the lookup Table of length 8
+     * \param[in] x pointer to position vector of length DOF
+     * \param[out] dMdxx pointer to matrix in which de derivative of the lookup times a position
+     * vec is stored of size DOF * DOF.
      */
-    void constructLookupDerivativeX(
-        T* der /**< [in] pointer to vector with the derivative of the lookup Table of length 8 */,
-        T* x /**< [in] pointer to position vector of length DOF */,
-        T* dMdxx /**< [out] pointer to matrix in which de derivative of the lookup times a position
-                    vec is stored of size DOF * DOF */
-    )
+    void constructLookupDerivativeX(T* der, T* x, T* dMdxx)
     {
         temp[0] = x[0] * (der[0] + der[2] + der[4] + der[6]) - der[2] * x[5] - der[4] * x[7] -
                   der[6] * x[9] - der[0] * x[3] +
@@ -774,8 +782,8 @@ template <typename T>
 class TwoTrackModelBDF2 : public TwoTrackModelBE<T> {
 private:
     T *Dmat, *E;
-    T* bVec; /**< this vector is used to store the whole constants part on the rhs apart from the
-                force */
+    /** this vector is used to store the whole constants part on the rhs apart from the force */
+    T* bVec;
     T *u_n_m_2, *u_n_m_3;
     size_t time_step_count = 0;
     void (TwoTrackModelBDF2<T>::*_active_executor)(T*, T*);
@@ -846,9 +854,9 @@ private:
     }
 
 public:
-    /*
-    Constructor
-    */
+    /**
+     * Constructor.
+     */
     TwoTrackModelBDF2(Car<T>* input_car, EVAALookup<T>* stiffnessInterpolation,
                       EVAALookup<T>* dampingInterpolation) :
         TwoTrackModelBE<T>(input_car, stiffnessInterpolation, dampingInterpolation)
@@ -882,11 +890,11 @@ public:
         time_step_count += 1;
     }
 
-    /*
-    Performs one timestep of the 11DOF solver
-    \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
-    \return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
-    */
+    /**
+     * Performs one timestep of the 11DOF solver
+     * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+     * \return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+     */
     void update_step_bdf2(T* force, T* solution)
     {
         // cblas_dscal(DOF, 0.0, force, 1);
@@ -898,12 +906,12 @@ public:
         /*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
         apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
         mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
-        MathLibrary::swap_address<T>(
-            u_n_m_2, u_n_m_3);  // u_n_m_2 points to u_n_m_3 and u_n_m_3 points to u_n_m_2
-        MathLibrary::swap_address<T>(
-            u_n_m_1, u_n_m_2);  // u_n_m_2 points to u_n_m_1 and u_n_m_1 points to u_n_m_3
-        MathLibrary::swap_address<T>(u_n,
-                                     u_n_m_1);  // u_n_m_1 points to u_n and u_n points to u_n_m_3
+        // u_n_m_2 points to u_n_m_3 and u_n_m_3 points to u_n_m_2
+        MathLibrary::swap_address<T>(u_n_m_2, u_n_m_3);
+        // u_n_m_2 points to u_n_m_1 and u_n_m_1 points to u_n_m_3
+        MathLibrary::swap_address<T>(u_n_m_1, u_n_m_2);
+        // u_n_m_1 points to u_n and u_n points to u_n_m_3
+        MathLibrary::swap_address<T>(u_n, u_n_m_1);
         mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
     }
     /**
@@ -911,9 +919,9 @@ public:
      *
      * residual = A*x[n+1] - bVec - forces
      * res_norm = norm(residual)
+     * \param force pointer to forces vector size of DOF
      */
-    void calcResidual(T* force /**< pointer to forces vector size of DOF*/
-    )
+    void calcResidual(T* force)
     {
         // residual = A*x[n+1]
         mkl<T>::gemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
@@ -950,7 +958,7 @@ public:
     {
         // first update the derivative
         lookupStiffness->getDerivative(_car->currentSpringsLength, dkdl);
-        //		lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
+        // lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
         // J = A
@@ -983,9 +991,9 @@ public:
     }
 };
 
-/*
-For testing purposes
-*/
+/**
+ * For testing purposes.
+ */
 template <typename T>
 class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
 public:
@@ -1027,7 +1035,6 @@ public:
         // cblas_dcopy(DOF, _car->u_prev_linear, 1, solution_vect, 1);
         while (std::abs(t - (tend_ + _h)) > eps) {
             // solution_vect = u_sol + iter * (DOF);
-            //			std::cout << "Running time step = " << iter << std::endl;
             update_step(f_n_p_1, sol_vect);
             iter++;
             t += _h;

@@ -1,3 +1,5 @@
+// TODO: Copyright header
+
 #pragma once
 
 #include "BLAS.h"
@@ -27,13 +29,13 @@ private:
     void ComputeInternalTorque(T* Torque, T* F_vec)
     {
         // compute torque around X-axis
-        //		#pragma loop(ivdep)
+        // #pragma loop(ivdep)
         for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
             Torque[0] += F_vec[i * Constants::DIM + 1] * Car_obj->currentCIRTwoTrackModel[i];
         }
 
         // compute torque around Y-axis
-        //	#pragma loop(ivdep)
+        // #pragma loop(ivdep)
         for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
             Torque[1] += F_vec[i * Constants::DIM + 0] * Car_obj->currentCIRTwoTrackModel[i];
         }
@@ -108,69 +110,68 @@ public:
         Profile_type = Active_Profile;
     }
 
-    /*
-    Calculates the internal forces under certain conditions
-    called in:  ALE.solve, global_frame_solver
-    \param time_t current simulation time
-    \param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
-    \return F_vec vector of forces in the car [GC:XYZ,W1:XYZ,T1:XYZ, ...]
-    \return Normal_ext external forces acting on the whole car system [XYZ]
-    */
+    /**
+     * Calculates the internal forces under certain conditions
+     * called in:  ALE.solve, global_frame_solver
+     * \param time_t current simulation time
+     * \param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
+     * \return F_vec vector of forces in the car [GC:XYZ,W1:XYZ,T1:XYZ, ...]
+     * \return Normal_ext external forces acting on the whole car system [XYZ]
+     */
     void update_force(T time_t, T* F_vec, T* Normal_ext)
     {
         mkl<T>::scal(Constants::DIM * Constants::VEC_DIM, 0.0, F_vec, 1);
-        mkl<T>::scal(Constants::DIM, 0.0, Normal_ext,
-                     1);  // fix this so TEOOOOOOOOOO
-                          // why did Shubham tell me to comment everything out ?
+        mkl<T>::scal(Constants::DIM, 0.0, Normal_ext, 1);
+        // fix this so TEOOOOOOOOOO
+        // why did Shubham tell me to comment everything out ?
         Active_Profile->get_Profile_force_ALE(Car_obj, F_vec, Normal_ext);
-        /*
-        Modify the profile to know where the ground is and apply normal force accordingly
-        */
+        /* Modify the profile to know where the ground is and apply normal force accordingly */
         // F_Ti += -0.25 * N; [F[2], F[4], F[6], F[8]]
         for (auto i = 2; i < Constants::VEC_DIM; i += 2) {
             mkl<T>::axpy(Constants::DIM, -0.25, Normal_ext, 1, &F_vec[i * Constants::DIM], 1);
         }
-        // =============== PAY ATTENTION to THIS ============================
-        // N += external_force  /// this formulation is WRONG (!!!) if done before computing
-        // following steps, should be done at the end. external force doesn't necessarily have to
-        // create a normal force it can create acceleration, ex: when car flies
+        // PAY ATTENTION to THIS
+        // N += external_force
+        // this formulation is WRONG (!!!) if done before computing following steps, should be done
+        // at the end. external force doesn't necessarily have to create a normal force it can
+        // create acceleration, ex: when car flies
         vdAdd(Constants::DIM, External_force, Normal_ext, Normal_ext);
-        // =============== PAY ATTENTION to THIS ============================
+        // PAY ATTENTION to THIS
 
         // get stiffnesses vector k_vec
-        /*		Car_obj->get_k_vec(k_vec);
+#if MIGHT_BE_USEFUL
+        Car_obj->get_k_vec(k_vec);
 
-                        for (auto i = 0; i < (Constants::VEC_DIM - 1); i += 2) {
-                                // use the elastic forces at wheels
-                                // F_CG += k_wi * delta_x_i
-                                F_vec[2] += 0.0 * k_vec[i] * Delta_x_vec[i];
-                                //mkl<T>::axpy(DIM, k_vec[i], &Delta_x_vec[DIM * i], 1, F_vec, 1);
-                                // F_W_i += -k_wi * delta_x_i
-                                //mkl<T>::axpy(DIM, -k_vec[i], &Delta_x_vec[DIM * i], 1, &F_vec[DIM
-           * (i + 1)], 1); F_vec[Constants::DIM * (i + 1) + 2] -= 0.0 * k_vec[i] * Delta_x_vec[i];
+        for (auto i = 0; i < (Constants::VEC_DIM - 1); i += 2) {
+            // use the elastic forces at wheels F_CG += k_wi * delta_x_i
+            F_vec[2] += 0.0 * k_vec[i] * Delta_x_vec[i];
+            mkl<T>::axpy(DIM, k_vec[i], &Delta_x_vec[DIM * i], 1, F_vec, 1);
+            F_W_i += -k_wi * delta_x_i mkl<T>::axpy(DIM, -k_vec[i], &Delta_x_vec[DIM * i], 1,
+                                                    &F_vec[DIM(i + 1)], 1);
+            F_vec[Constants::DIM * (i + 1) + 2] -= 0.0 * k_vec[i] * Delta_x_vec[i];
 
-                                // use the elastic forces at tyres
-                                // F_W_i += k_t_i * delta_x_{i+1}
-                                //mkl<T>::axpy(DIM, k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1,
-           &F_vec[DIM * (i + 1)], 1); F_vec[Constants::DIM * (i + 1) + 2] += 0.0 * k_vec[i + 1] *
-           Delta_x_vec[(i + 1)];
-                                // F_T_i += -k_t_i * delta_x_{i+1}
-                                //mkl<T>::axpy(DIM, -k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1,
-           &F_vec[DIM * (i + 2)], 1); F_vec[Constants::DIM * (i + 2) + 2] -= 0.0 * k_vec[i + 1] *
-           Delta_x_vec[(i + 1)];
-                        }
-        */
+            // use the elastic forces at tyres F_W_i += k_t_i * delta_x_{i+1}
+            mkl<T>::axpy(DIM, k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1, &F_vec[DIM * (i + 1)],
+                         1);
+            F_vec[Constants::DIM * (i + 1) + 2] += 0.0 * k_vec[i + 1] * Delta_x_vec[(i + 1)];
+            // F_T_i += -k_t_i * delta_x_{i+1}
+            mkl<T>::axpy(DIM, -k_vec[i + 1], &Delta_x_vec[DIM * (i + 1)], 1, &F_vec[DIM * (i + 2)],
+                         1);
+            F_vec[Constants::DIM * (i + 2) + 2] -= 0.0 * k_vec[i + 1] * Delta_x_vec[(i + 1)];
+        }
+#endif
+
         // test add
         mkl<T>::axpy(Constants::DIM, 1.0, External_force, 1, F_vec, 1);
     }
 
-    /*
-    Calculates the torque acting on the whole car
-    called in:  ALE.solve, global_frame_solver
-    \param time_t current simulation time
-    \param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
-    \return Torque acting on the total car system [XYZ]
-    */
+    /**
+     * Calculates the torque acting on the whole car
+     * called in:  ALE.solve, global_frame_solver
+     * \param time_t current simulation time
+     * \param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
+     * \return Torque acting on the total car system [XYZ]
+     */
     void update_torque(T time_t, T* Torque, T* F_vec)
     {
         Active_Profile->get_Profile_torque(Car_obj, Torque);

@@ -1,8 +1,9 @@
-/***********************************************************************************************/ /**
-                                                                                                   * \file MetaDataBase.cpp
-                                                                                                   * This file holds the function definitions of MetaDataBase.
-                                                                                                   * \date 04/14/2020
-                                                                                                   **************************************************************************************************/
+/**
+ * \file MetaDataBase.cpp
+ * This file holds the function definitions of MetaDataBase.
+ * \date 04/14/2020
+ */
+
 #include "MetaDataBase.h"
 
 #include <stdio.h>
@@ -31,9 +32,9 @@ MetaDataBase::MetaDataBase()
 
 /**
  * \brief setter for the Filename
+ * \param[in] reference to the filename
  */
-void MetaDataBase::setFileName(const std::string& filename /**< [in] reference to the filename*/
-)
+void MetaDataBase::setFileName(const std::string& filename)
 {
     _filename = filename;
     settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
@@ -41,10 +42,9 @@ void MetaDataBase::setFileName(const std::string& filename /**< [in] reference t
 
 /**
  * \brief setter for the load Filename
+ * \param[in] reference to the load filename
  */
-void MetaDataBase::setloadFileName(
-    const std::string& filename /**< [in] reference to the load filename*/
-)
+void MetaDataBase::setloadFileName(const std::string& filename)
 {
     _load_filename = filename;
     load_data = EVAA_load_module(filename, xml_schema::flags::dont_validate);
@@ -102,9 +102,7 @@ void MetaDataBase::readangles(double* storage, T vec)
  */
 void MetaDataBase::ReadParameters()
 {
-    //--------------------------------------------------
     // Load car parameters
-    //--------------------------------------------------
 
     mass_body = settings->VehicleXML().TwoTrackModelXML().MassXML().BodyXML();
     readLegs(mass_wheel, settings->VehicleXML().TwoTrackModelXML().MassXML().UnsprungMassXML());
@@ -160,9 +158,8 @@ void MetaDataBase::ReadParameters()
     readLegs(upper_spring_length,
              settings->VehicleXML().TwoTrackModelXML().GeometryXML().TyreSpringsXML());
 
-    //--------------------------------------------------
     // Load initial parameters
-    //--------------------------------------------------
+
     readVector(initial_vel_body, settings->InitialConditionsXML().VelocitiesXML().BodyXML());
     readVector(initial_ang_vel_body,
                settings->InitialConditionsXML().VelocitiesXML().angularBodyXML());
@@ -187,9 +184,8 @@ void MetaDataBase::ReadParameters()
 
     readangles(initialAngleGlobal, settings->InitialConditionsXML().OrientationXML());
 
-    //--------------------------------------------------
     // Load simulation parameters
-    //--------------------------------------------------
+
     readVector(gravity, settings->SimulationParametersXML().GeneralSettingsXML().GravityXML());
     num_time_iter =
         settings->SimulationParametersXML().GeneralSettingsXML().NumberOfIterationsXML();
@@ -233,9 +229,8 @@ void MetaDataBase::ReadParameters()
  */
 void MetaDataBase::ReadLoadParameters()
 {
-    //--------------------------------------------------
     // Load external parameters
-    //--------------------------------------------------
+
     std::string boundary_conditions = load_data->boundary_description().BoundaryConditions();
     if (boundary_conditions == "fixed") {
         boundary_condition_road = FIXED;
@@ -266,14 +261,11 @@ void MetaDataBase::ReadLoadParameters()
 /**
  * \brief read and order params used for the loookup tables and generate the stiffness and damping
  * loookup table
+ * \param[out] pointer to the pointer to the stiffness lookup from the compute engine
+ * \param[out] pointer to the pointer to the damping lookup from the compute engine
  */
-void MetaDataBase::ReadLookupParameters(
-    EVAALookup<Constants::floatEVAA>** lookupStiffness /**< [out] pointer to the pointer to the
-                                                          stiffness lookup from the compute engine*/
-    ,
-    EVAALookup<Constants::floatEVAA>** lookupDamping /**< [out] pointer to the pointer to the
-                                                        damping lookup from the compute engine*/
-)
+void MetaDataBase::ReadLookupParameters(EVAALookup<Constants::floatEVAA>** lookupStiffness,
+                                        EVAALookup<Constants::floatEVAA>** lookupDamping)
 {
     if (_lookup_filename == "NO_FILE_SPECIFIED") return;
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);

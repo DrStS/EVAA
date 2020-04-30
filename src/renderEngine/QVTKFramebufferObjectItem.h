@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2019, Stefan Sicklinger, Munich
+/*
+ * Copyright &copy; 2019, Stefan Sicklinger, Munich
  *
  *  All rights reserved.
  *
@@ -17,11 +18,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
-/*************************************************************************************************
+
+/**
  * \file QVTKFramebufferObjectItem.h
  * This file holds the class of QVTKFramebufferObjectItem.
  * \date 6/13/2019
- **************************************************************************************************/
+ */
+
 #pragma once
 
 #include <QtQuick/QQuickFramebufferObject>

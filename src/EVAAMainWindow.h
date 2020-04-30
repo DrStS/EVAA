@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2019, Stefan Sicklinger, Munich
+/*
+ * Copyright &copy; 2019, Stefan Sicklinger, Munich
  *
  *  All rights reserved.
  *
@@ -17,11 +18,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
-/*************************************************************************************************
+
+/**
  * \file EVAAMainWindow.h
  * This file holds the class of StartWindow.
  * \date 6/12/2019
- **************************************************************************************************/
+ */
+
 #pragma once
 
 #include <QObject>
@@ -30,9 +33,9 @@
 
 class ProcessingEngine;
 class QVTKFramebufferObjectItem;
-/********/ /**
-            * \brief Class EVAAMainWindow the core of the GUI
-            ***********/
+/**
+ * \brief Class EVAAMainWindow the core of the GUI
+ */
 class EVAAMainWindow : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool showFileDialog MEMBER m_showFileDialog NOTIFY showFileDialogChanged)
@@ -43,10 +46,10 @@ class EVAAMainWindow : public QObject {
         double modelPositionY READ getSelectedModelPositionY NOTIFY selectedModelPositionYChanged)
 
 public:
-    /***********************************************************************************************
+    /**
      * \brief Constructor
      * \author Stefan Sicklinger
-     ***********/
+     */
     EVAAMainWindow(int argc, char **argv);
 
     Q_INVOKABLE void openModel(const QUrl &path) const;

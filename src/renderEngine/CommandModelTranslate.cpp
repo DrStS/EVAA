@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+/*
+ * Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
  *
  *  All rights reserved.
  *
@@ -17,6 +18,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
+
 #include "CommandModelTranslate.h"
 
 #include <array>

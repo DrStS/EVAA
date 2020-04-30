@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+/*
+ * Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
  *
  *  All rights reserved.
  *
@@ -17,61 +18,69 @@
  *  You should have received a copy of the GNU General Public License
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
-/***********************************************************************************************/ /**
-                                                                                                   * \file Timer.h
-                                                                                                   * This file holds the class of the timer.
-                                                                                                   * \date 6/13/2019
-                                                                                                   **************************************************************************************************/
+
+/**
+ * \file Timer.h
+ * This file holds the class of the timer.
+ * \date 6/13/2019
+ */
 #pragma once
 
 #include <chrono>
 #include <iostream>
 
-/********/ /**
-            * \brief This manages the timings for delta output
-            **************************************************************************************************/
+/**
+ * \brief This manages the timings for delta output
+ */
 class Timer {
 public:
-    /***********************************************************************************************
+    /**
      * \brief Constructor
      * \author Stefan Sicklinger
-     ***********/
+     */
     Timer(void) {}
-    /***********************************************************************************************
+
+    /**
      * \brief Destructor
      * \author Stefan Sicklinger
-     ***********/
+     */
     virtual ~Timer() {}
-    /***********************************************************************************************
+
+    /**
      * \brief Start the timer
      * \author Stefan Sicklinger
-     ***********/
+     */
+
     void start(void) { startTime = std::chrono::high_resolution_clock::now(); }
-    /***********************************************************************************************
+    /**
      * \brief Stop the timer
      * \author Stefan Sicklinger
-     ***********/
+     */
+
     void stop(void) { stopTime = std::chrono::high_resolution_clock::now(); }
-    /***********************************************************************************************
+    /**
      * \brief get duration in milli sec
      * \author Stefan Sicklinger
-     ***********/
+     */
+
     auto getDurationMilliSec(void)
     {
         return std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count();
     }
-    /***********************************************************************************************
+
+    /**
      * \brief get duration in mico sec
      * \author Stefan Sicklinger
-     ***********/
+     */
     auto getDurationMicroSec(void)
     {
         return std::chrono::duration_cast<std::chrono::microseconds>(stopTime - startTime).count();
     }
-    /***********************************************************************************************
+
+    /**
      * \brief get duration in sec
      * \author Stefan Sicklinger
-     ***********/
+     */
     auto getDurationSec(void)
     {
         return std::chrono::duration_cast<std::chrono::seconds>(stopTime - startTime).count();

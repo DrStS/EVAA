@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2018, Stefan Sicklinger, Munich
+/*
+ * Copyright &copy; 2018, Stefan Sicklinger, Munich
  *
  *  All rights reserved.
  *
@@ -17,11 +18,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
-/*************************************************************************************************
+
+/**
  * \file AuxiliaryFunctions.h
  * This file holds the class of AuxiliaryFunctions.
  * \date 19/4/2018
- **************************************************************************************************/
+ */
+
 #pragma once
 
 #include <string>
@@ -31,21 +34,23 @@
 
 class AuxiliaryFunctions {
 public:
-    /***********************************************************************************************
+    /**
      * \brief Constructor
      * \author Harikrishnan Sreekumar
-     ***********/
+     */
     AuxiliaryFunctions();
-    /***********************************************************************************************
+
+    /**
      * \brief Destructor
      * \author Harikrishnan Sreekumar
-     ***********/
+     */
     ~AuxiliaryFunctions();
-    /***********************************************************************************************
+
+    /**
      * \brief Write a double vector to the DAT file with format: <value>
      * \param[in] _fileName
      * \param[in] _vector::double
      * \author Stefan Sicklinger
-     ***********/
+     */
     static void dummy(std::string _fileName, std::vector<double> &_vector);
 };

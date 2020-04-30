@@ -1,3 +1,5 @@
+// TODO: Copyright header
+
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,14 +18,14 @@
 
 enum boundary_condition_road { FIXED, NONFIXED, CIRCULAR };
 
-/*
-Solver for the MBD system
-*/
+/**
+ * Solver for the MBD system
+ */
 enum solver { EXPLICIT_EULER, RUNGE_KUTTA_4, BROYDEN_EULER, BROYDEN_CN, BROYDEN_BDF2 };
 
-/*
-Handles the XML parsers
-*/
+/**
+ * Handles the XML parsers
+ */
 class MetaDataBase {
 private:
     MetaDataBase();
@@ -41,35 +43,35 @@ private:
     std::auto_ptr<load_t> load_data;
     std::auto_ptr<lookup_handler_t> lookup_table;
 
-    /*
-    Read 4 legs which contain each 3 vectors
-    \param vec XML parser
-    \return storage all components in one vector with 12 elements [rr:XYZ,rl:XYZ,fl:XYZ,rl:XYZ]
-    */
+    /**
+     * Read 4 legs which contain each 3 vectors
+     * \param vec XML parser
+     * \return storage all components in one vector with 12 elements [rr:XYZ,rl:XYZ,fl:XYZ,rl:XYZ]
+     */
     template <typename T>
     void readVectorLegs(double* storage, T vec);
 
-    /*
-    Read 4 legs which contain each 1 double
-    \param vec XML parser
-    \return storage all components in one vector with 4 elements [rr,rl,fl,rl]
-    */
+    /**
+     * Read 4 legs which contain each 1 double
+     * \param vec XML parser
+     * \return storage all components in one vector with 4 elements [rr,rl,fl,rl]
+     */
     template <typename T>
     void readLegs(double* storage, T vec);
 
-    /*
-    Read a vector with 3 doubles
-    \param vec XML parser
-    \return storage all components in one vector with 3 elements [XYZ]
-    */
+    /**
+     * Read a vector with 3 doubles
+     * \param vec XML parser
+     * \return storage all components in one vector with 3 elements [XYZ]
+     */
     template <typename T>
     void readVector(double* storage, T vec);
 
-    /*
-    Read a quaternion with 4 doubles
-    \param vec XML parser
-    \return storage all components in one vector with 4 elements [XYZW]
-    */
+    /**
+     * Read a quaternion with 4 doubles
+     * \param vec XML parser
+     * \return storage all components in one vector with 4 elements [XYZW]
+     */
     template <typename T>
     void readangles(double* storage, T vec);
 
@@ -124,44 +126,42 @@ private:
     int boundary_condition_road;
 
 public:
-    /*
-    \return static pointer to Database
-    */
+    /**
+     * \return static pointer to Database
+     */
     static MetaDataBase* DataBase();
 
-    /*
-    Initializes the parser for global and car parameters
-    \param filename
-    */
+    /**
+     * Initializes the parser for global and car parameters
+     * \param filename
+     */
     void setFileName(const std::string& filename);
 
-    /*
-    Initializes the parser for environment parameters
-    \param filename
-    */
+    /**
+     * Initializes the parser for environment parameters
+     * \param filename
+     */
     void setloadFileName(const std::string& filename);
 
-    /*
-    Read global and car parameters from the XML
-    */
+    /**
+     * Read global and car parameters from the XML
+     */
     void ReadParameters();
 
-    /*
-    Read environment parameters
-    */
+    /**
+     * Read environment parameters
+     */
     void ReadLoadParameters();
 
-    /*
-    Read lookup table parameters
-    \param parameters for global simulation parameters
-    \return lookupStiffness class instance of the lookup handler
-    */
+    /**
+     * Read lookup table parameters
+     * \param parameters for global simulation parameters
+     * \return lookupStiffness class instance of the lookup handler
+     */
     void ReadLookupParameters(EVAALookup<Constants::floatEVAA>** lookupStiffness,
                               EVAALookup<Constants::floatEVAA>** lookupDamping);
 
-    /*
-    A bunch of getter functions
-    */
+    /* A bunch of getter functions */
     int getDOF() { return DOF; }
     double getTyreStiffnessFrontLeft() { return k_tyre[0]; }
     double getTyreStiffnessFrontRight() { return k_tyre[1]; }
@@ -232,8 +232,8 @@ public:
     double getMomentOfInertiaZX() { return I_body[6]; }
     double getMomentOfInertiaZY() { return I_body[7]; }
     double getMomentOfInertiaZZ() { return I_body[8]; }
-    // contains all elements of the InertiaMatrix in the format [XX,XY,XZ,YX,YY,YZ,ZX,ZY,ZX] TODO:
-    // change it to Eigen/MKL output
+    // contains all elements of the InertiaMatrix in the format [XX,XY,XZ,YX,YY,YZ,ZX,ZY,ZX]
+    // TODO: change it to Eigen/MKL output
     double* getMomentOfInertiaVector() { return I_body; }
 
     double getTyreSpringLengthFrontLeft() { return lower_spring_length[0]; }

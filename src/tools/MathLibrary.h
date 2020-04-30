@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2019, Stefan Sicklinger, Munich
+/*
+ * Copyright &copy; 2019, Stefan Sicklinger, Munich
  *
  *  All rights reserved.
  *
@@ -17,13 +18,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
-/*************************************************************************************************
+
+/**
  * \file MathLibrary.h
  * This file holds the math funcktion of EVAA.
  * \date 6/13/2019
- **************************************************************************************************/
+ */
 
 #pragma once
+
 #include <cmath>
 #include <iostream>
 #include <vector>
@@ -35,52 +38,56 @@
 #include "BLAS.h"
 #endif
 
-/*
-Implements several useful math functions and solvers
-*/
+/**
+ * Implements several useful math functions and solvers
+ */
 namespace MathLibrary {
-/***********************************************************************************************
+
+/**
  * \brief Compute dense symmetrix matrix LU factorisation
  * \param[in] _nElements number of rows = number of columns
  * \param[in] _A matrix
  * \param[in] _pivot elements
  * \author Stefan Sicklinger
- ***********/
+ */
 void computeDenseSymLUFactorisation(const int _nElements, std::vector<double>& _A,
                                     std::vector<int>& _pivots);
-/***********************************************************************************************
+
+/**
  * \brief Compute backward/forward substitution
  * \param[in] _nElements number of rows = number of columns
  * \param[in] _A matrix
  * \param[in] _pivot elements
  * \author Stefan Sicklinger
- ***********/
+ */
 void computeDenseSymSolution(const int _nElements, std::vector<double>& _A,
                              std::vector<int>& _pivots, std::vector<double>& _rhs);
-/***********************************************************************************************
+
+/**
  * \brief Computes a vector-scalar product and adds the result to a vector. vec2 <- a*vec1 + vec2
  * \param[in] _vec1 the 1st vector
  * \param[in] _vec2 the 2nd vector
  * \param[in] _alpha   scalar
  * \param[in] _nElements number of elements in vec1
  * \author Stefan Sicklinger
- ***********/
+ */
 void computeDenseVectorAddition(double* vec1, double* vec2, const double _alpha,
                                 const int _nElements);
-/***********************************************************************************************
+
+/**
  * \brief Print info of the Intel MKL
  * \author Stefan Sicklinger
- ***********/
+ */
 void printMKLInfo(void);
 
-/*
-Replaces all values in an array which are below a threshold to a value
-\param arr vector to be adapted
-\param start index to start the update
-\param end index to end the update
-\param value to be written to the elements
-\param tol threshold
-*/
+/**
+ * Replaces all values in an array which are below a threshold to a value
+ * \param arr vector to be adapted
+ * \param start index to start the update
+ * \param end index to end the update
+ * \param value to be written to the elements
+ * \param tol threshold
+ */
 template <typename T>
 void transmutate_elements(T* arr, size_t start, size_t end, T value, T tol)
 {
@@ -92,13 +99,13 @@ void transmutate_elements(T* arr, size_t start, size_t end, T value, T tol)
     }
 }
 
-/*
-Performs the elementwise multiplication of two vectors
-\param v1 first vector
-\param v2 second vector
-\param dim length of the vector
-\return result vector
-*/
+/**
+ * Performs the elementwise multiplication of two vectors
+ * \param v1 first vector
+ * \param v2 second vector
+ * \param dim length of the vector
+ * \return result vector
+ */
 template <typename T>
 void vector_elem_wise_product(T* v1, T* v2, T* result, size_t dim)
 {
@@ -108,11 +115,13 @@ void vector_elem_wise_product(T* v1, T* v2, T* result, size_t dim)
     }
 }
 
-/*
-Creates a diagonal matrix with one same value on all diagonal entries (or overwrites the diagonal
-elements) \param dim size of the matrix (dim x dim) \param val value to be written to all
-diagonal´ntries \return mat the diagonal matrix
-*/
+/**
+ * Creates a diagonal matrix with one same value on all diagonal entries (or overwrites the
+ * diagonal elements)
+ * \param dim size of the matrix (dim x dim)
+ * \param val value to be written to all diagonal entries
+ * \return mat the diagonal matrix
+ */
 template <typename T>
 void diagonal_matrix(T* mat, size_t dim, T val)
 {
@@ -122,9 +131,9 @@ void diagonal_matrix(T* mat, size_t dim, T val)
     }
 }
 
-/*
-outputs the determinant
-*/
+/**
+ * outputs the determinant
+ */
 template <typename T>
 void check_status(T status)
 {
@@ -138,9 +147,9 @@ void check_status(T status)
     }
 }
 
-/*
-Broken function (not safe to use)
-*/
+/**
+ * Broken function (not safe to use)
+ */
 template <typename T>
 void elementwise_inversion(T* vect, size_t dim)
 {
@@ -154,9 +163,9 @@ void elementwise_inversion(T* vect, size_t dim)
     mkl_free(temp);
 }
 
-/*
-Swaps the adresses of the elements a and b
-*/
+/**
+ * Swaps the adresses of the elements a and b
+ */
 template <typename T>
 void swap_address(T*& a, T*& b)
 {
@@ -165,12 +174,13 @@ void swap_address(T*& a, T*& b)
     b = c;
 }
 
-/*
-Creates a diagonal matrix with diagonal entries from a vector(or overwrites the diagonal elements)
-\param dim size of the matrix (dim x dim)
-\param vector to be written to all diagonal entries
-\return mat the diagonal matrix
-*/
+/**
+ * Creates a diagonal matrix with diagonal entries from a vector(or overwrites the diagonal
+ * elements)
+ * \param dim size of the matrix (dim x dim)
+ * \param vector to be written to all diagonal entries
+ * \return mat the diagonal matrix
+ */
 template <typename T>
 void allocate_to_diagonal(T* matrix, T* vector, size_t dim)
 {
@@ -180,12 +190,12 @@ void allocate_to_diagonal(T* matrix, T* vector, size_t dim)
     }*/
 }
 
-/*
-Performs the cross product of two vectors of size 3
-\param vect_A first vector
-\param vect_B second vector
-\return cross_P vect_A x vect_B
-*/
+/**
+ * Performs the cross product of two vectors of size 3
+ * \param vect_A first vector
+ * \param vect_B second vector
+ * \return cross_P vect_A x vect_B
+ */
 template <typename T>
 void crossProduct(const T* vect_A, const T* vect_B, T* cross_P)
 
@@ -195,11 +205,11 @@ void crossProduct(const T* vect_A, const T* vect_B, T* cross_P)
     cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0];
 }
 
-/*
-Performs the cross product of a vector of size 3 with [0,0,1]
-\param vect_A first vector; A = [x, y, z]
-\return cross_P = vect_A x [0, 0, 1] = [y, -x, 0]
-*/
+/**
+ * Performs the cross product of a vector of size 3 with [0,0,1]
+ * \param vect_A first vector; A = [x, y, z]
+ * \return cross_P = vect_A x [0, 0, 1] = [y, -x, 0]
+ */
 template <typename T>
 void crossProduct_unitvecZ(const T* vect_A, T* cross_P)
 
@@ -209,12 +219,12 @@ void crossProduct_unitvecZ(const T* vect_A, T* cross_P)
     cross_P[2] = 0;
 }
 
-/*
-Performs the cross product of a vector of size 3 with [0,0,1]
-ignoring the third component
-\param vect_A first vector; A = [x, y, z]
-\return cross_P = vect_A x [0, 0, 1] = [y, -x, 0] i.e. [y,-x]
-*/
+/**
+ * Performs the cross product of a vector of size 3 with [0,0,1]
+ * ignoring the third component
+ * \param vect_A first vector; A = [x, y, z]
+ * \return cross_P = vect_A x [0, 0, 1] = [y, -x, 0] i.e. [y,-x]
+ */
 template <typename T>
 void crossProduct_unitvecZ2D(const T* vect_A, T* cross_P)
 
@@ -223,12 +233,12 @@ void crossProduct_unitvecZ2D(const T* vect_A, T* cross_P)
     cross_P[1] = -vect_A[0];
 }
 
-/*
-Performs the cross product of 2 vector A and B with no component on Z direction
-\param vect_A first vector; A = [xA, yA, 0]
-\param vect_B second vector; B = [xB, yB, 0]
-\return cross_P = vect_A x vect_B = [0, 0, xA * yB - xB * yA]
-*/
+/**
+ * Performs the cross product of 2 vector A and B with no component on Z direction
+ * \param vect_A first vector; A = [xA, yA, 0]
+ * \param vect_B second vector; B = [xB, yB, 0]
+ * \return cross_P = vect_A x vect_B = [0, 0, xA * yB - xB * yA]
+ */
 template <typename T>
 void crossProduct_unitvecXY(const T* vect_A, const T* vect_B, T* cross_P)
 
@@ -238,21 +248,17 @@ void crossProduct_unitvecXY(const T* vect_A, const T* vect_B, T* cross_P)
     cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0];
 }
 
-/*
-Converts quaternions to Euler angles from
-https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles \param q quaterion in
-format [XYZW] \return E Euler angles in format [XYZ]
-*/
+/**
+ * Converts quaternions to Euler angles from
+ * https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+ * \param q quaterion in format [XYZW]
+ * \return E Euler angles in format [XYZ]
+ */
 template <typename T>
 void ToEulerAngles(const T* q, T* E)
 {
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////		Converts Quaternion of form w,x,y,z in euler angle
-    /////////////////////////////////////////////////////////////////////////////
-    /////////////// Source:
-    ///https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-    /////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Converts Quaternion of form w,x,y,z in euler angle
+
     // roll (x-axis rotation)
     T sinr_cosp = 2 * (q[3] * q[0] + q[1] * q[2]);
     T cosr_cosp = 1 - 2 * (q[0] * q[0] + q[1] * q[1]);
@@ -271,10 +277,10 @@ void ToEulerAngles(const T* q, T* E)
     E[2] = std::atan2(siny_cosp, cosy_cosp);
 }
 
-/*
-Computes the rotation matrix out of 3 angle representation
-\result R rotation matrix
-*/
+/**
+ * Computes the rotation matrix out of 3 angle representation
+ * \result R rotation matrix
+ */
 template <typename T>
 void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R)
 {
@@ -293,13 +299,13 @@ void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R)
     R[8] = (std::cos(pitch)) * (std::cos(roll));
 }
 
-/*
-Computes the angle between two vectors
-\param v1 first vector
-\param v2 second vector
-\param dim size of the vectors
-\return angle in radians
-*/
+/**
+ * Computes the angle between two vectors
+ * \param v1 first vector
+ * \param v2 second vector
+ * \param dim size of the vectors
+ * \return angle in radians
+ */
 template <typename T>
 T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim)
 {
@@ -317,11 +323,11 @@ T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim)
     return angle;
 }
 
-/*
-print a vector
-\param vect the data
-\param count its size
-*/
+/**
+ * print a vector
+ * \param vect the data
+ * \param count its size
+ */
 template <typename T>
 void write_vector(T* vect, int count)
 {
@@ -335,11 +341,11 @@ void write_vector(T* vect, int count)
     // exit(5);
 }
 
-/*
-print a matrix
-\param vect the data
-\param count its size=count x count
-*/
+/**
+ * print a matrix
+ * \param vect the data
+ * \param count its size=count x count
+ */
 template <typename T>
 void write_matrix(T* vect, int count)
 {
@@ -356,14 +362,14 @@ void write_matrix(T* vect, int count)
     // exit(5);
 }
 
-/*
-Calculates the rotation quaternion between two angles
-\param v1 first vector
-\param v2 second vector
-\param dim size of the vector
-\return angle the angle between the two vectors (in radians)
-\return rotation_axis unit axis
-*/
+/**
+ * Calculates the rotation quaternion between two angles
+ * \param v1 first vector
+ * \param v2 second vector
+ * \param dim size of the vector
+ * \return angle the angle between the two vectors (in radians)
+ * \return rotation_axis unit axis
+ */
 template <typename T>
 void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t dim_)
 {
@@ -402,15 +408,15 @@ void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t
     mkl<T>::scal(dim_, 1.0 / (ra_nrm), rotation_axis, 1);
 }
 
-/*
-Calculates the rotation quaternion between two angles
-\param v1 first vector
-\param v2 second vector
-\param dim size of the vector
-\return angle the angle between the two vectors (in radians)
-\return rotation_axis unit axis
-\return q the quaternion
-*/
+/**
+ * Calculates the rotation quaternion between two angles
+ * \param v1 first vector
+ * \param v2 second vector
+ * \param dim size of the vector
+ * \return angle the angle between the two vectors (in radians)
+ * \return rotation_axis unit axis
+ * \return q the quaternion
+ */
 template <typename T>
 void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis, size_t dim_)
 {
@@ -423,11 +429,11 @@ void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis, 
     mkl<T>::scal(4, 1.0 / (q_nrm), q, 1);
 }
 
-/*
-get the basis vectors connected to an orientation
-\param initial_orientation the quaternion
-\return transformed_basis the basis vectors in matrix form
-*/
+/**
+ * get the basis vectors connected to an orientation
+ * \param initial_orientation the quaternion
+ * \return transformed_basis the basis vectors in matrix form
+ */
 template <typename T>
 void get_basis(const T* initial_orientation, T* transfrormed_basis)
 {
@@ -485,20 +491,20 @@ void get_basis(const T* initial_orientation, T* transfrormed_basis)
         1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
 }
 
-/*
-Performs the cross product in matrix form
-a x b = a_tilda * b
-\param input_vector a
-\return tilda the matrix a_tilda
-*/
+/**
+ * Performs the cross product in matrix form
+ * a x b = a_tilda * b
+ * \param input_vector a
+ * \return tilda the matrix a_tilda
+ */
 template <typename T>
 void get_tilda(const T* input_vector, T* tilda_output)
 {
     /*
     This function is only suitable for a 3 dimensional system and renders unusable, might throw
-    exceptions when used with other dimensions. given y: x_tilda*y = cross(x,y) [Stoneking, page 3
-    bottom] x_tilda = [	0, -x(3), x(2) x(3), 0, -x(1) -x(2), x(1), 0	]
-
+    exceptions when used with other dimensions.
+    given y: x_tilda*y = cross(x,y) [Stoneking, page 3 bottom]
+    x_tilda = [	0, -x(3), x(2) x(3), 0, -x(1) -x(2), x(1), 0	]
     */
     tilda_output[0] = 0;
     tilda_output[1] = -input_vector[2];
@@ -511,21 +517,21 @@ void get_tilda(const T* input_vector, T* tilda_output)
     tilda_output[8] = 0;
 }
 
-/*
+/**
 Implements different numerical schemes
 */
 template <typename T, class C>
 class Solvers {
 public:
-    /*
-    Implicit Euler with Broyden scheme
-    \param tol tolerance of the Broyden iteration
-    \param max_iter of the Broyden iteration
-    \param num_time_iter number of time steps to perform
-    \param dt timestep
-    \param x_previous previous solution
-    \return new solution
-    */
+    /**
+     *  Implicit Euler with Broyden scheme
+     *  \param tol tolerance of the Broyden iteration
+     *  \param max_iter of the Broyden iteration
+     *  \param num_time_iter number of time steps to perform
+     *  \param dt timestep
+     *  \param x_previous previous solution
+     *  \return new solution
+     */
     static void Broyden_Euler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
                               T tol, size_t max_iter)
     {
@@ -661,15 +667,15 @@ public:
         MKL_free(x_new);
     }
 
-    /*
-    Backward-Differences2 (BDF2) with Broyden scheme
-    \param tol tolerance of the Broyden iteration
-    \param max_iter of the Broyden iteration
-    \param num_time_iter number of time steps to perform
-    \param dt timestep
-    \param x_previous previous solution
-    \return new solution
-    */
+    /**
+     * Backward-Differences2 (BDF2) with Broyden scheme
+     * \param tol tolerance of the Broyden iteration
+     * \param max_iter of the Broyden iteration
+     * \param num_time_iter number of time steps to perform
+     * \param dt timestep
+     * \param x_previous previous solution
+     * \return new solution
+     */
     static void Broyden_PDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
                              T tol, size_t max_iter)
     {
@@ -904,15 +910,15 @@ public:
         MKL_free(x_new);
     }
 
-    /*
-    Crank-Nicholson with Broyden scheme
-    \param tol tolerance of the Broyden iteration
-    \param max_iter of the Broyden iteration
-    \param num_time_iter number of time steps to perform
-    \param dt timestep
-    \param x_previous previous solution
-    \return new solution
-    */
+    /**
+     * Crank-Nicholson with Broyden scheme
+     * \param tol tolerance of the Broyden iteration
+     * \param max_iter of the Broyden iteration
+     * \param num_time_iter number of time steps to perform
+     * \param dt timestep
+     * \param x_previous previous solution
+     * \return new solution
+     */
     static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
                            T tol, size_t max_iter)
     {
@@ -1083,8 +1089,8 @@ public:
 
         do {
             count++;
-            // std::cout << "iter: " << count << std::endl;
             obj->constructJacobien();
+
             // get J=LL^T
             status = mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
             check_status<lapack_int>(status);
@@ -1093,6 +1099,7 @@ public:
             // u_n_p_1 -= delta
             mkl<T>::axpy(Constants::DOF, -1, res, 1, u_n_p_1, 1);
             delta_norm = mkl<T>::nrm2(Constants::DOF, res, 1);
+
             // update all the matrices
             obj->updateSystem();
             // calculate the newton function
@@ -1102,17 +1109,16 @@ public:
             mkl<T>::copy(Constants::DOF, res, 1, temp, 1);
             mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
             delta_norm2 = mkl<T>::nrm2(Constants::DOF, temp, 1);
-            // std::cout << "res_norm:" << *res_norm << std::endl;
         } while (*res_norm > Constants::TOLERANCE && delta_norm2 < delta_norm && count < 10);
     }
 
-    /*
-    explicit Runge-Kutta-4
-    \param num_time_iter number of time steps to perform
-    \param dt timestep
-    \param x_previous previous solution
-    \return new solution
-    */
+    /**
+     * explicit Runge-Kutta-4
+     * \param num_time_iter number of time steps to perform
+     * \param dt timestep
+     * \param x_previous previous solution
+     * \return new solution
+     */
     static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol,
                     size_t max_iter)
     {
@@ -1181,21 +1187,22 @@ public:
         mkl_free(x);
     }
 
-    /*
-    linear backward Euler
-    \param num_time_iter number of time steps to perform
-    \param dt timestep
-    \param x_previous previous solution
-    \return new solution
-    */
+    /**
+     * linear backward Euler
+     * \param num_time_iter number of time steps to perform
+     * \param dt timestep
+     * \param x_previous previous solution
+     * \return new solution
+     */
     static void Linear_Backward_Euler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x,
                                       size_t dim)
     {
         /*
-        This works for only symmetric positive definite A the provided matrix A would be overwritten
-        and results stored in x computes the backward euler step of following form Ax = B*x_prev +
-        C*x_prev_prev + b A, B, C are coefficient of the euler formation matrix not implemented
-        */
+         * This works for only symmetric positive definite A the provided matrix A would be
+         * overwritten and results stored in x computes the backward euler step of following form:
+         * Ax = B*x_prev + C*x_prev_prev + b
+         * A, B, C are coefficient of the euler formation matrix not implemented
+         */
         lapack_int status;
         // get A=LL^T
         status = mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
@@ -1211,21 +1218,22 @@ public:
         mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
     }
 
-    /*
-    linear backward Euler - C (Mass_matrix) diagonal matrix, considered as vector
-    \param num_time_iter number of time steps to perform
-    \param dt timestep
-    \param x_previous previous solution
-    \return new solution
-    */
+    /**
+     * linear backward Euler - C (Mass_matrix) diagonal matrix, considered as vector
+     * \param num_time_iter number of time steps to perform
+     * \param dt timestep
+     * \param x_previous previous solution
+     * \return new solution
+     */
     static void Linear_Backward_Euler_diag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x,
                                            size_t dim)
     {
         /*
-        This works for only symmetric positive definite A the provided matrix A would be overwritten
-        and results stored in x computes the backward euler step of following form Ax = B*x_prev +
-        C*x_prev_prev + b A, B, C are coefficient of the euler formation matrix not implemented
-        */
+         * This works for only symmetric positive definite A the provided matrix A would be
+         * overwritten and results stored in x computes the backward euler step of following form:
+         * Ax = B*x_prev + C*x_prev_prev + b
+         * A, B, C are coefficient of the euler formation matrix not implemented
+         */
         lapack_int status;
         // get A=LL^T
         status = mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);
@@ -1245,29 +1253,29 @@ public:
         mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', dim, 1, A, dim, x, 1);
     }
 
-    /*
-    2nd order Stoermer-Verlet algorithm to update the position of one scalar
-    \param x position
-    \param v velocity
-    \param F force
-    \param delta_t timestep
-    \param mass
-    \return x position
-    */
+    /**
+     * 2nd order Stoermer-Verlet algorithm to update the position of one scalar
+     * \param x position
+     * \param v velocity
+     * \param F force
+     * \param delta_t timestep
+     * \param mass
+     * \return x position
+     */
     static void Stoermer_Verlet_Position(T& x, T& v, T& F, T& delta_t, T& mass)
     {
         x += delta_t * v + delta_t * delta_t / (2 * mass) * F;
     }
 
-    /*
-    2nd order Stoermer-Verlet algorithm to update the velocity of one scalar
-    \param v velocity
-    \param F force
-    \param F_new force at the following time step
-    \param delta_t timestep
-    \param mass
-    \return v velocity
-    */
+    /**
+     * 2nd order Stoermer-Verlet algorithm to update the velocity of one scalar
+     * \param v velocity
+     * \param F force
+     * \param F_new force at the following time step
+     * \param delta_t timestep
+     * \param mass
+     * \return v velocity
+     */
     static void Stoermer_Verlet_Velocity(T& v, T& F, T& F_new, T& delta_t, T& mass)
     {
         v += delta_t / (2 * mass) * (F + F_new);
@@ -1277,11 +1285,11 @@ public:
                             T* x_n_m_3, T* b, T* x_n_p_1, size_t dim)
     {
         /*
-        This works for only symmetric positive definite A the provided matrix A would be overwritten
-        and results stored in x computes the backward euler step of following form A*x_n_p_1 = B*x_n
-        + C*x_n_m_1 + D*x_n_m_2 + E*x_n_m_3 + b A, B, C are coefficient of the euler formation
-        matrix not implemented
-        */
+         * This works for only symmetric positive definite A the provided matrix A would be
+         * overwritten and results stored in x computes the backward euler step of following form:
+         * A*x_n_p_1 = B*x_n + C*x_n_m_1 + D*x_n_m_2 + E*x_n_m_3 + b
+         * A, B, C are coefficient of the euler formation matrix not implemented
+         */
         lapack_int status;
         // get A=LL^T
         status = mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', dim, A, dim);

@@ -1,55 +1,55 @@
-/*           This file has been prepared for Doxygen automatic documentation generation.          */
-/***********************************************************************************************/ /**
-                                                                                                   * \mainpage
-                                                                                                   * \section LICENSE
-                                                                                                   *  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
-                                                                                                   *  All rights reserved. \n
-                                                                                                   *
-                                                                                                   *  This file is part of EVAA.
-                                                                                                   *
-                                                                                                   *  EVAA is free software: you can redistribute it and/or modify \n
-                                                                                                   *  it under the terms of the GNU General Public  License as published by \n
-                                                                                                   *  the Free Software Foundation, either version 3 of the License, or \n
-                                                                                                   *  (at your option) any later version. \n
-                                                                                                   *
-                                                                                                   *  EVAA is distributed in the hope that it will be useful, \n
-                                                                                                   *  but WITHOUT ANY WARRANTY; without even the implied warranty of \n
-                                                                                                   *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the \n
-                                                                                                   *  GNU General Public License for more details. \n
-                                                                                                   *
-                                                                                                   *  You should have received a copy of the GNU General Public License \n
-                                                                                                   *  along with EVAA.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.
-                                                                                                   *
-                                                                                                   *  Additional permission under GNU GPL version 3 section 7
-                                                                                                   *
-                                                                                                   * If you modify this Program, or any covered work, by linking or combining it with Intel Math Kernel Libraries(MKL)
-                                                                                                   * (or a modified version of that library), containing parts covered by the terms of the license of the MKL,
-                                                                                                   * the licensors of this Program grant you additional permission to convey the resulting work.
-                                                                                                   *
-                                                                                                   * \section DESCRIPTION
-                                                                                                   *  This is the main file of EVAA
-                                                                                                   *  EVAA: Efficient Vehicle dynAmics simulAtor
-                                                                                                   *
-                                                                                                   *
-                                                                                                   *
-                                                                                                   * \section HOWTO
-                                                                                                   * Please find all further information on
-                                                                                                   * <a href="https://github.com/DrStS/EVAA">EVAA Project</a>
-                                                                                                   *
-                                                                                                   *
-                                                                                                   * <EM> Note: The Makefile suppresses per default all compile and linking command output to the terminal.
-                                                                                                   *       You may enable this information by make VEREBOSE=1</EM>
-                                                                                                   *
-                                                                                                   *
-                                                                                                   *
-                                                                                                   **************************************************************************************************/
-/***********************************************************************************************/ /**
-                                                                                                   * \file main.cpp
-                                                                                                   * This file holds the main function of EVAA.
-                                                                                                   * \author Stefan Sicklinger
-                                                                                                   * \date 6/11/2019
-                                                                                                   * \version alpha
-                                                                                                   **************************************************************************************************/
+/**
+ * \mainpage
+ * \section LICENSE
+ *  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+ *  All rights reserved. \n
+ *
+ *  This file is part of EVAA.
+ *
+ *  EVAA is free software: you can redistribute it and/or modify \n
+ *  it under the terms of the GNU General Public  License as published by \n
+ *  the Free Software Foundation, either version 3 of the License, or \n
+ *  (at your option) any later version. \n
+ *
+ *  EVAA is distributed in the hope that it will be useful, \n
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of \n
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the \n
+ *  GNU General Public License for more details. \n
+ *
+ *  You should have received a copy of the GNU General Public License \n
+ *  along with EVAA.  If not, see <a
+ * href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.
+ *
+ *  Additional permission under GNU GPL version 3 section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it with Intel Math
+ * Kernel Libraries(MKL) (or a modified version of that library), containing parts covered by the
+ * terms of the license of the MKL, the licensors of this Program grant you additional permission to
+ * convey the resulting work.
+ *
+ * \section DESCRIPTION
+ *  This is the main file of EVAA
+ *  EVAA: Efficient Vehicle dynAmics simulAtor
+ *
+ *
+ *
+ * \section HOWTO
+ * Please find all further information on
+ * <a href="https://github.com/DrStS/EVAA">EVAA Project</a>
+ *
+ *
+ * <EM> Note: The Makefile suppresses per default all compile and linking command output to the
+ * terminal. You may enable this information by make VEREBOSE=1</EM>
+ */
+
+/**
+ * \file main.cpp
+ * This file holds the main function of EVAA.
+ * \author Stefan Sicklinger
+ * \date 6/11/2019
+ * \version alpha
+ */
+
 #ifdef EVAA_COMMANDLINE_ON
 #include <iostream>
 #include <string>
@@ -82,21 +82,29 @@ int main(int argc, char **argv)
                               "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
     myComputeEngine->printInfo();
 
-    /*	anaysisTimer01.start();
-            myComputeEngine->computeMKL11DOF();
-            anaysisTimer01.stop();
-            std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec() << " ms to run the
-       solver(MKL).\n\n\n" << std::endl; anaysisTimer01.start();
-            myComputeEngine->computeEigen11DOF();
-            anaysisTimer01.stop();
-            std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec() << " ms to run the
-       solver(Eigen).\n\n\n" << std::endl; anaysisTimer01.start();
-            myComputeEngine->computeBlaze11DOF();
-            anaysisTimer01.stop();
-            std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the
-       solver(Blaze).\n\n\n" << std::endl;
-    */
+#if MIGHT_BE_USEFUL
     anaysisTimer01.start();
+    myComputeEngine->computeMKL11DOF();
+    anaysisTimer01.stop();
+    std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec()
+              << " ms to run the
+                 solver(MKL)
+                     .\n\n\n " << std::endl; anaysisTimer01.start();
+                 myComputeEngine->computeEigen11DOF();
+    anaysisTimer01.stop();
+    std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec()
+              << " ms to run the
+                 solver(Eigen)
+                     .\n\n\n " << std::endl; anaysisTimer01.start();
+                 myComputeEngine->computeBlaze11DOF();
+    anaysisTimer01.stop();
+    std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
+              << " ms to run the
+                 solver(Blaze)
+                     .\n\n\n " << std::endl;
+#endif
+
+                 anaysisTimer01.start();
     // myComputeEngine->computeMKLTwoTrackModel();
     anaysisTimer01.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec()

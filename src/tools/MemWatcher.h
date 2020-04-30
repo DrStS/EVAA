@@ -1,4 +1,5 @@
-/*  Copyright &copy; 2018, Stefan Sicklinger, Munich
+/*
+ * Copyright &copy; 2018, Stefan Sicklinger, Munich
  *
  *  All rights reserved.
  *
@@ -17,43 +18,49 @@
  *  You should have received a copy of the GNU General Public License
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
-/*************************************************************************************************
+
+/**
  * \file MemWatcher.h
  * This file holds the class of MemWatcher.
  * \date 19/4/2018
- **************************************************************************************************/
+ */
+
 #pragma once
 
 #include <cstddef>
 
 #if defined(_WIN32) || defined(__WIN32__)
-#include <psapi.h>
+// clang-format off
 #include <windows.h>
+#include <psapi.h>
+// clang-format on
 #endif
 
 #if defined(__linux__)
 
 #endif
 
-/********/ /**
-            * \brief This helps to analyse the memory footprint
-            **************************************************************************************************/
+/**
+ * \brief This helps to analyse the memory footprint
+ */
 class MemWatcher {
 public:
-    /***********************************************************************************************
+    /**
      * \brief Constructor
      * \author Stefan Sicklinger
-     ***********/
+     */
     MemWatcher(void) {}
-    /***********************************************************************************************
+
+    /**
      * \brief Destructor
      * \author Stefan Sicklinger
-     ***********/
+     */
     virtual ~MemWatcher() {}
-    /***********************************************************************************************
+
+    /**
      * \brief Physical memory currently used by current process in bytes
      * \author Stefan Sicklinger
-     ***********/
+     */
     size_t getCurrentUsedPhysicalMemory(void)
     {
 #if defined(_WIN32) || defined(__WIN32__)
@@ -67,10 +74,11 @@ public:
         return 0;
 #endif
     }
-    /***********************************************************************************************
+
+    /**
      * \brief Physical memory currently used by current process in bytes
      * \author Stefan Sicklinger
-     ***********/
+     */
     size_t getCurrentUsedVirtualMemory(void)
     {
 #if defined(_WIN32) || defined(__WIN32__)
