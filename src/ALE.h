@@ -72,7 +72,12 @@ public:
 
         h_ = MetaDataBase::getDataBase().getTimeStepSize();
         tend_ = MetaDataBase::getDataBase().getNumberOfTimeIterations() * h_;
+
+        size_t sol_size = (floor(tend_ / h_) + 1);
+        u_sol = Math::malloc<T>(sol_size * (Constants::VEC_DIM * Constants::DIM));
     }
+
+    ~ALE() { Math::free(u_sol); }
 
     /**
      * Applies the Verlet_Stoermer algorithm to update the global XY position of the car and its Z
@@ -84,14 +89,14 @@ public:
         // 2. Update global X,Y positions of the car
         Math::Solvers<T, ALE>::Stoermer_Verlet_Position(
             Car_obj->currentPositionLagrangian[0], Car_obj->currentVelocityLagrangian[0],
-            centripetal_force[0], h_, *Car_obj->massFullCar);
+            centripetal_force[0], h_, Car_obj->massFullCar);
         Math::Solvers<T, ALE>::Stoermer_Verlet_Position(
             Car_obj->currentPositionLagrangian[1], Car_obj->currentVelocityLagrangian[1],
-            centripetal_force[1], h_, *Car_obj->massFullCar);
+            centripetal_force[1], h_, Car_obj->massFullCar);
 
         // 4. Update Z-rotation
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(*Car_obj->currentAngleLagrangian,
-                                                        *Car_obj->currentAngularVelocityLagrangian,
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->currentAngleLagrangian,
+                                                        Car_obj->currentAngularVelocityLagrangian,
                                                         torque[2], h_, global_inertia_Z);
 
         // get forces
@@ -103,13 +108,13 @@ public:
         // 1. Update global X,Y velocities
         Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
             Car_obj->currentVelocityLagrangian[0], centripetal_force[0], new_centripetal_force[0],
-            h_, *Car_obj->massFullCar);
+            h_, Car_obj->massFullCar);
         Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
             Car_obj->currentVelocityLagrangian[1], centripetal_force[1], new_centripetal_force[1],
-            h_, *Car_obj->massFullCar);
+            h_, Car_obj->massFullCar);
 
         // 3. Update Z-angular velocities
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(*Car_obj->currentAngularVelocityLagrangian,
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->currentAngularVelocityLagrangian,
                                                         torque[2], new_torque[2], h_,
                                                         global_inertia_Z);
 
@@ -125,33 +130,28 @@ public:
 
         torque[2] = new_torque[2];  // z - component
     }
-    void solve(T* sol_vect, T* u_sol) {
+    void solve(T* sol_vect, T* u_sol_param) {
         // initialize solution vector
         int sol_size = (floor(tend_ / h_) + 1);
-        const int force_dimensions = Constants::DIM * Constants::VEC_DIM;
-        int centripetal_force_dimensions = 3;  // because update force needs it
-        int full_torque_dimensions = 3;
-        const int num_springs = 2 * Constants::NUM_LEGS;
+        int centripetal_force_dimensions = Constants::DIM;  // because update force needs it
+        int full_torque_dimensions = Constants::DIM;
 
         // allocate memory
 
-        time_vec = (T*)mkl_calloc(sol_size, sizeof(T), Constants::ALIGNMENT);
-        u_sol = (T*)mkl_calloc(sol_size * (Constants::VEC_DIM * Constants::DIM), sizeof(T),
-                               Constants::ALIGNMENT);
-        force_vector = (T*)mkl_calloc(force_dimensions, sizeof(T), Constants::ALIGNMENT);
-        force_vector_11dof = (T*)mkl_calloc(Constants::DOF, sizeof(T), Constants::ALIGNMENT);
-        full_torque = (T*)mkl_calloc(full_torque_dimensions, sizeof(T), Constants::ALIGNMENT);
-        centripetal_force =
-            (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T), Constants::ALIGNMENT);
-        new_centripetal_force =
-            (T*)mkl_calloc(centripetal_force_dimensions, sizeof(T),
-                           Constants::ALIGNMENT);  // this was 2 dimensional allocation and update
-                                                   // force updates 3 dimension on this
-        k_vect = (T*)mkl_calloc(num_springs, sizeof(T), Constants::ALIGNMENT);
-        Delta_x_vec = (T*)mkl_calloc(num_springs, sizeof(T), Constants::ALIGNMENT);
+        time_vec = Math::calloc<T>(sol_size);
+        force_vector = Math::calloc<T>(Constants::VEC_DIM * Constants::DIM);
+        force_vector_11dof = Math::calloc<T>(Constants::DOF);
+        full_torque = Math::calloc<T>(full_torque_dimensions);
+        centripetal_force = Math::calloc<T>(centripetal_force_dimensions);
 
-        torque = new T[3];
-        new_torque = new T[3];
+        // this was 2 dimensional allocation and update force updates 3 dimension on this
+        new_centripetal_force = Math::calloc<T>(centripetal_force_dimensions);
+
+        k_vect = Math::calloc<T>(2 * Constants::NUM_LEGS);
+        Delta_x_vec = Math::calloc<T>(2 * Constants::NUM_LEGS);
+
+        torque = Math::malloc<T>(Constants::DIM);
+        new_torque = Math::malloc<T>(Constants::DIM);
 
         // calculate characteristics of the whole car
         calculate_global_inertia_Z();
@@ -181,7 +181,7 @@ public:
             TwoTrackModel_obj->update_step(force_vector_11dof,
                                            Car_obj->currentDisplacementTwoTrackModel);
             Car_obj->updateLengthsTwoTrackModel();
-            solution_vect = u_sol + iter * (Constants::VEC_DIM * Constants::DIM);
+            solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
 
             // only call this function at every checkpoint
             Car_obj->combineEulerianLagrangianVectors(Car_obj->currentPositionLagrangian,
@@ -192,32 +192,27 @@ public:
             iter++;
         }
 
-        Math::copy((Constants::VEC_DIM * Constants::DIM),
-                   u_sol + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
+        Math::copy(Constants::VEC_DIM * Constants::DIM,
+                   u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect,
+                   1);
         Car_obj->combine_results();
 
-        mkl_free(time_vec);
+        Math::free(time_vec);
 
-        mkl_free(force_vector);
-        mkl_free(centripetal_force);
-        mkl_free(new_centripetal_force);
-        mkl_free(Delta_x_vec);
+        Math::free(force_vector);
+        Math::free(centripetal_force);
+        Math::free(new_centripetal_force);
+        Math::free(Delta_x_vec);
 
-        delete[] torque;
-        delete[] new_torque;
+        Math::free(torque);
+        Math::free(new_torque);
     }
 
     /**
      * Executes the time iteration of the ALE solvers, switches from global position update to
      * solving of the linear 11DOF system
      */
-    void solve(T* sol_vect) {
-        int sol_size = (floor(tend_ / h_) + 1);
-        u_sol = (T*)mkl_calloc(sol_size * (Constants::VEC_DIM * Constants::DIM), sizeof(T),
-                               Constants::ALIGNMENT);
-        solve(sol_vect, u_sol);
-        mkl_free(u_sol);
-    }
+    void solve(T* sol_vect) { solve(sol_vect, u_sol); }
 
     /**
      * Adds the contribution of the wheels and tyres to the inertia moment of the car

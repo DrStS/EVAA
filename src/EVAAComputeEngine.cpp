@@ -411,7 +411,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 void EVAAComputeEngine::computeMKL11DOF(void) {
     auto& db = MetaDataBase::getDataBase();
 
-    // TODO: Templated floating type.
+    // TODO: Templated floating type for all doubles below.
 
     // K stiffness
     double k_11 = db.getBodyStiffnessFrontLeft();
@@ -455,15 +455,15 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
     double m_11 = db.getTyreMassRearRight();
 
     // allocate matrices of zeros
-    double* B = (double*)mkl_calloc(Constants::DOFDOF, sizeof(double), Constants::ALIGNMENT);
-    double* M = (double*)mkl_calloc(Constants::DOFDOF, sizeof(double), Constants::ALIGNMENT);
-    double* D = (double*)mkl_calloc(Constants::DOFDOF, sizeof(double), Constants::ALIGNMENT);
-    double* K = (double*)mkl_calloc(Constants::DOFDOF, sizeof(double), Constants::ALIGNMENT);
+    double* B = Math::calloc<double>(Constants::DOFDOF);
+    double* M = Math::calloc<double>(Constants::DOFDOF);
+    double* D = Math::calloc<double>(Constants::DOFDOF);
+    double* K = Math::calloc<double>(Constants::DOFDOF);
 
-    double* u_n_p_1 = (double*)mkl_calloc(Constants::DOF, sizeof(double), Constants::ALIGNMENT);
-    double* u_n = (double*)mkl_calloc(Constants::DOF, sizeof(double), Constants::ALIGNMENT);
-    double* u_n_m_1 = (double*)mkl_calloc(Constants::DOF, sizeof(double), Constants::ALIGNMENT);
-    double* tmp = (double*)mkl_calloc(Constants::DOF, sizeof(double), Constants::ALIGNMENT);
+    double* u_n_p_1 = Math::calloc<double>(Constants::DOF);
+    double* u_n = Math::calloc<double>(Constants::DOF);
+    double* u_n_m_1 = Math::calloc<double>(Constants::DOF);
+    double* tmp = Math::calloc<double>(Constants::DOF);
 
     // Mass matrix initialization
     M[0] = m_1;
@@ -646,21 +646,20 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
     }
 
     // free the memory
-    mkl_free(B);
-    mkl_free(M);
-    mkl_free(D);
-    mkl_free(K);
+    Math::free(B);
+    Math::free(M);
+    Math::free(D);
+    Math::free(K);
 
-    mkl_free(u_n_p_1);
-    mkl_free(u_n);
-    mkl_free(u_n_m_1);
-    mkl_free(tmp);
+    Math::free(u_n_p_1);
+    Math::free(u_n);
+    Math::free(u_n_m_1);
+    Math::free(tmp);
 }
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     if (MetaDataBase::getDataBase().getRoadConditions() == NONFIXED) {
-        Constants::floatEVAA* sol = (Constants::floatEVAA*)mkl_calloc(
-            Constants::DOF, sizeof(Constants::floatEVAA), Constants::ALIGNMENT);
+        Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
         TwoTrackModelFull<Constants::floatEVAA> solver(car);
         solver.apply_boundary_condition(MetaDataBase::getDataBase().getRoadConditions());
@@ -668,7 +667,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 
         solver.print_final_results(sol);
 
-        mkl_free(sol);
+        Math::free(sol);
         delete car;
     }
     else {
@@ -681,18 +680,16 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 #if MIGHT_BE_USEFUL
 void EVAAComputeEngine::computeMKLTwoTrackModel() {
     if (MetaDataBase::getDataBase().getRoadConditions() == NONFIXED) {
-        Constants::floatEVAA* sol = (Constants::floatEVAA*)mkl_calloc(
-            Constants::DOF, sizeof(Constants::floatEVAA), Constants::ALIGNMENT);
-        Car<Constants::floatEVAA>* car =
-            new Car<Constants::floatEVAA>(_lookupStiffness, _lookupDamping);
+        Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(Constants::DOF);
+        Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
         TwoTrackModelFull<Constants::floatEVAA, TwoTrackModelBDF2<Constants::floatEVAA>> solver(
-            car, _lookupStiffness, _lookupDamping);
+            car);
         solver.apply_boundary_condition(MetaDataBase::getDataBase().getRoadConditions());
         solver.solve(sol);
 
         solver.print_final_results(sol);
 
-        mkl_free(sol);
+        Math::free(sol);
         delete car;
     }
     else {
@@ -706,12 +703,11 @@ void EVAAComputeEngine::computeMKLTwoTrackModel() {
 void EVAAComputeEngine::computeMBD(void) {
     size_t num_iter = MetaDataBase::getDataBase().getNumberOfTimeIterations();
     size_t solution_dim = MetaDataBase::getDataBase().getSolutionVectorSize();
-    Constants::floatEVAA* sol = (Constants::floatEVAA*)mkl_calloc(
-        solution_dim, sizeof(Constants::floatEVAA), Constants::ALIGNMENT);
+    Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(solution_dim);
     MBD_method<Constants::floatEVAA> solver;
     solver.solve(sol);
     solver.print_final_result(sol);
-    mkl_free(sol);
+    Math::free(sol);
 }
 
 void EVAAComputeEngine::computeALE(void) {
@@ -751,8 +747,7 @@ void EVAAComputeEngine::computeALE(void) {
         new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
 
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
-    Constants::floatEVAA* sol = (Constants::floatEVAA*)mkl_malloc(
-        solutionDim * sizeof(Constants::floatEVAA), Constants::ALIGNMENT);
+    Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(solutionDim);
 
     ale->solve(sol);
 
@@ -764,7 +759,7 @@ void EVAAComputeEngine::computeALE(void) {
     delete TwoTrackModel_obj;
     delete ale;
 
-    mkl_free(sol);
+    Math::free(sol);
 }
 
 void EVAAComputeEngine::computeALEtest(void) {
@@ -787,14 +782,11 @@ void EVAAComputeEngine::computeALEtest(void) {
 void EVAAComputeEngine::compare_ALE_MBD(void) {
     // MBD Call
     size_t num_iter = _parameters.num_time_iter;
-    const int alignment = 64;
     size_t solution_dim = _parameters.solution_dim;
-    Constants::floatEVAA* soln =
-        (Constants::floatEVAA*)mkl_calloc(solution_dim, sizeof(Constants::floatEVAA), alignment);
+    Constants::floatEVAA* soln = Math::calloc<Constants::floatEVAA>(solution_dim);
     MBD_method<Constants::floatEVAA> solver(_parameters);
     size_t solution_size = (num_iter + 1) * solution_dim;
-    Constants::floatEVAA* complete_soln =
-        (Constants::floatEVAA*)mkl_calloc(solution_size, sizeof(Constants::floatEVAA), alignment);
+    Constants::floatEVAA* complete_soln = Math::malloc<Constants::floatEVAA>(solution_size);
     solver.solve(soln, complete_soln);
     solver.print_final_result(soln);
     std::cout << "(num_iter + 1) = " << (num_iter + 1) << "solution_dim = " << solution_dim
@@ -804,7 +796,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
 #endif
     // IO
     Math::scal(solution_dim, 0., soln, 1);
-    mkl_free(complete_soln);
+    Math::free(complete_soln);
     // ALE call
 
     Profile* Road_Profile;
@@ -833,7 +825,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
 
     solution_dim = Constants::DIM * Constants::VEC_DIM;
     solution_size = (num_iter + 1) * solution_dim;
-    floatEVAA* complete_soln2 = (floatEVAA*)mkl_calloc(solution_size, sizeof(floatEVAA), alignment);
+    Constants::floatEVAA* complete_soln2 = Math::calloc<Constants::floatEVAA>(solution_size);
 #ifdef IO
     IO::write_matrix(Car1->Position_vec, "initial_car_pos_vec.dat", 1, solution_dim);
 #endif  // IO
@@ -857,8 +849,8 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
     delete TwoTrackModel_sys;
     delete Ale_sys;
 
-    mkl_free(soln);
-    mkl_free(complete_soln2);
+    Math::free(soln);
+    Math::free(complete_soln2);
 }
 #endif
 

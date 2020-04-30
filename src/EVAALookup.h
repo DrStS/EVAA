@@ -145,10 +145,10 @@ public:
         }
         // we will get the grid aftwards from a file. That why I do not directly write size, l_min,
         // l_max into the variables
-        task = (DFTaskPtr*)mkl_malloc(ny * sizeof(DFTaskPtr), Constants::ALIGNMENT);
-        grid = (T*)mkl_calloc(nx * ny, sizeof(T), Constants::ALIGNMENT);
-        axis = (T*)mkl_calloc(nx, sizeof(T), Constants::ALIGNMENT);
-        scoeff = (T*)mkl_calloc(ny * (nx - 1) * sorder, sizeof(T), Constants::ALIGNMENT);
+        task = Math::malloc<DFTaskPtr>(ny);
+        grid = Math::calloc<T>(nx * ny);
+        axis = Math::calloc<T>(nx);
+        scoeff = Math::calloc<T>(ny * (nx - 1) * sorder);
 
         /* create grid */
         EVAAComputeGrid<T>::buildLinearGrid(grid, axis, nx, l_min, l_max, a, b, c, ny);
@@ -174,9 +174,9 @@ public:
         // for debugging purposes
         generateLookupOutputFile(l_min, l_max, a[0]);
 
-        mkl_free(grid);
+        Math::free(grid);
         grid = nullptr;
-        mkl_free(axis);
+        Math::free(axis);
         axis = nullptr;
         delete ic;
         ic = nullptr;
@@ -193,7 +193,7 @@ public:
         for (auto i = 0; i < ny; i++) {
             dfDeleteTask(&task[i]);
         }
-        mkl_free(scoeff);
+        Math::free(scoeff);
         scoeff = nullptr;
         delete datahint;
         datahint = nullptr;
@@ -262,8 +262,8 @@ public:
         // size of array describing derivative (dorder), which is defined two lines below
         const MKL_INT ndorder = 1;
         const MKL_INT dorder[1] = {1};  // only the values are computed
-        T* interpolation = (T*)mkl_malloc((2 * nx - 1) * sizeof(T), Constants::ALIGNMENT);
-        T* interpolationPoints = (T*)mkl_malloc((2 * nx - 1) * sizeof(T), Constants::ALIGNMENT);
+        T* interpolation = Math::malloc<T>(2 * nx - 1);
+        T* interpolationPoints = Math::malloc<T>(2 * nx - 1);
         for (auto i = 0; i < (2 * nx - 1); i++) {
             interpolationPoints[i] = l_min + i * (l_max - l_min) / (2 * nx - 2);
             dfdInterpolate1D(task[0], DF_INTERP, DF_METHOD_PP, 1, &interpolationPoints[i],
@@ -273,7 +273,7 @@ public:
         IO::writeLookUpGridPlusInterpolateValues<T>(
             axis, grid, nx, interpolationPoints, interpolation, 2 * nx - 1,
             "LookupTablePlusInterpolation" + std::to_string(add) + ".txt");
-        mkl_free(interpolation);
+        Math::free(interpolation);
     }
 };
 

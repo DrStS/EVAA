@@ -27,6 +27,13 @@ constexpr int DOF = 11;
 // TODO: Get rid of it.
 using floatEVAA = double;
 
+/*
+ * TODO: Use only one of:
+ * - USEINTERPOLATION constexpr here
+ * - INTERPOLATION compile definition
+ * - U_Lookup (see MetaDataBase.h includes part)
+ * - XML content referencing the lookup filename
+ */
 constexpr bool USEINTERPOLATION = true;
 
 constexpr floatEVAA TOLERANCE = 1.e-8;

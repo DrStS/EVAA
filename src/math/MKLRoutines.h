@@ -94,7 +94,9 @@ T* calloc(size_t count) {
  */
 template <typename T>
 void free(T*& buffer) {
-    assert(buffer != nullptr);
+    if (buffer == nullptr) {
+        throw std::invalid_argument("Attempt to free a nullptr");
+    }
     mkl_free(buffer);
     buffer = nullptr;
 }

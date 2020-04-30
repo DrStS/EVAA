@@ -149,14 +149,13 @@ void check_status(T status) {
  */
 template <typename T>
 void elementwise_inversion(T* vect, size_t dim) {
-    int alignment = 64;
-    T* temp = (T*)mkl_calloc(dim, sizeof(T), alignment);
+    T* temp = Math::calloc<T>(dim);
     Math::vInv(dim, vect, temp);
     Math::copy(dim, temp, 1, vect, 1);
     // for (size_t i = 0; i < dim; ++i) {
     //	vect[i] = 1. / vect[i];
     //}
-    mkl_free(temp);
+    Math::free(temp);
 }
 
 /**
@@ -503,8 +502,9 @@ void get_tilda(const T* input_vector, T* tilda_output) {
 }
 
 /**
-Implements different numerical schemes
-*/
+ * Implements different numerical schemes.
+ * \note: TODO: Check if C has the get_solution_dimension() public member function.
+ */
 template <typename T, class C>
 class Solvers {
 public:
@@ -519,23 +519,22 @@ public:
      */
     static void Broyden_Euler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
                               T tol, size_t max_iter) {
-        size_t alignment = obj->get_alignment();
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* f_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* dx = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* dx_inv = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* df = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* x = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* F = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* F_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* dF = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* J = (T*)mkl_calloc(x_len * x_len, sizeof(T), alignment);
-        T* J_tmp = (T*)mkl_calloc(x_len * x_len, sizeof(T), alignment);
-        lapack_int* piv = (lapack_int*)mkl_malloc(sizeof(lapack_int*) * x_len, alignment);
+        T* f_old = Math::malloc<T>(x_len);
+        T* f_new = Math::malloc<T>(x_len);
+        T* dx = Math::malloc<T>(x_len);
+        T* dx_inv = Math::malloc<T>(x_len);
+        T* df = Math::malloc<T>(x_len);
+        T* x = Math::malloc<T>(x_len);
+        T* F = Math::malloc<T>(x_len);
+        T* F_new = Math::malloc<T>(x_len);
+        T* dF = Math::malloc<T>(x_len);
+        T* J = Math::calloc<T>(x_len * x_len);
+        T* J_tmp = Math::calloc<T>(x_len * x_len);
+        lapack_int* piv = Math::malloc<lapack_int>(x_len);
 
         T *it_start, *curr_time_start_pos;
-        T* x_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+        T* x_new = Math::malloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
@@ -636,19 +635,19 @@ public:
             Math::copy(x_len, x, 1, curr_time_start_pos, 1);
         }
 
-        mkl_free(f_old);
-        mkl_free(f_new);
-        mkl_free(dx);
-        mkl_free(dx_inv);
-        mkl_free(df);
-        mkl_free(x);
-        mkl_free(F);
-        mkl_free(F_new);
-        mkl_free(dF);
-        mkl_free(J);
-        mkl_free(J_tmp);
-        mkl_free(piv);
-        mkl_free(x_new);
+        Math::free(f_old);
+        Math::free(f_new);
+        Math::free(dx);
+        Math::free(dx_inv);
+        Math::free(df);
+        Math::free(x);
+        Math::free(F);
+        Math::free(F_new);
+        Math::free(dF);
+        Math::free(J);
+        Math::free(J_tmp);
+        Math::free(piv);
+        Math::free(x_new);
     }
 
     /**
@@ -662,23 +661,22 @@ public:
      */
     static void Broyden_PDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
                              T tol, size_t max_iter) {
-        size_t alignment = obj->get_alignment();
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* f_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* dx = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* dx_inv = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* df = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* x = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* F = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* F_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* dF = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* J = (T*)mkl_calloc(x_len * x_len, sizeof(T), alignment);
-        T* J_tmp = (T*)mkl_calloc(x_len * x_len, sizeof(T), alignment);
-        lapack_int* piv = (lapack_int*)mkl_malloc(sizeof(lapack_int*) * x_len, alignment);
+        T* f_old = Math::malloc<T>(x_len);
+        T* f_new = Math::malloc<T>(x_len);
+        T* dx = Math::malloc<T>(x_len);
+        T* dx_inv = Math::malloc<T>(x_len);
+        T* df = Math::malloc<T>(x_len);
+        T* x = Math::malloc<T>(x_len);
+        T* F = Math::malloc<T>(x_len);
+        T* F_new = Math::malloc<T>(x_len);
+        T* dF = Math::malloc<T>(x_len);
+        T* J = Math::calloc<T>(x_len * x_len);
+        T* J_tmp = Math::calloc<T>(x_len * x_len);
+        lapack_int* piv = Math::malloc<lapack_int>(x_len);
 
         T *it_start, *curr_time_start_pos, *prev_prev_pos;
-        T* x_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+        T* x_new = Math::malloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
@@ -878,19 +876,19 @@ public:
                 Math::copy(x_len, x, 1, curr_time_start_pos, 1);
             }
         }
-        mkl_free(f_old);
-        mkl_free(f_new);
-        mkl_free(dx);
-        mkl_free(dx_inv);
-        mkl_free(df);
-        mkl_free(x);
-        mkl_free(F);
-        mkl_free(F_new);
-        mkl_free(dF);
-        mkl_free(J);
-        mkl_free(J_tmp);
-        mkl_free(piv);
-        mkl_free(x_new);
+        Math::free(f_old);
+        Math::free(f_new);
+        Math::free(dx);
+        Math::free(dx_inv);
+        Math::free(df);
+        Math::free(x);
+        Math::free(F);
+        Math::free(F_new);
+        Math::free(dF);
+        Math::free(J);
+        Math::free(J_tmp);
+        Math::free(piv);
+        Math::free(x_new);
     }
 
     /**
@@ -904,30 +902,24 @@ public:
      */
     static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
                            T tol, size_t max_iter) {
-        /*
-        method requires that the object using this solver has following public member functions
-        1. get_alignment()
-        2. get_solution_dimension()
-        */
         // std::cout << "Broyden started!\n" << std::endl;
 
-        size_t alignment = obj->get_alignment();
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* f_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* dx = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* dx_inv = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* df = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* x = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* F = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* F_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* dF = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* J = (T*)mkl_calloc(x_len * x_len, sizeof(T), alignment);
-        T* J_tmp = (T*)mkl_calloc(x_len * x_len, sizeof(T), alignment);
-        lapack_int* piv = (lapack_int*)mkl_malloc(sizeof(lapack_int*) * x_len, alignment);
+        T* f_old = Math::malloc<T>(x_len);
+        T* f_new = Math::malloc<T>(x_len);
+        T* dx = Math::malloc<T>(x_len);
+        T* dx_inv = Math::malloc<T>(x_len);
+        T* df = Math::malloc<T>(x_len);
+        T* x = Math::malloc<T>(x_len);
+        T* F = Math::malloc<T>(x_len);
+        T* F_new = Math::malloc<T>(x_len);
+        T* dF = Math::malloc<T>(x_len);
+        T* J = Math::calloc<T>(x_len * x_len);
+        T* J_tmp = Math::calloc<T>(x_len * x_len);
+        lapack_int* piv = Math::malloc<lapack_int>(x_len);
 
         T *it_start, *curr_time_start_pos;
-        T* x_new = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+        T* x_new = Math::malloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
@@ -1035,19 +1027,19 @@ public:
             Math::copy(x_len, x, 1, curr_time_start_pos, 1);
         }
         // std::cout << "Broyden cleaning!\n" << std::endl;
-        mkl_free(f_old);
-        mkl_free(f_new);
-        mkl_free(dx);
-        mkl_free(dx_inv);
-        mkl_free(df);
-        mkl_free(x);
-        mkl_free(F);
-        mkl_free(F_new);
-        mkl_free(dF);
-        mkl_free(J);
-        mkl_free(J_tmp);
-        mkl_free(piv);
-        mkl_free(x_new);
+        Math::free(f_old);
+        Math::free(f_new);
+        Math::free(dx);
+        Math::free(dx_inv);
+        Math::free(df);
+        Math::free(x);
+        Math::free(F);
+        Math::free(F_new);
+        Math::free(dF);
+        Math::free(J);
+        Math::free(J_tmp);
+        Math::free(piv);
+        Math::free(x_new);
 
         // std::cout << "Exiting Broyden!\n" << std::endl;
     }
@@ -1102,14 +1094,13 @@ public:
      */
     static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol,
                     size_t max_iter) {
-        size_t alignment = obj->get_alignment();
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* k1 = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* k2 = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* k3 = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* k4 = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
-        T* x = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
+        T* f_old = Math::malloc<T>(x_len);
+        T* k1 = Math::malloc<T>(x_len);
+        T* k2 = Math::malloc<T>(x_len);
+        T* k3 = Math::malloc<T>(x_len);
+        T* k4 = Math::malloc<T>(x_len);
+        T* x = Math::malloc<T>(x_len);
 
         T *it_start, *curr_time_start_pos;
         T* switcher;  // used for interchanging adresses between F and F_new
@@ -1159,12 +1150,12 @@ public:
             Math::axpy(x_len, coeff4, k4, 1, curr_time_start_pos, 1);
             t += dt;
         }
-        mkl_free(f_old);
-        mkl_free(k1);
-        mkl_free(k2);
-        mkl_free(k3);
-        mkl_free(k4);
-        mkl_free(x);
+        Math::free(f_old);
+        Math::free(k1);
+        Math::free(k2);
+        Math::free(k3);
+        Math::free(k4);
+        Math::free(x);
     }
 
     /**
@@ -1233,27 +1224,27 @@ public:
 
     /**
      * 2nd order Stoermer-Verlet algorithm to update the position of one scalar
-     * \param x position
-     * \param v velocity
-     * \param F force
-     * \param delta_t timestep
-     * \param mass
-     * \return x position
+     * \param[out] x position
+     * \param[in] v velocity
+     * \param[in] F force
+     * \param[in] delta_t timestep
+     * \param[in] mass mass
      */
-    static void Stoermer_Verlet_Position(T& x, T& v, T& F, T& delta_t, T& mass) {
+    static void Stoermer_Verlet_Position(T& x, const T v, const T F, const T delta_t,
+                                         const T mass) {
         x += delta_t * v + delta_t * delta_t / (2 * mass) * F;
     }
 
     /**
      * 2nd order Stoermer-Verlet algorithm to update the velocity of one scalar
-     * \param v velocity
-     * \param F force
-     * \param F_new force at the following time step
-     * \param delta_t timestep
-     * \param mass
-     * \return v velocity
+     * \param[out] v velocity
+     * \param[in] F force
+     * \param[in] F_new force at the following time step
+     * \param[in] delta_t timestep
+     * \param[in] mass mass
      */
-    static void Stoermer_Verlet_Velocity(T& v, T& F, T& F_new, T& delta_t, T& mass) {
+    static void Stoermer_Verlet_Velocity(T& v, const T F, const T F_new, const T delta_t,
+                                         const T mass) {
         v += delta_t / (2 * mass) * (F + F_new);
     }
 

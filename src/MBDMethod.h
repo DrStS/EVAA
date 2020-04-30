@@ -188,9 +188,8 @@ private:
          * 9. pt_fl	= pt_fl + lower_length(_fl)*global_z;
          */
 
-        T* global_z = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        T* C_Nc =
-            (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+        T* global_z = Math::calloc<T>(Constants::DIM);
+        T* C_Nc = Math::calloc<T>(Constants::DIM * Constants::DIM);
 
         // 1. qc = qc/norm(qc); This is in quaternions
         T nrm = Math::nrm2(Constants::NUM_LEGS, initial_orientation_, 1);
@@ -286,8 +285,8 @@ private:
         Math::axpy(Constants::DIM, initial_lower_spring_length_[3], global_z, 1,
                    tyre_coordinate_rr_, 1);
 
-        mkl_free(global_z);
-        mkl_free(C_Nc);
+        Math::free(global_z);
+        Math::free(C_Nc);
     }
 
     /**
@@ -319,62 +318,52 @@ private:
     void MemoryAllocation() {
         // Memory Allocation and matrix formulation
 
-        r_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        r_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        r_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        r_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        Ic = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        mass_wheel = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        mass_tyre = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        upper_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        lower_spring_length = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        upper_spring_stiffness =
-            (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        lower_spring_stiffness =
-            (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        upper_rotational_stiffness =
-            (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        lower_rotational_stiffness =
-            (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        initial_upper_spring_length =
-            (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        initial_lower_spring_length =
-            (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        initial_orientation = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        initial_angular_velocity = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        upper_spring_damping = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        lower_spring_damping = (T*)mkl_calloc(Constants::NUM_LEGS, sizeof(T), Constants::ALIGNMENT);
-        vc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        vw_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        vw_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        vw_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        vw_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        vt_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        vt_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        vt_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        vt_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        pcc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        FC = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        r_fl_tilda =
-            (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        r_fr_tilda =
-            (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        r_rl_tilda =
-            (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        r_rr_tilda =
-            (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        FT_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        FT_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        FT_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        FT_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        FW_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        FW_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        FW_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        FW_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        A_Ic = (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        A_rem = (T*)mkl_calloc(9 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        center_of_circle = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        accelerations = (T*)mkl_calloc(9 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+        r_fl = Math::calloc<T>(Constants::DIM);
+        r_fr = Math::calloc<T>(Constants::DIM);
+        r_rl = Math::calloc<T>(Constants::DIM);
+        r_rr = Math::calloc<T>(Constants::DIM);
+        Ic = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        mass_wheel = Math::calloc<T>(Constants::NUM_LEGS);
+        mass_tyre = Math::calloc<T>(Constants::NUM_LEGS);
+        upper_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
+        lower_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
+        upper_spring_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
+        lower_spring_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
+        upper_rotational_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
+        lower_rotational_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
+        initial_upper_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
+        initial_lower_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
+        initial_orientation = Math::calloc<T>(Constants::NUM_LEGS);
+        initial_angular_velocity = Math::calloc<T>(Constants::DIM);
+        upper_spring_damping = Math::calloc<T>(Constants::NUM_LEGS);
+        lower_spring_damping = Math::calloc<T>(Constants::NUM_LEGS);
+        vc = Math::calloc<T>(Constants::DIM);
+        vw_fl = Math::calloc<T>(Constants::DIM);
+        vw_fr = Math::calloc<T>(Constants::DIM);
+        vw_rl = Math::calloc<T>(Constants::DIM);
+        vw_rr = Math::calloc<T>(Constants::DIM);
+        vt_fl = Math::calloc<T>(Constants::DIM);
+        vt_fr = Math::calloc<T>(Constants::DIM);
+        vt_rl = Math::calloc<T>(Constants::DIM);
+        vt_rr = Math::calloc<T>(Constants::DIM);
+        pcc = Math::calloc<T>(Constants::DIM);
+        FC = Math::calloc<T>(Constants::DIM);
+        r_fl_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        r_fr_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        r_rl_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        r_rr_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        FT_fl = Math::calloc<T>(Constants::DIM);
+        FT_rr = Math::calloc<T>(Constants::DIM);
+        FT_rl = Math::calloc<T>(Constants::DIM);
+        FT_fr = Math::calloc<T>(Constants::DIM);
+        FW_fl = Math::calloc<T>(Constants::DIM);
+        FW_rr = Math::calloc<T>(Constants::DIM);
+        FW_rl = Math::calloc<T>(Constants::DIM);
+        FW_fr = Math::calloc<T>(Constants::DIM);
+        A_Ic = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        A_rem = Math::calloc<T>(Constants::DIM * Constants::DIM * Constants::DIM);
+        center_of_circle = Math::calloc<T>(Constants::DIM);
+        accelerations = Math::calloc<T>(Constants::DIM * Constants::DIM * Constants::DIM);
     }
 
     void ReadFromXML() {
@@ -620,9 +609,9 @@ private:
         vc[2] = 0;
 
         // memory allocation
-        T* perpendicular_dir = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        T* tangential_dir = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        T* radial_vector = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+        T* perpendicular_dir = Math::calloc<T>(Constants::DIM);
+        T* tangential_dir = Math::calloc<T>(Constants::DIM);
+        T* radial_vector = Math::calloc<T>(Constants::DIM);
 
         // vector from the car to the center of the circle
         radial_vector[0] = pcc[0] - center_of_circle[0];
@@ -726,8 +715,8 @@ private:
         T velocity_magnitude_tyre, inv_radius, force_magnitude_tyre;
 
         // allocate memory
-        unit_z_vector = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        velocity_direction_tyre = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+        unit_z_vector = Math::calloc<T>(Constants::DIM);
+        velocity_direction_tyre = Math::calloc<T>(Constants::DIM);
 
         // some MKL constants (DIM=3)
         const MKL_INT mkl_DIM = Constants::DIM;
@@ -763,8 +752,8 @@ private:
         Math::scal(Constants::DIM, force_magnitude_tyre, Fr, 1);
 
         // free memory
-        mkl_free(unit_z_vector);
-        mkl_free(velocity_direction_tyre);
+        Math::free(unit_z_vector);
+        Math::free(velocity_direction_tyre);
     }
 
     /** Functions needed for compute_f */
@@ -776,45 +765,44 @@ private:
      */
     void compute_f_mem_alloc() {
         // add to members
-        cf_C_cN =
-            (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_r_up_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_r_up_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_r_up_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_r_up_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_r_low_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_r_low_fr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_r_low_rl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_r_low_rr = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+        cf_C_cN = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        cf_r_up_fl = Math::calloc<T>(Constants::DIM);
+        cf_r_up_fr = Math::calloc<T>(Constants::DIM);
+        cf_r_up_rl = Math::calloc<T>(Constants::DIM);
+        cf_r_up_rr = Math::calloc<T>(Constants::DIM);
+        cf_r_low_fl = Math::calloc<T>(Constants::DIM);
+        cf_r_low_fr = Math::calloc<T>(Constants::DIM);
+        cf_r_low_rl = Math::calloc<T>(Constants::DIM);
+        cf_r_low_rr = Math::calloc<T>(Constants::DIM);
 
-        cf_upper_normal_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_normal_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_normal_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_normal_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_normal_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_normal_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_normal_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_normal_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_col_dat = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+        cf_upper_normal_fl = Math::calloc<T>(Constants::DIM);
+        cf_upper_normal_fr = Math::calloc<T>(Constants::DIM);
+        cf_upper_normal_rl = Math::calloc<T>(Constants::DIM);
+        cf_upper_normal_rr = Math::calloc<T>(Constants::DIM);
+        cf_lower_normal_fl = Math::calloc<T>(Constants::DIM);
+        cf_lower_normal_fr = Math::calloc<T>(Constants::DIM);
+        cf_lower_normal_rl = Math::calloc<T>(Constants::DIM);
+        cf_lower_normal_rr = Math::calloc<T>(Constants::DIM);
+        cf_col_dat = Math::calloc<T>(Constants::DIM);
 
-        cf_upper_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+        cf_upper_force_fl = Math::calloc<T>(Constants::DIM);
+        cf_upper_force_fr = Math::calloc<T>(Constants::DIM);
+        cf_upper_force_rl = Math::calloc<T>(Constants::DIM);
+        cf_upper_force_rr = Math::calloc<T>(Constants::DIM);
+        cf_lower_force_fl = Math::calloc<T>(Constants::DIM);
+        cf_lower_force_fr = Math::calloc<T>(Constants::DIM);
+        cf_lower_force_rl = Math::calloc<T>(Constants::DIM);
+        cf_lower_force_rr = Math::calloc<T>(Constants::DIM);
 
-        cf_upper_dampf_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_dampf_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_dampf_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_dampf_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_dampf_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_dampf_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_dampf_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_dampf_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_temp = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+        cf_upper_dampf_fl = Math::calloc<T>(Constants::DIM);
+        cf_upper_dampf_fr = Math::calloc<T>(Constants::DIM);
+        cf_upper_dampf_rl = Math::calloc<T>(Constants::DIM);
+        cf_upper_dampf_rr = Math::calloc<T>(Constants::DIM);
+        cf_lower_dampf_fl = Math::calloc<T>(Constants::DIM);
+        cf_lower_dampf_fr = Math::calloc<T>(Constants::DIM);
+        cf_lower_dampf_rl = Math::calloc<T>(Constants::DIM);
+        cf_lower_dampf_rr = Math::calloc<T>(Constants::DIM);
+        cf_temp = Math::calloc<T>(Constants::DIM);
 
         // TODO: :))) static vars, maybe an array/vector with all.
         cf_upper_angle_fl = new T;
@@ -826,98 +814,97 @@ private:
         cf_lower_angle_rl = new T;
         cf_lower_angle_rr = new T;
 
-        cf_upper_S_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_S_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_S_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_S_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_S_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_S_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_S_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_S_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+        cf_upper_S_fl = Math::calloc<T>(Constants::DIM);
+        cf_upper_S_fr = Math::calloc<T>(Constants::DIM);
+        cf_upper_S_rl = Math::calloc<T>(Constants::DIM);
+        cf_upper_S_rr = Math::calloc<T>(Constants::DIM);
+        cf_lower_S_fl = Math::calloc<T>(Constants::DIM);
+        cf_lower_S_fr = Math::calloc<T>(Constants::DIM);
+        cf_lower_S_rl = Math::calloc<T>(Constants::DIM);
+        cf_lower_S_rr = Math::calloc<T>(Constants::DIM);
 
-        cf_lower_rot_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_rot_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_rot_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_lower_rot_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_rot_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_rot_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_rot_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_upper_rot_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_car_rot_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_car_rot_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_car_rot_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_car_rot_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_sum_car_force_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_sum_car_force_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_sum_car_force_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_sum_car_force_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+        cf_lower_rot_force_fl = Math::calloc<T>(Constants::DIM);
+        cf_lower_rot_force_fr = Math::calloc<T>(Constants::DIM);
+        cf_lower_rot_force_rl = Math::calloc<T>(Constants::DIM);
+        cf_lower_rot_force_rr = Math::calloc<T>(Constants::DIM);
+        cf_upper_rot_force_fl = Math::calloc<T>(Constants::DIM);
+        cf_upper_rot_force_fr = Math::calloc<T>(Constants::DIM);
+        cf_upper_rot_force_rl = Math::calloc<T>(Constants::DIM);
+        cf_upper_rot_force_rr = Math::calloc<T>(Constants::DIM);
+        cf_car_rot_force_fl = Math::calloc<T>(Constants::DIM);
+        cf_car_rot_force_fr = Math::calloc<T>(Constants::DIM);
+        cf_car_rot_force_rl = Math::calloc<T>(Constants::DIM);
+        cf_car_rot_force_rr = Math::calloc<T>(Constants::DIM);
+        cf_sum_car_force_fl = Math::calloc<T>(Constants::DIM);
+        cf_sum_car_force_fr = Math::calloc<T>(Constants::DIM);
+        cf_sum_car_force_rl = Math::calloc<T>(Constants::DIM);
+        cf_sum_car_force_rr = Math::calloc<T>(Constants::DIM);
 
-        cf_local_FR_fl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_local_FR_fr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_local_FR_rl = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
-        cf_local_FR_rr = (T*)mkl_calloc((Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+        cf_local_FR_fl = Math::calloc<T>(Constants::DIM);
+        cf_local_FR_fr = Math::calloc<T>(Constants::DIM);
+        cf_local_FR_rl = Math::calloc<T>(Constants::DIM);
+        cf_local_FR_rr = Math::calloc<T>(Constants::DIM);
 
-        cf_Hc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_sum_torque_spring_car = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_Tc = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_wc_tilda =
-            (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
+        cf_Hc = Math::calloc<T>(Constants::DIM);
+        cf_sum_torque_spring_car = Math::calloc<T>(Constants::DIM);
+        cf_Tc = Math::calloc<T>(Constants::DIM);
+        cf_wc_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
 
         cf_Tc[0] = 0.;
         cf_Tc[1] = 0.;
         cf_Tc[2] = 0.;
 
-        cf_b_rem = (T*)mkl_calloc(9 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        cf_Qc = (T*)mkl_calloc((Constants::NUM_LEGS) * (Constants::DIM), sizeof(T),
-                               Constants::ALIGNMENT);
-        cf_qc_dot = (T*)mkl_calloc((Constants::NUM_LEGS), sizeof(T), Constants::ALIGNMENT);
+        cf_b_rem = Math::calloc<T>(Constants::DIM * Constants::DIM * Constants::DIM);
+        cf_Qc = Math::calloc<T>(Constants::NUM_LEGS * Constants::DIM);
+        cf_qc_dot = Math::calloc<T>(Constants::NUM_LEGS);
 
         // required for the look up table
-        current_spring_lengths =
-            (T*)mkl_calloc(8 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        stiffness_vector = (T*)mkl_calloc(8 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
+        current_spring_lengths = Math::calloc<T>(2 * Constants::NUM_LEGS * Constants::DIM);
+        stiffness_vector = Math::calloc<T>(2 * Constants::NUM_LEGS * Constants::DIM);
     }
 
     /**
      * Clean the memory allocated for the main solver
      */
     void compute_f_clean() {
+        // TODO: consider removing after checking performance.
         mkl_free_buffers();
-        mkl_free(cf_C_cN);
-        mkl_free(cf_r_up_fl);
-        mkl_free(cf_r_up_fr);
-        mkl_free(cf_r_up_rl);
-        mkl_free(cf_r_up_rr);
-        mkl_free(cf_r_low_fl);
-        mkl_free(cf_r_low_fr);
-        mkl_free(cf_r_low_rl);
-        mkl_free(cf_r_low_rr);
-        mkl_free(cf_upper_normal_fl);
-        mkl_free(cf_upper_normal_fr);
-        mkl_free(cf_upper_normal_rl);
-        mkl_free(cf_upper_normal_rr);
-        mkl_free(cf_lower_normal_fl);
-        mkl_free(cf_lower_normal_fr);
-        mkl_free(cf_lower_normal_rl);
-        mkl_free(cf_lower_normal_rr);
-        mkl_free(cf_col_dat);
-        mkl_free(cf_upper_force_fl);
-        mkl_free(cf_upper_force_fr);
-        mkl_free(cf_upper_force_rl);
-        mkl_free(cf_upper_force_rr);
-        mkl_free(cf_lower_force_fl);
-        mkl_free(cf_lower_force_fr);
-        mkl_free(cf_lower_force_rl);
-        mkl_free(cf_lower_force_rr);
-        mkl_free(cf_upper_dampf_fl);
-        mkl_free(cf_upper_dampf_fr);
-        mkl_free(cf_upper_dampf_rl);
-        mkl_free(cf_upper_dampf_rr);
-        mkl_free(cf_lower_dampf_fl);
-        mkl_free(cf_lower_dampf_fr);
-        mkl_free(cf_lower_dampf_rl);
-        mkl_free(cf_lower_dampf_rr);
-        mkl_free(cf_temp);
+
+        Math::free(cf_C_cN);
+        Math::free(cf_r_up_fl);
+        Math::free(cf_r_up_fr);
+        Math::free(cf_r_up_rl);
+        Math::free(cf_r_up_rr);
+        Math::free(cf_r_low_fl);
+        Math::free(cf_r_low_fr);
+        Math::free(cf_r_low_rl);
+        Math::free(cf_r_low_rr);
+        Math::free(cf_upper_normal_fl);
+        Math::free(cf_upper_normal_fr);
+        Math::free(cf_upper_normal_rl);
+        Math::free(cf_upper_normal_rr);
+        Math::free(cf_lower_normal_fl);
+        Math::free(cf_lower_normal_fr);
+        Math::free(cf_lower_normal_rl);
+        Math::free(cf_lower_normal_rr);
+        Math::free(cf_col_dat);
+        Math::free(cf_upper_force_fl);
+        Math::free(cf_upper_force_fr);
+        Math::free(cf_upper_force_rl);
+        Math::free(cf_upper_force_rr);
+        Math::free(cf_lower_force_fl);
+        Math::free(cf_lower_force_fr);
+        Math::free(cf_lower_force_rl);
+        Math::free(cf_lower_force_rr);
+        Math::free(cf_upper_dampf_fl);
+        Math::free(cf_upper_dampf_fr);
+        Math::free(cf_upper_dampf_rl);
+        Math::free(cf_upper_dampf_rr);
+        Math::free(cf_lower_dampf_fl);
+        Math::free(cf_lower_dampf_fr);
+        Math::free(cf_lower_dampf_rl);
+        Math::free(cf_lower_dampf_rr);
+        Math::free(cf_temp);
         delete cf_upper_angle_fl;
         delete cf_upper_angle_fr;
         delete cf_upper_angle_rl;
@@ -926,44 +913,44 @@ private:
         delete cf_lower_angle_fr;
         delete cf_lower_angle_rl;
         delete cf_lower_angle_rr;
-        mkl_free(cf_upper_S_fl);
-        mkl_free(cf_upper_S_fr);
-        mkl_free(cf_upper_S_rl);
-        mkl_free(cf_upper_S_rr);
-        mkl_free(cf_lower_S_fl);
-        mkl_free(cf_lower_S_fr);
-        mkl_free(cf_lower_S_rl);
-        mkl_free(cf_lower_S_rr);
-        mkl_free(cf_lower_rot_force_fl);
-        mkl_free(cf_lower_rot_force_fr);
-        mkl_free(cf_lower_rot_force_rl);
-        mkl_free(cf_lower_rot_force_rr);
-        mkl_free(cf_upper_rot_force_fl);
-        mkl_free(cf_upper_rot_force_fr);
-        mkl_free(cf_upper_rot_force_rl);
-        mkl_free(cf_upper_rot_force_rr);
-        mkl_free(cf_car_rot_force_fl);
-        mkl_free(cf_car_rot_force_fr);
-        mkl_free(cf_car_rot_force_rl);
-        mkl_free(cf_car_rot_force_rr);
-        mkl_free(cf_sum_car_force_fl);
-        mkl_free(cf_sum_car_force_fr);
-        mkl_free(cf_sum_car_force_rl);
-        mkl_free(cf_sum_car_force_rr);
-        mkl_free(cf_local_FR_fl);
-        mkl_free(cf_local_FR_fr);
-        mkl_free(cf_local_FR_rl);
-        mkl_free(cf_local_FR_rr);
-        mkl_free(cf_Hc);
-        mkl_free(cf_sum_torque_spring_car);
-        mkl_free(cf_Tc);
-        mkl_free(cf_wc_tilda);
-        mkl_free(cf_b_rem);
-        mkl_free(cf_Qc);
-        mkl_free(cf_qc_dot);
-        mkl_free(current_spring_lengths);
-        mkl_free(stiffness_vector);
-        mkl_free(accelerations);
+        Math::free(cf_upper_S_fl);
+        Math::free(cf_upper_S_fr);
+        Math::free(cf_upper_S_rl);
+        Math::free(cf_upper_S_rr);
+        Math::free(cf_lower_S_fl);
+        Math::free(cf_lower_S_fr);
+        Math::free(cf_lower_S_rl);
+        Math::free(cf_lower_S_rr);
+        Math::free(cf_lower_rot_force_fl);
+        Math::free(cf_lower_rot_force_fr);
+        Math::free(cf_lower_rot_force_rl);
+        Math::free(cf_lower_rot_force_rr);
+        Math::free(cf_upper_rot_force_fl);
+        Math::free(cf_upper_rot_force_fr);
+        Math::free(cf_upper_rot_force_rl);
+        Math::free(cf_upper_rot_force_rr);
+        Math::free(cf_car_rot_force_fl);
+        Math::free(cf_car_rot_force_fr);
+        Math::free(cf_car_rot_force_rl);
+        Math::free(cf_car_rot_force_rr);
+        Math::free(cf_sum_car_force_fl);
+        Math::free(cf_sum_car_force_fr);
+        Math::free(cf_sum_car_force_rl);
+        Math::free(cf_sum_car_force_rr);
+        Math::free(cf_local_FR_fl);
+        Math::free(cf_local_FR_fr);
+        Math::free(cf_local_FR_rl);
+        Math::free(cf_local_FR_rr);
+        Math::free(cf_Hc);
+        Math::free(cf_sum_torque_spring_car);
+        Math::free(cf_Tc);
+        Math::free(cf_wc_tilda);
+        Math::free(cf_b_rem);
+        Math::free(cf_Qc);
+        Math::free(cf_qc_dot);
+        Math::free(current_spring_lengths);
+        Math::free(stiffness_vector);
+        Math::free(accelerations);
     }
 
     void get_current_variables(T* x) {
@@ -1807,8 +1794,8 @@ public:
     void solve(T* solution_vector) {
         // From the formulation we have 61 dimensions in the solution vector
         size_t solution_size = (this->num_iter + 1) * this->solution_dim;
-        T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), Constants::ALIGNMENT);
-        x_vector = (T*)mkl_calloc(solution_dim, sizeof(T), Constants::ALIGNMENT);
+        T* complete_vector = Math::calloc<T>(solution_size);
+        x_vector = Math::calloc<T>(solution_dim);
         Math::get_tilda<T>(r_fl, r_fl_tilda);
         Math::get_tilda<T>(r_fr, r_fr_tilda);
         Math::get_tilda<T>(r_rl, r_rl_tilda);
@@ -2016,8 +2003,8 @@ public:
         T* start = complete_vector + (this->num_iter) * this->solution_dim;
         Math::copy(this->solution_dim, start, 1, solution_vector, 1);
         //	std::cout << "Solution copied!\n" << std::endl;
-        mkl_free(complete_vector);
-        mkl_free(x_vector);
+        Math::free(complete_vector);
+        Math::free(x_vector);
     }
 
     /**
@@ -2091,11 +2078,6 @@ public:
     }
 
     /**
-     * Return the vector alignment (of the system)
-     */
-    size_t get_alignment() { return Constants::ALIGNMENT; }
-
-    /**
      * Returns the dimension of the solution vector (=61)
      */
     size_t get_solution_dimension() { return this->solution_dim; }
@@ -2151,51 +2133,53 @@ public:
      * Destructor
      */
     ~MBD_method() {
+        // TODO: consider removing after checking performance.
         mkl_free_buffers();
-        mkl_free(r_fl);
-        mkl_free(r_fr);
-        mkl_free(r_rl);
-        mkl_free(r_rr);
-        mkl_free(Ic);
-        mkl_free(mass_wheel);
-        mkl_free(mass_tyre);
-        mkl_free(upper_spring_length);
-        mkl_free(lower_spring_length);
-        mkl_free(upper_spring_stiffness);
-        mkl_free(lower_spring_stiffness);
-        mkl_free(upper_rotational_stiffness);
-        mkl_free(lower_rotational_stiffness);
-        mkl_free(initial_upper_spring_length);
-        mkl_free(initial_lower_spring_length);
-        mkl_free(initial_orientation);
-        mkl_free(initial_angular_velocity);
-        mkl_free(upper_spring_damping);
-        mkl_free(lower_spring_damping);
-        mkl_free(vc);
-        mkl_free(vw_fl);
-        mkl_free(vw_fr);
-        mkl_free(vw_rl);
-        mkl_free(vw_rr);
-        mkl_free(vt_fl);
-        mkl_free(vt_fr);
-        mkl_free(vt_rl);
-        mkl_free(vt_rr);
-        mkl_free(pcc);
-        mkl_free(FC);
-        mkl_free(r_fl_tilda);
-        mkl_free(r_fr_tilda);
-        mkl_free(r_rl_tilda);
-        mkl_free(r_rr_tilda);
-        mkl_free(FW_fl);
-        mkl_free(FW_fr);
-        mkl_free(FW_rl);
-        mkl_free(FW_rr);
-        mkl_free(FT_fl);
-        mkl_free(FT_fr);
-        mkl_free(FT_rl);
-        mkl_free(FT_rr);
-        mkl_free(A_Ic);
-        mkl_free(A_rem);
+
+        Math::free(r_fl);
+        Math::free(r_fr);
+        Math::free(r_rl);
+        Math::free(r_rr);
+        Math::free(Ic);
+        Math::free(mass_wheel);
+        Math::free(mass_tyre);
+        Math::free(upper_spring_length);
+        Math::free(lower_spring_length);
+        Math::free(upper_spring_stiffness);
+        Math::free(lower_spring_stiffness);
+        Math::free(upper_rotational_stiffness);
+        Math::free(lower_rotational_stiffness);
+        Math::free(initial_upper_spring_length);
+        Math::free(initial_lower_spring_length);
+        Math::free(initial_orientation);
+        Math::free(initial_angular_velocity);
+        Math::free(upper_spring_damping);
+        Math::free(lower_spring_damping);
+        Math::free(vc);
+        Math::free(vw_fl);
+        Math::free(vw_fr);
+        Math::free(vw_rl);
+        Math::free(vw_rr);
+        Math::free(vt_fl);
+        Math::free(vt_fr);
+        Math::free(vt_rl);
+        Math::free(vt_rr);
+        Math::free(pcc);
+        Math::free(FC);
+        Math::free(r_fl_tilda);
+        Math::free(r_fr_tilda);
+        Math::free(r_rl_tilda);
+        Math::free(r_rr_tilda);
+        Math::free(FW_fl);
+        Math::free(FW_fr);
+        Math::free(FW_rl);
+        Math::free(FW_rr);
+        Math::free(FT_fl);
+        Math::free(FT_fr);
+        Math::free(FT_rl);
+        Math::free(FT_rr);
+        Math::free(A_Ic);
+        Math::free(A_rem);
     }
 };
 

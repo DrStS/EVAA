@@ -72,26 +72,24 @@ public:
         Name = "Circular";
 
         // Position
-        Position = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT);
+        Position = Math::malloc<T>(Constants::DIM);
         Math::copy(Constants::DIM, Pos, 1, Position, 1);
 
         Radius = Rad;
 
         // auxiliary vectors
-        velocity_direction = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-        Velocity_vec =
-            (T*)mkl_malloc(sizeof(T) * Constants::DIM * Constants::VEC_DIM, Constants::ALIGNMENT);
-        Mass_vec = (T*)mkl_malloc(sizeof(T) * Constants::VEC_DIM, Constants::ALIGNMENT);
-        dist_car_center = (T*)mkl_malloc(sizeof(T) * (Constants::DIM - 1) * Constants::VEC_DIM,
-                                         Constants::ALIGNMENT);
+        velocity_direction = Math::calloc<T>(Constants::DIM);
+        Velocity_vec = Math::malloc<T>(Constants::DIM * Constants::VEC_DIM);
+        Mass_vec = Math::malloc<T>(Constants::VEC_DIM);
+        dist_car_center = Math::malloc<T>((Constants::DIM - 1) * Constants::VEC_DIM);
     }
 
     virtual ~Circular() {
-        mkl_free(Position);
-        mkl_free(velocity_direction);
-        mkl_free(Velocity_vec);
-        mkl_free(Mass_vec);
-        mkl_free(dist_car_center);
+        Math::free(Position);
+        Math::free(velocity_direction);
+        Math::free(Velocity_vec);
+        Math::free(Mass_vec);
+        Math::free(dist_car_center);
     }
 
     void get_Position(T* Pos) { Math::copy(Constants::DIM, Position, 1, pos, 1); }
@@ -235,7 +233,7 @@ public:
         }
 
         // compute centripetal part of the global normal force
-        get_centrifugal_force_ALE(Normal_ext, Velocity_vec, *(Car1->massFullCar), dist_car_center);
+        get_centrifugal_force_ALE(Normal_ext, Velocity_vec, Car1->massFullCar, dist_car_center);
     }
 
     /**
@@ -258,8 +256,8 @@ public:
     virtual void update_initial_condition(Car<T>* Car1) {
         std::cout << "Update initial conditions to circular motion" << std::endl;
 
-        T* tangential_dir = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT);
-        T* radial_vector = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT);
+        T* tangential_dir = Math::malloc<T>(Constants::DIM);
+        T* radial_vector = Math::malloc<T>(Constants::DIM);
         radial_vector[0] = Car1->Position_vec[0] - this->Position[0];
         radial_vector[1] = Car1->Position_vec[1] - this->Position[1];
         radial_vector[2] = 0;
@@ -286,8 +284,8 @@ public:
         Math::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
         Math::scal(Constants::DIM, inv_radius * inv_radius, Car1->w_CG, 1);
 
-        mkl_free(tangential_dir);
-        mkl_free(radial_vector);
+        Math::free(tangential_dir);
+        Math::free(radial_vector);
     }
 };  // Circular
 
@@ -297,15 +295,15 @@ class Fixed : public Profile<T> {
 public:
     Fixed(const T& g) {
         Name = "fixed";
-        linear_idx = (size_t*)mkl_malloc(num_tyre * sizeof(size_t), Constants::ALIGNMENT);
-        dx = (T*)mkl_malloc(sizeof(T) * num_tyre, Constants::ALIGNMENT);
-        k_vec = (T*)mkl_malloc(sizeof(T) * num_tyre, Constants::ALIGNMENT);
+        linear_idx = Math::malloc<size_t>(Constants::NUM_LEGS);
+        dx = Math::malloc<T>(Constants::NUM_LEGS);
+        k_vec = Math::malloc<T>(Constants::NUM_LEGS);
         gravity = g;
     };
     virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext) {
         if (index_set) {
             Car1->compute_dx_tyre(dx);
-            for (size_t i = 0; i < num_tyre; ++i) {
+            for (size_t i = 0; i < Constants::NUM_LEGS; ++i) {
                 F_vec[linear_idx[i] * Constants::DIM + 2] = -k_vec[i] * dx[i];
             }
         }
@@ -322,23 +320,22 @@ public:
     }
 
     virtual void set_fixed_index(size_t* index) {
-        for (size_t i = 0; i < num_tyre; ++i) {
+        for (size_t i = 0; i < Constants::NUM_LEGS; ++i) {
             linear_idx[i] = index[i];
         }
         index_set = 1;
     }
 
     ~Fixed() {
-        mkl_free(linear_idx);
-        mkl_free(dx);
-        mkl_free(k_vec);
+        Math::free(linear_idx);
+        Math::free(dx);
+        Math::free(k_vec);
     }
 
 private:
     size_t* linear_idx;
     T *k_vec, *dx;
     T* external_force;
-    size_t num_tyre = 4;
     bool index_set = 0;
     T gravity;
 };

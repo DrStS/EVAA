@@ -165,32 +165,30 @@ public:
      * \brief Constructor
      */
     explicit TwoTrackModelBE(Car<T>* input_car) : TwoTrackModelParent(input_car) {
-        u_n_m_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);  // velocity
-        u_n = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);      // position
-        u_n_p_1 = _car->currentDisplacementTwoTrackModel;                            // position
+        u_n_m_1 = Math::malloc<T>(Constants::DOF);         // velocity
+        u_n = Math::malloc<T>(Constants::DOF);             // position
+        u_n_p_1 = _car->currentDisplacementTwoTrackModel;  // position
 
-        A = (T*)mkl_malloc(Constants::DOFDOF * sizeof(T), Constants::ALIGNMENT);
-        B = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        C = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        M_h2 = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        K = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        D = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
+        A = Math::malloc<T>(Constants::DOFDOF);
+        B = Math::calloc<T>(Constants::DOFDOF);
+        C = Math::calloc<T>(Constants::DOFDOF);
+        M_h2 = Math::calloc<T>(Constants::DOFDOF);
+        K = Math::calloc<T>(Constants::DOFDOF);
+        D = Math::calloc<T>(Constants::DOFDOF);
 
-        temp = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
-        Mat_temp = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        Mat_springLength = (T*)mkl_calloc(2 * Constants::NUM_LEGS * Constants::DOF, sizeof(T),
-                                          Constants::ALIGNMENT);
-        springLengths = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
-        springLengthsNormal =
-            (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
+        temp = Math::malloc<T>(Constants::DOF);
+        Mat_temp = Math::calloc<T>(Constants::DOFDOF);
+        Mat_springLength = Math::calloc<T>(2 * Constants::NUM_LEGS * Constants::DOF);
+        springLengths = Math::malloc<T>(2 * Constants::NUM_LEGS);
+        springLengthsNormal = Math::malloc<T>(2 * Constants::NUM_LEGS);
 #ifdef INTERPOLATION
-        // ABuffer = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        J = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        dKdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        dDdxx = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        dkdl = (T*)mkl_malloc(Constants::NUM_LEGS * 2 * sizeof(T), Constants::ALIGNMENT);
-        dddl = (T*)mkl_calloc(Constants::NUM_LEGS * 2, sizeof(T), Constants::ALIGNMENT);
-        residual = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
+        // ABuffer = Math::calloc<T>(Constants::DOFDOF);
+        J = Math::calloc<T>(Constants::DOFDOF);
+        dKdxx = Math::calloc<T>(Constants::DOFDOF);
+        dDdxx = Math::calloc<T>(Constants::DOFDOF);
+        dkdl = Math::malloc<T>(2 * Constants::NUM_LEGS);
+        dddl = Math::calloc<T>(2 * Constants::NUM_LEGS);
+        residual = Math::malloc<T>(Constants::DOF);
 #endif
         _h = MetaDataBase::getDataBase().getTimeStepSize();
         factor_h = 1 / _h;
@@ -214,26 +212,26 @@ public:
      * Destructor
      */
     virtual ~TwoTrackModelBE() {
-        mkl_free(A);
-        mkl_free(B);
-        mkl_free(C);
-        mkl_free(u_n);
-        mkl_free(u_n_m_1);
-        mkl_free(M_h2);
-        mkl_free(K);
-        mkl_free(D);
-        mkl_free(temp);
-        mkl_free(Mat_temp);
-        mkl_free(springLengths);
-        mkl_free(springLengthsNormal);
-        mkl_free(Mat_springLength);
+        Math::free(A);
+        Math::free(B);
+        Math::free(C);
+        Math::free(u_n);
+        Math::free(u_n_m_1);
+        Math::free(M_h2);
+        Math::free(K);
+        Math::free(D);
+        Math::free(temp);
+        Math::free(Mat_temp);
+        Math::free(springLengths);
+        Math::free(springLengthsNormal);
+        Math::free(Mat_springLength);
 #ifdef INTERPOLATION
-        mkl_free(J);
-        mkl_free(dkdl);
-        mkl_free(dddl);
-        mkl_free(dKdxx);
-        mkl_free(dDdxx);
-        mkl_free(residual);
+        Math::free(J);
+        Math::free(dkdl);
+        Math::free(dddl);
+        Math::free(dKdxx);
+        Math::free(dDdxx);
+        Math::free(residual);
 #endif
     }
 
@@ -834,11 +832,11 @@ public:
      * Constructor.
      */
     TwoTrackModelBDF2(Car<T>* input_car) : TwoTrackModelBE<T>(input_car) {
-        Dmat = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        E = (T*)mkl_calloc(Constants::DOFDOF, sizeof(T), Constants::ALIGNMENT);
-        u_n_m_2 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
-        u_n_m_3 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
-        bVec = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
+        Dmat = Math::calloc<T>(Constants::DOFDOF);
+        E = Math::calloc<T>(Constants::DOFDOF);
+        u_n_m_2 = Math::malloc<T>(Constants::DOF);
+        u_n_m_3 = Math::malloc<T>(Constants::DOF);
+        bVec = Math::malloc<T>(Constants::DOF);
         _active_executor = &TwoTrackModelBDF2<T>::first_two_steps;
     }
 
@@ -949,11 +947,11 @@ public:
     Destructor
     */
     virtual ~TwoTrackModelBDF2() {
-        mkl_free(Dmat);
-        mkl_free(E);
-        mkl_free(u_n_m_2);
-        mkl_free(u_n_m_3);
-        mkl_free(bVec);
+        Math::free(Dmat);
+        Math::free(E);
+        Math::free(u_n_m_2);
+        Math::free(u_n_m_3);
+        Math::free(bVec);
     }
 };
 
@@ -967,8 +965,8 @@ public:
         auto& db = MetaDataBase::getDataBase();
         tend_ = db.getNumberOfTimeIterations() * _h;
         int sol_size = (floor(tend_ / _h) + 1);
-        f_n_p_1 = (T*)mkl_malloc(Constants::DOF * sizeof(T), Constants::ALIGNMENT);
-        u_sol = (T*)mkl_calloc((sol_size + 1) * (Constants::DOF), sizeof(T), Constants::ALIGNMENT);
+        f_n_p_1 = Math::malloc<T>(Constants::DOF);
+        u_sol = Math::calloc<T>((sol_size + 1) * Constants::DOF);
 
         f_n_p_1[0] = db.getBodyExternalForce()[2];
         f_n_p_1[1] = 0;
@@ -1031,8 +1029,8 @@ public:
     }
 
     virtual ~TwoTrackModelFull() {
-        mkl_free(u_sol);
-        mkl_free(f_n_p_1);
+        Math::free(u_sol);
+        Math::free(f_n_p_1);
     }
 
 private:

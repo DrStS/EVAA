@@ -50,17 +50,16 @@ public:
         auto& db = MetaDataBase::getDataBase();
 
         // auxiliary vectors
-        Normal_ext = (T*)mkl_malloc(sizeof(T) * Constants::DIM,
-                                    Constants::ALIGNMENT);  // normal_force, with external forces
-        k_vec = (T*)mkl_malloc(sizeof(T) * (Constants::VEC_DIM - 1),
-                               Constants::ALIGNMENT);  // k_vec; Constants::VEC_DIM-1 = 8
+        Normal_ext = Math::malloc<T>(Constants::DIM);  // normal_force, with external forces
+        k_vec = Math::malloc<T>(2 * Constants::NUM_LEGS);
 
         // read External_force
-        External_force = (T*)mkl_calloc((Constants::VEC_DIM * Constants::DIM), sizeof(T),
-                                        Constants::ALIGNMENT);  // 3 * 9
+        External_force = Math::calloc<T>(Constants::VEC_DIM * Constants::DIM);
         // set_External_force();
-        Math::copy(Constants::DIM, db.getBodyExternalForce(), 1, External_force,
-                   1);  // copy the center of mass position
+
+        // copy the center of mass position
+        Math::copy(Constants::DIM, db.getBodyExternalForce(), 1, External_force, 1);
+
         T *xml_start, *position_start;
         xml_start = db.getWheelExternalForceFrontLeft();
         position_start = External_force + 3;
@@ -96,9 +95,9 @@ public:
         Math::copy(Constants::DIM, xml_start, 1, position_start, 1);
     }
     ~LoadModule() {
-        mkl_free(Normal_ext);
-        mkl_free(k_vec);
-        mkl_free(External_force);
+        Math::free(Normal_ext);
+        Math::free(k_vec);
+        Math::free(External_force);
     }
     void set_Profile(Profile<T>* Profile_type) {
         // not called
