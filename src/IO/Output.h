@@ -12,8 +12,7 @@ namespace EVAA {
 
 namespace IO {
 template <typename T>
-void write_matrix(T* mat, std::string fname, size_t rows, size_t cols)
-{
+void write_matrix(T* mat, std::string fname, size_t rows, size_t cols) {
     std::ofstream myfile(fname);
     for (size_t i = 0; i < rows; i++) {
         for (size_t j = 0; j < cols; j++) {
@@ -36,8 +35,7 @@ void writeLookUpGridPlusInterpolateValues(
     T* interpolation /**< [in] pointer to interpolation points at points of axis */,
     int ni /**< [in] number of elements in arrays */,
     std::string fname /**< [in] name of output file */
-)
-{
+) {
     std::ofstream myfile(fname);
     myfile << std::setprecision(15);
     for (auto i = 0; i < ni; i++) {

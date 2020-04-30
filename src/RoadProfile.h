@@ -39,8 +39,7 @@ public:
      * In case the initial conditions have to be specific to a road profile
      * \param Car
      */
-    virtual void update_initial_condition(Car<T>* Car1)
-    {
+    virtual void update_initial_condition(Car<T>* Car1) {
         std::cout << "No update of initial conditions" << std::endl;
     };
     virtual void set_fixed_index(size_t* index){};
@@ -69,8 +68,7 @@ private:
     T* Mass_vec;
 
 public:
-    Circular(T* Pos, T Rad)
-    {
+    Circular(T* Pos, T Rad) {
         Name = "Circular";
 
         // Position
@@ -88,8 +86,7 @@ public:
                                          Constants::ALIGNMENT);
     }
 
-    virtual ~Circular()
-    {
+    virtual ~Circular() {
         mkl_free(Position);
         mkl_free(velocity_direction);
         mkl_free(Velocity_vec);
@@ -113,8 +110,7 @@ public:
      * \param p the global Position of the body
      * \note the rotation is always around the origin!
      */
-    void get_centrifugal_force(T* Fr, T* v, T& m, T* p)
-    {
+    void get_centrifugal_force(T* Fr, T* v, T& m, T* p) {
         mkl<T>::copy(Constants::DIM, p, 1, Fr, 1);
 
         Fr[2] = 0;  // path only in xy-plane
@@ -138,8 +134,7 @@ public:
     /**
      * \copydoc get_gentrifugal_force
      */
-    void get_centrifugal_force_ALE(T* Fr, T* v, T& m, T* p)
-    {
+    void get_centrifugal_force_ALE(T* Fr, T* v, T& m, T* p) {
         // REFACTOR TO GENERAL DIRECTIONS * Adapted for the 2D now!!!
 
         mkl<T>::copy(Constants::DIM - 1, p, 1, Fr, 1);
@@ -174,8 +169,7 @@ public:
      * \note: normal_ext - normal over the full body; updated in this function from the centripetal
      * forces
      */
-    virtual void get_Profile_force(Car<T>* Car1, T* F_vec, T* Normal_ext)
-    {
+    virtual void get_Profile_force(Car<T>* Car1, T* F_vec, T* Normal_ext) {
         // WRONG - suitable for 2D (BROKEN)
         // REFACTOR (MAYBE another Profile class smth)
 
@@ -213,8 +207,7 @@ public:
     /**
      * \copydoc get_Profile_force
      */
-    virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext)
-    {
+    virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext) {
         // get distance vector between center of circle and the car = positions of points from the
         // car vs center of circle, which is seen as 0
         Car1->get_dist_vector_xy(Position, dist_car_center);
@@ -250,8 +243,7 @@ public:
      * \param Car
      * \return F_vec torque acting on teh car system [XYZ]
      */
-    virtual void get_Profile_torque(Car<T>* Car1, T* Torque)
-    {
+    virtual void get_Profile_torque(Car<T>* Car1, T* Torque) {
         // TODO: based on the current code, rename to "reset_...".
         Torque[0] = 0;
         Torque[1] = 0;
@@ -263,8 +255,7 @@ public:
      * Calculates the initial angular velocity such that the car perfectly rotates around its own
      * axis as it follows the circle \param Car
      */
-    virtual void update_initial_condition(Car<T>* Car1)
-    {
+    virtual void update_initial_condition(Car<T>* Car1) {
         std::cout << "Update initial conditions to circular motion" << std::endl;
 
         T* tangential_dir = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT);
@@ -304,16 +295,14 @@ public:
 template <typename T>
 class Fixed : public Profile<T> {
 public:
-    Fixed(const T& g)
-    {
+    Fixed(const T& g) {
         Name = "fixed";
         linear_idx = (size_t*)mkl_malloc(num_tyre * sizeof(size_t), Constants::ALIGNMENT);
         dx = (T*)mkl_malloc(sizeof(T) * num_tyre, Constants::ALIGNMENT);
         k_vec = (T*)mkl_malloc(sizeof(T) * num_tyre, Constants::ALIGNMENT);
         gravity = g;
     };
-    virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext)
-    {
+    virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext) {
         if (index_set) {
             Car1->compute_dx_tyre(dx);
             for (size_t i = 0; i < num_tyre; ++i) {
@@ -326,23 +315,20 @@ public:
         }
     }
 
-    virtual void get_Profile_torque(Car<T>* Car1, T* Torque_vec)
-    {
+    virtual void get_Profile_torque(Car<T>* Car1, T* Torque_vec) {
         Torque_vec[0] = 0;
         Torque_vec[1] = 0;
         Torque_vec[2] = 0;  // Torque on z direction
     }
 
-    virtual void set_fixed_index(size_t* index)
-    {
+    virtual void set_fixed_index(size_t* index) {
         for (size_t i = 0; i < num_tyre; ++i) {
             linear_idx[i] = index[i];
         }
         index_set = 1;
     }
 
-    ~Fixed()
-    {
+    ~Fixed() {
         mkl_free(linear_idx);
         mkl_free(dx);
         mkl_free(k_vec);
@@ -366,8 +352,7 @@ public:
 
     virtual ~Nonfixed(){};
 
-    void get_centrifugal_force(T* Fr, T* v, T& m, T* p)
-    {
+    void get_centrifugal_force(T* Fr, T* v, T& m, T* p) {
         // TODO: rename to reset_...
         // No external forces from a path are acting on the body
         Fr[0] = 0;
@@ -381,8 +366,7 @@ public:
      * \return F_vec forces acting on each component [GC:XYZ,W1:XYZ,T1:XYZ, ...]
      * \return Normal_ext on the car as a whole [XYZ]
      */
-    virtual void get_Profile_force(Car<T>* Car1, T* F_vec, T* Normal_ext)
-    {
+    virtual void get_Profile_force(Car<T>* Car1, T* F_vec, T* Normal_ext) {
         for (int i = 0; i < Constants::VEC_DIM; ++i) {
             F_vec[Constants::DIM * i + 0] = 0;
             F_vec[Constants::DIM * i + 1] = 0;
@@ -395,8 +379,7 @@ public:
      * \param Car
      * \return F_vec torque acting on teh car system [XYZ]
      */
-    virtual void get_Profile_torque(Car<T>* Car1, T* Torque)
-    {
+    virtual void get_Profile_torque(Car<T>* Car1, T* Torque) {
         // TODO: rename to reset_...
         Torque[0] = 0;  // Torque on x direction
         Torque[1] = 0;  // Torque on y direction

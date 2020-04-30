@@ -32,8 +32,7 @@ AuxiliaryFunctions::AuxiliaryFunctions() {}
 
 AuxiliaryFunctions::~AuxiliaryFunctions() {}
 
-void AuxiliaryFunctions::dummy(std::string _fileName, std::vector<double> &_vector)
-{
+void AuxiliaryFunctions::dummy(std::string _fileName, std::vector<double> &_vector) {
     std::cout << ">> Writing " << _fileName << "#" << _vector.size() << "..." << std::endl;
     size_t ii_couter;
     std::ofstream myfile;

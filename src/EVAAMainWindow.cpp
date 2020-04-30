@@ -35,8 +35,7 @@
 
 namespace EVAA {
 
-EVAAMainWindow::EVAAMainWindow(int argc, char **argv)
-{
+EVAAMainWindow::EVAAMainWindow(int argc, char **argv) {
     QApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
@@ -89,16 +88,14 @@ EVAAMainWindow::EVAAMainWindow(int argc, char **argv)
     qDebug() << "EVAAMainWindow::EVAAMainWindow: Execution finished with return code:" << rc;
 }
 
-void EVAAMainWindow::startApplication() const
-{
+void EVAAMainWindow::startApplication() const {
     qDebug() << "EVAAMainWindow::startApplication()";
 
     disconnect(m_vtkFboItem, &QVTKFramebufferObjectItem::rendererInitialized, this,
                &EVAAMainWindow::startApplication);
 }
 
-void EVAAMainWindow::openModel(const QUrl &path) const
-{
+void EVAAMainWindow::openModel(const QUrl &path) const {
     qDebug() << "EVAAMainWindow::openModel():" << path;
 
     QUrl localFilePath;
@@ -114,8 +111,7 @@ void EVAAMainWindow::openModel(const QUrl &path) const
     m_vtkFboItem->addModelFromFile(localFilePath);
 }
 
-bool EVAAMainWindow::isModelExtensionValid(const QUrl &modelPath) const
-{
+bool EVAAMainWindow::isModelExtensionValid(const QUrl &modelPath) const {
     if (modelPath.toString().toLower().endsWith(".stl") ||
         modelPath.toString().toLower().endsWith(".obj")) {
         return true;
@@ -124,15 +120,13 @@ bool EVAAMainWindow::isModelExtensionValid(const QUrl &modelPath) const
     return false;
 }
 
-void EVAAMainWindow::mousePressEvent(const int button, const int screenX, const int screenY) const
-{
+void EVAAMainWindow::mousePressEvent(const int button, const int screenX, const int screenY) const {
     qDebug() << "EVAAMainWindow::mousePressEvent()";
 
     m_vtkFboItem->selectModel(screenX, screenY);
 }
 
-void EVAAMainWindow::mouseMoveEvent(const int button, const int screenX, const int screenY)
-{
+void EVAAMainWindow::mouseMoveEvent(const int button, const int screenX, const int screenY) {
     if (!m_vtkFboItem->isModelSelected()) {
         return;
     }
@@ -152,8 +146,7 @@ void EVAAMainWindow::mouseMoveEvent(const int button, const int screenX, const i
     m_vtkFboItem->translateModel(translateParams, true);
 }
 
-void EVAAMainWindow::mouseReleaseEvent(const int button, const int screenX, const int screenY)
-{
+void EVAAMainWindow::mouseReleaseEvent(const int button, const int screenX, const int screenY) {
     qDebug() << "EVAAMainWindow::mouseReleaseEvent()";
 
     if (!m_vtkFboItem->isModelSelected()) {
@@ -174,8 +167,7 @@ void EVAAMainWindow::mouseReleaseEvent(const int button, const int screenX, cons
     }
 }
 
-bool EVAAMainWindow::getIsModelSelected() const
-{
+bool EVAAMainWindow::getIsModelSelected() const {
     // QVTKFramebufferObjectItem might not be initialized when QML loads
     if (!m_vtkFboItem) {
         return 0;
@@ -184,8 +176,7 @@ bool EVAAMainWindow::getIsModelSelected() const
     return m_vtkFboItem->isModelSelected();
 }
 
-double EVAAMainWindow::getSelectedModelPositionX() const
-{
+double EVAAMainWindow::getSelectedModelPositionX() const {
     // QVTKFramebufferObjectItem might not be initialized when QML loads
     if (!m_vtkFboItem) {
         return 0;
@@ -194,8 +185,7 @@ double EVAAMainWindow::getSelectedModelPositionX() const
     return m_vtkFboItem->getSelectedModelPositionX();
 }
 
-double EVAAMainWindow::getSelectedModelPositionY() const
-{
+double EVAAMainWindow::getSelectedModelPositionY() const {
     // QVTKFramebufferObjectItem might not be initialized when QML loads
     if (!m_vtkFboItem) {
         return 0;
@@ -204,18 +194,15 @@ double EVAAMainWindow::getSelectedModelPositionY() const
     return m_vtkFboItem->getSelectedModelPositionY();
 }
 
-void EVAAMainWindow::setModelsRepresentation(const int representationOption)
-{
+void EVAAMainWindow::setModelsRepresentation(const int representationOption) {
     m_vtkFboItem->setModelsRepresentation(representationOption);
 }
 
-void EVAAMainWindow::setModelsOpacity(const double opacity)
-{
+void EVAAMainWindow::setModelsOpacity(const double opacity) {
     m_vtkFboItem->setModelsOpacity(opacity);
 }
 
-void EVAAMainWindow::setGouraudInterpolation(const bool gouraudInterpolation)
-{
+void EVAAMainWindow::setGouraudInterpolation(const bool gouraudInterpolation) {
     m_vtkFboItem->setGouraudInterpolation(gouraudInterpolation);
 }
 

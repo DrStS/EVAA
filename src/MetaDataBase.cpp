@@ -17,8 +17,7 @@ namespace EVAA {
 
 MetaDataBase* MetaDataBase::_database = NULL;
 
-MetaDataBase* MetaDataBase::DataBase()
-{
+MetaDataBase* MetaDataBase::DataBase() {
     if (!_database) _database = new MetaDataBase;
     return _database;
 }
@@ -26,8 +25,7 @@ MetaDataBase* MetaDataBase::DataBase()
 /**
  * \brief blank private Constructor
  */
-MetaDataBase::MetaDataBase()
-{
+MetaDataBase::MetaDataBase() {
     _filename = "";
     _load_filename = "";
 }
@@ -36,8 +34,7 @@ MetaDataBase::MetaDataBase()
  * \brief setter for the Filename
  * \param[in] reference to the filename
  */
-void MetaDataBase::setFileName(const std::string& filename)
-{
+void MetaDataBase::setFileName(const std::string& filename) {
     _filename = filename;
     settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
 }
@@ -46,8 +43,7 @@ void MetaDataBase::setFileName(const std::string& filename)
  * \brief setter for the load Filename
  * \param[in] reference to the load filename
  */
-void MetaDataBase::setloadFileName(const std::string& filename)
-{
+void MetaDataBase::setloadFileName(const std::string& filename) {
     _load_filename = filename;
     load_data = EVAA_load_module(filename, xml_schema::flags::dont_validate);
 }
@@ -56,8 +52,7 @@ void MetaDataBase::setloadFileName(const std::string& filename)
  * \brief reads the vectors of the positions of the legs relative to the center of mass
  */
 template <typename T>
-void MetaDataBase::readVectorLegs(double* storage, T vec)
-{
+void MetaDataBase::readVectorLegs(double* storage, T vec) {
     readVector(storage, vec.FrontLeft());
     readVector(storage + 3, vec.FrontRight());
     readVector(storage + 6, vec.ReerLeft());
@@ -68,8 +63,7 @@ void MetaDataBase::readVectorLegs(double* storage, T vec)
  * \brief reads a 3 dim vector
  */
 template <typename T>
-void MetaDataBase::readVector(double* storage, T vec)
-{
+void MetaDataBase::readVector(double* storage, T vec) {
     storage[0] = vec.x();
     storage[1] = vec.y();
     storage[2] = vec.z();
@@ -79,8 +73,7 @@ void MetaDataBase::readVector(double* storage, T vec)
  * \brief reads paramaters which are given for all the legs
  */
 template <typename T>
-void MetaDataBase::readLegs(double* storage, T vec)
-{
+void MetaDataBase::readLegs(double* storage, T vec) {
     storage[0] = vec.FrontLeft();
     storage[1] = vec.FrontRight();
     storage[2] = vec.ReerLeft();
@@ -91,8 +84,7 @@ void MetaDataBase::readLegs(double* storage, T vec)
  * \brief reads quaternion
  */
 template <typename T>
-void MetaDataBase::readangles(double* storage, T vec)
-{
+void MetaDataBase::readangles(double* storage, T vec) {
     storage[0] = vec.x();
     storage[1] = vec.y();
     storage[2] = vec.z();
@@ -102,8 +94,7 @@ void MetaDataBase::readangles(double* storage, T vec)
 /**
  * \brief read car, initial and simulaiton parameter
  */
-void MetaDataBase::ReadParameters()
-{
+void MetaDataBase::ReadParameters() {
     // Load car parameters
 
     mass_body = settings->VehicleXML().TwoTrackModelXML().MassXML().BodyXML();
@@ -229,8 +220,7 @@ void MetaDataBase::ReadParameters()
 /**
  * \brief read boundary condition and forces on tyres, wheel and body
  */
-void MetaDataBase::ReadLoadParameters()
-{
+void MetaDataBase::ReadLoadParameters() {
     // Load external parameters
 
     std::string boundary_conditions = load_data->boundary_description().BoundaryConditions();
@@ -267,8 +257,7 @@ void MetaDataBase::ReadLoadParameters()
  * \param[out] pointer to the pointer to the damping lookup from the compute engine
  */
 void MetaDataBase::ReadLookupParameters(EVAALookup<Constants::floatEVAA>** lookupStiffness,
-                                        EVAALookup<Constants::floatEVAA>** lookupDamping)
-{
+                                        EVAALookup<Constants::floatEVAA>** lookupDamping) {
     if (_lookup_filename == "NO_FILE_SPECIFIED") return;
     lookup_table = LookupHandler(_lookup_filename, xml_schema::flags::dont_validate);
     if (lookup_table->LookupTableGenerator().present()) {

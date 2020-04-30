@@ -90,8 +90,7 @@ void printMKLInfo(void);
  * \param tol threshold
  */
 template <typename T>
-void transmutate_elements(T* arr, size_t start, size_t end, T value, T tol)
-{
+void transmutate_elements(T* arr, size_t start, size_t end, T value, T tol) {
 #pragma loop(ivdep)
     for (size_t i = start; i < end; ++i) {
         if (arr[i] * arr[i] < tol * tol) {
@@ -108,8 +107,7 @@ void transmutate_elements(T* arr, size_t start, size_t end, T value, T tol)
  * \return result vector
  */
 template <typename T>
-void vector_elem_wise_product(T* v1, T* v2, T* result, size_t dim)
-{
+void vector_elem_wise_product(T* v1, T* v2, T* result, size_t dim) {
 #pragma loop(ivdep)
     for (size_t i = 0; i < dim; i++) {
         result[i] = v1[i] * v2[i];
@@ -124,8 +122,7 @@ void vector_elem_wise_product(T* v1, T* v2, T* result, size_t dim)
  * \return mat the diagonal matrix
  */
 template <typename T>
-void diagonal_matrix(T* mat, size_t dim, T val)
-{
+void diagonal_matrix(T* mat, size_t dim, T val) {
 #pragma loop(ivdep)
     for (size_t i = 0; i < dim; ++i) {
         mat[i * dim + i] = val;
@@ -136,8 +133,7 @@ void diagonal_matrix(T* mat, size_t dim, T val)
  * outputs the determinant
  */
 template <typename T>
-void check_status(T status)
-{
+void check_status(T status) {
     if (status == 1) {
         std::cout << "Matrix non Positive Definite" << std::endl;
         exit(5);
@@ -152,8 +148,7 @@ void check_status(T status)
  * Broken function (not safe to use)
  */
 template <typename T>
-void elementwise_inversion(T* vect, size_t dim)
-{
+void elementwise_inversion(T* vect, size_t dim) {
     int alignment = 64;
     T* temp = (T*)mkl_calloc(dim, sizeof(T), alignment);
     mkl<T>::vInv(dim, vect, temp);
@@ -168,8 +163,7 @@ void elementwise_inversion(T* vect, size_t dim)
  * Swaps the adresses of the elements a and b
  */
 template <typename T>
-void swap_address(T*& a, T*& b)
-{
+void swap_address(T*& a, T*& b) {
     T* c = a;
     a = b;
     b = c;
@@ -183,8 +177,7 @@ void swap_address(T*& a, T*& b)
  * \return mat the diagonal matrix
  */
 template <typename T>
-void allocate_to_diagonal(T* matrix, T* vector, size_t dim)
-{
+void allocate_to_diagonal(T* matrix, T* vector, size_t dim) {
     mkl<T>::copy(dim, vector, 1, matrix, dim + 1);
     /*for (int i = 0; i < dim; ++i) {
             matrix[i*dim + i] = vector[i];
@@ -256,8 +249,7 @@ void crossProduct_unitvecXY(const T* vect_A, const T* vect_B, T* cross_P)
  * \return E Euler angles in format [XYZ]
  */
 template <typename T>
-void ToEulerAngles(const T* q, T* E)
-{
+void ToEulerAngles(const T* q, T* E) {
     // Converts Quaternion of form w,x,y,z in euler angle
 
     // roll (x-axis rotation)
@@ -283,8 +275,7 @@ void ToEulerAngles(const T* q, T* E)
  * \result R rotation matrix
  */
 template <typename T>
-void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R)
-{
+void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R) {
     R[0] = (std::cos(yaw)) * (std::cos(pitch));
     R[1] = ((std::cos(yaw)) * (std::sin(pitch)) * (std::sin(roll)) -
             (std::sin(yaw)) * (std::cos(roll)));
@@ -308,8 +299,7 @@ void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R)
  * \return angle in radians
  */
 template <typename T>
-T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim)
-{
+T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim) {
     T angle;
     T nrm_v1, nrm_v2;
     nrm_v1 = mkl<T>::nrm2(dim, v1, 1);
@@ -330,8 +320,7 @@ T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim)
  * \param count its size
  */
 template <typename T>
-void write_vector(T* vect, int count)
-{
+void write_vector(T* vect, int count) {
     std::cout << "Debug mode print" << std::endl;
     for (size_t i = 0; i < count; ++i) {
         // std::cout << vect[i] << std::endl;
@@ -348,8 +337,7 @@ void write_vector(T* vect, int count)
  * \param count its size=count x count
  */
 template <typename T>
-void write_matrix(T* vect, int count)
-{
+void write_matrix(T* vect, int count) {
     std::cout << "Debug mode print" << std::endl;
     for (size_t i = 0; i < count; ++i) {
         // std::cout << vect[i] << std::endl;
@@ -372,8 +360,7 @@ void write_matrix(T* vect, int count)
  * \return rotation_axis unit axis
  */
 template <typename T>
-void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t dim_)
-{
+void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t dim_) {
     T nrm_v1, nrm_v2, ra_nrm, q_nrm;
     nrm_v1 = mkl<T>::nrm2(dim_, v1, 1);
     nrm_v2 = mkl<T>::nrm2(dim_, v2, 1);
@@ -419,8 +406,7 @@ void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t
  * \return q the quaternion
  */
 template <typename T>
-void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis, size_t dim_)
-{
+void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis, size_t dim_) {
     get_quaternion(v1, v2, angle, rotation_axis, dim_);
     q[0] = rotation_axis[0] * std::sin(*angle / 2.0);
     q[1] = rotation_axis[1] * std::sin(*angle / 2.0);
@@ -436,8 +422,7 @@ void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis, 
  * \return transformed_basis the basis vectors in matrix form
  */
 template <typename T>
-void get_basis(const T* initial_orientation, T* transfrormed_basis)
-{
+void get_basis(const T* initial_orientation, T* transfrormed_basis) {
     // quaternion initial_orientation yields basis(calculates basically the matrix rotation
     // the euclidian basis to the local basis)
 
@@ -499,8 +484,7 @@ void get_basis(const T* initial_orientation, T* transfrormed_basis)
  * \return tilda the matrix a_tilda
  */
 template <typename T>
-void get_tilda(const T* input_vector, T* tilda_output)
-{
+void get_tilda(const T* input_vector, T* tilda_output) {
     /*
     This function is only suitable for a 3 dimensional system and renders unusable, might throw
     exceptions when used with other dimensions.
@@ -534,8 +518,7 @@ public:
      *  \return new solution
      */
     static void Broyden_Euler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
-                              T tol, size_t max_iter)
-    {
+                              T tol, size_t max_iter) {
         size_t alignment = obj->get_alignment();
         size_t x_len = obj->get_solution_dimension();
         T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
@@ -678,8 +661,7 @@ public:
      * \return new solution
      */
     static void Broyden_PDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
-                             T tol, size_t max_iter)
-    {
+                             T tol, size_t max_iter) {
         size_t alignment = obj->get_alignment();
         size_t x_len = obj->get_solution_dimension();
         T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
@@ -921,8 +903,7 @@ public:
      * \return new solution
      */
     static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
-                           T tol, size_t max_iter)
-    {
+                           T tol, size_t max_iter) {
         /*
         method requires that the object using this solver has following public member functions
         1. get_alignment()
@@ -1081,8 +1062,7 @@ public:
                        T* res_norm /**< norm of the residual from the 11 Dof class*/,
                        T* u_n_p_1 /**< current position vector*/,
                        T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/
-    )
-    {
+    ) {
         int count = 0;
         T delta_norm = 1, delta_norm2 = 0;
         lapack_int status;
@@ -1121,8 +1101,7 @@ public:
      * \return new solution
      */
     static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol,
-                    size_t max_iter)
-    {
+                    size_t max_iter) {
         size_t alignment = obj->get_alignment();
         size_t x_len = obj->get_solution_dimension();
         T* f_old = (T*)mkl_malloc(sizeof(T) * x_len, alignment);
@@ -1196,8 +1175,7 @@ public:
      * \return new solution
      */
     static void Linear_Backward_Euler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x,
-                                      size_t dim)
-    {
+                                      size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix A would be
          * overwritten and results stored in x computes the backward euler step of following form:
@@ -1227,8 +1205,7 @@ public:
      * \return new solution
      */
     static void Linear_Backward_Euler_diag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x,
-                                           size_t dim)
-    {
+                                           size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix A would be
          * overwritten and results stored in x computes the backward euler step of following form:
@@ -1263,8 +1240,7 @@ public:
      * \param mass
      * \return x position
      */
-    static void Stoermer_Verlet_Position(T& x, T& v, T& F, T& delta_t, T& mass)
-    {
+    static void Stoermer_Verlet_Position(T& x, T& v, T& F, T& delta_t, T& mass) {
         x += delta_t * v + delta_t * delta_t / (2 * mass) * F;
     }
 
@@ -1277,14 +1253,12 @@ public:
      * \param mass
      * \return v velocity
      */
-    static void Stoermer_Verlet_Velocity(T& v, T& F, T& F_new, T& delta_t, T& mass)
-    {
+    static void Stoermer_Verlet_Velocity(T& v, T& F, T& F_new, T& delta_t, T& mass) {
         v += delta_t / (2 * mass) * (F + F_new);
     }
 
     static void Linear_BDF2(T* A, T* B, T* C, T* D, T* E, T* x_n, T* x_n_m_1, T* x_n_m_2,
-                            T* x_n_m_3, T* b, T* x_n_p_1, size_t dim)
-    {
+                            T* x_n_m_3, T* b, T* x_n_p_1, size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix A would be
          * overwritten and results stored in x computes the backward euler step of following form:

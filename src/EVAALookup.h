@@ -37,8 +37,7 @@ private:
      * \param[in] length docs for input parameter v
      * \return y
      */
-    static T responseFunction(const T a, const T b, const T c, const T length)
-    {
+    static T responseFunction(const T a, const T b, const T c, const T length) {
         return c * length * length + b * length + a;
     }
 
@@ -55,8 +54,8 @@ public:
      * \param[in] c coefficient for quadratic part
      * \param[in] k number of springs - TODO: use Constants.
      */
-    static void buildLinearGrid(T* grid, T* axis, int size, T l_min, T l_max, T* a, T b, T c, int k)
-    {
+    static void buildLinearGrid(T* grid, T* axis, int size, T l_min, T l_max, T* a, T b, T c,
+                                int k) {
         T density = (l_max - l_min) / (size - 1);
         for (auto i = 0; i < size; i++) {
             axis[i] = l_min + i * density;
@@ -81,8 +80,7 @@ public:
      * \param[in] k number of springs - TODO: use Constants.
      */
     static void buildChebyshevGrid(T* grid, T* axis, int size, T l_min, T l_max, T* a, T b, T c,
-                                   int k)
-    {
+                                   int k) {
         for (auto i = 0; i < size; i++) {
             axis[i] = (1 + cos((2 * i + 1) / (2 * size) * M_PI)) / 2 * (l_max - l_min) + l_min;
         }
@@ -141,8 +139,7 @@ public:
         int type /**< [in] int which corersponds to a certain type of interpolation */,
         int order /**< [in] order of the interpolation: depends on type */
         ) :
-        nx(size), ny(k), sorder(order), stype(type), l_min(l_min), l_max(l_max)
-    {
+        nx(size), ny(k), sorder(order), stype(type), l_min(l_min), l_max(l_max) {
         if (sorder == DF_PP_CUBIC) {
             bc_type = DF_BC_FREE_END;
         }
@@ -191,8 +188,7 @@ public:
      *
      * free all the allocated space
      */
-    ~EVAALookup()
-    {
+    ~EVAALookup() {
         /* Delete Data Fitting task */
         for (auto i = 0; i < ny; i++) {
             dfDeleteTask(&task[i]);
@@ -211,8 +207,7 @@ public:
     void getInterpolation(
         T* length /**< [in] pointer to array of size k with lenght values of springs*/,
         T* inter /**< [out] pointer to array of size k to store interpolation values*/
-    )
-    {
+    ) {
         const MKL_INT ndorder =
             1;  // size of array describing derivative (dorder), which is definde two lines below
         const MKL_INT dorder[1] = {1};  // only the values are computed
@@ -239,8 +234,7 @@ public:
     void getDerivative(
         T* length /**< [in] pointer to array of size k with lenght values of springs*/,
         T* deriv /**< [out] pointer to array of size k to store values of the derivative*/
-    )
-    {
+    ) {
         // size of array describing derivative (dorder), which is defined two lines below
         const MKL_INT ndorder = 2;
         const MKL_INT dorder[2] = {0, 1};  // only the derivative values are computed
@@ -257,16 +251,14 @@ public:
         T* length /**< [in] pointer to array of size k with lenght values of springs*/,
         T* inter /**< [out] pointer to array of size k to store interpolation values*/,
         T* mat /**< [out] pointer to array of size k * k to store interpolation values*/
-    )
-    {
+    ) {
         getInterpolation(length, inter);
     }
 
     /**
      * \brief interpolate the first task on every point of axis to check for correctnes
      */
-    void generateLookupOutputFile(T l_min, T l_max, T add)
-    {
+    void generateLookupOutputFile(T l_min, T l_max, T add) {
         // size of array describing derivative (dorder), which is defined two lines below
         const MKL_INT ndorder = 1;
         const MKL_INT dorder[1] = {1};  // only the values are computed
@@ -286,8 +278,7 @@ public:
 };
 
 #if MIGHT_BE_USEFUL
-void CheckDfError(int num)
-{
+void CheckDfError(int num) {
     switch (num) {
     case DF_ERROR_NULL_TASK_DESCRIPTOR: {
         printf("Error: null task descriptor (code %d).\n", num);

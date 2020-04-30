@@ -31,15 +31,13 @@ namespace EVAA {
 CommandModelTranslate::CommandModelTranslate(QVTKFramebufferObjectRenderer *vtkFboRenderer,
                                              const TranslateParams_t &translateData,
                                              bool inTransition) :
-    m_translateParams{translateData}, m_inTransition{inTransition}
-{
+    m_translateParams{translateData}, m_inTransition{inTransition} {
     m_vtkFboRenderer = vtkFboRenderer;
 }
 
 bool CommandModelTranslate::isReady() const { return true; }
 
-void CommandModelTranslate::transformCoordinates()
-{
+void CommandModelTranslate::transformCoordinates() {
     std::array<double, 3> worldCoordinates;
 
     if (m_vtkFboRenderer->screenToWorld(m_translateParams.screenX, m_translateParams.screenY,
@@ -57,8 +55,7 @@ void CommandModelTranslate::transformCoordinates()
     m_needsTransformation = false;
 }
 
-void CommandModelTranslate::execute()
-{
+void CommandModelTranslate::execute() {
     // Screen to world transformation can only be done within the Renderer thread
     if (m_needsTransformation) {
         this->transformCoordinates();

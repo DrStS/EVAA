@@ -29,8 +29,7 @@
 
 namespace EVAA {
 
-QVTKFramebufferObjectItem::QVTKFramebufferObjectItem()
-{
+QVTKFramebufferObjectItem::QVTKFramebufferObjectItem() {
     m_lastMouseLeftButton = std::make_shared<QMouseEvent>(QEvent::None, QPointF(0, 0), Qt::NoButton,
                                                           Qt::NoButton, Qt::NoModifier);
     m_lastMouseButton = std::make_shared<QMouseEvent>(QEvent::None, QPointF(0, 0), Qt::NoButton,
@@ -45,13 +44,11 @@ QVTKFramebufferObjectItem::QVTKFramebufferObjectItem()
     setAcceptedMouseButtons(Qt::RightButton);
 }
 
-QQuickFramebufferObject::Renderer *QVTKFramebufferObjectItem::createRenderer() const
-{
+QQuickFramebufferObject::Renderer *QVTKFramebufferObjectItem::createRenderer() const {
     return new QVTKFramebufferObjectRenderer();
 }
 
-void QVTKFramebufferObjectItem::setVtkFboRenderer(QVTKFramebufferObjectRenderer *renderer)
-{
+void QVTKFramebufferObjectItem::setVtkFboRenderer(QVTKFramebufferObjectRenderer *renderer) {
     qDebug() << "QVTKFramebufferObjectItem::setVtkFboRenderer";
 
     m_vtkFboRenderer = renderer;
@@ -69,30 +66,25 @@ void QVTKFramebufferObjectItem::setVtkFboRenderer(QVTKFramebufferObjectRenderer 
 bool QVTKFramebufferObjectItem::isInitialized() const { return (m_vtkFboRenderer != nullptr); }
 
 void QVTKFramebufferObjectItem::setProcessingEngine(
-    const std::shared_ptr<ProcessingEngine> processingEngine)
-{
+    const std::shared_ptr<ProcessingEngine> processingEngine) {
     m_processingEngine = std::shared_ptr<ProcessingEngine>(processingEngine);
 }
 
 // Model releated functions
 
-bool QVTKFramebufferObjectItem::isModelSelected() const
-{
+bool QVTKFramebufferObjectItem::isModelSelected() const {
     return m_vtkFboRenderer->isModelSelected();
 }
 
-double QVTKFramebufferObjectItem::getSelectedModelPositionX() const
-{
+double QVTKFramebufferObjectItem::getSelectedModelPositionX() const {
     return m_vtkFboRenderer->getSelectedModelPositionX();
 }
 
-double QVTKFramebufferObjectItem::getSelectedModelPositionY() const
-{
+double QVTKFramebufferObjectItem::getSelectedModelPositionY() const {
     return m_vtkFboRenderer->getSelectedModelPositionY();
 }
 
-void QVTKFramebufferObjectItem::selectModel(const int screenX, const int screenY)
-{
+void QVTKFramebufferObjectItem::selectModel(const int screenX, const int screenY) {
     m_lastMouseLeftButton = std::make_shared<QMouseEvent>(
         QEvent::None, QPointF(screenX, screenY), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
     m_lastMouseLeftButton->ignore();
@@ -100,8 +92,7 @@ void QVTKFramebufferObjectItem::selectModel(const int screenX, const int screenY
     update();
 }
 
-void QVTKFramebufferObjectItem::resetModelSelection()
-{
+void QVTKFramebufferObjectItem::resetModelSelection() {
     m_lastMouseLeftButton = std::make_shared<QMouseEvent>(
         QEvent::None, QPointF(-1, -1), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
     m_lastMouseLeftButton->ignore();
@@ -109,8 +100,7 @@ void QVTKFramebufferObjectItem::resetModelSelection()
     update();
 }
 
-void QVTKFramebufferObjectItem::addModelFromFile(const QUrl &modelPath)
-{
+void QVTKFramebufferObjectItem::addModelFromFile(const QUrl &modelPath) {
     qDebug() << "QVTKFramebufferObjectItem::addModelFromFile";
 
     CommandModelAdd *command = new CommandModelAdd(m_vtkFboRenderer, m_processingEngine, modelPath);
@@ -125,8 +115,7 @@ void QVTKFramebufferObjectItem::addModelFromFile(const QUrl &modelPath)
 }
 
 void QVTKFramebufferObjectItem::translateModel(
-    CommandModelTranslate::TranslateParams_t &translateData, const bool inTransition)
-{
+    CommandModelTranslate::TranslateParams_t &translateData, const bool inTransition) {
     if (translateData.model == nullptr) {
         // If no model selected yet, try to select one
         translateData.model = m_vtkFboRenderer->getSelectedModel();
@@ -139,8 +128,7 @@ void QVTKFramebufferObjectItem::translateModel(
     this->addCommand(new CommandModelTranslate(m_vtkFboRenderer, translateData, inTransition));
 }
 
-void QVTKFramebufferObjectItem::addCommand(CommandModel *command)
-{
+void QVTKFramebufferObjectItem::addCommand(CommandModel *command) {
     m_commandsQueueMutex.lock();
     m_commandsQueue.push(command);
     m_commandsQueueMutex.unlock();
@@ -150,16 +138,14 @@ void QVTKFramebufferObjectItem::addCommand(CommandModel *command)
 
 // Camera related functions
 
-void QVTKFramebufferObjectItem::wheelEvent(QWheelEvent *e)
-{
+void QVTKFramebufferObjectItem::wheelEvent(QWheelEvent *e) {
     m_lastMouseWheel = std::make_shared<QWheelEvent>(*e);
     m_lastMouseWheel->ignore();
     e->accept();
     update();
 }
 
-void QVTKFramebufferObjectItem::mousePressEvent(QMouseEvent *e)
-{
+void QVTKFramebufferObjectItem::mousePressEvent(QMouseEvent *e) {
     if (e->buttons() & Qt::RightButton) {
         m_lastMouseButton = std::make_shared<QMouseEvent>(*e);
         m_lastMouseButton->ignore();
@@ -168,16 +154,14 @@ void QVTKFramebufferObjectItem::mousePressEvent(QMouseEvent *e)
     }
 }
 
-void QVTKFramebufferObjectItem::mouseReleaseEvent(QMouseEvent *e)
-{
+void QVTKFramebufferObjectItem::mouseReleaseEvent(QMouseEvent *e) {
     m_lastMouseButton = std::make_shared<QMouseEvent>(*e);
     m_lastMouseButton->ignore();
     e->accept();
     update();
 }
 
-void QVTKFramebufferObjectItem::mouseMoveEvent(QMouseEvent *e)
-{
+void QVTKFramebufferObjectItem::mouseMoveEvent(QMouseEvent *e) {
     if (e->buttons() & Qt::RightButton) {
         *m_lastMouseMove = *e;
         m_lastMouseMove->ignore();
@@ -186,8 +170,7 @@ void QVTKFramebufferObjectItem::mouseMoveEvent(QMouseEvent *e)
     }
 }
 
-QMouseEvent *QVTKFramebufferObjectItem::getLastMouseLeftButton()
-{
+QMouseEvent *QVTKFramebufferObjectItem::getLastMouseLeftButton() {
     return m_lastMouseLeftButton.get();
 }
 
@@ -197,14 +180,12 @@ QMouseEvent *QVTKFramebufferObjectItem::getLastMoveEvent() { return m_lastMouseM
 
 QWheelEvent *QVTKFramebufferObjectItem::getLastWheelEvent() { return m_lastMouseWheel.get(); }
 
-void QVTKFramebufferObjectItem::resetCamera()
-{
+void QVTKFramebufferObjectItem::resetCamera() {
     m_vtkFboRenderer->resetCamera();
     update();
 }
 
-int QVTKFramebufferObjectItem::getModelsRepresentation() const
-{
+int QVTKFramebufferObjectItem::getModelsRepresentation() const {
     return m_modelsRepresentationOption;
 }
 
@@ -218,56 +199,49 @@ int QVTKFramebufferObjectItem::getModelColorG() const { return m_modelColorG; }
 
 int QVTKFramebufferObjectItem::getModelColorB() const { return m_modelColorB; }
 
-void QVTKFramebufferObjectItem::setModelsRepresentation(const int representationOption)
-{
+void QVTKFramebufferObjectItem::setModelsRepresentation(const int representationOption) {
     if (m_modelsRepresentationOption != representationOption) {
         m_modelsRepresentationOption = representationOption;
         update();
     }
 }
 
-void QVTKFramebufferObjectItem::setModelsOpacity(const double opacity)
-{
+void QVTKFramebufferObjectItem::setModelsOpacity(const double opacity) {
     if (m_modelsOpacity != opacity) {
         m_modelsOpacity = opacity;
         update();
     }
 }
 
-void QVTKFramebufferObjectItem::setGouraudInterpolation(const bool gouraudInterpolation)
-{
+void QVTKFramebufferObjectItem::setGouraudInterpolation(const bool gouraudInterpolation) {
     if (m_gouraudInterpolation != gouraudInterpolation) {
         m_gouraudInterpolation = gouraudInterpolation;
         update();
     }
 }
 
-void QVTKFramebufferObjectItem::setModelColorR(const int colorR)
-{
+void QVTKFramebufferObjectItem::setModelColorR(const int colorR) {
     if (m_modelColorR != colorR) {
         m_modelColorR = colorR;
         update();
     }
 }
 
-void QVTKFramebufferObjectItem::setModelColorG(const int colorG)
-{
+void QVTKFramebufferObjectItem::setModelColorG(const int colorG) {
     if (m_modelColorG != colorG) {
         m_modelColorG = colorG;
         update();
     }
 }
 
-void QVTKFramebufferObjectItem::setModelColorB(const int colorB)
-{
+void QVTKFramebufferObjectItem::setModelColorB(const int colorB) {
     if (m_modelColorB != colorB) {
         m_modelColorB = colorB;
         update();
     }
 }
 
-CommandModel *QVTKFramebufferObjectItem::getCommandsQueueFront() const
-{
+CommandModel *QVTKFramebufferObjectItem::getCommandsQueueFront() const {
     return m_commandsQueue.front();
 }
 

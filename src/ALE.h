@@ -67,8 +67,7 @@ public:
      * Constructor
      */
     ALE(Car<T>* Car_obj_val, LoadModule<T>* Load_module_val,
-        TwoTrackModelParent<T>* TwoTrackModel_val, EVAALookup<T>* lookup_table)
-    {
+        TwoTrackModelParent<T>* TwoTrackModel_val, EVAALookup<T>* lookup_table) {
         Car_obj = Car_obj_val;
         Load_module_obj = Load_module_val;
         TwoTrackModel_obj = TwoTrackModel_val;
@@ -87,8 +86,7 @@ public:
      * Store the global coordinates in the VelocityXY and PositionXY from the car object
      * \param t current simulation time
      */
-    void global_frame_solver(T& t)
-    {
+    void global_frame_solver(T& t) {
         // 2. Update global X,Y positions of the car
         Math::Solvers<T, ALE>::Stoermer_Verlet_Position(
             Car_obj->currentPositionLagrangian[0], Car_obj->currentVelocityLagrangian[0],
@@ -133,8 +131,7 @@ public:
 
         torque[2] = new_torque[2];  // z - component
     }
-    void solve(T* sol_vect, T* u_sol)
-    {
+    void solve(T* sol_vect, T* u_sol) {
         // initialize solution vector
         int sol_size = (floor(tend_ / h_) + 1);
         const int force_dimensions = Constants::DIM * Constants::VEC_DIM;
@@ -220,8 +217,7 @@ public:
      * Executes the time iteration of the ALE solvers, switches from global position update to
      * solving of the linear 11DOF system
      */
-    void solve(T* sol_vect)
-    {
+    void solve(T* sol_vect) {
         int sol_size = (floor(tend_ / h_) + 1);
         u_sol = (T*)mkl_calloc(sol_size * (Constants::VEC_DIM * Constants::DIM), sizeof(T),
                                Constants::ALIGNMENT);
@@ -232,8 +228,7 @@ public:
     /**
      * Adds the contribution of the wheels and tyres to the inertia moment of the car
      */
-    void calculate_global_inertia_Z()
-    {
+    void calculate_global_inertia_Z() {
         // get the global inertia actiing in Z direction
         global_inertia_Z = Car_obj->momentOfInertia[8];
         global_inertia_Z +=
@@ -253,8 +248,7 @@ public:
     /**
      * Prints all positions and angles in the car object
      */
-    void print_final_results()
-    {
+    void print_final_results() {
         T* sln = Car_obj->Position_vec;
         std::cout << "ALE: orientation angles=\n\t[" << Car_obj->angle_CG[0] << "\n\t "
                   << Car_obj->angle_CG[1] << "\n\t " << Car_obj->angle_CG[2] << "]" << std::endl;

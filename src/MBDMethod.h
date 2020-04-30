@@ -297,8 +297,7 @@ private:
     /**
      * For Debug purposes
      */
-    void write_matrix(T* vect, int count)
-    {
+    void write_matrix(T* vect, int count) {
         std::cout << "Debug mode print" << std::endl;
         for (size_t i = 0; i < count; ++i) {
             // std::cout << vect[i] << std::endl;
@@ -313,8 +312,7 @@ private:
     /**
      * For Debug purposes
      */
-    void write_vector(T* vect, int count)
-    {
+    void write_vector(T* vect, int count) {
         std::cout << "Debug mode print" << std::endl;
         for (size_t i = 0; i < count; ++i) {
             std::cout.precision(15);
@@ -322,8 +320,7 @@ private:
         }
     }
 
-    void MemoryAllocation()
-    {
+    void MemoryAllocation() {
         // Memory Allocation and matrix formulation
 
         r_fl = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
@@ -384,8 +381,7 @@ private:
         accelerations = (T*)mkl_calloc(9 * Constants::DIM, sizeof(T), Constants::ALIGNMENT);
     }
 
-    void ReadFromXML()
-    {
+    void ReadFromXML() {
         // Simulation Parameters
 
         h = MetaDataBase::DataBase()->getTimeStepSize();
@@ -616,8 +612,7 @@ private:
         initial_orientation[i] = MetaDataBase::DataBase()->getBodyInitialOrientation()[i];
     }
 
-    void getCholeskyDecomposition()
-    {
+    void getCholeskyDecomposition() {
         // A_Ic has cholesky factorization of Ic
         mkl<T>::copy(Constants::DIM * Constants::DIM, Ic, 1, A_Ic, 1);
         mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DIM, A_Ic, Constants::DIM);
@@ -632,8 +627,7 @@ private:
      */
     void circular_path_initialization(T* vc, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr, T* vt_fl,
                                       T* vt_fr, T* vt_rl, T* vt_rr, T* omega, T* pcc, T* pt_fl,
-                                      T* pt_fr, T* pt_rl, T* pt_rr, T& radius_param)
-    {
+                                      T* pt_fr, T* pt_rl, T* pt_rr, T& radius_param) {
         const MKL_INT dim = Constants::DIM;
         const MKL_INT incx = 1;
 
@@ -708,8 +702,7 @@ private:
      * \param p is the global position of the tyre
      * \result Fr The only force acting on the tyre
      */
-    void get_fixed_road_force(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr)
-    {
+    void get_fixed_road_force(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr) {
         Fr_fl[0] = 0.0;
         Fr_fl[1] = 0.0;
         Fr_fl[2] = 0.0;
@@ -743,8 +736,7 @@ private:
      * \param p is the global position of the tyre
      * \result Fr The only force acting on the tyre
      */
-    void get_circular_road_force(T* Fr, T* v, T& m, T* p)
-    {
+    void get_circular_road_force(T* Fr, T* v, T& m, T* p) {
         T *unit_z_vector, *velocity_direction_tyre;
         T velocity_magnitude_tyre, inv_radius, force_magnitude_tyre;
 
@@ -797,8 +789,7 @@ private:
      * To increase performance by removing repeting memory allocations
      * The same locations are overwritten at each timestep
      */
-    void compute_f_mem_alloc()
-    {
+    void compute_f_mem_alloc() {
         // add to members
         cf_C_cN =
             (T*)mkl_calloc((Constants::DIM) * (Constants::DIM), sizeof(T), Constants::ALIGNMENT);
@@ -905,8 +896,7 @@ private:
     /**
      * Clean the memory allocated for the main solver
      */
-    void compute_f_clean()
-    {
+    void compute_f_clean() {
         mkl_free_buffers();
         mkl_free(cf_C_cN);
         mkl_free(cf_r_up_fl);
@@ -991,8 +981,7 @@ private:
         mkl_free(accelerations);
     }
 
-    void get_current_variables(T* x)
-    {
+    void get_current_variables(T* x) {
         wc_ = x;
         vc_ = x + 3;
         vw_fl_ = x + 6;
@@ -1017,8 +1006,7 @@ private:
 
     void compute_spring_lengths(double* pcc_, double* pw_, double* pt_, double* cf_r_up_,
                                 double* cf_r_low_, double* r_, double& norm_r_up,
-                                double& inv_norm_r_up, double& norm_r_low, double& inv_norm_r_low)
-    {
+                                double& inv_norm_r_up, double& norm_r_low, double& inv_norm_r_low) {
         /*
         % global positions of the tyre connections
                 pc1 = C_cN' * r1 + pcc;
@@ -1057,8 +1045,7 @@ private:
         inv_norm_r_low = 1.0 / norm_r_low;
     }
 
-    void get_car_orientation()
-    {
+    void get_car_orientation() {
         /*
         // Basis //
         get cosine transforms (C_Nc means r_N = C_Nc * r_c)
@@ -1068,8 +1055,7 @@ private:
         Math::get_basis<T>(qc_, cf_C_cN);
     }
 
-    void apply_stiffness_interpolation()
-    {
+    void apply_stiffness_interpolation() {
         /* Compute stiffness from lookup table*/
         if (use_interpolation) {
             // populate the lenght_vector
@@ -1096,8 +1082,7 @@ private:
         }
     }
 
-    void compute_angles()
-    {
+    void compute_angles() {
         /*
         get angle and normal vectors at the legs
 
@@ -1134,8 +1119,7 @@ private:
                              Constants::DIM);
     }
 
-    void compute_elongational_forces()
-    {
+    void compute_elongational_forces() {
         // Forces and Torques
         // calculate the elongational spring forces (in global basis)
 
@@ -1195,8 +1179,7 @@ private:
         mkl<T>::scal(Constants::DIM, scale, cf_lower_force_rr, 1);
     }
 
-    void compute_damping_forces()
-    {
+    void compute_damping_forces() {
         /*
         calculate forces from damping effects
         upper_vdiff1 = (dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1)) * r_up1 *
@@ -1359,8 +1342,7 @@ private:
         mkl<T>::scal(Constants::DIM, scale, cf_lower_dampf_rr, 1);
     }
 
-    void compute_torques()
-    {
+    void compute_torques() {
         /*
 torque from the rotational spring
 upper_S1 = upper_rotational_stiffness(1) * upper_angle1 * upper_normal1;        % in global basis
@@ -1417,8 +1399,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         mkl<T>::scal(Constants::DIM, scale, cf_lower_S_rr, 1);
     }
 
-    void compute_torques_resultant_forces()
-    {
+    void compute_torques_resultant_forces() {
         /*
          * calculate the effect of the rotational springs (in global basis)
          *
@@ -1514,8 +1495,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         mkl<T>::scal(Constants::DIM, scale_u_rr, cf_car_rot_force_rr, 1);
     }
 
-    void compute_car_body_forces()
-    {
+    void compute_car_body_forces() {
         // sum_car_force1 = car_rot_force1 - upper_force1 - upper_dampf1 - upper_rot_force1;
         mkl<T>::copy(Constants::DIM, cf_car_rot_force_fl, 1, cf_sum_car_force_fl, 1);
         mkl<T>::axpy(Constants::DIM, -1.0, cf_upper_force_fl, 1, cf_sum_car_force_fl, 1);
@@ -1542,8 +1522,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         mkl<T>::axpy(Constants::DIM, -1.0, cf_upper_rot_force_rr, 1, cf_sum_car_force_rr, 1);
     }
 
-    void compute_external_forces()
-    {
+    void compute_external_forces() {
         /*
          * get external forces for the legs
          *
@@ -1593,8 +1572,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         mkl<T>::axpy(Constants::DIM, 1.0, cf_lower_rot_force_rr, 1, cf_local_FR_rr, 1);
     }
 
-    void compute_car_body_total_torque()
-    {
+    void compute_car_body_total_torque() {
         /*
          * get H=I*w
          * Hc = A(1:3, 1:3) * wc;           %in local car basis
@@ -1657,8 +1635,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
                      1);
     }
 
-    void construct_right_hand_side()
-    {
+    void construct_right_hand_side() {
         /*
          * b = [sum_torque_spring_car; ...% w_dot_c
          * FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...% vc_dot
@@ -1748,16 +1725,14 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         mkl<T>::copy(Constants::DIM, cf_local_FR_rr, 1, brem_start, 1);
     }
 
-    void solve_accelerations()
-    {
+    void solve_accelerations() {
         mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DIM, 1, A_Ic, Constants::DIM,
                       cf_sum_torque_spring_car, 1);
 
         Math::vector_elem_wise_product<T>(A_rem, cf_b_rem, accelerations, 9 * Constants::DIM);
     }
 
-    void compute_quaternion_change_rate()
-    {
+    void compute_quaternion_change_rate() {
         /*
          * get the derivative of the altitude (expressed in quaternions) from the angular
          * velocities
@@ -1785,8 +1760,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
                      Constants::DIM, wc_, 1, 0.0, cf_qc_dot, 1);
     }
 
-    void construct_f_vector(double* f_)
-    {
+    void construct_f_vector(double* f_) {
         mkl<T>::copy(Constants::DIM, cf_sum_torque_spring_car, 1, f_, 1);
         T* start_next = f_ + Constants::DIM;
 
@@ -1837,8 +1811,7 @@ public:
     /**
      * Constructor
      */
-    MBD_method(EVAALookup<Constants::floatEVAA>* interpolator)
-    {
+    MBD_method(EVAALookup<Constants::floatEVAA>* interpolator) {
         lookupStiffness = interpolator;
 
         MemoryAllocation();
@@ -1851,8 +1824,7 @@ public:
     /**
      * Initializes the time iteration and handles the numerical scheme
      */
-    void solve(T* solution_vector)
-    {
+    void solve(T* solution_vector) {
         // From the formulation we have 61 dimensions in the solution vector
         size_t solution_size = (this->num_iter + 1) * this->solution_dim;
         T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), Constants::ALIGNMENT);
@@ -2076,8 +2048,7 @@ public:
      * \param[in] t_ current simulation time
      * \param[out] f_ the load vector
      */
-    void compute_f3D_reduced(T* x_, T t_, T* f_)
-    {
+    void compute_f3D_reduced(T* x_, T t_, T* f_) {
         /*
          * Small performance gain might be possible by transforming C_cN to column major
          * Note: corresponding MKL function call have to be changed too
@@ -2153,8 +2124,7 @@ public:
      * Beatiful output of the result
      * \param sln solution vector
      */
-    void print_final_result(T* sln)
-    {
+    void print_final_result(T* sln) {
         std::cout << "MBD: angular velocity w=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t "
                   << sln[2] << "]" << std::endl;
         std::cout << "MBD: car body velocity vc=\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t "
@@ -2200,8 +2170,7 @@ public:
     /**
      * Destructor
      */
-    ~MBD_method()
-    {
+    ~MBD_method() {
         mkl_free_buffers();
         mkl_free(r_fl);
         mkl_free(r_fr);

@@ -63,8 +63,7 @@ public:
      * \brief Physical memory currently used by current process in bytes
      * \author Stefan Sicklinger
      */
-    size_t getCurrentUsedPhysicalMemory(void)
-    {
+    size_t getCurrentUsedPhysicalMemory(void) {
 #if defined(_WIN32) || defined(__WIN32__)
         PROCESS_MEMORY_COUNTERS_EX pmc;
         GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc),
@@ -81,8 +80,7 @@ public:
      * \brief Physical memory currently used by current process in bytes
      * \author Stefan Sicklinger
      */
-    size_t getCurrentUsedVirtualMemory(void)
-    {
+    size_t getCurrentUsedVirtualMemory(void) {
 #if defined(_WIN32) || defined(__WIN32__)
         PROCESS_MEMORY_COUNTERS_EX pmc;
         GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc),

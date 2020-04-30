@@ -28,8 +28,7 @@ private:
      * \param F_vec vector of all internal XY-forces in the Eulerian frame at each position
      * [GC:XYZ,W1:XYZ,T1:XYZ, ...]
      */
-    void ComputeInternalTorque(T* Torque, T* F_vec)
-    {
+    void ComputeInternalTorque(T* Torque, T* F_vec) {
         // compute torque around X-axis
         // #pragma loop(ivdep)
         for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
@@ -44,8 +43,7 @@ private:
     }
 
 public:
-    LoadModule(Profile<T>* Profile_type, Car<T>* Car1)
-    {
+    LoadModule(Profile<T>* Profile_type, Car<T>* Car1) {
         Active_Profile = Profile_type;
         Car_obj = Car1;
 
@@ -95,19 +93,16 @@ public:
         position_start += 6;  // skip 3 for the wheel
         mkl<T>::copy(Constants::DIM, xml_start, 1, position_start, 1);
     }
-    ~LoadModule()
-    {
+    ~LoadModule() {
         mkl_free(Normal_ext);
         mkl_free(k_vec);
         mkl_free(External_force);
     }
-    void set_Profile(Profile<T>* Profile_type)
-    {
+    void set_Profile(Profile<T>* Profile_type) {
         // not called
         Active_Profile = Profile_type;
     }
-    void get_Profile(Profile<T>* Profile_type)
-    {
+    void get_Profile(Profile<T>* Profile_type) {
         // not called
         Profile_type = Active_Profile;
     }
@@ -120,8 +115,7 @@ public:
      * \return F_vec vector of forces in the car [GC:XYZ,W1:XYZ,T1:XYZ, ...]
      * \return Normal_ext external forces acting on the whole car system [XYZ]
      */
-    void update_force(T time_t, T* F_vec, T* Normal_ext)
-    {
+    void update_force(T time_t, T* F_vec, T* Normal_ext) {
         mkl<T>::scal(Constants::DIM * Constants::VEC_DIM, 0.0, F_vec, 1);
         mkl<T>::scal(Constants::DIM, 0.0, Normal_ext, 1);
         // fix this so TEOOOOOOOOOO
@@ -174,14 +168,12 @@ public:
      * \param Delta_x_vec current dx of the spring lengths (in Stefan's ordering)
      * \return Torque acting on the total car system [XYZ]
      */
-    void update_torque(T time_t, T* Torque, T* F_vec)
-    {
+    void update_torque(T time_t, T* Torque, T* F_vec) {
         Active_Profile->get_Profile_torque(Car_obj, Torque);
         ComputeInternalTorque(Torque, F_vec);
     }
 
-    void set_External_force()
-    {
+    void set_External_force() {
         // in LoadModule constructor commented
 
         mkl<T>::copy(Constants::DIM, MetaDataBase::DataBase()->getBodyExternalForce(), 1,

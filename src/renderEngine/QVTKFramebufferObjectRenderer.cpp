@@ -46,8 +46,7 @@
 
 namespace EVAA {
 
-QVTKFramebufferObjectRenderer::QVTKFramebufferObjectRenderer()
-{
+QVTKFramebufferObjectRenderer::QVTKFramebufferObjectRenderer() {
     // Renderer
     QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat());
     m_vtkRenderWindow = vtkSmartPointer<vtkGenericOpenGLRenderWindow>::New();
@@ -77,13 +76,11 @@ QVTKFramebufferObjectRenderer::QVTKFramebufferObjectRenderer()
 }
 
 void QVTKFramebufferObjectRenderer::setProcessingEngine(
-    const std::shared_ptr<ProcessingEngine> processingEngine)
-{
+    const std::shared_ptr<ProcessingEngine> processingEngine) {
     m_processingEngine = std::shared_ptr<ProcessingEngine>(processingEngine);
 }
 
-void QVTKFramebufferObjectRenderer::synchronize(QQuickFramebufferObject *item)
-{
+void QVTKFramebufferObjectRenderer::synchronize(QQuickFramebufferObject *item) {
     // For the first synchronize
     if (!m_vtkFboItem) {
         m_vtkFboItem = static_cast<QVTKFramebufferObjectItem *>(item);
@@ -131,8 +128,7 @@ void QVTKFramebufferObjectRenderer::synchronize(QQuickFramebufferObject *item)
                                         m_vtkFboItem->getModelColorB()));
 }
 
-void QVTKFramebufferObjectRenderer::render()
-{
+void QVTKFramebufferObjectRenderer::render() {
     m_vtkRenderWindow->PushState();
     this->openGLInitState();
     m_vtkRenderWindow->Start();
@@ -236,16 +232,15 @@ void QVTKFramebufferObjectRenderer::render()
     m_vtkFboItem->window()->resetOpenGLState();
 }
 
-void QVTKFramebufferObjectRenderer::openGLInitState()
-{
+void QVTKFramebufferObjectRenderer::openGLInitState() {
     m_vtkRenderWindow->OpenGLInitState();
     m_vtkRenderWindow->MakeCurrent();
     QOpenGLFunctions::initializeOpenGLFunctions();
     QOpenGLFunctions::glUseProgram(0);
 }
 
-QOpenGLFramebufferObject *QVTKFramebufferObjectRenderer::createFramebufferObject(const QSize &size)
-{
+QOpenGLFramebufferObject *QVTKFramebufferObjectRenderer::createFramebufferObject(
+    const QSize &size) {
     QSize macSize = QSize(size.width() / 2, size.height() / 2);
 
     QOpenGLFramebufferObjectFormat format;
@@ -270,8 +265,7 @@ QOpenGLFramebufferObject *QVTKFramebufferObjectRenderer::createFramebufferObject
     return framebufferObject.release();
 }
 
-void QVTKFramebufferObjectRenderer::initScene()
-{
+void QVTKFramebufferObjectRenderer::initScene() {
     qDebug() << "QVTKFramebufferObjectRenderer::initScene()";
 
     m_vtkRenderWindow->SetOffScreenRendering(true);
@@ -310,8 +304,7 @@ void QVTKFramebufferObjectRenderer::initScene()
     this->resetCamera();
 }
 
-void QVTKFramebufferObjectRenderer::generatePlatform()
-{
+void QVTKFramebufferObjectRenderer::generatePlatform() {
     qDebug() << "QVTKFramebufferObjectRenderer::generatePlatform()";
 
     // Platform Model
@@ -350,8 +343,7 @@ void QVTKFramebufferObjectRenderer::generatePlatform()
     this->updatePlatform();
 }
 
-void QVTKFramebufferObjectRenderer::updatePlatform()
-{
+void QVTKFramebufferObjectRenderer::updatePlatform() {
     qDebug() << "QVTKFramebufferObjectRenderer::updatePlatform()";
 
     // Platform Model
@@ -384,8 +376,7 @@ void QVTKFramebufferObjectRenderer::updatePlatform()
 void QVTKFramebufferObjectRenderer::createLine(const double x1, const double y1, const double z1,
                                                const double x2, const double y2, const double z2,
                                                vtkSmartPointer<vtkPoints> points,
-                                               vtkSmartPointer<vtkCellArray> cells)
-{
+                                               vtkSmartPointer<vtkCellArray> cells) {
     vtkSmartPointer<vtkPolyLine> line;
     line = vtkSmartPointer<vtkPolyLine>::New();
     line->GetPointIds()->SetNumberOfIds(2);
@@ -400,15 +391,13 @@ void QVTKFramebufferObjectRenderer::createLine(const double x1, const double y1,
     cells->InsertNextCell(line);
 }
 
-void QVTKFramebufferObjectRenderer::addModelActor(const std::shared_ptr<Model> model)
-{
+void QVTKFramebufferObjectRenderer::addModelActor(const std::shared_ptr<Model> model) {
     m_renderer->AddActor(model->getModelActor());
 
     qDebug() << "QVTKFramebufferObjectRenderer::addModelActor(): Model added " << model.get();
 }
 
-void QVTKFramebufferObjectRenderer::selectModel(const int16_t x, const int16_t y)
-{
+void QVTKFramebufferObjectRenderer::selectModel(const int16_t x, const int16_t y) {
     qDebug() << "QVTKFramebufferObjectRenderer::selectModel()";
 
     // Compensate the y-axis flip for the picking
@@ -464,8 +453,7 @@ void QVTKFramebufferObjectRenderer::selectModel(const int16_t x, const int16_t y
     qDebug() << "QVTKFramebufferObjectRenderer::selectModel() end";
 }
 
-void QVTKFramebufferObjectRenderer::clearSelectedModel()
-{
+void QVTKFramebufferObjectRenderer::clearSelectedModel() {
     m_selectedModel->setSelected(false);
 
     disconnect(m_selectedModel.get(), &Model::positionXChanged, this,
@@ -477,8 +465,7 @@ void QVTKFramebufferObjectRenderer::clearSelectedModel()
     m_selectedActor = nullptr;
 }
 
-void QVTKFramebufferObjectRenderer::setIsModelSelected(const bool isModelSelected)
-{
+void QVTKFramebufferObjectRenderer::setIsModelSelected(const bool isModelSelected) {
     if (m_isModelSelected != isModelSelected) {
         qDebug() << "QVTKFramebufferObjectRenderer::setIsModelSelected():" << isModelSelected;
         m_isModelSelected = isModelSelected;
@@ -488,47 +475,40 @@ void QVTKFramebufferObjectRenderer::setIsModelSelected(const bool isModelSelecte
 
 bool QVTKFramebufferObjectRenderer::isModelSelected() const { return m_isModelSelected; }
 
-std::shared_ptr<Model> QVTKFramebufferObjectRenderer::getSelectedModel() const
-{
+std::shared_ptr<Model> QVTKFramebufferObjectRenderer::getSelectedModel() const {
     std::shared_ptr<Model> selectedModel = this->getSelectedModelNoLock();
 
     return selectedModel;
 }
 
-std::shared_ptr<Model> QVTKFramebufferObjectRenderer::getSelectedModelNoLock() const
-{
+std::shared_ptr<Model> QVTKFramebufferObjectRenderer::getSelectedModelNoLock() const {
     return m_processingEngine->getModelFromActor(m_selectedActor);
 }
 
-void QVTKFramebufferObjectRenderer::setSelectedModelPositionX(const double positionX)
-{
+void QVTKFramebufferObjectRenderer::setSelectedModelPositionX(const double positionX) {
     if (m_selectedModelPositionX != positionX) {
         m_selectedModelPositionX = positionX;
         emit selectedModelPositionXChanged();
     }
 }
 
-void QVTKFramebufferObjectRenderer::setSelectedModelPositionY(const double positionY)
-{
+void QVTKFramebufferObjectRenderer::setSelectedModelPositionY(const double positionY) {
     if (m_selectedModelPositionY != positionY) {
         m_selectedModelPositionY = positionY;
         emit selectedModelPositionYChanged();
     }
 }
 
-double QVTKFramebufferObjectRenderer::getSelectedModelPositionX() const
-{
+double QVTKFramebufferObjectRenderer::getSelectedModelPositionX() const {
     return m_selectedModelPositionX;
 }
 
-double QVTKFramebufferObjectRenderer::getSelectedModelPositionY() const
-{
+double QVTKFramebufferObjectRenderer::getSelectedModelPositionY() const {
     return m_selectedModelPositionY;
 }
 
 const bool QVTKFramebufferObjectRenderer::screenToWorld(const int16_t screenX,
-                                                        const int16_t screenY, double worldPos[])
-{
+                                                        const int16_t screenY, double worldPos[]) {
     // Create bounding planes for projection plane
     vtkSmartPointer<vtkPlane> boundingPlanes[4];
 
@@ -577,8 +557,7 @@ const bool QVTKFramebufferObjectRenderer::screenToWorld(const int16_t screenX,
     return withinBounds;
 }
 
-void QVTKFramebufferObjectRenderer::resetCamera()
-{
+void QVTKFramebufferObjectRenderer::resetCamera() {
     // Seting the clipping range here messes with the opacity of the actors prior to moving the
     // camera
     m_camPositionX = -237.885;

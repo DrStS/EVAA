@@ -57,8 +57,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
     _xmlCarFileName(xmlCarFileName),
     _xmlLoadFileName(xmlLoadFileName),
     _lookupStiffness(nullptr),
-    _lookupDamping(nullptr)
-{
+    _lookupDamping(nullptr) {
     std::ifstream f(xmlCarFileName.c_str());
 
     if (f.good()) {
@@ -90,8 +89,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
 
 EVAAComputeEngine::~EVAAComputeEngine() { delete _lookupStiffness; }
 
-void EVAAComputeEngine::printInfo(void)
-{
+void EVAAComputeEngine::printInfo(void) {
     Math::printMKLInfo();
     std::cout << "\n\nCalculate the solution after "
               << MetaDataBase::DataBase()->getNumberOfTimeIterations() *
@@ -102,8 +100,7 @@ void EVAAComputeEngine::printInfo(void)
 
 void EVAAComputeEngine::clean(void) {}
 
-void EVAAComputeEngine::computeEigen11DOF(void)
-{
+void EVAAComputeEngine::computeEigen11DOF(void) {
     int DOF = MetaDataBase::DataBase()->getDOF();
 
     // K stiffness
@@ -245,8 +242,7 @@ void EVAAComputeEngine::computeEigen11DOF(void)
     std::cout << u_n_p_1 << std::scientific << std::endl;
 }
 
-void EVAAComputeEngine::computeBlaze11DOF(void)
-{
+void EVAAComputeEngine::computeBlaze11DOF(void) {
 #ifdef USE_BLAZE
 
     using blaze::columnVector;
@@ -428,8 +424,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void)
 #endif
 }
 
-void EVAAComputeEngine::computeMKL11DOF(void)
-{
+void EVAAComputeEngine::computeMKL11DOF(void) {
     int DOF = MetaDataBase::DataBase()->getDOF();
 
     // K stiffness
@@ -676,8 +671,7 @@ void EVAAComputeEngine::computeMKL11DOF(void)
     mkl_free(tmp);
 }
 
-void EVAAComputeEngine::computeMKLTwoTrackModelBE(void)
-{
+void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
         floatEVAA* sol =
             (floatEVAA*)mkl_calloc(Constants::DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
@@ -699,8 +693,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void)
 }
 
 #if MIGHT_BE_USEFUL
-void EVAAComputeEngine::computeMKLTwoTrackModel()
-{
+void EVAAComputeEngine::computeMKLTwoTrackModel() {
     if (MetaDataBase::DataBase()->getRoadConditions() == NONFIXED) {
         floatEVAA* sol =
             (floatEVAA*)mkl_calloc(Constants::DOF, sizeof(floatEVAA), Constants::ALIGNMENT);
@@ -723,8 +716,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModel()
 }
 #endif
 
-void EVAAComputeEngine::computeMBD(void)
-{
+void EVAAComputeEngine::computeMBD(void) {
     size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
     size_t solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize();
     floatEVAA* sol = (floatEVAA*)mkl_calloc(solution_dim, sizeof(floatEVAA), Constants::ALIGNMENT);
@@ -734,8 +726,7 @@ void EVAAComputeEngine::computeMBD(void)
     mkl_free(sol);
 }
 
-void EVAAComputeEngine::computeALE(void)
-{
+void EVAAComputeEngine::computeALE(void) {
     Profile<floatEVAA>* roadProfile;
 
     Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness, _lookupDamping);
@@ -784,8 +775,7 @@ void EVAAComputeEngine::computeALE(void)
     mkl_free(sol);
 }
 
-void EVAAComputeEngine::computeALEtest(void)
-{
+void EVAAComputeEngine::computeALEtest(void) {
     size_t num_iter = MetaDataBase::DataBase()->getNumberOfTimeIterations();
     size_t solution_dim = MetaDataBase::DataBase()->getSolutionVectorSize();
     Car<floatEVAA>* car = new Car<floatEVAA>(_lookupStiffness, _lookupDamping);
@@ -801,8 +791,7 @@ void EVAAComputeEngine::computeALEtest(void)
 }
 
 #if MIGHT_BE_USEFUL
-void EVAAComputeEngine::compare_ALE_MBD(void)
-{
+void EVAAComputeEngine::compare_ALE_MBD(void) {
     // MBD Call
     size_t num_iter = _parameters.num_time_iter;
     const int alignment = 64;

@@ -30,7 +30,7 @@ BraceWrapping:
     AfterClass: false
     AfterStruct: false
     AfterNamespace: false
-    AfterFunction: true
+    AfterFunction: false
     BeforeCatch: true
     BeforeElse: true
     IndentBraces: false
@@ -66,7 +66,9 @@ IndentCaseLabels: false
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
 
-
+# Always pack arguments together.
+BinPackParameters: true
+BinPackArguments: true
 
 
 

@@ -65,8 +65,7 @@ public:
      * \author Stefan Sicklinger
      */
 
-    auto getDurationMilliSec(void)
-    {
+    auto getDurationMilliSec(void) {
         return std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count();
     }
 
@@ -74,8 +73,7 @@ public:
      * \brief get duration in mico sec
      * \author Stefan Sicklinger
      */
-    auto getDurationMicroSec(void)
-    {
+    auto getDurationMicroSec(void) {
         return std::chrono::duration_cast<std::chrono::microseconds>(stopTime - startTime).count();
     }
 
@@ -83,8 +81,7 @@ public:
      * \brief get duration in sec
      * \author Stefan Sicklinger
      */
-    auto getDurationSec(void)
-    {
+    auto getDurationSec(void) {
         return std::chrono::duration_cast<std::chrono::seconds>(stopTime - startTime).count();
     }
 
