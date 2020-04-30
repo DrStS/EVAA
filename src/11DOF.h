@@ -288,10 +288,9 @@ public:
      */
     void constructJacobian() {
         // first update the derivative
-        MetaDataBase<T>::getDataBase().getLookupStiffness().getDerivative(
-            _car->currentSpringsLength, dkdl);
-        //	MetaDataBase<T>::getDataBase().getLookupDamping().getDerivative(_car->currentSpringsLength,
-        // dddl);
+        auto& db = MetaDataBase<T>::getDataBase();
+        db.getLookupStiffness().getDerivative(_car->currentSpringsLength, dkdl);
+        db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
         // J = A =  M_h2 + D / _h + K
@@ -303,9 +302,9 @@ public:
         // temp += -x[n]
         Math::axpy<T>(Constants::DOF, -1, u_n, 1, temp, 1);
         // calc dDdxx with (x[n+1] - x[n])
-        // constructLookupDerivativeX(dddl, temp, dDdxx);
+        constructLookupDerivativeX(dddl, temp, dDdxx);
         // J += 1/_h * dDdxx
-        // Math::axpy<T>(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
+        Math::axpy<T>(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
     }
     /**
      * \brief construct Jacobian for fixed to road
@@ -456,8 +455,8 @@ public:
      */
     void constructDampingMatrix() {
 #ifdef INTERPOLATION
-        // MetaDataBase::getDataBase().getLookupDamping()->getInterpolation(_car->currentSpringsLength,
-        // dVec);
+        MetaDataBase<T>::getDataBase().getLookupDamping().getInterpolation(
+            _car->currentSpringsLength, dVec);
 #endif
         temp[0] = dVec[0] + dVec[2] + dVec[4] + dVec[6];
         D[1] = dVec[0] * _car->l_lat[0] - dVec[2] * _car->l_lat[1] + dVec[4] * _car->l_lat[2] -
@@ -920,10 +919,10 @@ public:
      */
     void constructJacobian() {
         // first update the derivative
-        MetaDataBase<T>::getDataBase().getLookupStiffness().getDerivative(
-            _car->currentSpringsLength, dkdl);
-        // MetaDataBase<T>::getDataBase().getLookupDamping().getDerivative(_car->currentSpringsLength,
-        // dddl); construct the derivative (tensor) times a pos vector
+        auto& db = MetaDataBase<T>::getDataBase();
+        db.getLookupStiffness().getDerivative(_car->currentSpringsLength, dkdl);
+        db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
+        // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
         // J = A
         Math::copy<T>(Constants::DOFDOF, A, 1, J, 1);

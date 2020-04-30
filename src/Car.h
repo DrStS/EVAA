@@ -488,7 +488,7 @@ public:
 
 #ifdef INTERPOLATION
         db.getLookupStiffness().getInterpolation(currentSpringsLength, kVec);
-        // db.getlookupDamping().getInterpolation(currentSpringsLength, dVec);
+        db.getlookupDamping().getInterpolation(currentSpringsLength, dVec);
 #else
         kVec[0] = db.getBodyStiffnessFrontLeft();
         kVec[1] = db.getTyreStiffnessFrontLeft();
