@@ -7,13 +7,13 @@
 #include <stdexcept>
 #include <string>
 
+#include "ArbitraryTrajectory.h"
 #include "Constants.h"
 #include "IO/Output.h"
-#include "arbitraryTrajectory.h"
 #include "MathLibrary.h"
 
 #ifdef INTERPOLATION
-	#include "EVAALookup.h"
+#include "EVAALookup.h"
 #endif
 
 #include "IP_EVAA_XML.h"
@@ -46,32 +46,32 @@ public:
     /** Deleted copy operator. */
     void operator=(MetaDataBase const&) = delete;
 
-	/*
-	Checks if the xml has correct format with resect to compiler flag
-	*/
-	void CheckStiffnessXML(const bool interpolation, const bool fixspring) {
+    /*
+    Checks if the xml has correct format with resect to compiler flag
+    */
+    void CheckStiffnessXML(const bool interpolation, const bool fixspring) {
 #ifdef INTERPOLATION
-		if (interpolation) {
-			std::cout << "Using lookup tables for Stiffness and Damping" << std::endl;
-		}
-		else {
-			throw "Lookup block are not available in the XML!";
-		}
-		if (fixspring) {
-			throw "Cannot use constant block with interpolation. Check the XML!";
-		}
+        if (interpolation) {
+            std::cout << "Using lookup tables for Stiffness and Damping" << std::endl;
+        }
+        else {
+            throw "Lookup block are not available in the XML!";
+        }
+        if (fixspring) {
+            throw "Cannot use constant block with interpolation. Check the XML!";
+        }
 #else
-		if (fixspring) {
-			std::cout << "Using constant Stiffness and Damping" << std::endl;
-		}
-		else {
-			throw "Constant Stiffness and damping blocks are not available in the XML!";
-		}
-		if (interpolation) {
-			throw "Cannot use lookup block with constant compiler flag. Check the XML!";
-		}
+        if (fixspring) {
+            std::cout << "Using constant Stiffness and Damping" << std::endl;
+        }
+        else {
+            throw "Constant Stiffness and damping blocks are not available in the XML!";
+        }
+        if (interpolation) {
+            throw "Cannot use lookup block with constant compiler flag. Check the XML!";
+        }
 #endif
-		}
+    }
 
     /**
      * Reads the car, initial and simulation parameters from an XML file.
@@ -96,15 +96,16 @@ public:
         _I_body[7] = twoTrackModel.InertiaXML().ZY();
         _I_body[8] = twoTrackModel.InertiaXML().ZZ();
 
-		CheckStiffnessXML(twoTrackModel.StiffnessXML().LookupTableXML().present(), twoTrackModel.StiffnessXML().ConstantXML().present());
+        CheckStiffnessXML(twoTrackModel.StiffnessXML().LookupTableXML().present(),
+                          twoTrackModel.StiffnessXML().ConstantXML().present());
 
 #ifdef INTERPOLATION
-		readLookupParameters(twoTrackModel.StiffnessXML().LookupTableXML().get().FilePathXML());
+        readLookupParameters(twoTrackModel.StiffnessXML().LookupTableXML().get().FilePathXML());
 #else
-		readLegs(_k_tyre, twoTrackModel.StiffnessXML().ConstantXML().get().TyreXML());
-		readLegs(_k_body, twoTrackModel.StiffnessXML().ConstantXML().get().BodyXML());
+        readLegs(_k_tyre, twoTrackModel.StiffnessXML().ConstantXML().get().TyreXML());
+        readLegs(_k_body, twoTrackModel.StiffnessXML().ConstantXML().get().BodyXML());
 #endif
-		readLegs(_c_tyre, twoTrackModel.DampingCoefficientsXML().TyreXML());
+        readLegs(_c_tyre, twoTrackModel.DampingCoefficientsXML().TyreXML());
         readLegs(_c_body, twoTrackModel.DampingCoefficientsXML().BodyXML());
         readLegs(_l_long, twoTrackModel.GeometryXML().LongitudinalReferenceToWheelXML());
         readLegs(_l_lat, twoTrackModel.GeometryXML().LateralReferenceToWheelXML());
@@ -177,7 +178,7 @@ public:
         // Load external parameters
         //--------------------------------------------------
         const auto load_data = EVAA_load_module(loadFilename, xml_schema::flags::dont_validate);
-		
+
         if (load_data->roadProfile().fixedTyre().present()) {
             _boundary_condition_road = BoundaryConditionRoad::FIXED;
             std::cout << "Run the simulation with fixed tyres" << std::endl;
@@ -193,16 +194,16 @@ public:
             readVector(_profile_center, load_data->roadProfile().circularRoadProfile()->center());
         }
         else if (load_data->roadProfile().arbitraryRoadProfile().present()) {
-			const auto sinusoidalProfile = load_data->roadProfile()
-				.arbitraryRoadProfile()
-				.get()
-				.verticalProfile()
-				.sinusoidalProfile();
-			const auto horizontalProfile =
-				load_data->roadProfile().arbitraryRoadProfile().get().horizontalProfile();
+            const auto sinusoidalProfile = load_data->roadProfile()
+                                               .arbitraryRoadProfile()
+                                               .get()
+                                               .verticalProfile()
+                                               .sinusoidalProfile();
+            const auto horizontalProfile =
+                load_data->roadProfile().arbitraryRoadProfile().get().horizontalProfile();
             _boundary_condition_road = BoundaryConditionRoad::ARBITRARY;
             std::cout << "Run the simulation on an arbitrary road" << std::endl;
-            _trajectory = new arbitraryTrajectory<T>(
+            _trajectory = new ArbitraryTrajectory<T>(
                 _num_time_iter, _timestep, sinusoidalProfile.rightTyre().amplitude(),
                 sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(),
                 sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(),
@@ -310,21 +311,37 @@ public:
     inline T getMomentOfInertiaYZ() const { return _I_body[5]; }
     inline T getMomentOfInertiaZX() const { return _I_body[6]; }
     inline T getMomentOfInertiaZY() const { return _I_body[7]; }
-    inline T getMomentOfInertiaZZ() const{ return _I_body[8]; }
+    inline T getMomentOfInertiaZZ() const { return _I_body[8]; }
     // contains all elements of the InertiaMatrix in the format [XX,XY,XZ,YX,YY,YZ,ZX,ZY,ZZ]
     inline T* getMomentOfInertiaVector() { return _I_body; }
 
-    inline T getTyreSpringLengthFrontLeft() const { return _lower_spring_length[Constants::FRONT_LEFT]; }
-    inline T getTyreSpringLengthFrontRight() const { return _lower_spring_length[Constants::FRONT_RIGHT]; }
-    inline T getTyreSpringLengthRearLeft() const { return _lower_spring_length[Constants::REAR_LEFT]; }
-    inline T getTyreSpringLengthRearRight() const { return _lower_spring_length[Constants::REAR_RIGHT]; }
+    inline T getTyreSpringLengthFrontLeft() const {
+        return _lower_spring_length[Constants::FRONT_LEFT];
+    }
+    inline T getTyreSpringLengthFrontRight() const {
+        return _lower_spring_length[Constants::FRONT_RIGHT];
+    }
+    inline T getTyreSpringLengthRearLeft() const {
+        return _lower_spring_length[Constants::REAR_LEFT];
+    }
+    inline T getTyreSpringLengthRearRight() const {
+        return _lower_spring_length[Constants::REAR_RIGHT];
+    }
     // vector in the format fl fr rl rr
     inline T* getTyreSpringLengthVector() { return _lower_spring_length; }
 
-    inline T getBodySpringLengthFrontLeft() const { return _upper_spring_length[Constants::FRONT_LEFT]; }
-    inline T getBodySpringLengthFrontRight() const { return _upper_spring_length[Constants::FRONT_RIGHT]; }
-    inline T getBodySpringLengthRearLeft() const { return _upper_spring_length[Constants::REAR_LEFT]; }
-    inline T getBodySpringLengthRearRight() const { return _upper_spring_length[Constants::REAR_RIGHT]; }
+    inline T getBodySpringLengthFrontLeft() const {
+        return _upper_spring_length[Constants::FRONT_LEFT];
+    }
+    inline T getBodySpringLengthFrontRight() const {
+        return _upper_spring_length[Constants::FRONT_RIGHT];
+    }
+    inline T getBodySpringLengthRearLeft() const {
+        return _upper_spring_length[Constants::REAR_LEFT];
+    }
+    inline T getBodySpringLengthRearRight() const {
+        return _upper_spring_length[Constants::REAR_RIGHT];
+    }
     // vector in the format fl fr rl rr
     inline T* getBodySpringLengthVector() { return _upper_spring_length; }
 
@@ -462,7 +479,7 @@ public:
     inline T* getTyreExternalForceRearRight() {
         return _external_force_tyre + Constants::DIM * Constants::REAR_RIGHT;
     }
-    arbitraryTrajectory<T>* getArbitraryTrajectory() { return _trajectory; }
+    ArbitraryTrajectory<T>* getArbitraryTrajectory() { return _trajectory; }
 
     inline T getCircularRoadRadius() const { return _profile_radius; }
     inline T* getCircularRoadCenter() { return _profile_center; }
@@ -473,11 +490,11 @@ public:
 
     const EVAALookup<Constants::floatEVAA>& getLookupDamping() const { return *_lookupDamping; }
 
-	virtual ~MetaDataBase() {
-		delete _lookupDamping;
-		delete _lookupStiffness;
-		delete _trajectory;
-	}
+    virtual ~MetaDataBase() {
+        delete _lookupDamping;
+        delete _lookupStiffness;
+        delete _trajectory;
+    }
 
 private:
     /** Private constructor for the singleton instance. */
@@ -521,7 +538,6 @@ private:
             a[6] = _k_body[1];
             a[7] = _k_tyre[3];
 
-            
             _lookupStiffness =
                 new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
             _interpolation = 1;  // to switch from constant to interpolation type
@@ -532,7 +548,6 @@ private:
                 a[j] /= 100;
             }
 
-            
             _lookupDamping =
                 new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
 
@@ -633,7 +648,7 @@ private:
     int _num_time_iter;
     int _solution_dim;
 
-    arbitraryTrajectory<T>* _trajectory =nullptr;
+    ArbitraryTrajectory<T>* _trajectory = nullptr;
 
     /*
     Environment parameters (road conditions and external force fields)

@@ -55,10 +55,6 @@ protected:
     T res_norm;
     T *dkdl, *dddl;
 
-    // interpolation
-    EVAALookup<T>* lookupStiffness;
-    EVAALookup<T>* lookupDamping;
-
 public:
     TwoTrackModelParent() {}
     /**
@@ -93,11 +89,11 @@ private:
      */
     void constructAMatrix() {
         // A = M/h^2 (also acts as initialization of A)
-        Math::copy(Constants::DOFDOF, M_h2, 1, A, 1);
+        Math::copy<T>(Constants::DOFDOF, M_h2, 1, A, 1);
         // A += 1/h * D => A = 1/h^2 * M + 1/h * D
-        Math::axpy(Constants::DOFDOF, factor_h, D, 1, A, 1);
+        Math::axpy<T>(Constants::DOFDOF, factor_h, D, 1, A, 1);
         // A += K => A = 1/h^2 * M + 1/h * D + K
-        Math::axpy(Constants::DOFDOF, 1., K, 1, A, 1);
+        Math::axpy<T>(Constants::DOFDOF, 1, K, 1, A, 1);
     }
     /**
      * \brief construct B
@@ -106,9 +102,9 @@ private:
      * B = 2/(h*h) * M + 1/h * D
      */
     void constructBMatrix() {
-        Math::scal(Constants::DOFDOF, 0., B, 1);
-        Math::axpy(Constants::DOFDOF, 2., M_h2, 1, B, 1);
-        Math::axpy(Constants::DOFDOF, factor_h, D, 1, B, 1);
+        Math::scal<T>(Constants::DOFDOF, 0, B, 1);
+        Math::axpy<T>(Constants::DOFDOF, 2, M_h2, 1, B, 1);
+        Math::axpy<T>(Constants::DOFDOF, factor_h, D, 1, B, 1);
     }
     /**
      * \brief construct C
@@ -117,8 +113,8 @@ private:
      * C = -1/h^2 M
      */
     void constructCMatrix() {
-        Math::copy(Constants::DOFDOF, M_h2, 1, C, 1);
-        Math::scal(Constants::DOFDOF, -1., C, 1);
+        Math::copy<T>(Constants::DOFDOF, M_h2, 1, C, 1);
+        Math::scal<T>(Constants::DOFDOF, -1, C, 1);
     }
 
 protected:
@@ -136,10 +132,10 @@ protected:
         M_h2[Constants::DOF + 1] = I_CG[0];
         M_h2[2 * Constants::DOF + 2] = I_CG[4];
         // M_h2 = M
-        Math::copy(Constants::DOF - 3, Mass_vec + 1, 1, M_h2 + 3 * (Constants::DOF + 1),
-                   Constants::DOF + 1);  // M_h2 = diagonal matrix
+        Math::copy<T>(Constants::DOF - 3, Mass_vec + 1, 1, M_h2 + 3 * (Constants::DOF + 1),
+                      Constants::DOF + 1);  // M_h2 = diagonal matrix
         // M_h2 = M / (h * h)
-        Math::scal(Constants::DOF, 1. / (_h * _h), M_h2, Constants::DOF + 1);
+        Math::scal<T>(Constants::DOF, 1. / (_h * _h), M_h2, Constants::DOF + 1);
     }
 
     /**
@@ -153,11 +149,11 @@ protected:
      */
     void initPosVectors() {
         // u_n
-        Math::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
+        Math::copy<T>(Constants::DOF, u_n_p_1, 1, u_n, 1);
         // u_n_m_1 = u_n - _h * velocity
-        Math::copy(Constants::DOF, _car->currentVelocityTwoTrackModel, 1, u_n_m_1, 1);
-        Math::scal(Constants::DOF, -_h, u_n_m_1, 1);
-        Math::axpy(Constants::DOF, 1., u_n, 1, u_n_m_1, 1);
+        Math::copy<T>(Constants::DOF, _car->currentVelocityTwoTrackModel, 1, u_n_m_1, 1);
+        Math::scal<T>(Constants::DOF, -_h, u_n_m_1, 1);
+        Math::axpy<T>(Constants::DOF, 1, u_n, 1, u_n_m_1, 1);
     }
 
 public:
@@ -212,26 +208,26 @@ public:
      * Destructor
      */
     virtual ~TwoTrackModelBE() {
-        Math::free(A);
-        Math::free(B);
-        Math::free(C);
-        Math::free(u_n);
-        Math::free(u_n_m_1);
-        Math::free(M_h2);
-        Math::free(K);
-        Math::free(D);
-        Math::free(temp);
-        Math::free(Mat_temp);
-        Math::free(springLengths);
-        Math::free(springLengthsNormal);
-        Math::free(Mat_springLength);
+        Math::free<T>(A);
+        Math::free<T>(B);
+        Math::free<T>(C);
+        Math::free<T>(u_n);
+        Math::free<T>(u_n_m_1);
+        Math::free<T>(M_h2);
+        Math::free<T>(K);
+        Math::free<T>(D);
+        Math::free<T>(temp);
+        Math::free<T>(Mat_temp);
+        Math::free<T>(springLengths);
+        Math::free<T>(springLengthsNormal);
+        Math::free<T>(Mat_springLength);
 #ifdef INTERPOLATION
-        Math::free(J);
-        Math::free(dkdl);
-        Math::free(dddl);
-        Math::free(dKdxx);
-        Math::free(dDdxx);
-        Math::free(residual);
+        Math::free<T>(J);
+        Math::free<T>(dkdl);
+        Math::free<T>(dddl);
+        Math::free<T>(dKdxx);
+        Math::free<T>(dDdxx);
+        Math::free<T>(residual);
 #endif
     }
 
@@ -240,7 +236,7 @@ public:
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
     virtual void update_step(T* force, T* solution) {
-        // Math::scal(Constants::DOF, -1., u_n_m_1, Constants::INCX);
+        // Math::scal<T>(Constants::DOF, -1, u_n_m_1, Constants::INCX);
         Math::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force,
                                                                     u_n_p_1, Constants::DOF);
         constructAMatrix();
@@ -249,7 +245,7 @@ public:
                                                      temp);
 #endif
         // solutio = solution[t_n] = u_n_p_1
-        Math::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
+        Math::copy<T>(Constants::DOF, u_n_p_1, 1, solution, 1);
         // copy update to car
 
         // u_n_m_1 points to u_n and u_n points to u_n_m_1
@@ -258,7 +254,7 @@ public:
         // Math::swap_address<T>(u_n_p_1, u_n);
         // u_n_p_1 point to u_n_m_1 now
         // do not swap just copy
-        Math::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
+        Math::copy<T>(Constants::DOF, u_n_p_1, 1, u_n, 1);
     }
 
     /**
@@ -274,51 +270,52 @@ public:
                       1, A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
         // residual -= B*x[n]
         Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
-                      -1, B, Constants::DOF, u_n, 1, 1., residual, 1);
+                      -1, B, Constants::DOF, u_n, 1, 1, residual, 1);
         // residual += M_h2 * x[n-1]
         Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
                       1, M_h2, Constants::DOF, u_n_m_1, 1, 1, residual, 1);
         // residual -= force
-        Math::axpy(Constants::DOF, -1., force, 1, residual, 1);
+        Math::axpy<T>(Constants::DOF, -1, force, 1, residual, 1);
         // res = norm(residual)
-        res_norm = Math::nrm2(Constants::DOF, residual, 1);
+        res_norm = Math::nrm2<T>(Constants::DOF, residual, 1);
     }
 
     /**
-     * \brief construct Jacobien for non fixed case
+     * \brief construct Jacobian for non fixed case
      *
      * this has to be called every newton iteraton
      * J = M_h2 + D / _h + K + dKdx*x[n+1] + 1/h_ * dDdx ( x[n+1] - x[n] )
      */
-    void constructJacobien() {
+    void constructJacobian() {
         // first update the derivative
-        lookupStiffness->getDerivative(_car->currentSpringsLength, dkdl);
-        //	lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
+        auto& db = MetaDataBase<T>::getDataBase();
+        db.getLookupStiffness().getDerivative(_car->currentSpringsLength, dkdl);
+        db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
         // J = A =  M_h2 + D / _h + K
-        Math::copy(Constants::DOFDOF, A, 1, J, 1);
+        Math::copy<T>(Constants::DOFDOF, A, 1, J, 1);
         // J += dKdx * x[n+1]
-        Math::axpy(Constants::DOFDOF, 1., dKdxx, 1, J, 1);
+        Math::axpy<T>(Constants::DOFDOF, 1, dKdxx, 1, J, 1);
         // temp = x[n+1]
-        Math::copy(Constants::DOF, u_n_p_1, 1, temp, 1);
+        Math::copy<T>(Constants::DOF, u_n_p_1, 1, temp, 1);
         // temp += -x[n]
-        Math::axpy(Constants::DOF, -1., u_n, 1, temp, 1);
+        Math::axpy<T>(Constants::DOF, -1, u_n, 1, temp, 1);
         // calc dDdxx with (x[n+1] - x[n])
-        // constructLookupDerivativeX(dddl, temp, dDdxx);
+        constructLookupDerivativeX(dddl, temp, dDdxx);
         // J += 1/_h * dDdxx
-        // Math::axpy(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
+        Math::axpy<T>(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
     }
     /**
-     * \brief construct Jacobien for fixed to road
+     * \brief construct Jacobian for fixed to road
      *
      * add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h D - K + 1/h dDdx *
      * x[n]] therefore J = M_h2 for the tyre positions
      */
-    void constructFixedJacobien() {
+    void constructFixedJacobian() {
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
-            Math::copy(Constants::DOF, M_h2 + (4 + 2 * i) * Constants::DOF, 1,
-                       J + (4 + 2 * i) * Constants::DOF, 1);
+            Math::copy<T>(Constants::DOF, M_h2 + (4 + 2 * i) * Constants::DOF, 1,
+                          J + (4 + 2 * i) * Constants::DOF, 1);
         }
     }
 
@@ -352,13 +349,13 @@ public:
         K[2] = -kVec[0] * _car->l_long[0] - kVec[2] * _car->l_long[1] + kVec[4] * _car->l_long[2] +
                kVec[6] * _car->l_long[3];
         K[3] = -kVec[0];
-        K[4] = 0.;
+        K[4] = 0;
         K[5] = -kVec[2];
-        K[6] = 0.;
+        K[6] = 0;
         K[7] = -kVec[4];
-        K[8] = 0.;
+        K[8] = 0;
         K[9] = -kVec[6];
-        K[10] = 0.;
+        K[10] = 0;
 
         temp[1] =
             _car->l_lat[0] * _car->l_lat[0] * kVec[0] + _car->l_lat[1] * _car->l_lat[1] * kVec[2] +
@@ -436,19 +433,19 @@ public:
 
         // symmetrize K
         // cblas_dcopy(DOF * DOF, K, 1, K_trans, 1);
-        Math::lacpy(LAPACK_ROW_MAJOR, 'U', Constants::DOF, Constants::DOF, K, Constants::DOF,
-                    Mat_temp, Constants::DOF);
+        Math::lacpy<T>(LAPACK_ROW_MAJOR, 'U', Constants::DOF, Constants::DOF, K, Constants::DOF,
+                       Mat_temp, Constants::DOF);
 
-        Math::imatcopy('R', 'T', Constants::DOF, Constants::DOF, 1., Mat_temp, Constants::DOF,
-                       Constants::DOF);  // get transpose of matrix
+        Math::imatcopy<T>('R', 'T', Constants::DOF, Constants::DOF, 1, Mat_temp, Constants::DOF,
+                          Constants::DOF);  // get transpose of matrix
 
-        Math::lacpy(LAPACK_ROW_MAJOR, 'L', Constants::DOF, Constants::DOF, Mat_temp, Constants::DOF,
-                    K,
-                    Constants::DOF);  // copy lower triangular in the orig matrix
-        // cblas_daxpy(DOF * DOF, 1., K_trans, 1, K, 1); // K = K + K'
+        Math::lacpy<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, Constants::DOF, Mat_temp,
+                       Constants::DOF, K,
+                       Constants::DOF);  // copy lower triangular in the orig matrix
+        // cblas_daxpy(DOF * DOF,1, K_trans, 1, K, 1); // K = K + K'
 
         // add the diagonal to K
-        Math::allocate_to_diagonal(K, temp, Constants::DOF);  // K = K + K'+ diag(K)
+        Math::allocate_to_diagonal<T>(K, temp, Constants::DOF);  // K = K + K'+ diag(K)
     }
     /**
      * \brief construct Damping Matrix
@@ -458,8 +455,8 @@ public:
      */
     void constructDampingMatrix() {
 #ifdef INTERPOLATION
-        // MetaDataBase::getDataBase().getLookupDamping()->getInterpolation(_car->currentSpringsLength,
-        // dVec);
+        MetaDataBase<T>::getDataBase().getLookupDamping().getInterpolation(
+            _car->currentSpringsLength, dVec);
 #endif
         temp[0] = dVec[0] + dVec[2] + dVec[4] + dVec[6];
         D[1] = dVec[0] * _car->l_lat[0] - dVec[2] * _car->l_lat[1] + dVec[4] * _car->l_lat[2] -
@@ -467,13 +464,13 @@ public:
         D[2] = -dVec[0] * _car->l_long[0] - dVec[2] * _car->l_long[1] + dVec[4] * _car->l_long[2] +
                dVec[6] * _car->l_long[3];
         D[3] = -dVec[0];
-        D[4] = 0.;
+        D[4] = 0;
         D[5] = -dVec[2];
-        D[6] = 0.;
+        D[6] = 0;
         D[7] = -dVec[4];
-        D[8] = 0.;
+        D[8] = 0;
         D[9] = -dVec[6];
-        D[10] = 0.;
+        D[10] = 0;
 
         temp[1] =
             _car->l_lat[0] * _car->l_lat[0] * dVec[0] + _car->l_lat[1] * _car->l_lat[1] * dVec[2] +
@@ -551,19 +548,19 @@ public:
 
         // symmetrize D
         // cblas_dcopy(DOF * DOF, D, 1, D_trans, 1);
-        Math::lacpy(LAPACK_ROW_MAJOR, 'U', Constants::DOF, Constants::DOF, D, Constants::DOF,
-                    Mat_temp, Constants::DOF);
+        Math::lacpy<T>(LAPACK_ROW_MAJOR, 'U', Constants::DOF, Constants::DOF, D, Constants::DOF,
+                       Mat_temp, Constants::DOF);
 
-        Math::imatcopy('R', 'T', Constants::DOF, Constants::DOF, 1., Mat_temp, Constants::DOF,
-                       Constants::DOF);  // get transpose of matrix
+        Math::imatcopy<T>('R', 'T', Constants::DOF, Constants::DOF, 1, Mat_temp, Constants::DOF,
+                          Constants::DOF);  // get transpose of matrix
 
-        Math::lacpy(LAPACK_ROW_MAJOR, 'L', Constants::DOF, Constants::DOF, Mat_temp, Constants::DOF,
-                    D,
-                    Constants::DOF);  // copy lower triangular in the orig matrix
-        // cblas_daxpy(DOF * DOF, 1., D_trans, 1, D, 1); // D = D + D'
+        Math::lacpy<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, Constants::DOF, Mat_temp,
+                       Constants::DOF, D,
+                       Constants::DOF);  // copy lower triangular in the orig matrix
+        // cblas_daxpy(DOF * DOF,1, D_trans, 1, D, 1); // D = D + D'
 
         // add the diagonal to K
-        Math::allocate_to_diagonal(D, temp, Constants::DOF);  // D = D + D'+ diag(D)
+        Math::allocate_to_diagonal<T>(D, temp, Constants::DOF);  // D = D + D'+ diag(D)
     }
 
     /**
@@ -605,13 +602,13 @@ public:
                    der[4] * _car->l_lat[2] * _car->l_long[2] * x[1] -
                    der[6] * _car->l_lat[3] * _car->l_long[3] * x[1];
         dMdxx[3] = -der[0] * (x[0] - x[3] + _car->l_lat[0] * x[1] - _car->l_long[0] * x[2]);
-        dMdxx[4] = 0.;
+        dMdxx[4] = 0;
         dMdxx[5] = der[2] * (x[5] - x[0] + _car->l_lat[1] * x[1] + _car->l_long[1] * x[2]);
-        dMdxx[6] = 0.;
+        dMdxx[6] = 0;
         dMdxx[7] = -der[4] * (x[0] - x[7] + _car->l_lat[2] * x[1] + _car->l_long[2] * x[2]);
-        dMdxx[8] = 0.;
+        dMdxx[8] = 0;
         dMdxx[9] = -der[6] * (x[0] - x[9] - _car->l_lat[3] * x[1] + _car->l_long[3] * x[2]);
-        dMdxx[10] = 0.;
+        dMdxx[10] = 0;
 
         temp[1] = der[2] * _car->l_lat[1] * _car->l_lat[1] * x[0] -
                   der[2] * _car->l_lat[1] * _car->l_lat[1] * _car->l_lat[1] * x[1] -
@@ -738,20 +735,20 @@ public:
 
         // symmetrize dMdxx
         // cblas_dcopy(DOF * DOF, dMdxx, 1, dMdxx_trans, 1);
-        Math::lacpy(LAPACK_ROW_MAJOR, 'U', Constants::DOF, Constants::DOF, dMdxx, Constants::DOF,
-                    Mat_temp, Constants::DOF);
+        Math::lacpy<T>(LAPACK_ROW_MAJOR, 'U', Constants::DOF, Constants::DOF, dMdxx, Constants::DOF,
+                       Mat_temp, Constants::DOF);
 
-        Math::imatcopy('R', 'T', Constants::DOF, Constants::DOF, 1., Mat_temp, Constants::DOF,
-                       Constants::DOF);  // get transpose of matrix
+        Math::imatcopy<T>('R', 'T', Constants::DOF, Constants::DOF, 1, Mat_temp, Constants::DOF,
+                          Constants::DOF);  // get transpose of matrix
 
-        Math::lacpy(LAPACK_ROW_MAJOR, 'L', Constants::DOF, Constants::DOF, Mat_temp, Constants::DOF,
-                    dMdxx,
-                    Constants::DOF);  // copy lower triangular in the orig matrix
-        // cblas_daxpy(DOF * DOF, 1., dMdxx_trans, 1, dMdxx, 1); // dMdxx = dMdxx + dMdxx'
+        Math::lacpy<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, Constants::DOF, Mat_temp,
+                       Constants::DOF, dMdxx,
+                       Constants::DOF);  // copy lower triangular in the orig matrix
+        // cblas_daxpy(DOF * DOF,1, dMdxx_trans, 1, dMdxx, 1); // dMdxx = dMdxx + dMdxx'
 
         // add the diagonal to dM
-        Math::allocate_to_diagonal(dMdxx, temp,
-                                   Constants::DOF);  // dMdxx = dMdxx + dMdxx'+ diag(dMdxx)
+        Math::allocate_to_diagonal<T>(dMdxx, temp,
+                                      Constants::DOF);  // dMdxx = dMdxx + dMdxx'+ diag(dMdxx)
     }
 };
 
@@ -772,13 +769,13 @@ private:
      */
     void constructAMatrix() {
         // A = M/h^2
-        Math::copy(Constants::DOFDOF, M_h2, 1, A, 1);
+        Math::copy<T>(Constants::DOFDOF, M_h2, 1, A, 1);
         // A *= 9/4
-        Math::scal(Constants::DOFDOF, 2.25, A, 1);
+        Math::scal<T>(Constants::DOFDOF, 2.25, A, 1);
         // A += 3/2h * D
-        Math::axpy(Constants::DOFDOF, 1.5 * factor_h, D, 1, A, 1);
+        Math::axpy<T>(Constants::DOFDOF, 1.5 * factor_h, D, 1, A, 1);
         // A += K
-        Math::axpy(Constants::DOFDOF, 1., K, 1, A, 1);
+        Math::axpy<T>(Constants::DOFDOF, 1, K, 1, A, 1);
     }
     /**
      * \brief construct bVec
@@ -789,27 +786,27 @@ private:
      */
     void constructbVec() {
         // temp = x[n]
-        Math::copy(Constants::DOF, u_n, 1, temp, 1);
+        Math::copy<T>(Constants::DOF, u_n, 1, temp, 1);
         // temp *= 6
-        Math::scal(Constants::DOF, 6., temp, 1);
+        Math::scal<T>(Constants::DOF, 6, temp, 1);
         // temp += - 11/2 * x[n-1]
-        Math::axpy(Constants::DOF, -5.5, u_n_m_1, 1, temp, 1);
+        Math::axpy<T>(Constants::DOF, -5.5, u_n_m_1, 1, temp, 1);
         // temp += 2 * x[n-2]
-        Math::axpy(Constants::DOF, 2., u_n_m_2, 1, temp, 1);
+        Math::axpy<T>(Constants::DOF, 2, u_n_m_2, 1, temp, 1);
         // temp += -1/4 * x[n-3]
-        Math::axpy(Constants::DOF, -0.25, u_n_m_3, 1, temp, 1);
+        Math::axpy<T>(Constants::DOF, -0.25, u_n_m_3, 1, temp, 1);
         // bVec = M_h2 * temp
-        Math::gemv(CblasRowMajor, CblasNoTrans, Constants::DOF, Constants::DOF, 1., M_h2,
-                   Constants::DOF, temp, 1, 0., bVec, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DOF, Constants::DOF, 1, M_h2,
+                      Constants::DOF, temp, 1, 0, bVec, 1);
         // temp = x[n]
-        Math::copy(Constants::DOF, u_n, 1, temp, 1);
+        Math::copy<T>(Constants::DOF, u_n, 1, temp, 1);
         // temp *= 2
-        Math::scal(Constants::DOF, 2., temp, 1);
+        Math::scal<T>(Constants::DOF, 2, temp, 1);
         // temp += - 1/2 * x[n-1]
-        Math::axpy(Constants::DOF, -0.5, u_n_m_1, 1, temp, 1);
+        Math::axpy<T>(Constants::DOF, -0.5, u_n_m_1, 1, temp, 1);
         // bVec += 1/h * D * temp
-        Math::gemv(CblasRowMajor, CblasNoTrans, Constants::DOF, Constants::DOF, factor_h, D,
-                   Constants::DOF, temp, 1, 1., bVec, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DOF, Constants::DOF, factor_h, D,
+                      Constants::DOF, temp, 1, 1, bVec, 1);
     }
 
     /**
@@ -818,11 +815,11 @@ private:
     void getInitialGuess(T* forces) {
         constructbVec();
         lapack_int status;
-        status = Math::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DOF, A, Constants::DOF);
+        status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, A, Constants::DOF);
         Math::potrfCheckStatus(status);
-        Math::vAdd(Constants::DOF, bVec, forces, u_n_p_1);
+        Math::vAdd<T>(Constants::DOF, bVec, forces, u_n_p_1);
         // u_n_p_1=A\(b+f)
-        Math::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, A, Constants::DOF, u_n_p_1, 1);
+        Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, A, Constants::DOF, u_n_p_1, 1);
         // reconstruct A
         constructAMatrix();
     }
@@ -842,12 +839,12 @@ public:
 
     void first_two_steps(T* force, T* solution) {
         if (time_step_count == 0) {
-            Math::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
+            Math::copy<T>(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
             TwoTrackModelBE<T>::update_step(force, solution);
         }
         else {
-            Math::copy(Constants::DOF, u_n_m_2, 1, u_n_m_3, 1);
-            Math::copy(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
+            Math::copy<T>(Constants::DOF, u_n_m_2, 1, u_n_m_3, 1);
+            Math::copy<T>(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
             TwoTrackModelBE<T>::update_step(force, solution);
             // construct A
             constructAMatrix();
@@ -865,7 +862,7 @@ public:
      * \return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
     void update_step_bdf2(T* force, T* solution) {
-        // cblas_dscal(DOF, 0., force, 1);
+        // cblas_dscal(DOF,0, force, 1);
         getInitialGuess(force);
 #ifdef INTERPOLATION
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1,
@@ -873,14 +870,14 @@ public:
 #endif
         /*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
         apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
-        Math::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
+        Math::copy<T>(Constants::DOF, u_n_p_1, 1, solution, 1);
         // u_n_m_2 points to u_n_m_3 and u_n_m_3 points to u_n_m_2
         Math::swap_address<T>(u_n_m_2, u_n_m_3);
         // u_n_m_2 points to u_n_m_1 and u_n_m_1 points to u_n_m_3
         Math::swap_address<T>(u_n_m_1, u_n_m_2);
         // u_n_m_1 points to u_n and u_n points to u_n_m_3
         Math::swap_address<T>(u_n, u_n_m_1);
-        Math::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
+        Math::copy<T>(Constants::DOF, u_n_p_1, 1, u_n, 1);
     }
     /**
      * \brief calculate the residual(Newton Function) + res_norm
@@ -894,11 +891,11 @@ public:
         Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
                       1, A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
         // residual -= bVec
-        Math::axpy(Constants::DOF, -1., bVec, 1, residual, 1);
+        Math::axpy<T>(Constants::DOF, -1, bVec, 1, residual, 1);
         // residual -= force
-        Math::axpy(Constants::DOF, -1., force, 1, residual, 1);
+        Math::axpy<T>(Constants::DOF, -1, force, 1, residual, 1);
         // res = norm(residual)
-        res_norm = Math::nrm2(Constants::DOF, residual, 1);
+        res_norm = Math::nrm2<T>(Constants::DOF, residual, 1);
     }
     /**
      * \brief update all dependent matrices on the position vector
@@ -914,44 +911,45 @@ public:
         constructbVec();
     }
     /**
-     * \brief construct Jacobien
+     * \brief construct Jacobian
      *
      * this has to be called every newton iteraton
      * J = 9/4 * M_h2 + 3/2h * D + K + dKdx*x[n+1] + 1/h * dDdx * (3/2 * x[n+1] - 2 * x[n] + 1/2 *
      * x[n-1])
      */
-    void constructJacobien() {
+    void constructJacobian() {
         // first update the derivative
-        lookupStiffness->getDerivative(_car->currentSpringsLength, dkdl);
-        // lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
+        auto& db = MetaDataBase<T>::getDataBase();
+        db.getLookupStiffness().getDerivative(_car->currentSpringsLength, dkdl);
+        db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
         // J = A
-        Math::copy(Constants::DOFDOF, A, 1, J, 1);
+        Math::copy<T>(Constants::DOFDOF, A, 1, J, 1);
         // J += dKdx * x[n+1]
-        Math::axpy(Constants::DOFDOF, 1., dKdxx, 1, J, 1);
+        Math::axpy<T>(Constants::DOFDOF, 1, dKdxx, 1, J, 1);
         // temp = x[n+1]
-        Math::copy(Constants::DOF, u_n_p_1, 1, temp, 1);
+        Math::copy<T>(Constants::DOF, u_n_p_1, 1, temp, 1);
         // temp *= 3/2
-        Math::scal(Constants::DOF, 1.5, temp, 1);
+        Math::scal<T>(Constants::DOF, 1.5, temp, 1);
         // temp += -2 * x[n]
-        Math::axpy(Constants::DOF, -2., u_n, 1, temp, 1);
+        Math::axpy<T>(Constants::DOF, -2, u_n, 1, temp, 1);
         // temp += 1/2 * x[n-1]
-        Math::axpy(Constants::DOF, 0.5, u_n_m_1, 1, temp, 1);
+        Math::axpy<T>(Constants::DOF, 0.5, u_n_m_1, 1, temp, 1);
         // calc dDdxx with (3/2 * x[n+1] - 2 * x[n] + 1/2 * x[n-1])
         constructLookupDerivativeX(dddl, temp, dDdxx);
         // J += 1/_h * dDdxx
-        Math::axpy(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
+        Math::axpy<T>(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
     }
     /*
     Destructor
     */
     virtual ~TwoTrackModelBDF2() {
-        Math::free(Dmat);
-        Math::free(E);
-        Math::free(u_n_m_2);
-        Math::free(u_n_m_3);
-        Math::free(bVec);
+        Math::free<T>(Dmat);
+        Math::free<T>(E);
+        Math::free<T>(u_n_m_2);
+        Math::free<T>(u_n_m_3);
+        Math::free<T>(bVec);
     }
 };
 
@@ -1029,8 +1027,8 @@ public:
     }
 
     virtual ~TwoTrackModelFull() {
-        Math::free(u_sol);
-        Math::free(f_n_p_1);
+        Math::free<T>(u_sol);
+        Math::free<T>(f_n_p_1);
     }
 
 private:

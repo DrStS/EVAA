@@ -81,7 +81,8 @@ public:
                                    int k) {
 #pragma loop(ivdep)
         for (auto i = 0; i < size; i++) {
-            axis[i] = (1 + cos((2 * i + 1) / (2 * size) * Constants::PI)) / 2 * (l_max - l_min) + l_min;
+            axis[i] =
+                (1 + cos((2 * i + 1) / (2 * size) * Constants::PI)) / 2 * (l_max - l_min) + l_min;
         }
         for (auto j = 0; j < k; j++) {
             for (auto i = 0; i < size; i++) {
@@ -130,17 +131,18 @@ public:
      * type = DF_PP_DEFAULT, order = DF_PP_LINEAR
      * for spline interpolation:
      * type = DF_PP_NATURAL, order = DF_PP_CUBIC
+     *
+     * \param size size of one grid
+     * \param a pointer to array of size k with constant coefficient for each spring
+     * \param b coefficient for linear part of grid function
+     * \param c coefficient for quadratic part of grid function
+     * \param l_min min length of spring in lookup
+     * \param l_max max length of spring in lookup
+     * \param k number of springs
+     * \param type int which corersponds to a certain type of interpolation
+     * \param order order of the interpolation: depends on type
      */
-    EVAALookup(
-        int size /**< [in] size of one grid */,
-        T* a /**< [in] pointer to array of size k with constant coefficient for each spring */,
-        T b /**< [in] coefficient for linear part of grid function */,
-        T c /**< [in] coefficient for quadratic part of grid function */,
-        T l_min /**< [in] min length of spring in lookup */,
-        T l_max /**< [in] max length of spring in lookup */, int k /**< [in] number of springs */,
-        int type /**< [in] int which corersponds to a certain type of interpolation */,
-        int order /**< [in] order of the interpolation: depends on type */
-        ) :
+    EVAALookup(int size, T* a, T b, T c, T l_min, T l_max, int k, int type, int order) :
         nx(size), ny(k), sorder(order), stype(type), l_min(l_min), l_max(l_max) {
         if (sorder == DF_PP_CUBIC) {
             bc_type = DF_BC_FREE_END;
@@ -159,7 +161,7 @@ public:
         int err = 0;
         for (auto i = 0; i < ny; i++) {
             /* Create Data Fitting task */
-            err = Math::dfNewTask1D(&task[i], nx, axis, xhint, 1, &grid[i * nx], yhint);
+            err = Math::dfNewTask1D<T>(&task[i], nx, axis, xhint, 1, &grid[i * nx], yhint);
             Math::dfCheckError(err);
 
             /* Edit task parameters for look up interpolant */
@@ -175,7 +177,7 @@ public:
         // for debugging purposes
         generateLookupOutputFile(l_min, l_max, a[0]);
 
-        Math::free(grid);
+        Math::free<T>(grid);
     }
 
     /**
@@ -188,9 +190,9 @@ public:
         for (auto i = 0; i < ny; i++) {
             dfDeleteTask(&task[i]);
         }
-        Math::free(axis);
-        Math::free(scoeff);
-        Math::free(task);
+        Math::free<T>(axis);
+        Math::free<T>(scoeff);
+        Math::free<DFTaskPtr>(task);
     }
     /**
      * \brief interpolates the ny = k grids ob the lookuptable
@@ -228,7 +230,7 @@ public:
     void getDerivative(
         T* length /**< [in] pointer to array of size k with lenght values of springs*/,
         T* deriv /**< [out] pointer to array of size k to store values of the derivative*/
-    ) {
+    ) const {
         // size of array describing derivative (dorder), which is defined two lines below
         const MKL_INT ndorder = 2;
         const MKL_INT dorder[2] = {0, 1};  // only the derivative values are computed
@@ -239,10 +241,10 @@ public:
     }
 
     /**
-     * \brief interpolate the first task on every point of axis to check for correctnes
+     * \brief interpolate the first task on every point of axis to check for correctness
      */
     void generateLookupOutputFile(T l_min, T l_max, T add) {
-        // size of array describing derivative (dorder), which is defined two lines below
+        // size of array describing derivative (order), which is defined two lines below
         const MKL_INT ndorder = 1;
         const MKL_INT dorder[1] = {1};  // only the values are computed
         T* interpolation = Math::malloc<T>(2 * nx - 1);
@@ -258,7 +260,7 @@ public:
         IO::writeLookUpGridPlusInterpolateValues<T>(
             axis, grid, nx, interpolationPoints, interpolation, 2 * nx - 1,
             "LookupTablePlusInterpolation" + std::to_string(add) + ".txt");
-        Math::free(interpolation);
+        Math::free<T>(interpolation);
     }
 };
 
