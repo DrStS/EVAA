@@ -15,7 +15,7 @@ namespace EVAA {
  * Handles the whole MBD simulation (from the Matlab code)
  */
 template <class T>
-class MBD_method {
+class MBDMethod {
 private:
     // Simulation Parameters
 
@@ -1780,7 +1780,7 @@ public:
     /**
      * Constructor
      */
-    MBD_method() {
+    MBDMethod() {
         MemoryAllocation();
 
         ReadFromXML();
@@ -1973,19 +1973,19 @@ public:
         compute_f_mem_alloc();
 
         if (used_solver == BROYDEN_CN) {
-            Math::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector, this->h,
+            Math::Solvers<T, MBDMethod>::Broyden_CN(this, x_vector, complete_vector, this->h,
                                                      this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == RUNGE_KUTTA_4) {
-            Math::Solvers<T, MBD_method>::RK4(this, x_vector, complete_vector, this->h,
+            Math::Solvers<T, MBDMethod>::RK4(this, x_vector, complete_vector, this->h,
                                               this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == BROYDEN_BDF2) {
-            Math::Solvers<T, MBD_method>::Broyden_PDF2(this, x_vector, complete_vector, this->h,
+            Math::Solvers<T, MBDMethod>::Broyden_PDF2(this, x_vector, complete_vector, this->h,
                                                        this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == BROYDEN_EULER) {
-            Math::Solvers<T, MBD_method>::Broyden_Euler(this, x_vector, complete_vector, this->h,
+            Math::Solvers<T, MBDMethod>::Broyden_Euler(this, x_vector, complete_vector, this->h,
                                                         this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == EXPLICIT_EULER) {
@@ -2132,7 +2132,7 @@ public:
     /**
      * Destructor
      */
-    ~MBD_method() {
+    ~MBDMethod() {
         // TODO: consider removing after checking performance.
         mkl_free_buffers();
 

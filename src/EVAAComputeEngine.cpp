@@ -683,7 +683,7 @@ void EVAAComputeEngine::computeMBD(void) {
     size_t num_iter = MetaDataBase::getDataBase().getNumberOfTimeIterations();
     size_t solution_dim = MetaDataBase::getDataBase().getSolutionVectorSize();
     Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(solution_dim);
-    MBD_method<Constants::floatEVAA> solver;
+    MBDMethod<Constants::floatEVAA> solver;
     solver.solve(sol);
     solver.print_final_result(sol);
     Math::free(sol);
@@ -763,7 +763,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
     size_t num_iter = _parameters.num_time_iter;
     size_t solution_dim = _parameters.solution_dim;
     Constants::floatEVAA* soln = Math::calloc<Constants::floatEVAA>(solution_dim);
-    MBD_method<Constants::floatEVAA> solver(_parameters);
+    MBDMethod<Constants::floatEVAA> solver(_parameters);
     size_t solution_size = (num_iter + 1) * solution_dim;
     Constants::floatEVAA* complete_soln = Math::malloc<Constants::floatEVAA>(solution_size);
     solver.solve(soln, complete_soln);
