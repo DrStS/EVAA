@@ -227,8 +227,8 @@
 
   <SimulationParametersXML>
     <GeneralSettingsXML>
-      <TimestepSizeXML>1e-3</TimestepSizeXML>
-      <NumberOfIterationsXML>1000</NumberOfIterationsXML>
+      <TimestepSizeXML>1e-1</TimestepSizeXML>
+      <NumberOfIterationsXML>50</NumberOfIterationsXML>
       <GravityXML>
         <x>0</x>
         <y>0</y>
