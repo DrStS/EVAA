@@ -485,14 +485,21 @@ public:
     inline T* getCircularRoadCenter() { return _profile_center; }
 
     BoundaryConditionRoad getRoadConditions() const { return _boundary_condition_road; }
+#ifdef INTERPOLATION
+	const EVAALookup<Constants::floatEVAA>& getLookupStiffness() const { return *_lookupStiffness; }
 
-    const EVAALookup<Constants::floatEVAA>& getLookupStiffness() const { return *_lookupStiffness; }
+	const EVAALookup<Constants::floatEVAA>& getLookupDamping() const { return *_lookupDamping; }
+#else
+	const void* getLookupStiffness() const { return NULL; }
 
-    const EVAALookup<Constants::floatEVAA>& getLookupDamping() const { return *_lookupDamping; }
+	const void* getLookupDamping() const { return NULL; }
+#endif // INTERPOLATION
 
     virtual ~MetaDataBase() {
+#ifdef INTERPOLATION
         delete _lookupDamping;
         delete _lookupStiffness;
+#endif
         delete _trajectory;
     }
 
@@ -666,11 +673,14 @@ private:
 
     /** Lookup filename read from the car file. */
     std::string _lookup_filename;
+#ifdef INTERPOLATION
+	/** Stiffness lookup from the compute engine. */
+	EVAALookup<Constants::floatEVAA>* _lookupStiffness;
+	/** Damping lookup from the compute engine. */
+	EVAALookup<Constants::floatEVAA>* _lookupDamping;
+#endif // INTERPOLATION
 
-    /** Stiffness lookup from the compute engine. */
-    EVAALookup<Constants::floatEVAA>* _lookupStiffness;
-    /** Damping lookup from the compute engine. */
-    EVAALookup<Constants::floatEVAA>* _lookupDamping;
+    
 };
 
 }  // namespace EVAA
