@@ -768,64 +768,41 @@ public:
 
         Math::free<T>(Position_vec);
         Math::free<T>(Velocity_vec);
-        Velocity_vec = nullptr;
         Math::free<T>(massComponents);
-        massComponents = nullptr;
         Math::free<T>(angle_CG);
         Math::free<T>(w_CG);
-        w_CG = nullptr;
         Math::free<T>(momentOfInertia);
-        momentOfInertia = nullptr;
 
         // Initial Conditions of the car
         Math::free<T>(initialPositionGlobal);
-        initialPositionGlobal = nullptr;
         Math::free<T>(initialVelocityGlobal);
-        initialVelocityGlobal = nullptr;
         Math::free<T>(initialAngleGlobal);
-        initialAngleGlobal = nullptr;
         Math::free<T>(initialAngularVelocityGlobal);
-        initialAngularVelocityGlobal = nullptr;
 
         Math::free<T>(unexcitedSpringsLength);
-        unexcitedSpringsLength = nullptr;
         Math::free<T>(currentCIRTwoTrackModel);
-        currentCIRTwoTrackModel = nullptr;
         Math::free<T>(currentSpringsLength);
-        currentSpringsLength = nullptr;
         Math::free<T>(currentDisplacementTwoTrackModel);
-        currentDisplacementTwoTrackModel = nullptr;
         Math::free<T>(currentPositionTwoTrackModel);
-        currentPositionTwoTrackModel = nullptr;
         Math::free<T>(unexcitedPositionTwoTrackModel);
-        unexcitedPositionTwoTrackModel = nullptr;
         Math::free<T>(kVec);
-        kVec = nullptr;
         Math::free<T>(dVec);
-        dVec = nullptr;
         Math::free<T>(l_lat);
         Math::free<T>(l_long);
-        l_long = nullptr;
         Math::free<T>(currentVelocityTwoTrackModel);
-        currentVelocityTwoTrackModel = nullptr;
         Math::free<size_t>(tyre_index_set);
 
         // ALE Vectors
 
         Math::free<T>(currentPositionLagrangian);
-        currentPositionLagrangian = nullptr;
 
         Math::free<T>(currentVelocityLagrangian);
-        currentVelocityLagrangian = nullptr;
 
         // Interpolator objects
 
         Math::free<T>(currentCornerPositions);
-        currentCornerPositions = nullptr;
         Math::free<T>(currentRotationMatrix);
-        currentRotationMatrix = nullptr;
         Math::free<T>(relativeCornerPositions);
-        relativeCornerPositions = nullptr;
         Math::free<T>(angle_buffer);
         Math::free<T>(pos_buffer);
     }
