@@ -208,7 +208,12 @@ public:
                 _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT]);
             _trajectory->calculateTravelledDistance();
             _trajectory->calculateAngles();
-            _trajectory->calculateForcesAndTorques();
+            _trajectory->calculateAccelerationsCenterOfGravity();
+            _trajectory->calculateAccelerationsLegs(
+                _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
+                _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT],
+                _l_lat[Constants::FRONT_LEFT], _l_lat[Constants::FRONT_RIGHT],
+                _l_lat[Constants::REAR_LEFT], _l_lat[Constants::REAR_RIGHT]);
         }
         else {
             throw std::logic_error(
