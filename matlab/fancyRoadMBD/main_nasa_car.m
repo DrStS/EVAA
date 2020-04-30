@@ -33,8 +33,8 @@ function [t, y_return, y, metrics] = main_nasa_car(r1, r2, r3, r4, mass, mass_wh
                 vw2; ...    % 3 10:12
                 vw3; ...    % 3 13:15
                 vw4; ...    % 3 16:18
-                vt1; ...    % 3 19:21
-                vt2; ...    % 3 22:24
+                vt1; ...    % 3 19:21 xzy
+                vt2; ...    % 3 22:24 RR RL FL FR
                 vt3; ...    % 3 25:27
                 vt4; ...    % 3 28:30
                 qc; ...     % 4 31:34
