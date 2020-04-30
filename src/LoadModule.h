@@ -1,3 +1,4 @@
+
 // TODO: Copyright header
 
 #pragma once
@@ -47,7 +48,7 @@ public:
         Active_Profile = Profile_type;
         Car_obj = Car1;
 
-        auto& db = MetaDataBase::getDataBase();
+        auto& db = MetaDataBase<T>::getDataBase();
 
         // auxiliary vectors
         Normal_ext = Math::malloc<T>(Constants::DIM);  // normal_force, with external forces
@@ -175,10 +176,13 @@ public:
 
     void set_External_force() {
         // in LoadModule constructor commented
-        auto& db = MetaDataBase::getDataBase();
+        // TODO: remove method or code in constructor (call in constructor commented out).
+        // TODO: using xml_start/positon_start not be needed with all the getters in MetaDataBase?
+        // TODO: magic '3' and '6' below look like Constants::DIM.
+        auto& db = MetaDataBase<T>::getDataBase();
 
-        Math::copy(Constants::DIM, db.getBodyExternalForce(), 1, External_force,
-                   1);  // copy the center of mass position
+        // copy the center of mass position
+        Math::copy(Constants::DIM, db.getBodyExternalForce(), 1, External_force, 1);
         T *xml_start, *position_start;
         xml_start = db.getWheelExternalForceFrontLeft();
         position_start = External_force + 3;

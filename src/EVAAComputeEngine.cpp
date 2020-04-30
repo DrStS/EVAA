@@ -51,13 +51,13 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
     IO::checkFileExists(xmlCarFileName);
     IO::checkFileExists(xmlLoadFileName);
 
-    MetaDataBase::getDataBase().readParameters(xmlCarFileName);
-    MetaDataBase::getDataBase().readLoadParameters(xmlLoadFileName);
+    MetaDataBase<Constants::floatEVAA>::getDataBase().readParameters(xmlCarFileName);
+    MetaDataBase<Constants::floatEVAA>::getDataBase().readLoadParameters(xmlLoadFileName);
 }
 
 void EVAAComputeEngine::printInfo(void) {
     Math::printMKLInfo();
-    auto& db = MetaDataBase::getDataBase();
+    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
     std::cout << "\n\nCalculate the solution after "
               << db.getNumberOfTimeIterations() * db.getTimeStepSize()
               << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations()
@@ -65,7 +65,8 @@ void EVAAComputeEngine::printInfo(void) {
 }
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
-    auto& db = MetaDataBase::getDataBase();
+    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+
     // K stiffness
     double k_11 = db.getBodyStiffnessFrontLeft();
     double k_12 = db.getTyreStiffnessFrontLeft();
@@ -215,7 +216,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     using blaze::rowMajor;
     using blaze::SymmetricMatrix;
 
-    auto& db = MetaDataBase::getDataBase();
+    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
 
     // K stiffness
     double k_11 = db.getBodyStiffnessFrontLeft();
@@ -388,9 +389,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 }
 
 void EVAAComputeEngine::computeMKL11DOF(void) {
-    auto& db = MetaDataBase::getDataBase();
-
-    // TODO: Templated floating type for all doubles below.
+    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
 
     // K stiffness
     double k_11 = db.getBodyStiffnessFrontLeft();
@@ -637,11 +636,13 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 }
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
-    if (MetaDataBase::getDataBase().getRoadConditions() == NONFIXED) {
+    auto& db = MetaDataBase<Constants::floatEVAA>::DataBase();
+    if (db.getRoadConditions() == BoundaryConditionRoad::NONFIXED) {
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
         TwoTrackModelFull<Constants::floatEVAA> solver(car);
-        solver.apply_boundary_condition(MetaDataBase::getDataBase().getRoadConditions());
+        solver.apply_boundary_condition(db.getRoadConditions());
+
         solver.solve(sol);
 
         solver.print_final_results(sol);
@@ -680,10 +681,11 @@ void EVAAComputeEngine::computeMKLTwoTrackModel() {
 #endif
 
 void EVAAComputeEngine::computeMBD(void) {
-    size_t num_iter = MetaDataBase::getDataBase().getNumberOfTimeIterations();
-    size_t solution_dim = MetaDataBase::getDataBase().getSolutionVectorSize();
+    size_t num_iter = MetaDataBase<Constants::floatEVAA>::getDataBase().getNumberOfTimeIterations();
+    size_t solution_dim = MetaDataBase<Constants::floatEVAA>::getDataBase().getSolutionVectorSize();
     Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(solution_dim);
     MBDMethod<Constants::floatEVAA> solver;
+
     solver.solve(sol);
     solver.print_final_result(sol);
     Math::free(sol);
@@ -691,10 +693,9 @@ void EVAAComputeEngine::computeMBD(void) {
 
 void EVAAComputeEngine::computeALE(void) {
     Profile<Constants::floatEVAA>* roadProfile;
-
     Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 
-    auto& db = MetaDataBase::getDataBase();
+    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
     switch (db.getRoadConditions()) {
     case CIRCULAR:
         roadProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(),
@@ -738,7 +739,8 @@ void EVAAComputeEngine::computeALE(void) {
 }
 
 void EVAAComputeEngine::computeALEtest(void) {
-    auto& db = MetaDataBase::getDataBase();
+    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+
     size_t num_iter = db.getNumberOfTimeIterations();
     size_t solution_dim = db.getSolutionVectorSize();
     Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
