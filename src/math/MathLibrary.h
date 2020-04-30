@@ -552,10 +552,10 @@ public:
             // Initial approximation of the Jacobian
             // dx = x - x_previous;
             Math::copy<T>(x_len, x, 1, dx, 1);
-            Math::axpy<T>(x_len, -1., it_start, 1, dx, 1);
+            Math::axpy<T>(x_len, -1, it_start, 1, dx, 1);
             // df = f_new' - f_old';
             Math::copy<T>(x_len, f_new, 1, df, 1);
-            Math::axpy<T>(x_len, -1., f_old, 1, df, 1);
+            Math::axpy<T>(x_len, -1, f_old, 1, df, 1);
 
             // approximate J(x_0)
             // J = eye(length(df)) - delta_t*((1./dx)'*df)';
@@ -582,24 +582,24 @@ public:
                 Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
                 Math::copy<T>(x_len, F, 1, x_new, 1);
                 Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-                Math::axpy<T>(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
-                Math::scal<T>(x_len, -1., x_new, 1);
+                Math::axpy<T>(x_len, -1, x, 1, x_new, 1);  // result here is -x_new
+                Math::scal<T>(x_len, -1, x_new, 1);
 
                 // Calculate new derivative
                 obj->compute_f3D_reduced(x_new, t, f_new);
 
                 // F_new = x_new - x_previous - delta_t * x_dot
                 Math::copy<T>(x_len, x_new, 1, F_new, 1);
-                Math::axpy<T>(x_len, -1., it_start, 1, F_new, 1);
+                Math::axpy<T>(x_len, -1, it_start, 1, F_new, 1);
                 Math::axpy<T>(x_len, -dt, f_new, 1, F_new, 1);
 
                 // dF = (F_new - F)'
                 Math::copy<T>(x_len, F_new, 1, dF, 1);
-                Math::axpy<T>(x_len, -1., F, 1, dF, 1);
+                Math::axpy<T>(x_len, -1, F, 1, dF, 1);
 
                 // dx = (x_new - x)';
                 Math::copy<T>(x_len, x_new, 1, dx, 1);
-                Math::axpy<T>(x_len, -1., x, 1, dx, 1);
+                Math::axpy<T>(x_len, -1, x, 1, dx, 1);
 
                 // J(n+1) = J(n) + (dF - J * dx) * dx' / norm(dx)^2
                 // scaling dx and dF by norm(dx)
@@ -607,8 +607,7 @@ public:
                 Math::scal<T>(x_len, 1. / nrm, dx, 1);
                 Math::scal<T>(x_len, 1. / nrm, dF, 1);
                 // y := alpha*A*x + beta*y, dgemv operation
-                Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1,
-                              dF,
+                Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1, J, x_len, dx, 1, 1, dF,
                               1);  // using dF to store data
                 Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
@@ -696,10 +695,10 @@ public:
         // Initial approximation of the Jacobian
         // dx = x - x_previous;
         Math::copy<T>(x_len, x, 1, dx, 1);
-        Math::axpy<T>(x_len, -1., it_start, 1, dx, 1);
+        Math::axpy<T>(x_len, -1, it_start, 1, dx, 1);
         // df = f_new' - f_old';
         Math::copy<T>(x_len, f_new, 1, df, 1);
-        Math::axpy<T>(x_len, -1., f_old, 1, df, 1);
+        Math::axpy<T>(x_len, -1, f_old, 1, df, 1);
 
         // approximate J(x_0)
         // J = eye(length(df)) - delta_t*((1./dx)'*df)';
@@ -726,24 +725,24 @@ public:
             Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
             Math::copy<T>(x_len, F, 1, x_new, 1);
             Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-            Math::axpy<T>(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
-            Math::scal<T>(x_len, -1., x_new, 1);
+            Math::axpy<T>(x_len, -1, x, 1, x_new, 1);  // result here is -x_new
+            Math::scal<T>(x_len, -1, x_new, 1);
 
             // Calculate new derivative
             obj->compute_f3D_reduced(x_new, t, f_new);
 
             // F_new = x_new - x_previous - delta_t * x_dot
             Math::copy<T>(x_len, x_new, 1, F_new, 1);
-            Math::axpy<T>(x_len, -1., it_start, 1, F_new, 1);
+            Math::axpy<T>(x_len, -1, it_start, 1, F_new, 1);
             Math::axpy<T>(x_len, -dt, f_new, 1, F_new, 1);
 
             // dF = (F_new - F)'
             Math::copy<T>(x_len, F_new, 1, dF, 1);
-            Math::axpy<T>(x_len, -1., F, 1, dF, 1);
+            Math::axpy<T>(x_len, -1, F, 1, dF, 1);
 
             // dx = (x_new - x)';
             Math::copy<T>(x_len, x_new, 1, dx, 1);
-            Math::axpy<T>(x_len, -1., x, 1, dx, 1);
+            Math::axpy<T>(x_len, -1, x, 1, dx, 1);
 
             // J(n+1) = J(n) + (dF - J * dx) * dx' / norm(dx)^2
             // scaling dx and dF by norm(dx)
@@ -751,7 +750,7 @@ public:
             Math::scal<T>(x_len, 1. / nrm, dx, 1);
             Math::scal<T>(x_len, 1. / nrm, dF, 1);
             // y := alpha*A*x + beta*y, dgemv operation
-            Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1, dF,
+            Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1, J, x_len, dx, 1, 1, dF,
                           1);  // using dF to store data
             Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
@@ -790,10 +789,10 @@ public:
                 // Initial approximation of the Jacobian
                 // dx = x - x_previous;
                 Math::copy<T>(x_len, x, 1, dx, 1);
-                Math::axpy<T>(x_len, -1., it_start, 1, dx, 1);
+                Math::axpy<T>(x_len, -1, it_start, 1, dx, 1);
                 // df = f_new' - f_old';
                 Math::copy<T>(x_len, f_new, 1, df, 1);
-                Math::axpy<T>(x_len, -1., f_old, 1, df, 1);
+                Math::axpy<T>(x_len, -1, f_old, 1, df, 1);
 
                 // approximate J(x_0)
                 // J = eye(length(df)) - delta_t*((1./dx)'*df)';
@@ -822,8 +821,8 @@ public:
                     Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
                     Math::copy<T>(x_len, F, 1, x_new, 1);
                     Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-                    Math::axpy<T>(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
-                    Math::scal<T>(x_len, -1., x_new, 1);
+                    Math::axpy<T>(x_len, -1, x, 1, x_new, 1);  // result here is -x_new
+                    Math::scal<T>(x_len, -1, x_new, 1);
 
                     // Calculate new derivative
                     obj->compute_f3D_reduced(x_new, t - dt, f_new);
@@ -837,11 +836,11 @@ public:
 
                     // dF = (F_new - F)'
                     Math::copy<T>(x_len, F_new, 1, dF, 1);
-                    Math::axpy<T>(x_len, -1., F, 1, dF, 1);
+                    Math::axpy<T>(x_len, -1, F, 1, dF, 1);
 
                     // dx = (x_new - x)';
                     Math::copy<T>(x_len, x_new, 1, dx, 1);
-                    Math::axpy<T>(x_len, -1., x, 1, dx, 1);
+                    Math::axpy<T>(x_len, -1, x, 1, dx, 1);
 
                     // J(n+1) = J(n) + (dF - J * dx) * dx' / norm(dx)^2
                     // scaling dx and dF by norm(dx)
@@ -849,8 +848,8 @@ public:
                     Math::scal<T>(x_len, 1. / nrm, dx, 1);
                     Math::scal<T>(x_len, 1. / nrm, dF, 1);
                     // y := alpha*A*x + beta*y, dgemv operation
-                    Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1,
-                                  1, dF, 1);  // using dF to store data
+                    Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1, J, x_len, dx, 1, 1,
+                                  dF, 1);  // using dF to store data
                     Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
                     // F = F_new; interchanging pointers to avoid copy
@@ -939,11 +938,11 @@ public:
             // Initial approximation of the Jacobian
             // dx = x - x_previous;
             Math::copy<T>(x_len, x, 1, dx, 1);
-            Math::axpy<T>(x_len, -1., it_start, 1, dx, 1);
+            Math::axpy<T>(x_len, -1, it_start, 1, dx, 1);
 
             // df = f_new' - f_old';
             Math::copy<T>(x_len, f_new, 1, df, 1);
-            Math::axpy<T>(x_len, -1., f_old, 1, df, 1);
+            Math::axpy<T>(x_len, -1, f_old, 1, df, 1);
 
             // approximate J(x_0)
             // J = eye(length(df)) - delta_t*0.5 *((1./dx)'*df)';
@@ -973,25 +972,25 @@ public:
                 Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
                 Math::copy<T>(x_len, F, 1, x_new, 1);
                 Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-                Math::axpy<T>(x_len, -1., x, 1, x_new, 1);  // result here is -x_new
-                Math::scal<T>(x_len, -1., x_new, 1);
+                Math::axpy<T>(x_len, -1, x, 1, x_new, 1);  // result here is -x_new
+                Math::scal<T>(x_len, -1, x_new, 1);
 
                 // Calculate new derivative
                 obj->compute_f3D_reduced(x_new, t, f_new);
 
                 // F_new = x_new - x_previous - delta_t * 0.5 * (x_dot + x_dot_previous);
                 Math::copy<T>(x_len, x_new, 1, F_new, 1);
-                Math::axpy<T>(x_len, -1., it_start, 1, F_new, 1);
+                Math::axpy<T>(x_len, -1, it_start, 1, F_new, 1);
                 Math::axpy<T>(x_len, -dt / 2.0, f_new, 1, F_new, 1);
                 Math::axpy<T>(x_len, -dt / 2.0, f_old, 1, F_new, 1);
 
                 // dF = (F_new - F)'
                 Math::copy<T>(x_len, F_new, 1, dF, 1);
-                Math::axpy<T>(x_len, -1., F, 1, dF, 1);
+                Math::axpy<T>(x_len, -1, F, 1, dF, 1);
 
                 // dx = (x_new - x)';
                 Math::copy<T>(x_len, x_new, 1, dx, 1);
-                Math::axpy<T>(x_len, -1., x, 1, dx, 1);
+                Math::axpy<T>(x_len, -1, x, 1, dx, 1);
 
                 // J(n+1) = J(n) + (dF - J * dx) * dx' / norm(dx)^2
                 // scaling dx and dF by norm(dx)
@@ -999,8 +998,7 @@ public:
                 Math::scal<T>(x_len, 1. / nrm, dx, 1);
                 Math::scal<T>(x_len, 1. / nrm, dF, 1);
                 // y := alpha*A*x + beta*y, dgemv operation
-                Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1., J, x_len, dx, 1, 1,
-                              dF,
+                Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1, J, x_len, dx, 1, 1, dF,
                               1);  // using dF to store data
                 Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
@@ -1059,7 +1057,7 @@ public:
             // residual=J\residual -> residual = delta
             Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, res, 1);
             // u_n_p_1 -= delta
-            Math::axpy<T>(Constants::DOF, -1., res, 1, u_n_p_1, 1);
+            Math::axpy<T>(Constants::DOF, -1, res, 1, u_n_p_1, 1);
             delta_norm = Math::nrm2<T>(Constants::DOF, res, 1);
 
             // update all the matrices

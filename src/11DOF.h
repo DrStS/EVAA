@@ -114,7 +114,7 @@ private:
      */
     void constructCMatrix() {
         Math::copy<T>(Constants::DOFDOF, M_h2, 1, C, 1);
-        Math::scal<T>(Constants::DOFDOF, -1., C, 1);
+        Math::scal<T>(Constants::DOFDOF, -1, C, 1);
     }
 
 protected:
@@ -236,7 +236,7 @@ public:
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
     virtual void update_step(T* force, T* solution) {
-        // Math::scal<T>(Constants::DOF, -1., u_n_m_1, Constants::INCX);
+        // Math::scal<T>(Constants::DOF, -1, u_n_m_1, Constants::INCX);
         Math::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force,
                                                                     u_n_p_1, Constants::DOF);
         constructAMatrix();
@@ -275,7 +275,7 @@ public:
         Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
                       1, M_h2, Constants::DOF, u_n_m_1, 1, 1, residual, 1);
         // residual -= force
-        Math::axpy<T>(Constants::DOF, -1., force, 1, residual, 1);
+        Math::axpy<T>(Constants::DOF, -1, force, 1, residual, 1);
         // res = norm(residual)
         res_norm = Math::nrm2<T>(Constants::DOF, residual, 1);
     }
@@ -291,7 +291,7 @@ public:
         MetaDataBase<T>::getDataBase().getLookupStiffness().getDerivative(
             _car->currentSpringsLength, dkdl);
         //	MetaDataBase<T>::getDataBase().getLookupDamping().getDerivative(_car->currentSpringsLength,
-        //dddl);
+        // dddl);
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
         // J = A =  M_h2 + D / _h + K
@@ -301,7 +301,7 @@ public:
         // temp = x[n+1]
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, temp, 1);
         // temp += -x[n]
-        Math::axpy<T>(Constants::DOF, -1., u_n, 1, temp, 1);
+        Math::axpy<T>(Constants::DOF, -1, u_n, 1, temp, 1);
         // calc dDdxx with (x[n+1] - x[n])
         // constructLookupDerivativeX(dddl, temp, dDdxx);
         // J += 1/_h * dDdxx
@@ -892,9 +892,9 @@ public:
         Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF,
                       1, A, Constants::DOF, u_n_p_1, 1, 0, residual, 1);
         // residual -= bVec
-        Math::axpy<T>(Constants::DOF, -1., bVec, 1, residual, 1);
+        Math::axpy<T>(Constants::DOF, -1, bVec, 1, residual, 1);
         // residual -= force
-        Math::axpy<T>(Constants::DOF, -1., force, 1, residual, 1);
+        Math::axpy<T>(Constants::DOF, -1, force, 1, residual, 1);
         // res = norm(residual)
         res_norm = Math::nrm2<T>(Constants::DOF, residual, 1);
     }
@@ -934,7 +934,7 @@ public:
         // temp *= 3/2
         Math::scal<T>(Constants::DOF, 1.5, temp, 1);
         // temp += -2 * x[n]
-        Math::axpy<T>(Constants::DOF, -2., u_n, 1, temp, 1);
+        Math::axpy<T>(Constants::DOF, -2, u_n, 1, temp, 1);
         // temp += 1/2 * x[n-1]
         Math::axpy<T>(Constants::DOF, 0.5, u_n_m_1, 1, temp, 1);
         // calc dDdxx with (3/2 * x[n+1] - 2 * x[n] + 1/2 * x[n-1])

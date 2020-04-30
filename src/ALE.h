@@ -97,7 +97,7 @@ public:
         Load_module_obj->update_force(t, force_vector, new_centripetal_force);
         Load_module_obj->update_torque(t, new_torque, force_vector);
 
-        Math::scal<T>(2, -1., new_centripetal_force, 1);
+        Math::scal<T>(2, -1, new_centripetal_force, 1);
 
         // 1. Update global X,Y velocities
         Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
@@ -162,7 +162,7 @@ public:
             Load_module_obj->update_force(t, force_vector, centripetal_force);
             Load_module_obj->update_torque(t, torque, force_vector);
             // convert centrifugal force to centripetal (only for x, y direction)
-            Math::scal<T>(centripetal_force_dimensions - 1, -1., centripetal_force, 1);
+            Math::scal<T>(centripetal_force_dimensions - 1, -1, centripetal_force, 1);
             if (iter == 100) Math::write_vector<T>(centripetal_force, centripetal_force_dimensions);
             global_frame_solver(t);
 

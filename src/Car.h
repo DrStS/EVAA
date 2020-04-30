@@ -610,11 +610,11 @@ public:
         // upper spring_length = corner - wheel
         // lower spring length = wheel - tyre
         Math::copy<T>(Constants::NUM_LEGS, currentCornerPositions + 8, 1, currentSpringsLength, 2);
-        Math::axpy<T>(Constants::NUM_LEGS, -1., currentPositionTwoTrackModel + 3, 2,
+        Math::axpy<T>(Constants::NUM_LEGS, -1, currentPositionTwoTrackModel + 3, 2,
                       currentSpringsLength, 2);
         Math::copy<T>(Constants::NUM_LEGS, currentPositionTwoTrackModel + 3, 2,
                       currentSpringsLength + 1, 2);
-        Math::axpy<T>(Constants::NUM_LEGS, -1., currentPositionTwoTrackModel + 4, 2,
+        Math::axpy<T>(Constants::NUM_LEGS, -1, currentPositionTwoTrackModel + 4, 2,
                       currentSpringsLength + 1, 2);
     }
 

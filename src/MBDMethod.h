@@ -1007,11 +1007,11 @@ private:
         Math::copy<T>(Constants::DIM, pcc_, 1, cf_r_up_, 1);
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN,
                       Constants::DIM, r_, 1, 1, cf_r_up_, 1);
-        Math::axpy<T>(Constants::DIM, -1., pw_, 1, cf_r_up_, 1);
+        Math::axpy<T>(Constants::DIM, -1, pw_, 1, cf_r_up_, 1);
 
         // r_low
         Math::copy<T>(Constants::DIM, pw_, 1, cf_r_low_, 1);
-        Math::axpy<T>(Constants::DIM, -1., pt_, 1, cf_r_low_, 1);
+        Math::axpy<T>(Constants::DIM, -1, pt_, 1, cf_r_low_, 1);
 
         /* Compute spring lengths and their inverses */
         norm_r_up = Math::nrm2<T>(Constants::DIM, cf_r_up_, 1);
@@ -1197,7 +1197,7 @@ private:
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1,
                       this->r_fl_tilda, Constants::DIM, wc_, 1, 0, cf_temp, 1);
         Math::copy<T>(Constants::DIM, vc_, 1, cf_upper_dampf_fl, 1);
-        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1., cf_C_cN,
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN,
                       Constants::DIM, cf_temp, 1, 1, cf_upper_dampf_fl, 1);
         // dot((vc - C_cN' * (r1_tilda * wc)), r_up1)
         // std::cout << Math::dot<T>(Constants::DIM, upper_dampf1, 1, r_up1, 1) << std::endl;
@@ -1220,7 +1220,7 @@ private:
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1,
                       this->r_fr_tilda, Constants::DIM, wc_, 1, 0, cf_temp, 1);
         Math::copy<T>(Constants::DIM, vc_, 1, cf_upper_dampf_fr, 1);
-        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1., cf_C_cN,
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN,
                       Constants::DIM, cf_temp, 1, 1, cf_upper_dampf_fr, 1);
         // dot((vc - C_cN' * (r_fr_tilda * wc)), r_up_fr)
         scale = Math::dot<T>(mkl_DIM, cf_upper_dampf_fr, mkl_incx, cf_r_up_fr, mkl_incy);
@@ -1239,7 +1239,7 @@ private:
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1,
                       this->r_rl_tilda, Constants::DIM, wc_, 1, 0, cf_temp, 1);
         Math::copy<T>(Constants::DIM, vc_, 1, cf_upper_dampf_rl, 1);
-        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1., cf_C_cN,
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN,
                       Constants::DIM, cf_temp, 1, 1, cf_upper_dampf_rl, 1);
         // dot((vc - C_cN' * (r_rl_tilda * wc)), r_up_rl)
         scale = Math::dot<T>(mkl_DIM, cf_upper_dampf_rl, mkl_incx, cf_r_up_rl, mkl_incy);
@@ -1258,7 +1258,7 @@ private:
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1,
                       this->r_rr_tilda, Constants::DIM, wc_, 1, 0, cf_temp, 1);
         Math::copy<T>(Constants::DIM, vc_, 1, cf_upper_dampf_rr, 1);
-        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1., cf_C_cN,
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN,
                       Constants::DIM, cf_temp, 1, 1, cf_upper_dampf_rr, 1);
         // dot((vc - C_cN' * (r4_tilda * wc)), r_up4)
         scale = Math::dot<T>(mkl_DIM, cf_upper_dampf_rr, mkl_incx, cf_r_up_rr, mkl_incy);
@@ -1477,28 +1477,28 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
     void compute_car_body_forces() {
         // sum_car_force1 = car_rot_force1 - upper_force1 - upper_dampf1 - upper_rot_force1;
         Math::copy<T>(Constants::DIM, cf_car_rot_force_fl, 1, cf_sum_car_force_fl, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_force_fl, 1, cf_sum_car_force_fl, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_dampf_fl, 1, cf_sum_car_force_fl, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_rot_force_fl, 1, cf_sum_car_force_fl, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_force_fl, 1, cf_sum_car_force_fl, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_dampf_fl, 1, cf_sum_car_force_fl, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_rot_force_fl, 1, cf_sum_car_force_fl, 1);
 
         // sum_car_force_fr = car_rot_force_fr - upper_force_fr - upper_dampf_fr -
         // upper_rot_force_fr;
         Math::copy<T>(Constants::DIM, cf_car_rot_force_fr, 1, cf_sum_car_force_fr, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_force_fr, 1, cf_sum_car_force_fr, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_dampf_fr, 1, cf_sum_car_force_fr, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_rot_force_fr, 1, cf_sum_car_force_fr, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_force_fr, 1, cf_sum_car_force_fr, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_dampf_fr, 1, cf_sum_car_force_fr, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_rot_force_fr, 1, cf_sum_car_force_fr, 1);
 
         // sum_car_force3 = car_rot_force3 - upper_force3 - upper_dampf3 - upper_rot_force3;
         Math::copy<T>(Constants::DIM, cf_car_rot_force_rl, 1, cf_sum_car_force_rl, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_force_rl, 1, cf_sum_car_force_rl, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_dampf_rl, 1, cf_sum_car_force_rl, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_rot_force_rl, 1, cf_sum_car_force_rl, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_force_rl, 1, cf_sum_car_force_rl, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_dampf_rl, 1, cf_sum_car_force_rl, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_rot_force_rl, 1, cf_sum_car_force_rl, 1);
 
         // sum_car_force4 = car_rot_force4 - upper_force4 - upper_dampf4 - upper_rot_force4;
         Math::copy<T>(Constants::DIM, cf_car_rot_force_rr, 1, cf_sum_car_force_rr, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_force_rr, 1, cf_sum_car_force_rr, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_dampf_rr, 1, cf_sum_car_force_rr, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_upper_rot_force_rr, 1, cf_sum_car_force_rr, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_force_rr, 1, cf_sum_car_force_rr, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_dampf_rr, 1, cf_sum_car_force_rr, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_upper_rot_force_rr, 1, cf_sum_car_force_rr, 1);
     }
 
     void compute_external_forces() {
@@ -1576,20 +1576,20 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
                       Constants::DIM, wc_, 1, 0, cf_Hc, 1);
         Math::get_tilda<T>(wc_, cf_wc_tilda);
         Math::copy<T>(Constants::DIM, cf_Hc, 1, cf_temp, 1);
-        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1., cf_wc_tilda,
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1, cf_wc_tilda,
                       Constants::DIM, cf_temp, 1, 0, cf_Hc, 1);
 
         Math::copy<T>(Constants::DIM, cf_Hc, 1, cf_sum_torque_spring_car, 1);
 
         Math::axpy<T>(Constants::DIM, 1, cf_Tc, 1, cf_sum_torque_spring_car, 1);
 
-        Math::gemv<T>(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1., cf_C_cN,
+        Math::gemv<T>(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN,
                       Constants::DIM, cf_upper_S_rr, 1, 1, cf_sum_torque_spring_car, 1);
-        Math::gemv<T>(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1., cf_C_cN,
+        Math::gemv<T>(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN,
                       Constants::DIM, cf_upper_S_rl, 1, 1, cf_sum_torque_spring_car, 1);
-        Math::gemv<T>(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1., cf_C_cN,
+        Math::gemv<T>(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN,
                       Constants::DIM, cf_upper_S_fr, 1, 1, cf_sum_torque_spring_car, 1);
-        Math::gemv<T>(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1., cf_C_cN,
+        Math::gemv<T>(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN,
                       Constants::DIM, cf_upper_S_fl, 1, 1, cf_sum_torque_spring_car, 1);
 
         Math::gemv<T>(CblasRowMajor, CblasTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN,
@@ -1639,49 +1639,49 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         //  - car_rot_force1 - lower_rot_force1;
         brem_start += Constants::DIM;
         Math::copy<T>(Constants::DIM, cf_upper_force_fl, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_force_fl, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_force_fl, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_upper_dampf_fl, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_dampf_fl, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_dampf_fl, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, FW_fl, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_upper_rot_force_fl, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_car_rot_force_fl, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_rot_force_fl, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_car_rot_force_fl, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_rot_force_fl, 1, brem_start, 1);
 
         // upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + upper_rot_force2
         // - car_rot_force2 - lower_rot_force2;
         brem_start += Constants::DIM;
         Math::copy<T>(Constants::DIM, cf_upper_force_fr, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_force_fr, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_force_fr, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_upper_dampf_fr, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_dampf_fr, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_dampf_fr, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, FW_fr, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_upper_rot_force_fr, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_car_rot_force_fr, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_rot_force_fr, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_car_rot_force_fr, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_rot_force_fr, 1, brem_start, 1);
 
         // upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + upper_rot_force3
         // - car_rot_force3 - lower_rot_force3;
         brem_start += Constants::DIM;
         Math::copy<T>(Constants::DIM, cf_upper_force_rl, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_force_rl, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_force_rl, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_upper_dampf_rl, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_dampf_rl, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_dampf_rl, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, FW_rl, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_upper_rot_force_rl, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_car_rot_force_rl, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_rot_force_rl, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_car_rot_force_rl, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_rot_force_rl, 1, brem_start, 1);
 
         //  upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + upper_rot_force4
         //  - car_rot_force4 - lower_rot_force4;
         brem_start += Constants::DIM;
         Math::copy<T>(Constants::DIM, cf_upper_force_rr, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_force_rr, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_force_rr, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_upper_dampf_rr, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_dampf_rr, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_dampf_rr, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, FW_rr, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_upper_rot_force_rr, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_car_rot_force_rr, 1, brem_start, 1);
-        Math::axpy<T>(Constants::DIM, -1., cf_lower_rot_force_rr, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_car_rot_force_rr, 1, brem_start, 1);
+        Math::axpy<T>(Constants::DIM, -1, cf_lower_rot_force_rr, 1, brem_start, 1);
 
         // local_FR1; ...					  %vt1_dot
         brem_start += Constants::DIM;
