@@ -19,7 +19,6 @@ void potrfCheckStatus(lapack_int status) {
 
 void dfCheckError(const int num) {
     switch (num) {
-
     case DF_ERROR_NULL_TASK_DESCRIPTOR:
         throw std::domain_error("Null task descriptor. Code: " + std::to_string(num));
         break;

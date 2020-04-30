@@ -109,18 +109,18 @@ constexpr MKL_INT rhint = DF_NO_HINT;
 template <typename T>
 class EVAALookup {
 private:
-    DFTaskPtr* task = nullptr; /**< Data Fitting task descriptor */
-    MKL_INT nx;                /**< number of break points (data points in the grid)*/
+    DFTaskPtr* task = nullptr;  /**< Data Fitting task descriptor */
+    MKL_INT nx;                 /**< number of break points (data points in the grid)*/
     MKL_INT ny;                 /**< number of functions ( in our case 1 per task but 8 in total)*/
-    MKL_INT bc_type = DF_NO_BC;      /**< boundary conditions type*/
-    MKL_INT ic_type = DF_NO_IC;      /**< internal conditions type*/
+    MKL_INT bc_type = DF_NO_BC; /**< boundary conditions type*/
+    MKL_INT ic_type = DF_NO_IC; /**< internal conditions type*/
 
-    T* axis;         /**< array of break points (axis with length values of the grid points)*/
-    T* grid;               /**< function values */
-    T* scoeff;             /**< array of spline coefficients*/
+    T* axis;        /**< array of break points (axis with length values of the grid points)*/
+    T* grid;        /**< function values */
+    T* scoeff;      /**< array of spline coefficients*/
     MKL_INT stype;  /**< spline type: linear = DF_PP_DEFAULT, spline = DF_PP_NATURAL*/
     MKL_INT sorder; /**< spline order: linear = DF_PP_LINEAR, spline = DF_PP_CUBIC*/
-    T l_min, l_max;        /**< to test wheather its inbound */
+    T l_min, l_max; /**< to test wheather its inbound */
 
 public:
     /**
@@ -137,8 +137,7 @@ public:
         T b /**< [in] coefficient for linear part of grid function */,
         T c /**< [in] coefficient for quadratic part of grid function */,
         T l_min /**< [in] min length of spring in lookup */,
-        T l_max /**< [in] max length of spring in lookup */,
-        int k /**< [in] number of springs */,
+        T l_max /**< [in] max length of spring in lookup */, int k /**< [in] number of springs */,
         int type /**< [in] int which corersponds to a certain type of interpolation */,
         int order /**< [in] order of the interpolation: depends on type */
         ) :
@@ -164,8 +163,8 @@ public:
             Math::dfCheckError(err);
 
             /* Edit task parameters for look up interpolant */
-            err = Math::dfEditPPSpline1D<T>(task[i], sorder, stype, bc_type, nullptr, ic_type, nullptr,
-                                    &scoeff[i * (nx - 1) * sorder], scoeffhint);
+            err = Math::dfEditPPSpline1D<T>(task[i], sorder, stype, bc_type, nullptr, ic_type,
+                                            nullptr, &scoeff[i * (nx - 1) * sorder], scoeffhint);
             Math::dfCheckError(err);
 
             /* Construct linear spline using STD method */
@@ -209,15 +208,15 @@ public:
 
         for (auto i = 0; i < ny; i++) {
             if (length[i] > l_max) {
-                throw std::domain_error("spring length to big for lookup: " + std::to_string(length[i]) + " > " +
-                                        std::to_string(l_max));
+                throw std::domain_error("spring length to big for lookup: " +
+                                        std::to_string(length[i]) + " > " + std::to_string(l_max));
             }
             if (length[i] < l_min) {
-                throw std::domain_error("spring length to small for lookup: " + std::to_string(length[i]) + " < " +
-                                        std::to_string(l_min));
+                throw std::domain_error("spring length to small for lookup: " +
+                                        std::to_string(length[i]) + " < " + std::to_string(l_min));
             }
-            Math::dfInterpolate1D<T>(task[i], DF_INTERP, DF_METHOD_PP, 1, &length[i], DF_NO_HINT, ndorder,
-                                  dorder, nullptr, &inter[i], rhint, 0);
+            Math::dfInterpolate1D<T>(task[i], DF_INTERP, DF_METHOD_PP, 1, &length[i], DF_NO_HINT,
+                                     ndorder, dorder, nullptr, &inter[i], rhint, 0);
         }
     }
     /*
@@ -234,8 +233,8 @@ public:
         const MKL_INT ndorder = 2;
         const MKL_INT dorder[2] = {0, 1};  // only the derivative values are computed
         for (auto i = 0; i < ny; i++) {
-            Math::dfdInterpolate1D<T>(task[i], DF_INTERP, DF_METHOD_PP, 1, &length[i], DF_NO_HINT, ndorder,
-                             dorder, nullptr, &deriv[i], rhint, 0);
+            Math::dfdInterpolate1D<T>(task[i], DF_INTERP, DF_METHOD_PP, 1, &length[i], DF_NO_HINT,
+                                      ndorder, dorder, nullptr, &deriv[i], rhint, 0);
         }
     }
 
@@ -245,7 +244,8 @@ public:
     void getMatrixInterpolation(
         T* length /**< [in] pointer to array of size k with lenght values of springs*/,
         T* inter /**< [out] pointer to array of size k to store interpolation values*/,
-        T* mat /**< [out] pointer to array of size k * k to store interpolation values; TODO: not used?*/
+        T* mat /**< [out] pointer to array of size k * k to store interpolation values; TODO: not
+                  used?*/
     ) {
         getInterpolation(length, inter);
     }
@@ -263,7 +263,8 @@ public:
             interpolationPoints[i] = l_min + i * (l_max - l_min) / (2 * nx - 2);
             // TODO: Is it ok to use task[0] ?!
             Math::dfInterpolate1D<T>(task[0], DF_INTERP, DF_METHOD_PP, 1, &interpolationPoints[i],
-                             DF_NO_HINT, ndorder, dorder, nullptr, &interpolation[i], rhint, 0);
+                                     DF_NO_HINT, ndorder, dorder, nullptr, &interpolation[i], rhint,
+                                     0);
         }
 
         IO::writeLookUpGridPlusInterpolateValues<T>(

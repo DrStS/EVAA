@@ -151,9 +151,9 @@ void MetaDataBase::readParameters(const std::string& filename) {
         MBD_solver = BROYDEN_BDF2;
     }
     else {
-        throw std::logic_error(
-            "Wrong MBD-solver in XML: " + solver + ". Must be one of: "
-            "explicit_Euler, RK4, Broyden_Euler, Broyden_CN, Broyden_BDF2");
+        throw std::logic_error("Wrong MBD-solver in XML: " + solver +
+                               ". Must be one of: "
+                               "explicit_Euler, RK4, Broyden_Euler, Broyden_CN, Broyden_BDF2");
     }
 }
 

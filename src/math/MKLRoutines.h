@@ -735,14 +735,16 @@ inline int dfEditPPSpline1D(DFTaskPtr task, const MKL_INT s_order, const MKL_INT
 }
 
 /** Wraps dfsConstruct1D and dfdConstruct1D. */
-template<typename T>
+template <typename T>
 inline int dfConstruct1D(DFTaskPtr task, const MKL_INT s_format, const MKL_INT method);
 
-template<> inline int dfConstruct1D<float>(DFTaskPtr task, const MKL_INT s_format, const MKL_INT method) {
+template <>
+inline int dfConstruct1D<float>(DFTaskPtr task, const MKL_INT s_format, const MKL_INT method) {
     return dfsConstruct1D(task, s_format, method);
 }
 
-template<> inline int dfConstruct1D<double>(DFTaskPtr task, const MKL_INT s_format, const MKL_INT method) {
+template <>
+inline int dfConstruct1D<double>(DFTaskPtr task, const MKL_INT s_format, const MKL_INT method) {
     return dfdConstruct1D(task, s_format, method);
 }
 
