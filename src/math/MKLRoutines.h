@@ -1,7 +1,14 @@
 // TODO: Copyright header
 
 #pragma once
+
 #include <mkl.h>
+#include <mkl_cblas.h>
+
+// TODO: Moved from EVAAComputeEngine. What's the reason for declaring it?
+#define USE_GEMM
+
+// TODO replace MKL_INT in the whole code (not this file), at most expose it as a typedef.
 
 namespace EVAA {
 template <typename T>

@@ -2,10 +2,10 @@
 
 #pragma once
 #include "11DOF.h"
-#include "BLAS.h"
 #include "Constants.h"
 #include "EVAAComputeEngine.h"
 #include "LoadModule.h"
+#include "Math.h"
 #include "RoadProfile.h"
 
 namespace EVAA {
@@ -90,17 +90,17 @@ public:
     void global_frame_solver(T& t)
     {
         // 2. Update global X,Y positions of the car
-        MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(
             Car_obj->currentPositionLagrangian[0], Car_obj->currentVelocityLagrangian[0],
             centripetal_force[0], h_, *Car_obj->massFullCar);
-        MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(
             Car_obj->currentPositionLagrangian[1], Car_obj->currentVelocityLagrangian[1],
             centripetal_force[1], h_, *Car_obj->massFullCar);
 
         // 4. Update Z-rotation
-        MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Position(
-            *Car_obj->currentAngleLagrangian, *Car_obj->currentAngularVelocityLagrangian, torque[2],
-            h_, global_inertia_Z);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(*Car_obj->currentAngleLagrangian,
+                                                        *Car_obj->currentAngularVelocityLagrangian,
+                                                        torque[2], h_, global_inertia_Z);
 
         // get forces
         Load_module_obj->update_force(t, force_vector, new_centripetal_force);
@@ -109,17 +109,17 @@ public:
         mkl<T>::scal(2, -1, new_centripetal_force, 1);
 
         // 1. Update global X,Y velocities
-        MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
             Car_obj->currentVelocityLagrangian[0], centripetal_force[0], new_centripetal_force[0],
             h_, *Car_obj->massFullCar);
-        MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
             Car_obj->currentVelocityLagrangian[1], centripetal_force[1], new_centripetal_force[1],
             h_, *Car_obj->massFullCar);
 
         // 3. Update Z-angular velocities
-        MathLibrary::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
-            *Car_obj->currentAngularVelocityLagrangian, torque[2], new_torque[2], h_,
-            global_inertia_Z);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(*Car_obj->currentAngularVelocityLagrangian,
+                                                        torque[2], new_torque[2], h_,
+                                                        global_inertia_Z);
 
         /*
          * Idea!! What if we do it at the end, since the displacement is a vector and by triangle
@@ -181,8 +181,7 @@ public:
             Load_module_obj->update_torque(t, torque, force_vector);
             // convert centrifugal force to centripetal (only for x, y direction)
             mkl<T>::scal(centripetal_force_dimensions - 1, -1.0, centripetal_force, 1);
-            if (iter == 100)
-                MathLibrary::write_vector(centripetal_force, centripetal_force_dimensions);
+            if (iter == 100) Math::write_vector(centripetal_force, centripetal_force_dimensions);
             global_frame_solver(t);
 
             // translate 27 force vector + 3 torques into 11DOF
@@ -206,12 +205,12 @@ public:
                      u_sol + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
         Car_obj->combine_results();
 
-        MKL_free(time_vec);
+        mkl_free(time_vec);
 
-        MKL_free(force_vector);
-        MKL_free(centripetal_force);
-        MKL_free(new_centripetal_force);
-        MKL_free(Delta_x_vec);
+        mkl_free(force_vector);
+        mkl_free(centripetal_force);
+        mkl_free(new_centripetal_force);
+        mkl_free(Delta_x_vec);
 
         delete[] torque;
         delete[] new_torque;
@@ -227,7 +226,7 @@ public:
         u_sol = (T*)mkl_calloc(sol_size * (Constants::VEC_DIM * Constants::DIM), sizeof(T),
                                Constants::ALIGNMENT);
         solve(sol_vect, u_sol);
-        MKL_free(u_sol);
+        mkl_free(u_sol);
     }
 
     /**

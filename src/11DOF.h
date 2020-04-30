@@ -8,12 +8,10 @@
  */
 
 #pragma once
-#include <mkl.h>
 
-#include "BLAS.h"
 #include "Car.h"
 #include "Constants.h"
-#include "MathLibrary.h"
+#include "Math.h"
 #include "MetaDataBase.h"
 
 namespace EVAA {
@@ -261,21 +259,21 @@ public:
     virtual void update_step(T* force, T* solution)
     {
         // mkl<T>::scal(Constants::DOF, -1.0, u_n_m_1, Constants::INCX);
-        MathLibrary::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(
-            A, B, C, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
+        Math::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force,
+                                                                    u_n_p_1, Constants::DOF);
         constructAMatrix();
 #ifdef INTERPOLATION
-        MathLibrary::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm,
-                                                            u_n_p_1, temp);
+        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1,
+                                                     temp);
 #endif
         // solutio = solution[t_n] = u_n_p_1
         mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
         // copy update to car
 
         // u_n_m_1 points to u_n and u_n points to u_n_m_1
-        MathLibrary::swap_address<T>(u_n, u_n_m_1);
+        Math::swap_address<T>(u_n, u_n_m_1);
         // u_n points to u_n_p_1 and
-        // MathLibrary::swap_address<T>(u_n_p_1, u_n);
+        // Math::swap_address<T>(u_n_p_1, u_n);
         // u_n_p_1 point to u_n_m_1 now
         // do not swap just copy
         mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
@@ -472,7 +470,7 @@ public:
         // cblas_daxpy(DOF * DOF, 1.0, K_trans, 1, K, 1); // K = K + K'
 
         // add the diagonal to K
-        MathLibrary::allocate_to_diagonal(K, temp, Constants::DOF);  // K = K + K'+ diag(K)
+        Math::allocate_to_diagonal(K, temp, Constants::DOF);  // K = K + K'+ diag(K)
     }
     /**
      * \brief construct Damping Matrix
@@ -587,7 +585,7 @@ public:
         // cblas_daxpy(DOF * DOF, 1.0, D_trans, 1, D, 1); // D = D + D'
 
         // add the diagonal to K
-        MathLibrary::allocate_to_diagonal(D, temp, Constants::DOF);  // D = D + D'+ diag(D)
+        Math::allocate_to_diagonal(D, temp, Constants::DOF);  // D = D + D'+ diag(D)
     }
 
     /**
@@ -775,8 +773,8 @@ public:
         // cblas_daxpy(DOF * DOF, 1.0, dMdxx_trans, 1, dMdxx, 1); // dMdxx = dMdxx + dMdxx'
 
         // add the diagonal to dM
-        MathLibrary::allocate_to_diagonal(dMdxx, temp,
-                                          Constants::DOF);  // dMdxx = dMdxx + dMdxx'+ diag(dMdxx)
+        Math::allocate_to_diagonal(dMdxx, temp,
+                                   Constants::DOF);  // dMdxx = dMdxx + dMdxx'+ diag(dMdxx)
     }
 };
 
@@ -847,7 +845,7 @@ private:
         constructbVec();
         lapack_int status;
         status = mkl<T>::potrf(LAPACK_ROW_MAJOR, 'L', Constants::DOF, A, Constants::DOF);
-        MathLibrary::check_status<lapack_int>(status);
+        Math::check_status<lapack_int>(status);
         mkl<T>::vAdd(Constants::DOF, bVec, forces, u_n_p_1);
         // u_n_p_1=A\(b+f)
         mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, A, Constants::DOF, u_n_p_1, 1);
@@ -902,18 +900,18 @@ public:
         // cblas_dscal(DOF, 0.0, force, 1);
         getInitialGuess(force);
 #ifdef INTERPOLATION
-        MathLibrary::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm,
-                                                              u_n_p_1, temp);
+        Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1,
+                                                       temp);
 #endif
         /*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
         apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
         mkl<T>::copy(Constants::DOF, u_n_p_1, 1, solution, 1);
         // u_n_m_2 points to u_n_m_3 and u_n_m_3 points to u_n_m_2
-        MathLibrary::swap_address<T>(u_n_m_2, u_n_m_3);
+        Math::swap_address<T>(u_n_m_2, u_n_m_3);
         // u_n_m_2 points to u_n_m_1 and u_n_m_1 points to u_n_m_3
-        MathLibrary::swap_address<T>(u_n_m_1, u_n_m_2);
+        Math::swap_address<T>(u_n_m_1, u_n_m_2);
         // u_n_m_1 points to u_n and u_n points to u_n_m_3
-        MathLibrary::swap_address<T>(u_n, u_n_m_1);
+        Math::swap_address<T>(u_n, u_n_m_1);
         mkl<T>::copy(Constants::DOF, u_n_p_1, 1, u_n, 1);
     }
     /**

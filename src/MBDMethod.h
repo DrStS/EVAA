@@ -2,14 +2,11 @@
 
 #pragma once
 
-#include <mkl.h>
-
 #include <chrono>
 #include <string>
 
-#include "BLAS.h"
 #include "Constants.h"
-#include "MathLibrary.h"
+#include "Math.h"
 #include "MetaDataBase.h"
 
 namespace EVAA {
@@ -159,7 +156,7 @@ private:
 
     /**
      * Calculate the positions of the tyres and wheels according to the initial orientation of the
-     * car The legs always form a 90° angle to the car body, such that the rotational springs are
+     * car The legs always form a 90ï¿½ angle to the car body, such that the rotational springs are
      * at rest
      */
     void get_initial_length(T* initial_orientation_, const T* r_fl_, const T* r_fr_, const T* r_rl_,
@@ -204,7 +201,7 @@ private:
         mkl<T>::scal(Constants::NUM_LEGS, 1.0 / nrm, initial_orientation_, 1);
 
         // 2. C_Nc = get_basis(qc);
-        MathLibrary::get_basis<T>(initial_orientation_, C_Nc);
+        Math::get_basis<T>(initial_orientation_, C_Nc);
 
         // 3. global_z = C_Nc(:,2);
         mkl<T>::copy(Constants::DIM, C_Nc + 2, Constants::DIM, global_z, 1);
@@ -675,7 +672,7 @@ private:
         mkl<T>::scal(dim, inv_radius, radial_vector, incx);
 
         // calculate the direction of the motion
-        MathLibrary::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
+        Math::crossProduct(radial_vector, perpendicular_dir, tangential_dir);
 
         // calculate the velocity magnitude
         T magnitude = mkl<T>::dot(dim, vc, incx, tangential_dir, incx);
@@ -688,14 +685,14 @@ private:
         mkl<T>::scal(dim, radius, radial_vector, incx);
 
         // calculate the angular velocity of the car
-        MathLibrary::crossProduct(radial_vector, vc, omega);
+        Math::crossProduct(radial_vector, vc, omega);
         mkl<T>::scal(Constants::DIM, inv_radius * inv_radius, omega, 1);
 
         // calculate the velocity in all legs
-        MathLibrary::crossProduct(omega, pt_fl, vt_fl);
-        MathLibrary::crossProduct(omega, pt_fr, vt_fr);
-        MathLibrary::crossProduct(omega, pt_rl, vt_rl);
-        MathLibrary::crossProduct(omega, pt_rr, vt_rr);
+        Math::crossProduct(omega, pt_fl, vt_fl);
+        Math::crossProduct(omega, pt_fr, vt_fr);
+        Math::crossProduct(omega, pt_rl, vt_rl);
+        Math::crossProduct(omega, pt_rr, vt_rr);
 
         mkl<T>::copy(Constants::DIM, vt_fl, 1, vw_fl, 1);
         mkl<T>::copy(Constants::DIM, vt_fr, 1, vw_fr, 1);
@@ -778,7 +775,7 @@ private:
         unit_z_vector[2] = 1.;
 
         // get normalized direction of motion
-        MathLibrary::crossProduct(Fr, unit_z_vector, velocity_direction_tyre);
+        Math::crossProduct(Fr, unit_z_vector, velocity_direction_tyre);
 
         // get the physical velocity
         velocity_magnitude_tyre =
@@ -789,8 +786,8 @@ private:
         mkl<T>::scal(Constants::DIM, force_magnitude_tyre, Fr, 1);
 
         // free memory
-        MKL_free(unit_z_vector);
-        MKL_free(velocity_direction_tyre);
+        mkl_free(unit_z_vector);
+        mkl_free(velocity_direction_tyre);
     }
 
     /** Functions needed for compute_f */
@@ -1068,7 +1065,7 @@ private:
         compute local base vectors
         basis_c = get_basis(qc);
         */
-        MathLibrary::get_basis<T>(qc_, cf_C_cN);
+        Math::get_basis<T>(qc_, cf_C_cN);
     }
 
     void apply_stiffness_interpolation()
@@ -1118,23 +1115,23 @@ private:
 
         mkl<T>::copy(Constants::DIM, cf_C_cN + 2, Constants::DIM, cf_col_dat, 1);
 
-        MathLibrary::get_quaternion<T>(cf_r_up_fl, cf_col_dat, cf_upper_angle_fl,
-                                       cf_upper_normal_fl, Constants::DIM);
-        MathLibrary::get_quaternion<T>(cf_r_up_fr, cf_col_dat, cf_upper_angle_fr,
-                                       cf_upper_normal_fr, Constants::DIM);
-        MathLibrary::get_quaternion<T>(cf_r_up_rl, cf_col_dat, cf_upper_angle_rl,
-                                       cf_upper_normal_rl, Constants::DIM);
-        MathLibrary::get_quaternion<T>(cf_r_up_rr, cf_col_dat, cf_upper_angle_rr,
-                                       cf_upper_normal_rr, Constants::DIM);
+        Math::get_quaternion<T>(cf_r_up_fl, cf_col_dat, cf_upper_angle_fl, cf_upper_normal_fl,
+                                Constants::DIM);
+        Math::get_quaternion<T>(cf_r_up_fr, cf_col_dat, cf_upper_angle_fr, cf_upper_normal_fr,
+                                Constants::DIM);
+        Math::get_quaternion<T>(cf_r_up_rl, cf_col_dat, cf_upper_angle_rl, cf_upper_normal_rl,
+                                Constants::DIM);
+        Math::get_quaternion<T>(cf_r_up_rr, cf_col_dat, cf_upper_angle_rr, cf_upper_normal_rr,
+                                Constants::DIM);
 
-        MathLibrary::get_quaternion(cf_r_low_fl, cf_r_up_fl, cf_lower_angle_fl, cf_lower_normal_fl,
-                                    Constants::DIM);
-        MathLibrary::get_quaternion(cf_r_low_fr, cf_r_up_fr, cf_lower_angle_fr, cf_lower_normal_fr,
-                                    Constants::DIM);
-        MathLibrary::get_quaternion(cf_r_low_rl, cf_r_up_rl, cf_lower_angle_rl, cf_lower_normal_rl,
-                                    Constants::DIM);
-        MathLibrary::get_quaternion(cf_r_low_rr, cf_r_up_rr, cf_lower_angle_rr, cf_lower_normal_rr,
-                                    Constants::DIM);
+        Math::get_quaternion(cf_r_low_fl, cf_r_up_fl, cf_lower_angle_fl, cf_lower_normal_fl,
+                             Constants::DIM);
+        Math::get_quaternion(cf_r_low_fr, cf_r_up_fr, cf_lower_angle_fr, cf_lower_normal_fr,
+                             Constants::DIM);
+        Math::get_quaternion(cf_r_low_rl, cf_r_up_rl, cf_lower_angle_rl, cf_lower_normal_rl,
+                             Constants::DIM);
+        Math::get_quaternion(cf_r_low_rr, cf_r_up_rr, cf_lower_angle_rr, cf_lower_normal_rr,
+                             Constants::DIM);
     }
 
     void compute_elongational_forces()
@@ -1242,14 +1239,14 @@ private:
                      Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf_fl, 1);
         // dot((vc - C_cN' * (r1_tilda * wc)), r_up1)
         // std::cout << mkl<T>::dot(Constants::DIM, upper_dampf1, 1, r_up1, 1) << std::endl;
-        // std::cout << MathLibrary::dot_product<T>(upper_dampf1, r_up1, Constants::DIM) <<
+        // std::cout << Math::dot_product<T>(upper_dampf1, r_up1, Constants::DIM) <<
         // std::endl;
         scale = mkl<T>::dot(mkl_DIM, cf_upper_dampf_fl, mkl_incx, cf_r_up_fl, mkl_incy);
-        // scale = MathLibrary::dot_product<T>(upper_dampf1, r_up1, Constants::DIM);
+        // scale = Math::dot_product<T>(upper_dampf1, r_up1, Constants::DIM);
 
         // dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1)
         scale -= mkl<T>::dot(mkl_DIM, vw_fl_, mkl_incx, cf_r_up_fl, mkl_incx);
-        // scale -= MathLibrary::dot_product<T>(vw1_, r_up1, Constants::DIM);
+        // scale -= Math::dot_product<T>(vw1_, r_up1, Constants::DIM);
         // (dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1))* inv_norm_r_up1 *
         // inv_norm_r_up1
         scale = scale * inv_norm_r_up_fl * inv_norm_r_up_fl * this->upper_spring_damping[0];
@@ -1265,10 +1262,10 @@ private:
                      Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf_fr, 1);
         // dot((vc - C_cN' * (r_fr_tilda * wc)), r_up_fr)
         scale = mkl<T>::dot(mkl_DIM, cf_upper_dampf_fr, mkl_incx, cf_r_up_fr, mkl_incy);
-        // scale = MathLibrary::dot_product<T>(upper_dampf_fr, r_up_fr, Constants::DIM);
+        // scale = Math::dot_product<T>(upper_dampf_fr, r_up_fr, Constants::DIM);
         // dot((vc - C_cN' * (r_fr_tilda * wc)), r_up_fr) - dot(vw_fr, r_up_fr)
         scale -= mkl<T>::dot(mkl_DIM, vw_fr_, mkl_incx, cf_r_up_fr, mkl_incy);
-        // scale -= MathLibrary::dot_product<T>(vw_fr_, r_up_fr, Constants::DIM);
+        // scale -= Math::dot_product<T>(vw_fr_, r_up_fr, Constants::DIM);
         // (dot((vc - C_cN' * (r_fr_tilda * wc)), r_up_fr) - dot(vw_fr, r_up_fr))* inv_norm_r_up_fr
         // * inv_norm_r_up_fr
         scale = scale * inv_norm_r_up_fr * inv_norm_r_up_fr * this->upper_spring_damping[1];
@@ -1284,10 +1281,10 @@ private:
                      Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf_rl, 1);
         // dot((vc - C_cN' * (r_rl_tilda * wc)), r_up_rl)
         scale = mkl<T>::dot(mkl_DIM, cf_upper_dampf_rl, mkl_incx, cf_r_up_rl, mkl_incy);
-        // scale = MathLibrary::dot_product<T>(upper_dampf_rl, r_up_rl, Constants::DIM);
+        // scale = Math::dot_product<T>(upper_dampf_rl, r_up_rl, Constants::DIM);
         // dot((vc - C_cN' * (r_rl_tilda * wc)), r_up_rl) - dot(vw_rl, r_up_rl)
         scale -= mkl<T>::dot(mkl_DIM, vw_rl_, mkl_incx, cf_r_up_rl, mkl_incy);
-        // scale -= MathLibrary::dot_product<T>(vw_rl_, r_up_rl, Constants::DIM);
+        // scale -= Math::dot_product<T>(vw_rl_, r_up_rl, Constants::DIM);
         // (dot((vc - C_cN' * (r_rl_tilda * wc)), r_up_rl) - dot(vw_rl, r_up_rl))* inv_norm_r_up_rl
         // * inv_norm_r_up_rl
         scale = scale * inv_norm_r_up_rl * inv_norm_r_up_rl * this->upper_spring_damping[2];
@@ -1303,10 +1300,10 @@ private:
                      Constants::DIM, cf_temp, 1, 1.0, cf_upper_dampf_rr, 1);
         // dot((vc - C_cN' * (r4_tilda * wc)), r_up4)
         scale = mkl<T>::dot(mkl_DIM, cf_upper_dampf_rr, mkl_incx, cf_r_up_rr, mkl_incy);
-        // scale = MathLibrary::dot_product<T>(upper_dampf4, r_up4, Constants::DIM);
+        // scale = Math::dot_product<T>(upper_dampf4, r_up4, Constants::DIM);
         // dot((vc - C_cN' * (r4_tilda * wc)), r_up4) - dot(vw4, r_up4)
         scale -= mkl<T>::dot(mkl_DIM, vw_rr_, mkl_incx, cf_r_up_rr, mkl_incy);
-        // scale -= MathLibrary::dot_product<T>(r_up4, vw4_, Constants::DIM);
+        // scale -= Math::dot_product<T>(r_up4, vw4_, Constants::DIM);
         // (dot((vc - C_cN' * (r4_tilda * wc)), r_up4) - dot(vw4, r_up4))* inv_norm_r_up4 *
         // inv_norm_r_up4
         scale = scale * inv_norm_r_up_rr * inv_norm_r_up_rr * this->upper_spring_damping[3];
@@ -1316,10 +1313,10 @@ private:
         //// lower_dampf1
         // dot(vw1, r_low1)
         scale = mkl<T>::dot(mkl_DIM, vw_fl_, mkl_incx, cf_r_low_fl, mkl_incy);
-        /*scale = MathLibrary::dot_product<T>(vw1_, r_low1, Constants::DIM);*/
+        /*scale = Math::dot_product<T>(vw1_, r_low1, Constants::DIM);*/
         // (dot(vw1, r_low1) - dot(vt1, r_low1))
         scale -= mkl<T>::dot(mkl_DIM, vt_fl_, mkl_incx, cf_r_low_fl, mkl_incx);
-        // scale -= MathLibrary::dot_product<T>(vt1_, r_low1, Constants::DIM);
+        // scale -= Math::dot_product<T>(vt1_, r_low1, Constants::DIM);
         //(dot(vw1, r_low1) - dot(vt1, r_low1)) * inv_norm_r_low1 * inv_norm_r_low1
         scale = scale * inv_norm_r_low_fl * inv_norm_r_low_fl * this->lower_spring_damping[0];
         mkl<T>::copy(Constants::DIM, cf_r_low_fl, 1, cf_lower_dampf_fl, 1);
@@ -1328,10 +1325,10 @@ private:
         //// lower_dampf2
         // dot(vw2, r_low2)
         scale = mkl<T>::dot(mkl_DIM, vw_fr_, mkl_incx, cf_r_low_fr, mkl_incy);
-        // scale = MathLibrary::dot_product<T>(vw2_, r_low2, Constants::DIM);
+        // scale = Math::dot_product<T>(vw2_, r_low2, Constants::DIM);
         // (dot(vw2, r_low2) - dot(vt2, r_low2))
         scale -= mkl<T>::dot(mkl_DIM, vt_fr_, mkl_incx, cf_r_low_fr, mkl_incy);
-        // scale -= MathLibrary::dot_product<T>(vt2_, r_low2, Constants::DIM);
+        // scale -= Math::dot_product<T>(vt2_, r_low2, Constants::DIM);
         //(dot(vw2, r_low2) - dot(vt2, r_low2)) * inv_norm_r_low2 * inv_norm_r_low2
         scale = scale * inv_norm_r_low_fr * inv_norm_r_low_fr * this->lower_spring_damping[1];
         mkl<T>::copy(Constants::DIM, cf_r_low_fr, 1, cf_lower_dampf_fr, 1);
@@ -1340,10 +1337,10 @@ private:
         //// lower_dampf3
         // dot(vw3, r_low3)
         scale = mkl<T>::dot(mkl_DIM, vw_rl_, mkl_incx, cf_r_low_rl, mkl_incy);
-        // scale = MathLibrary::dot_product<T>(vw_rl_, r_low_rl, Constants::DIM);
+        // scale = Math::dot_product<T>(vw_rl_, r_low_rl, Constants::DIM);
         // (dot(vw_rl, r_low_rl) - dot(vt_rl, r_low_rl))
         scale -= mkl<T>::dot(mkl_DIM, vt_rl_, mkl_incx, cf_r_low_rl, mkl_incy);
-        // scale -= MathLibrary::dot_product<T>(vt_rl_, r_low_rl, Constants::DIM);
+        // scale -= Math::dot_product<T>(vt_rl_, r_low_rl, Constants::DIM);
         //(dot(vw_rl, r_low_rl) - dot(vt_rl, r_low_rl)) * inv_norm_r_low_rl * inv_norm_r_low_rl
         scale = scale * inv_norm_r_low_rl * inv_norm_r_low_rl * this->lower_spring_damping[2];
         mkl<T>::copy(Constants::DIM, cf_r_low_rl, 1, cf_lower_dampf_rl, 1);
@@ -1352,10 +1349,10 @@ private:
         //// lower_dampf4
         // dot(vw4, r_low4)
         scale = mkl<T>::dot(mkl_DIM, vw_rr_, mkl_incx, cf_r_low_rr, mkl_incy);
-        // scale = MathLibrary::dot_product<T>(vw4_, r_low4, Constants::DIM);
+        // scale = Math::dot_product<T>(vw4_, r_low4, Constants::DIM);
         // (dot(vw4, r_low4) - dot(vt4, r_low4))
         scale -= mkl<T>::dot(mkl_DIM, vt_rr_, mkl_incx, cf_r_low_rr, mkl_incy);
-        // scale -= MathLibrary::dot_product<T>(vt4_, r_low4, Constants::DIM);
+        // scale -= Math::dot_product<T>(vt4_, r_low4, Constants::DIM);
         //(dot(vw4, r_low4) - dot(vt4, r_low4)) * inv_norm_r_low4 * inv_norm_r_low4
         scale = scale * inv_norm_r_low_rr * inv_norm_r_low_rr * this->lower_spring_damping[3];
         mkl<T>::copy(Constants::DIM, cf_r_low_rr, 1, cf_lower_dampf_rr, 1);
@@ -1454,66 +1451,66 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         T scale_u_fl, scale_u_fr, scale_u_rl, scale_u_rr;
         // lower_rot_force1 = -cross( lower_S1, r_low1) / (r_low1'*r_low1);
         scale = -1.0 / mkl<T>::dot(mkl_DIM, cf_r_low_fl, mkl_incx, cf_r_low_fl, mkl_incy);
-        // scale = -1.0 / MathLibrary::dot_product<T>(r_low1, r_low1, Constants::DIM);
-        MathLibrary::crossProduct(cf_lower_S_fl, cf_r_low_fl, cf_lower_rot_force_fl);
+        // scale = -1.0 / Math::dot_product<T>(r_low1, r_low1, Constants::DIM);
+        Math::crossProduct(cf_lower_S_fl, cf_r_low_fl, cf_lower_rot_force_fl);
         mkl<T>::scal(Constants::DIM, scale, cf_lower_rot_force_fl, 1);
 
         // lower_rot_force2 = -cross( lower_S2, r_low2) / (r_low2'*r_low2);
         scale = -1.0 / mkl<T>::dot(mkl_DIM, cf_r_low_fr, mkl_incx, cf_r_low_fr, mkl_incy);
-        // scale = -1.0 / MathLibrary::dot_product<T>(r_low_fr, r_low_fr, Constants::DIM);
-        MathLibrary::crossProduct(cf_lower_S_fr, cf_r_low_fr, cf_lower_rot_force_fr);
+        // scale = -1.0 / Math::dot_product<T>(r_low_fr, r_low_fr, Constants::DIM);
+        Math::crossProduct(cf_lower_S_fr, cf_r_low_fr, cf_lower_rot_force_fr);
         mkl<T>::scal(Constants::DIM, scale, cf_lower_rot_force_fr, 1);
 
         // lower_rot_force3 = -cross( lower_S3, r_low3) / (r_low3'*r_low3);
         scale = -1.0 / mkl<T>::dot(mkl_DIM, cf_r_low_rl, mkl_incx, cf_r_low_rl, mkl_incy);
-        // scale = -1.0 / MathLibrary::dot_product<T>(r_low3, r_low3, Constants::DIM);
-        MathLibrary::crossProduct(cf_lower_S_rl, cf_r_low_rl, cf_lower_rot_force_rl);
+        // scale = -1.0 / Math::dot_product<T>(r_low3, r_low3, Constants::DIM);
+        Math::crossProduct(cf_lower_S_rl, cf_r_low_rl, cf_lower_rot_force_rl);
         mkl<T>::scal(Constants::DIM, scale, cf_lower_rot_force_rl, 1);
 
         // lower_rot_force4 = -cross( lower_S4, r_low4) / (r_low4'*r_low4);
         scale = -1.0 / mkl<T>::dot(mkl_DIM, cf_r_low_rr, mkl_incx, cf_r_low_rr, mkl_incx);
-        // scale = -1.0 / MathLibrary::dot_product<T>(r_low4, r_low4, Constants::DIM);
-        MathLibrary::crossProduct(cf_lower_S_rr, cf_r_low_rr, cf_lower_rot_force_rr);
+        // scale = -1.0 / Math::dot_product<T>(r_low4, r_low4, Constants::DIM);
+        Math::crossProduct(cf_lower_S_rr, cf_r_low_rr, cf_lower_rot_force_rr);
         mkl<T>::scal(Constants::DIM, scale, cf_lower_rot_force_rr, 1);
 
         // upper_rot_force1 = -cross( upper_S1, r_up1) / (r_up1'*r_up1);
         scale_u_fl = -1.0 / mkl<T>::dot(mkl_DIM, cf_r_up_fl, mkl_incx, cf_r_up_fl, mkl_incy);
-        // scale_u1 = -1.0 / MathLibrary::dot_product<T>(r_up1, r_up1, Constants::DIM);
-        MathLibrary::crossProduct(cf_upper_S_fl, cf_r_up_fl, cf_upper_rot_force_fl);
+        // scale_u1 = -1.0 / Math::dot_product<T>(r_up1, r_up1, Constants::DIM);
+        Math::crossProduct(cf_upper_S_fl, cf_r_up_fl, cf_upper_rot_force_fl);
         mkl<T>::scal(Constants::DIM, scale_u_fl, cf_upper_rot_force_fl, 1);
 
         // upper_rot_force_fr = -cross( upper_S_fr, r_up_fr) / (r_up_fr'*r_up_fr);
         scale_u_fr = -1.0 / mkl<T>::dot(mkl_DIM, cf_r_up_fr, mkl_incx, cf_r_up_fr, mkl_incy);
-        // scale_u_fr = -1.0 / MathLibrary::dot_product<T>(r_up_fr, r_up_fr, Constants::DIM);
-        MathLibrary::crossProduct(cf_upper_S_fr, cf_r_up_fr, cf_upper_rot_force_fr);
+        // scale_u_fr = -1.0 / Math::dot_product<T>(r_up_fr, r_up_fr, Constants::DIM);
+        Math::crossProduct(cf_upper_S_fr, cf_r_up_fr, cf_upper_rot_force_fr);
         mkl<T>::scal(Constants::DIM, scale_u_fr, cf_upper_rot_force_fr, 1);
 
         // upper_rot_force3 = -cross( upper_S3, r_up3) / (r_up3'*r_up3);
         scale_u_rl = -1.0 / mkl<T>::dot(mkl_DIM, cf_r_up_rl, mkl_incx, cf_r_up_rl, mkl_incy);
-        // scale_u3 = -1.0 / MathLibrary::dot_product<T>(r_up3, r_up3, Constants::DIM);
-        MathLibrary::crossProduct(cf_upper_S_rl, cf_r_up_rl, cf_upper_rot_force_rl);
+        // scale_u3 = -1.0 / Math::dot_product<T>(r_up3, r_up3, Constants::DIM);
+        Math::crossProduct(cf_upper_S_rl, cf_r_up_rl, cf_upper_rot_force_rl);
         mkl<T>::scal(Constants::DIM, scale_u_rl, cf_upper_rot_force_rl, 1);
 
         // upper_rot_force4 = -cross( upper_S4, r_up4) / (r_up4'*r_up4);
         scale_u_rr = -1.0 / mkl<T>::dot(mkl_DIM, cf_r_up_rr, mkl_incx, cf_r_up_rr, mkl_incy);
-        // scale_u4 = -1.0 / MathLibrary::dot_product<T>(r_up4, r_up4, Constants::DIM);
-        MathLibrary::crossProduct(cf_upper_S_rr, cf_r_up_rr, cf_upper_rot_force_rr);
+        // scale_u4 = -1.0 / Math::dot_product<T>(r_up4, r_up4, Constants::DIM);
+        Math::crossProduct(cf_upper_S_rr, cf_r_up_rr, cf_upper_rot_force_rr);
         mkl<T>::scal(Constants::DIM, scale_u_rr, cf_upper_rot_force_rr, 1);
 
         // car_rot_force1 = -cross( lower_S1, r_up1) / (r_up1'*r_up1);
-        MathLibrary::crossProduct(cf_lower_S_fl, cf_r_up_fl, cf_car_rot_force_fl);
+        Math::crossProduct(cf_lower_S_fl, cf_r_up_fl, cf_car_rot_force_fl);
         mkl<T>::scal(Constants::DIM, scale_u_fl, cf_car_rot_force_fl, 1);
 
         // car_rot_force_fr = -cross( lower_S2, r_up2) / (r_up2'*r_up2);
-        MathLibrary::crossProduct(cf_lower_S_fr, cf_r_up_fr, cf_car_rot_force_fr);
+        Math::crossProduct(cf_lower_S_fr, cf_r_up_fr, cf_car_rot_force_fr);
         mkl<T>::scal(Constants::DIM, scale_u_fr, cf_car_rot_force_fr, 1);
 
         // car_rot_force3 = -cross( lower_S3, r_up3) / (r_up3'*r_up3);
-        MathLibrary::crossProduct(cf_lower_S_rl, cf_r_up_rl, cf_car_rot_force_rl);
+        Math::crossProduct(cf_lower_S_rl, cf_r_up_rl, cf_car_rot_force_rl);
         mkl<T>::scal(Constants::DIM, scale_u_rl, cf_car_rot_force_rl, 1);
 
         // car_rot_force4 = -cross( lower_S4, r_up4) / (r_up4'*r_up4);
-        MathLibrary::crossProduct(cf_lower_S_rr, cf_r_up_rr, cf_car_rot_force_rr);
+        Math::crossProduct(cf_lower_S_rr, cf_r_up_rr, cf_car_rot_force_rr);
         mkl<T>::scal(Constants::DIM, scale_u_rr, cf_car_rot_force_rr, 1);
     }
 
@@ -1620,7 +1617,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         // Hc = A(1:3, 1:3) * wc;
         mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1.0, this->Ic,
                      Constants::DIM, wc_, 1, 0.0, cf_Hc, 1);
-        MathLibrary::get_tilda<T>(wc_, cf_wc_tilda);
+        Math::get_tilda<T>(wc_, cf_wc_tilda);
         mkl<T>::copy(Constants::DIM, cf_Hc, 1, cf_temp, 1);
         mkl<T>::gemv(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1.0, cf_wc_tilda,
                      Constants::DIM, cf_temp, 1, 0.0, cf_Hc, 1);
@@ -1756,8 +1753,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         mkl<T>::potrs(LAPACK_ROW_MAJOR, 'L', Constants::DIM, 1, A_Ic, Constants::DIM,
                       cf_sum_torque_spring_car, 1);
 
-        MathLibrary::vector_elem_wise_product<T>(A_rem, cf_b_rem, accelerations,
-                                                 9 * Constants::DIM);
+        Math::vector_elem_wise_product<T>(A_rem, cf_b_rem, accelerations, 9 * Constants::DIM);
     }
 
     void compute_quaternion_change_rate()
@@ -1861,10 +1857,10 @@ public:
         size_t solution_size = (this->num_iter + 1) * this->solution_dim;
         T* complete_vector = (T*)mkl_calloc(solution_size, sizeof(T), Constants::ALIGNMENT);
         x_vector = (T*)mkl_calloc(solution_dim, sizeof(T), Constants::ALIGNMENT);
-        MathLibrary::get_tilda<T>(r_fl, r_fl_tilda);
-        MathLibrary::get_tilda<T>(r_fr, r_fr_tilda);
-        MathLibrary::get_tilda<T>(r_rl, r_rl_tilda);
-        MathLibrary::get_tilda<T>(r_rr, r_rr_tilda);
+        Math::get_tilda<T>(r_fl, r_fl_tilda);
+        Math::get_tilda<T>(r_fr, r_fr_tilda);
+        Math::get_tilda<T>(r_rl, r_rl_tilda);
+        Math::get_tilda<T>(r_rr, r_rr_tilda);
 
         /*
          * Preparing x_vector in the form of
@@ -2038,23 +2034,20 @@ public:
         compute_f_mem_alloc();
 
         if (used_solver == BROYDEN_CN) {
-            MathLibrary::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector,
-                                                            this->h, this->num_iter, this->tol,
-                                                            this->max_iter);
-        }
-        else if (used_solver == RUNGE_KUTTA_4) {
-            MathLibrary::Solvers<T, MBD_method>::RK4(this, x_vector, complete_vector, this->h,
+            Math::Solvers<T, MBD_method>::Broyden_CN(this, x_vector, complete_vector, this->h,
                                                      this->num_iter, this->tol, this->max_iter);
         }
+        else if (used_solver == RUNGE_KUTTA_4) {
+            Math::Solvers<T, MBD_method>::RK4(this, x_vector, complete_vector, this->h,
+                                              this->num_iter, this->tol, this->max_iter);
+        }
         else if (used_solver == BROYDEN_BDF2) {
-            MathLibrary::Solvers<T, MBD_method>::Broyden_PDF2(this, x_vector, complete_vector,
-                                                              this->h, this->num_iter, this->tol,
-                                                              this->max_iter);
+            Math::Solvers<T, MBD_method>::Broyden_PDF2(this, x_vector, complete_vector, this->h,
+                                                       this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == BROYDEN_EULER) {
-            MathLibrary::Solvers<T, MBD_method>::Broyden_Euler(this, x_vector, complete_vector,
-                                                               this->h, this->num_iter, this->tol,
-                                                               this->max_iter);
+            Math::Solvers<T, MBD_method>::Broyden_Euler(this, x_vector, complete_vector, this->h,
+                                                        this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == EXPLICIT_EULER) {
             std::cout << "Explicit solver hasn't been implemented, you don't want to use it"

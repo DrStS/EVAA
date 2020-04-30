@@ -4,10 +4,9 @@
 
 #include <string>
 
-#include "BLAS.h"
 #include "Car.h"
 #include "Constants.h"
-#include "MathLibrary.h"
+#include "Math.h"
 
 namespace EVAA {
 
@@ -126,7 +125,7 @@ public:
         // Raffi: mkl<T>::scal(Constants::DIM, -inv_radius, fr, 1); - centripetal force
         mkl<T>::scal(Constants::DIM, inv_radius, Fr, 1);  // centrifugal force
 
-        MathLibrary::crossProduct_unitvecZ(Fr, velocity_direction);
+        Math::crossProduct_unitvecZ(Fr, velocity_direction);
 
         // T velocity_magnitude = mkl<T>::dot(Constants::DIM, v, 1, velocity_direction, 1);
         T velocity_magnitude = mkl<T>::nrm2(Constants::DIM, v, 1);
@@ -150,7 +149,7 @@ public:
 
         mkl<T>::scal(Constants::DIM - 1, inv_radius, Fr, 1);  // centrifugal force
 
-        // MathLibrary::crossProduct(Fr, unit_y_vector, velocity_direction);
+        // Math::crossProduct(Fr, unit_y_vector, velocity_direction);
         // * REFACTOR TO GENERAL DIRECTIONS * this is only for z direction
         velocity_direction[0] = Fr[1];
         velocity_direction[1] = -Fr[0];
@@ -288,16 +287,16 @@ public:
         T inv_radius = 1. / radius;
 
         mkl<T>::scal(Constants::DIM, inv_radius, radial_vector, 1);
-        MathLibrary::crossProduct_unitvecZ(radial_vector, tangential_dir);
+        Math::crossProduct_unitvecZ(radial_vector, tangential_dir);
         T magnitude = mkl<T>::dot(Constants::DIM, Car1->Velocity_vec, 1, tangential_dir, 1);
         mkl<T>::copy(Constants::DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
         mkl<T>::scal(Constants::DIM, magnitude, Car1->Velocity_vec, 1);
         mkl<T>::scal(Constants::DIM, radius, radial_vector, 1);
-        MathLibrary::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
+        Math::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
         mkl<T>::scal(Constants::DIM, inv_radius * inv_radius, Car1->w_CG, 1);
 
-        MKL_free(tangential_dir);
-        MKL_free(radial_vector);
+        mkl_free(tangential_dir);
+        mkl_free(radial_vector);
     }
 };  // Circular
 

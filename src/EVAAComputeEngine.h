@@ -26,19 +26,20 @@
  */
 
 #pragma once
-#include <mkl.h>
 
 #include <chrono>
 #include <string>
 
-#include "11DOF.h"
-#include "ALE.h"
+// TODO: What's the reason behind U_Lookup?
 #ifndef U_Lookup
 #define U_Lookup
 #include "EVAALookup.h"
 #endif
+
+#include "11DOF.h"
+#include "ALE.h"
 #include "MBDMethod.h"
-#include "MathLibrary.h"
+#include "Math.h"
 
 namespace EVAA {
 

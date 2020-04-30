@@ -20,7 +20,7 @@
  */
 
 /**
- * \file MathLibrary.h
+ * \file Math.h
  * This file holds the math funcktion of EVAA.
  * \date 6/13/2019
  */
@@ -32,10 +32,9 @@
 #include <vector>
 
 #include "AuxiliaryParameters.h"
-#ifdef USE_INTEL_MKL
-#include <mkl.h>
 
-#include "BLAS.h"
+#ifdef USE_INTEL_MKL
+#include "MKLRoutines.h"
 #endif
 
 namespace EVAA {
@@ -43,7 +42,7 @@ namespace EVAA {
 /**
  * Implements several useful math functions and solvers
  */
-namespace MathLibrary {
+namespace Math {
 
 /**
  * \brief Compute dense symmetrix matrix LU factorisation
@@ -654,19 +653,19 @@ public:
             mkl<T>::copy(x_len, x, 1, curr_time_start_pos, 1);
         }
 
-        MKL_free(f_old);
-        MKL_free(f_new);
-        MKL_free(dx);
-        MKL_free(dx_inv);
-        MKL_free(df);
-        MKL_free(x);
-        MKL_free(F);
-        MKL_free(F_new);
-        MKL_free(dF);
-        MKL_free(J);
-        MKL_free(J_tmp);
-        MKL_free(piv);
-        MKL_free(x_new);
+        mkl_free(f_old);
+        mkl_free(f_new);
+        mkl_free(dx);
+        mkl_free(dx_inv);
+        mkl_free(df);
+        mkl_free(x);
+        mkl_free(F);
+        mkl_free(F_new);
+        mkl_free(dF);
+        mkl_free(J);
+        mkl_free(J_tmp);
+        mkl_free(piv);
+        mkl_free(x_new);
     }
 
     /**
@@ -897,19 +896,19 @@ public:
                 mkl<T>::copy(x_len, x, 1, curr_time_start_pos, 1);
             }
         }
-        MKL_free(f_old);
-        MKL_free(f_new);
-        MKL_free(dx);
-        MKL_free(dx_inv);
-        MKL_free(df);
-        MKL_free(x);
-        MKL_free(F);
-        MKL_free(F_new);
-        MKL_free(dF);
-        MKL_free(J);
-        MKL_free(J_tmp);
-        MKL_free(piv);
-        MKL_free(x_new);
+        mkl_free(f_old);
+        mkl_free(f_new);
+        mkl_free(dx);
+        mkl_free(dx_inv);
+        mkl_free(df);
+        mkl_free(x);
+        mkl_free(F);
+        mkl_free(F_new);
+        mkl_free(dF);
+        mkl_free(J);
+        mkl_free(J_tmp);
+        mkl_free(piv);
+        mkl_free(x_new);
     }
 
     /**
@@ -1055,19 +1054,19 @@ public:
             mkl<T>::copy(x_len, x, 1, curr_time_start_pos, 1);
         }
         // std::cout << "Broyden cleaning!\n" << std::endl;
-        MKL_free(f_old);
-        MKL_free(f_new);
-        MKL_free(dx);
-        MKL_free(dx_inv);
-        MKL_free(df);
-        MKL_free(x);
-        MKL_free(F);
-        MKL_free(F_new);
-        MKL_free(dF);
-        MKL_free(J);
-        MKL_free(J_tmp);
-        MKL_free(piv);
-        MKL_free(x_new);
+        mkl_free(f_old);
+        mkl_free(f_new);
+        mkl_free(dx);
+        mkl_free(dx_inv);
+        mkl_free(df);
+        mkl_free(x);
+        mkl_free(F);
+        mkl_free(F_new);
+        mkl_free(dF);
+        mkl_free(J);
+        mkl_free(J_tmp);
+        mkl_free(piv);
+        mkl_free(x_new);
 
         // std::cout << "Exiting Broyden!\n" << std::endl;
     }
@@ -1310,5 +1309,5 @@ public:
     }
 };
 
-}  // namespace MathLibrary
+}  // namespace Math
 }  // namespace EVAA

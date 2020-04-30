@@ -2,13 +2,10 @@
 
 #pragma once
 
-#include <mkl.h>
-
 #include <cmath>
 
-#include "BLAS.h"
 #include "Constants.h"
-#include "MathLibrary.h"
+#include "Math.h"
 #include "MetaDataBase.h"
 
 namespace EVAA {
@@ -101,13 +98,13 @@ private:
 
     /**
      * Calculates the values of Corners for general angles.
-     * TODO: Consider moving to MathLibrary or anonymous namespace.
+     * TODO: Consider moving to Math or anonymous namespace.
      */
     void UpdateCorners11DOF(T* angles, T* rotation_mat_buffer, T* initial_corners,
                             T* updated_corners)
     {
         // zz, yy, xx
-        MathLibrary::get_rotation_matrix(angles[2], angles[1], angles[0], rotation_mat_buffer);
+        Math::get_rotation_matrix(angles[2], angles[1], angles[0], rotation_mat_buffer);
 
         // do rotation: rotationMat * r
         // void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const
@@ -149,7 +146,7 @@ private:
         CornerAboutCenter(currentCornerPositions, pos_buffer);
     }
 
-    // TODO: Was ist das? Maybe to MathLibrary
+    // TODO: Was ist das? Maybe to Math
     void ConvertALEToGlobal(T* vect, T* global_vect)
     {
 #pragma loop(ivdep)
@@ -159,7 +156,7 @@ private:
         }
     }
 
-    // TODO: Was ist das? Maybe to MathLibrary
+    // TODO: Was ist das? Maybe to Math
     void Convert11DOFToGlobal(T* vect, T* global_vect)
     {
         global_vect[2] += vect[0];
@@ -363,8 +360,8 @@ public:
         // Initial Iteration vector
 
         // Initial Angles
-        MathLibrary::ToEulerAngles<T>(MetaDataBase::DataBase()->getBodyInitialOrientation(),
-                                      initialAngleGlobal);
+        Math::ToEulerAngles<T>(MetaDataBase::DataBase()->getBodyInitialOrientation(),
+                               initialAngleGlobal);
         mkl<T>::copy(Constants::DIM, initialAngleGlobal, 1, angle_CG, 1);
 
         // Spring lengths

@@ -48,11 +48,7 @@
 #endif
 
 #include <string>
-#ifdef USE_INTEL_MKL
-#include <mkl.h>
-#endif
 
-typedef MKL_Complex16 EVAAComplexDouble;
 namespace EVAA {
 /**
  * \brief Class AuxiliaryParameters provides a central place for STACCATO wide parameters

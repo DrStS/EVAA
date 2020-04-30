@@ -19,15 +19,12 @@
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
 
-#include "MathLibrary.h"
-
-#include <mkl.h>
-#include <mkl_cblas.h>
+#include "Math.h"
 
 #include <iostream>
 
 namespace EVAA {
-namespace MathLibrary {
+namespace Math {
 
 void printMKLInfo()
 {
@@ -65,5 +62,5 @@ void computeDenseVectorAddition(double *vec1, double *vec2, const double a, cons
 #endif
 }
 
-}  // namespace MathLibrary
+}  // namespace Math
 }  // namespace EVAA

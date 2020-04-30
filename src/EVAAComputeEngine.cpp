@@ -30,14 +30,9 @@
 #include "Car.h"
 #include "Constants.h"
 #include "LoadModule.h"
-#include "MathLibrary.h"
+#include "Math.h"
 #include "MetaDataBase.h"
 #include "Output.h"
-
-#ifdef USE_INTEL_MKL
-#include <mkl.h>
-#define USE_GEMM
-#endif
 
 #ifdef USE_EIGEN
 #include <Eigen/Dense>
@@ -97,7 +92,7 @@ EVAAComputeEngine::~EVAAComputeEngine() { delete _lookupStiffness; }
 
 void EVAAComputeEngine::printInfo(void)
 {
-    MathLibrary::printMKLInfo();
+    Math::printMKLInfo();
     std::cout << "\n\nCalculate the solution after "
               << MetaDataBase::DataBase()->getNumberOfTimeIterations() *
                      MetaDataBase::DataBase()->getTimeStepSize()
@@ -588,25 +583,25 @@ void EVAAComputeEngine::computeMKL11DOF(void)
     /// Build dynamic stiffness matrix
     // gets written in rear vector
     // K' <- (1.0/(h*h))*M + K
-    //	MathLibrary::computeDenseVectorAddition(M.data(), K.data(), (1.0 / (h*h)), 9);
+    //	Math::computeDenseVectorAddition(M.data(), K.data(), (1.0 / (h*h)), 9);
     mkl<floatEVAA>::axpy(121, (1.0 / (h * h)), M, 1, K, 1);
     // K <- (1.0/h)*D + K'
-    //	MathLibrary::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 121);
+    //	Math::computeDenseVectorAddition(D.data(), K.data(), (1.0 / h), 121);
     mkl<floatEVAA>::axpy(121, (1.0 / h), D, 1, K, 1);
     /// K holds now dynamic stiffness matrix  for BE integrator
     /// Build rhs for BE integrator
     // B' <-(2.0 / (h*h))*M + B
-    //	MathLibrary::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
+    //	Math::computeDenseVectorAddition(M.data(), B.data(), (2.0 / (h*h)), 121);
     mkl<floatEVAA>::axpy(matrixElements, (2.0 / (h * h)), M, 1, B, 1);
 
     // B <-(1.0 / (h))*D + B'
-    //	MathLibrary::computeDenseVectorAddition(D.data(), B.data(), (1.0 / h), 121);
+    //	Math::computeDenseVectorAddition(D.data(), B.data(), (1.0 / h), 121);
     mkl<floatEVAA>::axpy(matrixElements, (1.0 / h), D, 1, B, 1);
     // A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE
 
     std::vector<int> pivot(DOF);
     // LU Decomposition
-    //	MathLibrary::computeDenseSymLUFactorisation(11, K, pivot);
+    //	Math::computeDenseSymLUFactorisation(11, K, pivot);
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, DOF, DOF, K, DOF, pivot.data());
 
     // Time loop
@@ -648,12 +643,12 @@ void EVAAComputeEngine::computeMKL11DOF(void)
         myDGEMMKernel(jitter, M, u_n_m_1, tmp);
 #endif
         // u_n_p_1 <- 1.0 tmp + u_n_p_1
-        //		MathLibrary::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.0,
+        //		Math::computeDenseVectorAddition(tmp.data(), u_n_p_1.data(), 1.0,
         // 11); void cblas_daxpy (const MKL_INT n, const double a, const double *x, const MKL_INT
         // incx, double *y, const MKL_INT incy);
         mkl<floatEVAA>::axpy(DOF, 1.0, tmp, 1, u_n_p_1, 1);
         // Solve system
-        //		MathLibrary::computeDenseSymSolution(11, K, pivot, u_n_p_1);
+        //		Math::computeDenseSymSolution(11, K, pivot, u_n_p_1);
         // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans , lapack_int n , lapack_int
         // nrhs , const double * a , lapack_int lda , const lapack_int * ipiv , double * b ,
         // lapack_int ldb );
