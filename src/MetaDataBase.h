@@ -7,10 +7,10 @@
 #include <stdexcept>
 #include <string>
 
+#include "ArbitraryTrajectory.h"
 #include "Constants.h"
 #include "IO/Output.h"
 #include "MathLibrary.h"
-#include "arbitraryTrajectory.h"
 
 #ifdef INTERPOLATION
 #include "EVAALookup.h"
@@ -203,7 +203,7 @@ public:
                 load_data->roadProfile().arbitraryRoadProfile().get().horizontalProfile();
             _boundary_condition_road = BoundaryConditionRoad::ARBITRARY;
             std::cout << "Run the simulation on an arbitrary road" << std::endl;
-            _trajectory = new arbitraryTrajectory<T>(
+            _trajectory = new ArbitraryTrajectory<T>(
                 _num_time_iter, _timestep, sinusoidalProfile.rightTyre().amplitude(),
                 sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(),
                 sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(),
@@ -479,7 +479,7 @@ public:
     inline T* getTyreExternalForceRearRight() {
         return _external_force_tyre + Constants::DIM * Constants::REAR_RIGHT;
     }
-    arbitraryTrajectory<T>* getArbitraryTrajectory() { return _trajectory; }
+    ArbitraryTrajectory<T>* getArbitraryTrajectory() { return _trajectory; }
 
     inline T getCircularRoadRadius() const { return _profile_radius; }
     inline T* getCircularRoadCenter() { return _profile_center; }
@@ -648,7 +648,7 @@ private:
     int _num_time_iter;
     int _solution_dim;
 
-    arbitraryTrajectory<T>* _trajectory = nullptr;
+    ArbitraryTrajectory<T>* _trajectory = nullptr;
 
     /*
     Environment parameters (road conditions and external force fields)

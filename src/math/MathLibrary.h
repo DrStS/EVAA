@@ -1036,7 +1036,7 @@ public:
      */
     static void Newton(C* obj /**< instance of 11dof class*/,
                        T* force /**< pointer to force vector (not from 11dof class)*/,
-                       T* J /**< pointer to Jacobien from 11dofClass*/,
+                       T* J /**< pointer to Jacobian from 11dofClass*/,
                        T* res /**< residual from 11Dof class*/,
                        T* res_norm /**< norm of the residual from the 11 Dof class*/,
                        T* u_n_p_1 /**< current position vector*/,
@@ -1049,7 +1049,7 @@ public:
 
         do {
             count++;
-            obj->constructJacobien();
+            obj->constructJacobian();
 
             // get J=LL^T
             status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);

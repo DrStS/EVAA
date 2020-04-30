@@ -281,12 +281,12 @@ public:
     }
 
     /**
-     * \brief construct Jacobien for non fixed case
+     * \brief construct Jacobian for non fixed case
      *
      * this has to be called every newton iteraton
      * J = M_h2 + D / _h + K + dKdx*x[n+1] + 1/h_ * dDdx ( x[n+1] - x[n] )
      */
-    void constructJacobien() {
+    void constructJacobian() {
         // first update the derivative
         MetaDataBase<T>::getDataBase().getLookupStiffness().getDerivative(
             _car->currentSpringsLength, dkdl);
@@ -308,12 +308,12 @@ public:
         // Math::axpy<T>(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
     }
     /**
-     * \brief construct Jacobien for fixed to road
+     * \brief construct Jacobian for fixed to road
      *
      * add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h D - K + 1/h dDdx *
      * x[n]] therefore J = M_h2 for the tyre positions
      */
-    void constructFixedJacobien() {
+    void constructFixedJacobian() {
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
             Math::copy<T>(Constants::DOF, M_h2 + (4 + 2 * i) * Constants::DOF, 1,
                           J + (4 + 2 * i) * Constants::DOF, 1);
@@ -912,13 +912,13 @@ public:
         constructbVec();
     }
     /**
-     * \brief construct Jacobien
+     * \brief construct Jacobian
      *
      * this has to be called every newton iteraton
      * J = 9/4 * M_h2 + 3/2h * D + K + dKdx*x[n+1] + 1/h * dDdx * (3/2 * x[n+1] - 2 * x[n] + 1/2 *
      * x[n-1])
      */
-    void constructJacobien() {
+    void constructJacobian() {
         // first update the derivative
         MetaDataBase<T>::getDataBase().getLookupStiffness().getDerivative(
             _car->currentSpringsLength, dkdl);

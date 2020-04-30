@@ -12,16 +12,16 @@ namespace EVAA {
 
 /** Class that handles everything related to the arbitrary road trajetory */
 template <class T>
-class arbitraryTrajectory {
+class ArbitraryTrajectory {
 public:
     /**
      * \brief Constructor
      */
-    arbitraryTrajectory() : _numIterations(0), _delta_t(0) {}
+    ArbitraryTrajectory() : _numIterations(0), _delta_t(0) {}
     /**
      * \brief Constructor
      */
-    arbitraryTrajectory(size_t numIterations, T delta_t, T amplitude_right, T amplitude_left,
+    ArbitraryTrajectory(size_t numIterations, T delta_t, T amplitude_right, T amplitude_left,
                         T period_right, T period_left, T shift_right, T shift_left) :
         _numIterations(numIterations), _delta_t(delta_t) {
         if (period_right == 0) {
@@ -67,7 +67,7 @@ public:
     /**
      * Destructor
      */
-    ~arbitraryTrajectory() {
+    ~ArbitraryTrajectory() {
         Math::free<T>(_roadPointsX);
         Math::free<T>(_roadPointsY);
         Math::free<T>(_roadAccelerationX);
