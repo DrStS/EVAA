@@ -36,7 +36,7 @@ l_lat_rl=2*0.84;
 l_lat_rr=2*0.84;
 mass_Body=1936;
 I_body_xx=6400;
-I_body_yy=5000;
+I_body_yy=4800;
 I_body_zz=4800;
 mass_wheel_fl=145/2;
 mass_tyre_fl=30;
@@ -115,7 +115,7 @@ FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
 % simulation specifications 
-num_iter = 1000;     % LENGTH OF THE SIMULATION
+num_iter = 10000;     % LENGTH OF THE SIMULATION
 delta_t = 1e-3;       % PLAY AROUND
 tol = 1e-7;           % !!!! PLAY AROUND !!!!
 max_iter = 1000000;     % for Broyden´

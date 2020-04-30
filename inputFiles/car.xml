@@ -34,7 +34,7 @@
         </TyreSpringsXML>
       </GeometryXML>
       <StiffnessXML>
-        <!--ConstantXML>
+        <ConstantXML>
           <TyreXML>
             <ReerRight>260e3</ReerRight>
             <ReerLeft>260e3</ReerLeft>
@@ -47,10 +47,10 @@
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
           </BodyXML>
-        </ConstantXML-->
-        <LookupTableXML>
+        </ConstantXML>
+        <!--LookupTableXML>
           <FilePathXML>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePathXML>
-        </LookupTableXML>
+        </LookupTableXML-->
       </StiffnessXML>
       <DampingCoefficientsXML>
         <TyreXML>
@@ -90,7 +90,7 @@
         <YZ>0</YZ>
         <ZX>0</ZX>
         <ZY>0</ZY>
-        <ZZ>5000</ZZ>
+        <ZZ>4800</ZZ>
       </InertiaXML>
     </TwoTrackModelXML>
   </VehicleXML>
@@ -168,8 +168,8 @@
     </VelocitiesXML>
     <OrientationXML>
 	    <x>0</x>
-		<y>0</y>
-		<z>0</z>
+		  <y>0</y>
+		  <z>0</z>
 	    <w>1</w>
     </OrientationXML>
 	<PositionXML>
@@ -228,7 +228,7 @@
   <SimulationParametersXML>
     <GeneralSettingsXML>
       <TimestepSizeXML>1e-3</TimestepSizeXML>
-      <NumberOfIterationsXML>1000</NumberOfIterationsXML>
+      <NumberOfIterationsXML>10000</NumberOfIterationsXML>
       <GravityXML>
         <x>0</x>
         <y>0</y>
