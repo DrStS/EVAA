@@ -131,17 +131,18 @@ public:
      * type = DF_PP_DEFAULT, order = DF_PP_LINEAR
      * for spline interpolation:
      * type = DF_PP_NATURAL, order = DF_PP_CUBIC
+     *
+     * \param size size of one grid
+     * \param a pointer to array of size k with constant coefficient for each spring
+     * \param b coefficient for linear part of grid function
+     * \param c coefficient for quadratic part of grid function
+     * \param l_min min length of spring in lookup
+     * \param l_max max length of spring in lookup
+     * \param k number of springs
+     * \param type int which corersponds to a certain type of interpolation
+     * \param order order of the interpolation: depends on type
      */
-    EVAALookup(
-        int size /**< [in] size of one grid */,
-        T* a /**< [in] pointer to array of size k with constant coefficient for each spring */,
-        T b /**< [in] coefficient for linear part of grid function */,
-        T c /**< [in] coefficient for quadratic part of grid function */,
-        T l_min /**< [in] min length of spring in lookup */,
-        T l_max /**< [in] max length of spring in lookup */, int k /**< [in] number of springs */,
-        int type /**< [in] int which corersponds to a certain type of interpolation */,
-        int order /**< [in] order of the interpolation: depends on type */
-        ) :
+    EVAALookup(int size, T* a, T b, T c, T l_min, T l_max, int k, int type, int order) :
         nx(size), ny(k), sorder(order), stype(type), l_min(l_min), l_max(l_max) {
         if (sorder == DF_PP_CUBIC) {
             bc_type = DF_BC_FREE_END;
@@ -229,7 +230,7 @@ public:
     void getDerivative(
         T* length /**< [in] pointer to array of size k with lenght values of springs*/,
         T* deriv /**< [out] pointer to array of size k to store values of the derivative*/
-    ) {
+    ) const {
         // size of array describing derivative (dorder), which is defined two lines below
         const MKL_INT ndorder = 2;
         const MKL_INT dorder[2] = {0, 1};  // only the derivative values are computed
@@ -240,10 +241,10 @@ public:
     }
 
     /**
-     * \brief interpolate the first task on every point of axis to check for correctnes
+     * \brief interpolate the first task on every point of axis to check for correctness
      */
     void generateLookupOutputFile(T l_min, T l_max, T add) {
-        // size of array describing derivative (dorder), which is defined two lines below
+        // size of array describing derivative (order), which is defined two lines below
         const MKL_INT ndorder = 1;
         const MKL_INT dorder[1] = {1};  // only the values are computed
         T* interpolation = Math::malloc<T>(2 * nx - 1);

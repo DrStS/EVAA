@@ -55,10 +55,6 @@ protected:
     T res_norm;
     T *dkdl, *dddl;
 
-    // interpolation
-    EVAALookup<T>* lookupStiffness;
-    EVAALookup<T>* lookupDamping;
-
 public:
     TwoTrackModelParent() {}
     /**
@@ -292,8 +288,10 @@ public:
      */
     void constructJacobien() {
         // first update the derivative
-        lookupStiffness->getDerivative(_car->currentSpringsLength, dkdl);
-        //	lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
+        MetaDataBase<T>::getDataBase().getLookupStiffness().getDerivative(
+            _car->currentSpringsLength, dkdl);
+        //	MetaDataBase<T>::getDataBase().getLookupDamping().getDerivative(_car->currentSpringsLength,
+        //dddl);
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
         // J = A =  M_h2 + D / _h + K
@@ -922,9 +920,10 @@ public:
      */
     void constructJacobien() {
         // first update the derivative
-        lookupStiffness->getDerivative(_car->currentSpringsLength, dkdl);
-        // lookupDamping->getDerivative(_car->currentSpringsLength, dddl);
-        // construct the derivative (tensor) times a pos vector
+        MetaDataBase<T>::getDataBase().getLookupStiffness().getDerivative(
+            _car->currentSpringsLength, dkdl);
+        // MetaDataBase<T>::getDataBase().getLookupDamping().getDerivative(_car->currentSpringsLength,
+        // dddl); construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
         // J = A
         Math::copy<T>(Constants::DOFDOF, A, 1, J, 1);
