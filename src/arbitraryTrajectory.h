@@ -48,8 +48,8 @@ public:
         _phaseShift_rr = 2 * Constants::PI / shift_right;
 
         // allocate memory
-        _roadPointsX = Math::malloc<T>(numIterations);
-        _roadPointsY = Math::malloc<T>(numIterations);
+        _roadPointsX = Math::malloc<T>(numIterations + 1);
+        _roadPointsY = Math::malloc<T>(numIterations + 1);
 
         _roadAngles = Math::malloc<T>(numIterations);
         _roadAngularAcceleration = Math::malloc<T>(numIterations);
@@ -121,8 +121,74 @@ public:
     n=(times(í+1) - times(i)) / delta_t true road points
      */
     void interpolateRoadPoints(size_t numProvidedPoints, T* providedPointsX, T* providedPointsY,
-                               T* providedTimes, T initialVelocity) {
-        // update _roadPointsX[j] and _roadPointsY[j]
+                               T* providedTimes) {
+        for (auto i = 0; i < numProvidedPoints - 1; i++) {
+            if (providedTimes[i] >= providedTimes[i + 1]) {
+                std::cout << providedTimes[i]  << std::endl;
+                std::cout << providedTimes[i+1] << std::endl;
+                throw std::domain_error("time is not increasing in road trajectory: " +
+                                        std::to_string(providedTimes[i]) + " <= " +
+                                        std::to_string(providedTimes[i + 1]));
+            }
+        }
+        T maxTime = providedTimes[numProvidedPoints - 1];
+        int numInterpolationPoints = maxTime / _delta_t + 1;
+        T* timeInterpolationPoints = Math::malloc<T>(_numIterations + 1);
+        T interpolationTime = _delta_t * _numIterations;
+        // when interpolationTime is longer than road defined exit
+        if (interpolationTime > maxTime) {
+            throw std::domain_error("Simulation time is longer than road is defined: " +
+                                    std::to_string(interpolationTime) + " > " + std::to_string(maxTime));
+        }
+        else {
+            // fill in time axis
+            for (auto i = 0; i < _numIterations + 1; i++) {
+                timeInterpolationPoints[i] = i * _delta_t;
+            }
+            // do the interpolation
+            interpolateAxis(numProvidedPoints, providedPointsX, providedTimes,
+                            timeInterpolationPoints, _roadPointsX);
+            interpolateAxis(numProvidedPoints, providedPointsY, providedTimes,
+                            timeInterpolationPoints, _roadPointsY);
+            IO::writeRoadTrajectoryCSV(_roadPointsX, _roadPointsY, _numIterations + 1, "Trajectory.txt");
+        }
+        Math::free(timeInterpolationPoints);
+    }
+
+    /**
+    * \brief interpolate the road at all time steps
+    * 
+    * \param [in] numProvidedPoints
+    * \param [in] providedPoints
+    * \param [in] providedTimes
+    * \param [in] interpolationAxis
+    * \param [out] axis 
+    */
+    void interpolateAxis(size_t numProvidedPoints, T* providedPoints, T* providedTimes,
+                         T* interpolationAxis, T* axis) {
+        MKL_INT order = DF_PP_CUBIC;
+        const MKL_INT dorder[1] = {1};
+        DFTaskPtr Task;
+        T* coeff = Math::malloc<T>((numProvidedPoints - 1) * order);
+        int err = 0;
+        err = Math::dfNewTask1D(&Task, numProvidedPoints, providedTimes, DF_NON_UNIFORM_PARTITION,
+                                1, providedPoints, DF_NO_HINT);
+        Math::dfCheckError(err);
+
+        err = Math::dfEditPPSpline1D<T>(Task, order, DF_PP_NATURAL, DF_BC_FREE_END, nullptr,
+                                        DF_NO_IC, nullptr, coeff, DF_NO_HINT);
+        Math::dfCheckError(err);
+
+        /* Construct spline using STD method */
+        err = Math::dfConstruct1D<T>(Task, DF_PP_SPLINE, DF_METHOD_STD);
+        Math::dfCheckError(err);
+
+        for (auto i = 0; i < _numIterations + 1; i++) {
+            err = Math::dfInterpolate1D<T>(Task, DF_INTERP, DF_METHOD_PP, 1, &interpolationAxis[i], DF_NO_HINT,
+                                     1, dorder, nullptr, &axis[i], DF_NO_HINT, 0);
+            Math::dfCheckError(err);
+        }
+        Math::free(coeff);
     }
 
     /**
@@ -266,6 +332,11 @@ public:
 
         calculateAccelerations(_tyreAccelerationsX_rr, legPointsX_rr);
         calculateAccelerations(_tyreAccelerationsY_rr, legPointsY_rr);
+
+        IO::writeRoadTrajectoryCSV(legPointsX_fl, legPointsY_fl, _numIterations, "LegFl.txt");
+        IO::writeRoadTrajectoryCSV(legPointsX_fr, legPointsY_fr, _numIterations, "LegFr.txt");
+        IO::writeRoadTrajectoryCSV(legPointsX_rl, legPointsY_rl, _numIterations, "LegRl.txt");
+        IO::writeRoadTrajectoryCSV(legPointsX_rr, legPointsY_rr, _numIterations, "LegRr.txt");
 
         // delete leg positions
         Math::free(legPointsX_fl);

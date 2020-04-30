@@ -202,7 +202,7 @@ public:
             }
 
             _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(),
-                                               wayPointsTimes.data(), initialVelocity);
+                                               wayPointsTimes.data());
             _trajectory->calculateTyreShifts(
                 _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
                 _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT]);

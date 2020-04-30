@@ -49,6 +49,24 @@ void writeLookUpGridPlusInterpolateValues(
 }
 
 /**
+ * \brief function to print the values for the trajectory debugging
+ */
+template <typename T>
+void writeRoadTrajectoryCSV(
+    T* interpolationx /**< [in] pointer to interpolation points at points of axis */,
+    T* interpolationy /**< [in] pointer to interpolation points at points of axis */,
+    int ni /**< [in] number of elements in arrays */,
+    std::string fname /**< [in] name of output file */
+) {
+    std::ofstream myfile(fname);
+    myfile << std::setprecision(15);
+    for (auto i = 0; i < ni; i++) {
+        myfile << interpolationx[i] << "," << interpolationy[i] << "\n";
+    }
+    myfile.close();
+}
+
+/**
  * Checks if a file exists.
  * \param[in] filename The name of the file to be checked.
  * \throw std::system_error if the file does not exist.
