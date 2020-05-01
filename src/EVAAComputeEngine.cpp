@@ -772,7 +772,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
     std::cout << "(num_iter + 1) = " << (num_iter + 1) << "solution_dim = " << solution_dim
               << std::endl;
 #ifdef IO
-    IO::write_matrix(complete_soln, "MBD_result.dat", (num_iter + 1), solution_dim);
+    IO::writeMatrix("MBD_result.dat", complete_soln, (num_iter + 1), solution_dim);
 #endif
     // IO
     Math::scal<Constants::floatEVAA>(solution_dim, 0, soln, 1);
@@ -803,7 +803,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
     solution_size = (num_iter + 1) * solution_dim;
     Constants::floatEVAA* complete_soln2 = Math::calloc<Constants::floatEVAA>(solution_size);
 #ifdef IO
-    IO::write_matrix(Car1->Position_vec, "initial_car_pos_vec.dat", 1, solution_dim);
+    IO::writeMatrix("initial_car_pos_vec.dat", Car1->Position_vec, 1, solution_dim);
 #endif  // IO
     Road_Profile->update_initial_condition(Car1);
 
@@ -817,7 +817,7 @@ void EVAAComputeEngine::compare_ALE_MBD(void) {
 
     Ale_sys->print_final_results();
 #ifdef IO
-    IO::write_matrix(complete_soln2, "ALE_result.dat", (num_iter + 1), solution_dim);
+    IO::writeMatrix("ALE_result.dat", complete_soln2, (num_iter + 1), solution_dim);
 #endif  // IO
     delete Car1;
     delete Load_module1;

@@ -163,7 +163,7 @@ public:
             Load_module_obj->update_torque(t, torque, force_vector);
             // convert centrifugal force to centripetal (only for x, y direction)
             Math::scal<T>(centripetal_force_dimensions - 1, -1, centripetal_force, 1);
-            if (iter == 100) Math::write_vector<T>(centripetal_force, centripetal_force_dimensions);
+            if (iter == 100) IO::writeVector(centripetal_force, centripetal_force_dimensions);
             global_frame_solver(t);
 
             // translate 27 force vector + 3 torques into 11DOF

@@ -289,41 +289,6 @@ T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim) {
 }
 
 /**
- * print a vector
- * \param vect the data
- * \param count its size
- */
-template <typename T>
-void write_vector(T* vect, int count) {
-    std::cout << "Debug mode print" << std::endl;
-    for (size_t i = 0; i < count; ++i) {
-        // std::cout << vect[i] << std::endl;
-        std::cout.precision(15);
-        std::cout << std::scientific << vect[i] << std::endl;
-        // printf("%1.15f\n", vect[i]);
-    }
-}
-
-/**
- * print a matrix
- * \param vect the data
- * \param count its size=count x count
- */
-template <typename T>
-void write_matrix(T* vect, int count) {
-    std::cout << "Debug mode print" << std::endl;
-    for (size_t i = 0; i < count; ++i) {
-        // std::cout << vect[i] << std::endl;
-        std::cout.precision(5);
-        for (size_t j = 0; j < count; ++j) {
-            std::cout << std::scientific << vect[i * count + j] << "  ";
-        }
-        std::cout << "\n" << std::endl;
-        // printf("%1.15f\n", vect[i]);
-    }
-}
-
-/**
  * Calculates the rotation quaternion between two angles
  * \param v1 first vector
  * \param v2 second vector
@@ -936,7 +901,7 @@ public:
             diagonal_matrix<T>(J, x_len, 1);
             Math::copy<T>(x_len, dx, 1, dx_inv, 1);
             Math::vInv<T>(x_len, dx_inv, dx_inv);
-            // write_vector(dx_inv, x_len);
+            // writeVector(dx_inv, x_len);
             Math::ger<T>(CblasRowMajor, x_len, x_len, -dt / 2.0, df, 1, dx_inv, 1, J, x_len);
 
             // calculate initial F for stopping condition

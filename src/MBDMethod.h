@@ -94,8 +94,8 @@ private:
 
     /**
      * Calculate the positions of the tyres and wheels according to the initial orientation of the
-     * car The legs always form a 90� angle to the car body, such that the rotational springs are
-     * at rest
+     * car The legs always form a 90 degrees angle to the car body, such that the rotational springs
+     * are at rest
      */
     void get_initial_length(T* initial_orientation_, const T* r_fl_, const T* r_fr_, const T* r_rl_,
                             const T* r_rr_, const T* pcc_, T* wheel_coordinate_fl_,
@@ -231,32 +231,6 @@ private:
 
         Math::free<T>(global_z);
         Math::free<T>(C_Nc);
-    }
-
-    /**
-     * For Debug purposes
-     */
-    void write_matrix(T* vect, int count) {
-        std::cout << "Debug mode print" << std::endl;
-        for (size_t i = 0; i < count; ++i) {
-            // std::cout << vect[i] << std::endl;
-            std::cout.precision(5);
-            for (size_t j = 0; j < count; ++j) {
-                std::cout << std::scientific << vect[i * count + j] << "  ";
-            }
-            std::cout << "\n" << std::endl;
-        }
-    }
-
-    /**
-     * For Debug purposes
-     */
-    void write_vector(T* vect, int count) {
-        std::cout << "Debug mode print" << std::endl;
-        for (size_t i = 0; i < count; ++i) {
-            std::cout.precision(15);
-            std::cout << std::scientific << vect[i] << std::endl;
-        }
     }
 
     void MemoryAllocation() {
