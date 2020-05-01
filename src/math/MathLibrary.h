@@ -134,20 +134,6 @@ void diagonal_matrix(T* mat, size_t dim, T val) {
  */
 
 /**
- * Broken function (not safe to use)
- */
-template <typename T>
-void elementwise_inversion(T* vect, size_t dim) {
-    T* temp = Math::calloc<T>(dim);
-    Math::vInv<T>(dim, vect, temp);
-    Math::copy<T>(dim, temp, 1, vect, 1);
-    // for (size_t i = 0; i < dim; ++i) {
-    //	vect[i] = 1. / vect[i];
-    //}
-    Math::free<T>(temp);
-}
-
-/**
  * Swaps the adresses of the elements a and b
  */
 template <typename T>
@@ -562,7 +548,7 @@ public:
             Math::scal<T>(x_len * x_len, 0, J, 1);
             diagonal_matrix<T>(J, x_len, 1);
             Math::copy<T>(x_len, dx, 1, dx_inv, 1);
-            elementwise_inversion(dx_inv, x_len);
+            Math::vInv<T>(x_len, dx_inv, dx_inv);
             Math::ger<T>(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
 
             // calculate initial F for stopping condition
@@ -705,7 +691,7 @@ public:
         Math::scal<T>(x_len * x_len, 0, J, 1);
         diagonal_matrix<T>(J, x_len, 1);
         Math::copy<T>(x_len, dx, 1, dx_inv, 1);
-        elementwise_inversion(dx_inv, x_len);
+        Math::vInv<T>(x_len, dx_inv, dx_inv);
         Math::ger<T>(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
 
         // calculate initial F for stopping condition
@@ -799,7 +785,7 @@ public:
                 Math::scal<T>(x_len * x_len, 0, J, 1);
                 diagonal_matrix<T>(J, x_len, 1);
                 Math::copy<T>(x_len, dx, 1, dx_inv, 1);
-                elementwise_inversion(dx_inv, x_len);
+                Math::vInv<T>(x_len, dx_inv, dx_inv);
                 Math::ger<T>(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
 
                 // calculate initial F for stopping condition
@@ -949,7 +935,7 @@ public:
             Math::scal<T>(x_len * x_len, 0, J, 1);
             diagonal_matrix<T>(J, x_len, 1);
             Math::copy<T>(x_len, dx, 1, dx_inv, 1);
-            elementwise_inversion(dx_inv, x_len);
+            Math::vInv<T>(x_len, dx_inv, dx_inv);
             // write_vector(dx_inv, x_len);
             Math::ger<T>(CblasRowMajor, x_len, x_len, -dt / 2.0, df, 1, dx_inv, 1, J, x_len);
 
