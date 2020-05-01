@@ -72,7 +72,7 @@ private:
 
     // Initial condition params
 
-    T *initial_orientation, *initial_angular_velocity;
+    T* initial_angular_velocity;
 
     // Arrays for intermediate steps
 
@@ -299,7 +299,6 @@ private:
         lower_spring_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
         upper_rotational_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
         lower_rotational_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
-        initial_orientation = Math::calloc<T>(Constants::NUM_LEGS);
         initial_angular_velocity = Math::calloc<T>(Constants::DIM);
         upper_spring_damping = Math::calloc<T>(Constants::NUM_LEGS);
         lower_spring_damping = Math::calloc<T>(Constants::NUM_LEGS);
@@ -408,7 +407,6 @@ private:
         mass_wheel[i] = mass_wheel_fl;
         mass_tyre[i] = mass_tyre_fl;
 
-        initial_orientation[i] = db.getBodyInitialOrientation()[i];
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i];
@@ -429,7 +427,6 @@ private:
         Ic[i * Constants::DIM + i] = I_body_yy;
         mass_wheel[i] = mass_wheel_fr;
         mass_tyre[i] = mass_tyre_fr;
-        initial_orientation[i] = db.getBodyInitialOrientation()[i];
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i];
@@ -450,7 +447,6 @@ private:
         Ic[i * Constants::DIM + i] = I_body_zz;
         mass_wheel[i] = mass_wheel_rl;
         mass_tyre[i] = mass_tyre_rl;
-        initial_orientation[i] = db.getBodyInitialOrientation()[i];
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i] - mass * g;
@@ -466,7 +462,6 @@ private:
         i = 3;
         mass_wheel[i] = mass_wheel_rr;
         mass_tyre[i] = mass_tyre_rr;
-        initial_orientation[i] = db.getBodyInitialOrientation()[i];
     }
 
     void getCholeskyDecomposition() {
@@ -1724,7 +1719,8 @@ public:
 
         // qc
         qc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
-        Math::copy<T>(Constants::NUM_LEGS, initial_orientation, 1,
+        Math::copy<T>(Constants::NUM_LEGS,
+                      MetaDataBase<T>::getDataBase().getBodyInitialOrientation(), 1,
                       x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
         j++;
         // pcc
@@ -2044,7 +2040,6 @@ public:
         Math::free<T>(lower_spring_stiffness);
         Math::free<T>(upper_rotational_stiffness);
         Math::free<T>(lower_rotational_stiffness);
-        Math::free<T>(initial_orientation);
         Math::free<T>(initial_angular_velocity);
         Math::free<T>(upper_spring_damping);
         Math::free<T>(lower_spring_damping);
