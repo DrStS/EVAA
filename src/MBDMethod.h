@@ -33,9 +33,6 @@ private:
 
     // Car Definition
 
-    T I_body_xx;
-    T I_body_yy;
-    T I_body_zz;
     T* Ic;
     T *mass_wheel, *mass_tyre;
     T *upper_spring_length, *lower_spring_length;
@@ -325,10 +322,6 @@ private:
 
         // Car Definition
 
-        I_body_xx = db.getMomentOfInertiaXX();
-        I_body_yy = db.getMomentOfInertiaYY();
-        I_body_zz = db.getMomentOfInertiaZZ();
-
         g = db.getGravityField()[2];
 
         // Fill up vectors
@@ -357,6 +350,10 @@ private:
         Math::copy(Constants::DIM, db.getTyreInitialVelocityRearLeft(), 1, vt_rl, 1);
         Math::copy(Constants::DIM, db.getTyreInitialVelocityRearRight(), 1, vt_rr, 1);
 
+        // diag(Ic) = diag(MoI)
+        Math::copy(Constants::DIM, db.getMomentOfInertiaVector(), Constants::DIM + 1, Ic,
+                   Constants::DIM + 1);
+
         int i;
 
         i = 0;
@@ -382,7 +379,6 @@ private:
         r_fr[i] = db.getLatidudalLegPositionFrontRight();
         r_rl[i] = -db.getLatidudalLegPositionRearLeft();
         r_rr[i] = db.getLatidudalLegPositionRearRight();
-        Ic[i * Constants::DIM + i] = I_body_yy;
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i];
@@ -400,7 +396,6 @@ private:
         r_fr[i] = 0;
         r_rl[i] = 0;
         r_rr[i] = 0;
-        Ic[i * Constants::DIM + i] = I_body_zz;
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i] - db.getBodyMass() * g;

@@ -310,14 +310,7 @@ public:
     inline T getBodyMass() const { return _mass_body; }
 
     inline T getMomentOfInertiaXX() const { return _I_body[0]; }
-    inline T getMomentOfInertiaXY() const { return _I_body[1]; }
-    inline T getMomentOfInertiaXZ() const { return _I_body[2]; }
-    inline T getMomentOfInertiaYX() const { return _I_body[3]; }
     inline T getMomentOfInertiaYY() const { return _I_body[4]; }
-    inline T getMomentOfInertiaYZ() const { return _I_body[5]; }
-    inline T getMomentOfInertiaZX() const { return _I_body[6]; }
-    inline T getMomentOfInertiaZY() const { return _I_body[7]; }
-    inline T getMomentOfInertiaZZ() const { return _I_body[8]; }
     // contains all elements of the InertiaMatrix in the format [XX,XY,XZ,YX,YY,YZ,ZX,ZY,ZZ]
     inline T* getMomentOfInertiaVector() { return _I_body; }
 
