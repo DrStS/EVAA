@@ -1846,7 +1846,6 @@ public:
         pcc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
         Math::copy<T>(Constants::DIM, pcc, 1, pcc_, 1);
         i++;
-        std::cout << "zoodle" << std::endl;
         // pw1
         pw_fl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
         i++;
