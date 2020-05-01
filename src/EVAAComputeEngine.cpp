@@ -58,8 +58,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
 void EVAAComputeEngine::printInfo(void) {
     Math::printMKLInfo();
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
-    std::cout << "BCP sizeof: " << sizeof(Constants::floatEVAA)
-              << "\n\nCalculate the solution after "
+    std::cout << "\n\nCalculate the solution after "
               << db.getNumberOfTimeIterations() * db.getTimeStepSize()
               << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations()
               << " iterations\n\n\n";
