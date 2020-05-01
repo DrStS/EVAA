@@ -45,10 +45,6 @@ private:
     T I_body_xx;
     T I_body_yy;
     T I_body_zz;
-    T mass_tyre_fl;
-    T mass_tyre_fr;
-    T mass_tyre_rl;
-    T mass_tyre_rr;
     T* Ic;
     T *mass_wheel, *mass_tyre;
     T *upper_spring_length, *lower_spring_length;
@@ -353,11 +349,6 @@ private:
         I_body_yy = db.getMomentOfInertiaYY();
         I_body_zz = db.getMomentOfInertiaZZ();
 
-        mass_tyre_fl = db.getTyreMassFrontLeft();
-        mass_tyre_fr = db.getTyreMassFrontRight();
-        mass_tyre_rl = db.getTyreMassRearLeft();
-        mass_tyre_rr = db.getTyreMassRearRight();
-
         g = db.getGravityField()[2];
 
         // Fill up vectors
@@ -368,6 +359,7 @@ private:
         Math::copy(Constants::NUM_LEGS, db.getBodySpringLengthVector(), 1, upper_spring_length, 1);
         Math::copy(Constants::NUM_LEGS, db.getTyreSpringLengthVector(), 1, lower_spring_length, 1);
         Math::copy(Constants::NUM_LEGS, db.getWheelMassVector(), 1, mass_wheel, 1);
+        Math::copy(Constants::NUM_LEGS, db.getTyreMassVector(), 1, mass_tyre, 1);
 
         // TODO: Extract constant or use MetaDataBase and vectorize copying.
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
@@ -393,7 +385,6 @@ private:
         r_rl[i] = -l_long_rl;
         r_rr[i] = -l_long_rr;
         Ic[i * Constants::DIM + i] = I_body_xx;
-        mass_tyre[i] = mass_tyre_fl;
 
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
@@ -413,7 +404,6 @@ private:
         r_rl[i] = -l_lat_rl;
         r_rr[i] = l_lat_rr;
         Ic[i * Constants::DIM + i] = I_body_yy;
-        mass_tyre[i] = mass_tyre_fr;
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i];
@@ -432,21 +422,17 @@ private:
         r_rl[i] = 0;
         r_rr[i] = 0;
         Ic[i * Constants::DIM + i] = I_body_zz;
-        mass_tyre[i] = mass_tyre_rl;
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i] - db.getBodyMass() * g;
-        FT_fl[i] = db.getTyreExternalForceFrontLeft()[i] - mass_tyre_fl * g;
-        FT_fr[i] = db.getTyreExternalForceFrontRight()[i] - mass_tyre_fr * g;
-        FT_rl[i] = db.getTyreExternalForceRearLeft()[i] - mass_tyre_rl * g;
-        FT_rr[i] = db.getTyreExternalForceRearRight()[i] - mass_tyre_rr * g;
+        FT_fl[i] = db.getTyreExternalForceFrontLeft()[i] - db.getTyreMassFrontLeft() * g;
+        FT_fr[i] = db.getTyreExternalForceFrontRight()[i] - db.getTyreMassFrontRight() * g;
+        FT_rl[i] = db.getTyreExternalForceRearLeft()[i] - db.getTyreMassRearLeft() * g;
+        FT_rr[i] = db.getTyreExternalForceRearRight()[i] - db.getTyreMassRearRight() * g;
         FW_fl[i] = db.getWheelExternalForceFrontLeft()[i] - db.getWheelMassFrontLeft() * g;
         FW_fr[i] = db.getWheelExternalForceFrontRight()[i] - db.getWheelMassFrontRight() * g;
         FW_rl[i] = db.getWheelExternalForceRearLeft()[i] - db.getWheelMassRearLeft() * g;
         FW_rr[i] = db.getWheelExternalForceRearRight()[i] - db.getWheelMassRearRight() * g;
-
-        i = 3;
-        mass_tyre[i] = mass_tyre_rr;
     }
 
     void getCholeskyDecomposition() {
@@ -1930,10 +1916,10 @@ public:
             get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
         else if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) {
-            get_circular_road_force(cf_local_FR_fl, vt_fl_, mass_tyre_rr, pt_fl_);
-            get_circular_road_force(cf_local_FR_fr, vt_fr_, mass_tyre_rl, pt_fr_);
-            get_circular_road_force(cf_local_FR_rl, vt_rl_, mass_tyre_fl, pt_rl_);
-            get_circular_road_force(cf_local_FR_rr, vt_rr_, mass_tyre_fr, pt_rr_);
+            get_circular_road_force(cf_local_FR_fl, vt_fl_, mass_tyre[0], pt_fl_);
+            get_circular_road_force(cf_local_FR_fr, vt_fr_, mass_tyre[1], pt_fr_);
+            get_circular_road_force(cf_local_FR_rl, vt_rl_, mass_tyre[2], pt_rl_);
+            get_circular_road_force(cf_local_FR_rr, vt_rr_, mass_tyre[3], pt_rr_);
         }
 
         compute_car_body_total_torque();
