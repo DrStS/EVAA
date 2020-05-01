@@ -392,6 +392,11 @@ private:
         Math::copy(Constants::DIM, db.getWheelInitialVelocityRearLeft(), 1, vw_rl, 1);
         Math::copy(Constants::DIM, db.getWheelInitialVelocityRearRight(), 1, vw_rr, 1);
 
+        Math::copy(Constants::DIM, db.getTyreInitialVelocityFrontLeft(), 1, vt_fl, 1);
+        Math::copy(Constants::DIM, db.getTyreInitialVelocityFrontRight(), 1, vt_fr, 1);
+        Math::copy(Constants::DIM, db.getTyreInitialVelocityRearLeft(), 1, vt_rl, 1);
+        Math::copy(Constants::DIM, db.getTyreInitialVelocityRearRight(), 1, vt_rr, 1);
+
         int i;
 
         i = 0;
@@ -407,10 +412,6 @@ private:
         initial_lower_spring_length[i] = db.getTyreSpringInitialLengthFrontLeft();
         initial_orientation[i] = db.getBodyInitialOrientation()[i];
         vc[i] = db.getBodyInitialVelocity()[i];
-        vt_fl[i] = db.getTyreInitialVelocityFrontLeft()[i];
-        vt_fr[i] = db.getTyreInitialVelocityFrontRight()[i];
-        vt_rl[i] = db.getTyreInitialVelocityRearLeft()[i];
-        vt_rr[i] = db.getTyreInitialVelocityRearRight()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i];
         FT_fl[i] = db.getTyreExternalForceFrontLeft()[i];
@@ -434,10 +435,6 @@ private:
         initial_lower_spring_length[i] = db.getTyreSpringInitialLengthFrontRight();
         initial_orientation[i] = db.getBodyInitialOrientation()[i];
         vc[i] = db.getBodyInitialVelocity()[i];
-        vt_fl[i] = db.getTyreInitialVelocityFrontLeft()[i];
-        vt_fr[i] = db.getTyreInitialVelocityFrontRight()[i];
-        vt_rl[i] = db.getTyreInitialVelocityRearLeft()[i];
-        vt_rr[i] = db.getTyreInitialVelocityRearRight()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i];
         FT_fl[i] = db.getTyreExternalForceFrontLeft()[i];
@@ -461,10 +458,6 @@ private:
         initial_lower_spring_length[i] = db.getTyreSpringInitialLengthRearLeft();
         initial_orientation[i] = db.getBodyInitialOrientation()[i];
         vc[i] = db.getBodyInitialVelocity()[i];
-        vt_fl[i] = db.getTyreInitialVelocityFrontLeft()[i];
-        vt_fr[i] = db.getTyreInitialVelocityFrontRight()[i];
-        vt_rl[i] = db.getTyreInitialVelocityRearLeft()[i];
-        vt_rr[i] = db.getTyreInitialVelocityRearRight()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i] - mass * g;
         FT_fl[i] = db.getTyreExternalForceFrontLeft()[i] - mass_tyre_fl * g;
