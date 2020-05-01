@@ -98,16 +98,16 @@
   <InitialConditionsXML>
     <SpringElongationXML>
       <BodyXML>
-        <ReerRight>0.20</ReerRight>
-        <ReerLeft>0.20</ReerLeft>
-        <FrontLeft>0.20</FrontLeft>
-        <FrontRight>0.20</FrontRight>
+        <ReerRight>0.25</ReerRight>
+        <ReerLeft>0.25</ReerLeft>
+        <FrontLeft>0.25</FrontLeft>
+        <FrontRight>0.25</FrontRight>
       </BodyXML>
       <TyreXML>
-        <ReerRight>0.2</ReerRight>
-        <ReerLeft>0.2</ReerLeft>
-        <FrontLeft>0.2</FrontLeft>
-        <FrontRight>0.2</FrontRight>
+        <ReerRight>0.15</ReerRight>
+        <ReerLeft>0.15</ReerLeft>
+        <FrontLeft>0.15</FrontLeft>
+        <FrontRight>0.15</FrontRight>
       </TyreXML>
     </SpringElongationXML>
     <VelocitiesXML>
