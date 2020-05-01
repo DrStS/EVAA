@@ -21,9 +21,7 @@ public:
     /**
      * \brief Constructor
      */
-    ArbitraryTrajectory(size_t numIterations, T delta_t, T amplitude_right, T amplitude_left,
-                        T period_right, T period_left, T shift_right, T shift_left) :
-        _numIterations(numIterations), _delta_t(delta_t) {
+    ArbitraryTrajectory(size_t numIterations, T delta_t, T amplitude_right, T amplitude_left, T period_right, T period_left, T shift_right, T shift_left) : _numIterations(numIterations), _delta_t(delta_t) {
         if (period_right == 0) {
             _frequencyRight = 0;
         }
@@ -111,23 +109,23 @@ public:
     /**
     * \brief interpolate all intermediate road points @Felix, help me out
     * \param numProvidedPoints number of road points from the XML
-    * \param providedPointsX array of all X-coordinates of the points from the XML
-    * \param providedPointsY array of all Y-coordinates of the points from the XML
+    * \param providedPointsX array of all X-coordinates of the points from the
+    XML
+    * \param providedPointsY array of all Y-coordinates of the points from the
+    XML
     * \param providedTimes times, at which the XML points should be reached
-    * \param initialVelocity such that in the first segment the acceleration is calculated correctly
+    * \param initialVelocity such that in the first segment the acceleration is
+    calculated correctly
 
-    * This means, that between two XML points  [X(i), Y(i)] and [X(�+1), Y(i+1)], there will be
-    n=(times(�+1) - times(i)) / delta_t true road points
+    * This means, that between two XML points  [X(i), Y(i)] and [X(�+1),
+    Y(i+1)], there will be n=(times(�+1) - times(i)) / delta_t true road points
      */
-    void interpolateRoadPoints(size_t numProvidedPoints, T* providedPointsX, T* providedPointsY,
-                               T* providedTimes) {
+    void interpolateRoadPoints(size_t numProvidedPoints, T* providedPointsX, T* providedPointsY, T* providedTimes) {
         for (auto i = 0; i < numProvidedPoints - 1; i++) {
             if (providedTimes[i] >= providedTimes[i + 1]) {
                 std::cout << providedTimes[i] << std::endl;
                 std::cout << providedTimes[i + 1] << std::endl;
-                throw std::domain_error("time is not increasing in road trajectory: " +
-                                        std::to_string(providedTimes[i]) +
-                                        " <= " + std::to_string(providedTimes[i + 1]));
+                throw std::domain_error("time is not increasing in road trajectory: " + std::to_string(providedTimes[i]) + " <= " + std::to_string(providedTimes[i + 1]));
             }
         }
         T maxTime = providedTimes[numProvidedPoints - 1];
@@ -136,9 +134,7 @@ public:
         T interpolationTime = _delta_t * _numIterations;
         // when interpolationTime is longer than road defined exit
         if (interpolationTime > maxTime) {
-            throw std::domain_error("Simulation time is longer than road is defined: " +
-                                    std::to_string(interpolationTime) + " > " +
-                                    std::to_string(maxTime));
+            throw std::domain_error("Simulation time is longer than road is defined: " + std::to_string(interpolationTime) + " > " + std::to_string(maxTime));
         }
         else {
             // fill in time axis
@@ -146,12 +142,9 @@ public:
                 timeInterpolationPoints[i] = i * _delta_t;
             }
             // do the interpolation
-            interpolateAxis(numProvidedPoints, providedPointsX, providedTimes,
-                            timeInterpolationPoints, _roadPointsX);
-            interpolateAxis(numProvidedPoints, providedPointsY, providedTimes,
-                            timeInterpolationPoints, _roadPointsY);
-            IO::writeRoadTrajectoryCSV(_roadPointsX, _roadPointsY, _numIterations + 1,
-                                       "Trajectory.txt");
+            interpolateAxis(numProvidedPoints, providedPointsX, providedTimes, timeInterpolationPoints, _roadPointsX);
+            interpolateAxis(numProvidedPoints, providedPointsY, providedTimes, timeInterpolationPoints, _roadPointsY);
+            IO::writeRoadTrajectoryCSV(_roadPointsX, _roadPointsY, _numIterations + 1, "Trajectory.txt");
         }
         Math::free(timeInterpolationPoints);
     }
@@ -165,19 +158,16 @@ public:
      * \param [in] interpolationAxis
      * \param [out] axis
      */
-    void interpolateAxis(size_t numProvidedPoints, T* providedPoints, T* providedTimes,
-                         T* interpolationAxis, T* axis) {
+    void interpolateAxis(size_t numProvidedPoints, T* providedPoints, T* providedTimes, T* interpolationAxis, T* axis) {
         MKL_INT order = DF_PP_CUBIC;
         const MKL_INT dorder[1] = {1};
         DFTaskPtr Task;
         T* coeff = Math::malloc<T>((numProvidedPoints - 1) * order);
         int err = 0;
-        err = Math::dfNewTask1D(&Task, numProvidedPoints, providedTimes, DF_NON_UNIFORM_PARTITION,
-                                1, providedPoints, DF_NO_HINT);
+        err = Math::dfNewTask1D(&Task, numProvidedPoints, providedTimes, DF_NON_UNIFORM_PARTITION, 1, providedPoints, DF_NO_HINT);
         Math::dfCheckError(err);
 
-        err = Math::dfEditPPSpline1D<T>(Task, order, DF_PP_NATURAL, DF_BC_FREE_END, nullptr,
-                                        DF_NO_IC, nullptr, coeff, DF_NO_HINT);
+        err = Math::dfEditPPSpline1D<T>(Task, order, DF_PP_NATURAL, DF_BC_FREE_END, nullptr, DF_NO_IC, nullptr, coeff, DF_NO_HINT);
         Math::dfCheckError(err);
 
         /* Construct spline using STD method */
@@ -185,8 +175,7 @@ public:
         Math::dfCheckError(err);
 
         for (auto i = 0; i < _numIterations + 1; i++) {
-            err = Math::dfInterpolate1D<T>(Task, DF_INTERP, DF_METHOD_PP, 1, &interpolationAxis[i],
-                                           DF_NO_HINT, 1, dorder, nullptr, &axis[i], DF_NO_HINT, 0);
+            err = Math::dfInterpolate1D<T>(Task, DF_INTERP, DF_METHOD_PP, 1, &interpolationAxis[i], DF_NO_HINT, 1, dorder, nullptr, &axis[i], DF_NO_HINT, 0);
             Math::dfCheckError(err);
         }
         Math::free(coeff);
@@ -198,17 +187,13 @@ public:
     void calculateTravelledDistance() {
         _normedDistance[0] = 0;
         for (int i = 1; i < _numIterations + 1; ++i) {
-            _normedDistance[i] =
-                _normedDistance[i - 1] + sqrt((_roadPointsX[i] - _roadPointsX[i - 1]) *
-                                                  (_roadPointsX[i] - _roadPointsX[i - 1]) +
-                                              (_roadPointsY[i] - _roadPointsY[i - 1]) *
-                                                  (_roadPointsY[i] - _roadPointsY[i - 1]));
+            _normedDistance[i] = _normedDistance[i - 1] + sqrt((_roadPointsX[i] - _roadPointsX[i - 1]) * (_roadPointsX[i] - _roadPointsX[i - 1]) + (_roadPointsY[i] - _roadPointsY[i - 1]) * (_roadPointsY[i] - _roadPointsY[i - 1]));
         }
     }
 
     /**
-     * \brief use a second order scheme to calculate all angles on the trajectory
-     * points
+     * \brief use a second order scheme to calculate all angles on the
+     * trajectory points
      */
     void calculateAngles() {
         T invDeltaT = 1. / _delta_t;
@@ -241,12 +226,8 @@ public:
                 }
             }
 
-            directionX = 1.5 * _roadPointsX[_numIterations] +
-                         -2 * _roadPointsX[_numIterations - 1] -
-                         -0.5 * _roadPointsX[_numIterations - 2];
-            directionY = 1.5 * _roadPointsY[_numIterations] +
-                         -2 * _roadPointsY[_numIterations - 1] -
-                         -0.5 * _roadPointsY[_numIterations - 2];
+            directionX = 1.5 * _roadPointsX[_numIterations] + -2 * _roadPointsX[_numIterations - 1] - -0.5 * _roadPointsX[_numIterations - 2];
+            directionY = 1.5 * _roadPointsY[_numIterations] + -2 * _roadPointsY[_numIterations - 1] - -0.5 * _roadPointsY[_numIterations - 2];
             directionNorm = std::sqrt(directionX * directionX + directionY * directionY);
             if (directionNorm == 0) {
                 _roadAngles[_numIterations] = _roadAngles[_numIterations - 1];
@@ -266,8 +247,8 @@ public:
     }
 
     /**
-     * \brief use a second order scheme to calculate all AngularAccelerations and Accelerations
-     * between the trajectory points
+     * \brief use a second order scheme to calculate all AngularAccelerations
+     * and Accelerations between the trajectory points
      */
     void calculateAccelerationsCenterOfGravity() {
         calculateAccelerations(_roadAccelerationX, _roadPointsX);
@@ -276,11 +257,10 @@ public:
     }
 
     /**
-     * \brief use a second order scheme to calculate all AngularAccelerations and Accelerations
-     * between the trajectory points for the legs
+     * \brief use a second order scheme to calculate all AngularAccelerations
+     * and Accelerations between the trajectory points for the legs
      */
-    void calculateAccelerationsLegs(T& l_long_fl, T& l_long_fr, T& l_long_rl, T& l_long_rr,
-                                    T& l_lat_fl, T& l_lat_fr, T& l_lat_rl, T& l_lat_rr) {
+    void calculateAccelerationsLegs(T& l_long_fl, T& l_long_fr, T& l_long_rl, T& l_long_rr, T& l_lat_fl, T& l_lat_fr, T& l_lat_rl, T& l_lat_rr) {
         // get true local coordinates
         T localXcoordinates[Constants::NUM_LEGS] = {l_long_fl, l_long_fr, -l_long_rl, -l_long_rr};
         T localYcoordinates[Constants::NUM_LEGS] = {l_lat_fl, -l_lat_fr, l_lat_rl, -l_lat_rr};
@@ -300,25 +280,17 @@ public:
             T c = std::cos(_roadAngles[i]);
             T s = std::sin(_roadAngles[i]);
 
-            legPointsX_fl[i] =
-                _roadPointsX[i] + localXcoordinates[0] * c - localYcoordinates[0] * s;
-            legPointsY_fl[i] =
-                _roadPointsY[i] + localXcoordinates[0] * s + localYcoordinates[0] * c;
+            legPointsX_fl[i] = _roadPointsX[i] + localXcoordinates[0] * c - localYcoordinates[0] * s;
+            legPointsY_fl[i] = _roadPointsY[i] + localXcoordinates[0] * s + localYcoordinates[0] * c;
 
-            legPointsX_fr[i] =
-                _roadPointsX[i] + localXcoordinates[1] * c - localYcoordinates[1] * s;
-            legPointsY_fr[i] =
-                _roadPointsY[i] + localXcoordinates[1] * s + localYcoordinates[1] * c;
+            legPointsX_fr[i] = _roadPointsX[i] + localXcoordinates[1] * c - localYcoordinates[1] * s;
+            legPointsY_fr[i] = _roadPointsY[i] + localXcoordinates[1] * s + localYcoordinates[1] * c;
 
-            legPointsX_rl[i] =
-                _roadPointsX[i] + localXcoordinates[2] * c - localYcoordinates[2] * s;
-            legPointsY_rl[i] =
-                _roadPointsY[i] + localXcoordinates[2] * s + localYcoordinates[2] * c;
+            legPointsX_rl[i] = _roadPointsX[i] + localXcoordinates[2] * c - localYcoordinates[2] * s;
+            legPointsY_rl[i] = _roadPointsY[i] + localXcoordinates[2] * s + localYcoordinates[2] * c;
 
-            legPointsX_rr[i] =
-                _roadPointsX[i] + localXcoordinates[3] * c - localYcoordinates[3] * s;
-            legPointsY_rr[i] =
-                _roadPointsY[i] + localXcoordinates[3] * s + localYcoordinates[3] * c;
+            legPointsX_rr[i] = _roadPointsX[i] + localXcoordinates[3] * c - localYcoordinates[3] * s;
+            legPointsY_rr[i] = _roadPointsY[i] + localXcoordinates[3] * s + localYcoordinates[3] * c;
         }
 
         // calculate tyre forces
@@ -352,101 +324,65 @@ public:
     }
 
     /**
-     * \brief use a second order scheme to calculate the Accelerations that act on the tyre on the
-     * trajectory points
+     * \brief use a second order scheme to calculate the Accelerations that act
+     * on the tyre on the trajectory points
      */
     void calculateVerticalAccelerations() {
         T invDeltaT = 1. / (_delta_t * _delta_t);
         if (_numIterations > 3) {
-            T pos_fl_prev =
-                _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[0] + _phaseShift_fl));
-            T pos_fr_prev =
-                _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[0] + _phaseShift_fr));
-            T pos_rl_prev =
-                _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[0] + _phaseShift_rl));
-            T pos_rr_prev =
-                _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[0] + _phaseShift_rr));
+            T pos_fl_prev = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[0] + _phaseShift_fl));
+            T pos_fr_prev = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[0] + _phaseShift_fr));
+            T pos_rl_prev = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[0] + _phaseShift_rl));
+            T pos_rr_prev = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[0] + _phaseShift_rr));
 
-            T pos_fl =
-                _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[1] + _phaseShift_fl));
-            T pos_fr =
-                _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[1] + _phaseShift_fr));
-            T pos_rl =
-                _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[1] + _phaseShift_rl));
-            T pos_rr =
-                _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[1] + _phaseShift_rr));
+            T pos_fl = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[1] + _phaseShift_fl));
+            T pos_fr = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[1] + _phaseShift_fr));
+            T pos_rl = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[1] + _phaseShift_rl));
+            T pos_rr = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[1] + _phaseShift_rr));
 
-            T pos_fl_next =
-                _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[2] + _phaseShift_fl));
-            T pos_fr_next =
-                _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[2] + _phaseShift_fr));
-            T pos_rl_next =
-                _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[2] + _phaseShift_rl));
-            T pos_rr_next =
-                _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[2] + _phaseShift_rr));
+            T pos_fl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[2] + _phaseShift_fl));
+            T pos_fr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[2] + _phaseShift_fr));
+            T pos_rl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[2] + _phaseShift_rl));
+            T pos_rr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[2] + _phaseShift_rr));
 
-            T pos_fl_nnext =
-                _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[3] + _phaseShift_fl));
-            T pos_fr_nnext =
-                _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[3] + _phaseShift_fr));
-            T pos_rl_nnext =
-                _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[3] + _phaseShift_rl));
-            T pos_rr_nnext =
-                _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[3] + _phaseShift_rr));
+            T pos_fl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[3] + _phaseShift_fl));
+            T pos_fr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[3] + _phaseShift_fr));
+            T pos_rl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[3] + _phaseShift_rl));
+            T pos_rr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[3] + _phaseShift_rr));
 
-            _tyreAccelerationsZ_fl[0] =
-                (2 * pos_fl_prev + 5 * pos_fl + 4 * pos_fl_next + pos_fl_nnext) * invDeltaT;
-            _tyreAccelerationsZ_fr[0] =
-                (2 * pos_fr_prev + 5 * pos_fr + 4 * pos_fr_next + pos_fr_nnext) * invDeltaT;
-            _tyreAccelerationsZ_rl[0] =
-                (2 * pos_rl_prev + 5 * pos_rl + 4 * pos_rl_next + pos_rl_nnext) * invDeltaT;
-            _tyreAccelerationsZ_rr[0] =
-                (2 * pos_rr_prev + 5 * pos_rr + 4 * pos_rr_next + pos_rr_nnext) * invDeltaT;
+            _tyreAccelerationsZ_fl[0] = (2 * pos_fl_prev + 5 * pos_fl + 4 * pos_fl_next + pos_fl_nnext) * invDeltaT;
+            _tyreAccelerationsZ_fr[0] = (2 * pos_fr_prev + 5 * pos_fr + 4 * pos_fr_next + pos_fr_nnext) * invDeltaT;
+            _tyreAccelerationsZ_rl[0] = (2 * pos_rl_prev + 5 * pos_rl + 4 * pos_rl_next + pos_rl_nnext) * invDeltaT;
+            _tyreAccelerationsZ_rr[0] = (2 * pos_rr_prev + 5 * pos_rr + 4 * pos_rr_next + pos_rr_nnext) * invDeltaT;
 
             for (int i = 1; i < _numIterations; ++i) {
                 pos_fl_prev = pos_fl;
                 pos_fl = pos_fl_next;
-                pos_fl_next = _amplitudeLeft *
-                              std::sin(_frequencyLeft * (_normedDistance[i + 1] + _phaseShift_fl));
+                pos_fl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i + 1] + _phaseShift_fl));
                 pos_fr_prev = pos_fr;
                 pos_fr = pos_fr_next;
-                pos_fr_next = _amplitudeRight *
-                              std::sin(_frequencyRight * (_normedDistance[i + 1] + _phaseShift_fr));
+                pos_fr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[i + 1] + _phaseShift_fr));
                 pos_rl_prev = pos_rl;
                 pos_rl = pos_rl_next;
-                pos_rl_next = _amplitudeLeft *
-                              std::sin(_frequencyLeft * (_normedDistance[i + 1] + _phaseShift_rl));
+                pos_rl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i + 1] + _phaseShift_rl));
                 pos_rr_prev = pos_rr;
                 pos_rr = pos_rr_next;
-                pos_rr_next = _amplitudeRight *
-                              std::sin(_frequencyRight * (_normedDistance[i + 1] + _phaseShift_rr));
+                pos_rr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[i + 1] + _phaseShift_rr));
 
                 _tyreAccelerationsZ_fl[i] = (pos_fl_prev - 2 * pos_fl + pos_fl_next) * invDeltaT;
                 _tyreAccelerationsZ_fr[i] = (pos_fr_prev - 2 * pos_fr + pos_fr_next) * invDeltaT;
                 _tyreAccelerationsZ_rl[i] = (pos_rl_prev - 2 * pos_rl + pos_rl_next) * invDeltaT;
                 _tyreAccelerationsZ_rr[i] = (pos_rr_prev - 2 * pos_rr + pos_rr_next) * invDeltaT;
             }
-            pos_fl_nnext =
-                _amplitudeLeft *
-                std::sin(_frequencyLeft * (_normedDistance[_numIterations] + _phaseShift_fl));
-            pos_fr_nnext =
-                _amplitudeRight *
-                std::sin(_frequencyRight * (_normedDistance[_numIterations] + _phaseShift_fr));
-            pos_rl_nnext =
-                _amplitudeLeft *
-                std::sin(_frequencyLeft * (_normedDistance[_numIterations] + _phaseShift_rl));
-            pos_rr_nnext =
-                _amplitudeRight *
-                std::sin(_frequencyRight * (_normedDistance[_numIterations] + _phaseShift_rr));
+            pos_fl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[_numIterations] + _phaseShift_fl));
+            pos_fr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[_numIterations] + _phaseShift_fr));
+            pos_rl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[_numIterations] + _phaseShift_rl));
+            pos_rr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[_numIterations] + _phaseShift_rr));
 
-            _tyreAccelerationsZ_fl[_numIterations] =
-                (2 * pos_fl_nnext + 5 * pos_fl_next + 4 * pos_fl + pos_fl_prev) * invDeltaT;
-            _tyreAccelerationsZ_fr[_numIterations] =
-                (2 * pos_fr_nnext + 5 * pos_fr_next + 4 * pos_fr + pos_fr_prev) * invDeltaT;
-            _tyreAccelerationsZ_rl[_numIterations] =
-                (2 * pos_rl_nnext + 5 * pos_rl_next + 4 * pos_rl + pos_rl_prev) * invDeltaT;
-            _tyreAccelerationsZ_rr[_numIterations] =
-                (2 * pos_rr_nnext + 5 * pos_rr_next + 4 * pos_rr + pos_rr_prev) * invDeltaT;
+            _tyreAccelerationsZ_fl[_numIterations] = (2 * pos_fl_nnext + 5 * pos_fl_next + 4 * pos_fl + pos_fl_prev) * invDeltaT;
+            _tyreAccelerationsZ_fr[_numIterations] = (2 * pos_fr_nnext + 5 * pos_fr_next + 4 * pos_fr + pos_fr_prev) * invDeltaT;
+            _tyreAccelerationsZ_rl[_numIterations] = (2 * pos_rl_nnext + 5 * pos_rl_next + 4 * pos_rl + pos_rl_prev) * invDeltaT;
+            _tyreAccelerationsZ_rr[_numIterations] = (2 * pos_rr_nnext + 5 * pos_rr_next + 4 * pos_rr + pos_rr_prev) * invDeltaT;
         }
         else {
             for (int i = 0; i < _numIterations + 1; ++i) {
@@ -462,65 +398,49 @@ public:
      * \brief calculates the Acceleration acting on the tyre due to bumpy road
      * \param time at which this happens
      */
-    T getVerticalRoadAccelerationsFrontLeft(size_t iteration) {
-        return _tyreAccelerationsZ_fl[iteration];
-    }
+    T getVerticalRoadAccelerationsFrontLeft(size_t iteration) { return _tyreAccelerationsZ_fl[iteration]; }
 
     /**
      * \brief calculates the Acceleration acting on the tyre due to bumpy road
      * \param time at which this happens
      */
-    T getVerticalRoadAccelerationsFrontRight(size_t iteration) {
-        return _tyreAccelerationsZ_rl[iteration];
-    }
+    T getVerticalRoadAccelerationsFrontRight(size_t iteration) { return _tyreAccelerationsZ_rl[iteration]; }
 
     /**
      * \brief calculates the Acceleration acting on the tyre due to bumpy road
      * \param time at which this happens
      */
-    T getVerticalRoadAccelerationsRearLeft(size_t iteration) {
-        return _tyreAccelerationsZ_fr[iteration];
-    }
+    T getVerticalRoadAccelerationsRearLeft(size_t iteration) { return _tyreAccelerationsZ_fr[iteration]; }
 
     /**
      * \brief calculates the Acceleration acting on the tyre due to bumpy road
      * \param time at which this happens
      */
-    T getVerticalRoadAccelerationsRearRight(size_t iteration) {
-        return _tyreAccelerationsZ_rr[iteration];
-    }
+    T getVerticalRoadAccelerationsRearRight(size_t iteration) { return _tyreAccelerationsZ_rr[iteration]; }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionFrontLeft(size_t iteration) {
-        return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fl));
-    }
+    T getVerticalPositionFrontLeft(size_t iteration) { return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fl)); }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionFrontRight(size_t iteration) {
-        return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fr));
-    }
+    T getVerticalPositionFrontRight(size_t iteration) { return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fr)); }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionRearLeft(size_t iteration) {
-        return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rl));
-    }
+    T getVerticalPositionRearLeft(size_t iteration) { return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rl)); }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionRearRight(size_t iteration) {
-        return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rr));
-    }
+    T getVerticalPositionRearRight(size_t iteration) { return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rr)); }
 
     /**
      * \param iteration index of the current time iteration
@@ -611,114 +531,101 @@ public:
         calculateTravelledDistance();
         calculateAngles();
         calculateAccelerationsCenterOfGravity();
-        calculateAccelerationsLegs(longitude, longitude, longitude, longitude, latitude, latitude,
-                                   latitude, latitude);
+        calculateAccelerationsLegs(longitude, longitude, longitude, longitude, latitude, latitude, latitude, latitude);
 
         for (int i = 0; i < _numIterations + 1; ++i) {
             // check the correctness of the distance
             if (std::abs(_normedDistance[i] - velocity * _delta_t * i) > tolerance) {
-                std::cout << "calculateTravelledDistance failed in arbitraryTrajectory"
+                std::cout << "calculateTravelledDistance failed in "
+                             "arbitraryTrajectory"
                           << std::endl;
-                std::cout << "difference: "
-                          << std::abs(_normedDistance[i] - radius * velocity * _delta_t * i)
-                          << _normedDistance[i] << std::endl;
+                std::cout << "difference: " << std::abs(_normedDistance[i] - radius * velocity * _delta_t * i) << _normedDistance[i] << std::endl;
             }
 
             // check correctness of the CoG acceleration
             T vectorToCenterX = (center[0] - _roadPointsX[i]) / radius;
             T vectorToCenterY = (center[1] - _roadPointsY[i]) / radius;
 
-            T accelerationNorm = std::sqrt(_roadAccelerationX[i] * _roadAccelerationX[i] +
-                                           _roadAccelerationY[i] * _roadAccelerationY[i]);
+            T accelerationNorm = std::sqrt(_roadAccelerationX[i] * _roadAccelerationX[i] + _roadAccelerationY[i] * _roadAccelerationY[i]);
 
             T normedAccelerationX = _roadAccelerationX[i] / accelerationNorm;
             T normedAccelerationY = _roadAccelerationY[i] / accelerationNorm;
 
             // does it point to the center ?
-            if ((i > 0) && (i < _numIterations) &&
-                ((std::abs(vectorToCenterX - normedAccelerationX) > tolerance) ||
-                 (std::abs(vectorToCenterY - normedAccelerationY) > tolerance))) {
-                std::cout << "calculateAccelerationsCenterOfGravity failed in arbitraryTrajectory "
+            if ((i > 0) && (i < _numIterations) && ((std::abs(vectorToCenterX - normedAccelerationX) > tolerance) || (std::abs(vectorToCenterY - normedAccelerationY) > tolerance))) {
+                std::cout << "calculateAccelerationsCenterOfGravity failed in "
+                             "arbitraryTrajectory "
                              "-- wrong direction"
                           << std::endl;
             }
 
             // check correctness of the fl acceleration
-            accelerationNorm = std::sqrt(_tyreAccelerationsX_fl[i] * _tyreAccelerationsX_fl[i] +
-                                         _tyreAccelerationsY_fl[i] * _tyreAccelerationsY_fl[i]);
+            accelerationNorm = std::sqrt(_tyreAccelerationsX_fl[i] * _tyreAccelerationsX_fl[i] + _tyreAccelerationsY_fl[i] * _tyreAccelerationsY_fl[i]);
 
             T legRadius = radius - latitude;
             T legVelocity = legRadius * angularVelocity;
 
             // is its norm correct ?
-            if ((i > 0) && (i < _numIterations) &&
-                (std::abs(legVelocity * legVelocity / legRadius - accelerationNorm) > tolerance)) {
-                std::cout << "calculateAccelerationsCenterOfGravity failed in arbitraryTrajectory "
+            if ((i > 0) && (i < _numIterations) && (std::abs(legVelocity * legVelocity / legRadius - accelerationNorm) > tolerance)) {
+                std::cout << "calculateAccelerationsCenterOfGravity failed in "
+                             "arbitraryTrajectory "
                              "-- wrong norm of the front-left wheel"
                           << std::endl;
-                std::cout << "acceleration: " << accelerationNorm
-                          << " expected: " << velocity * velocity / radius << std::endl;
+                std::cout << "acceleration: " << accelerationNorm << " expected: " << velocity * velocity / radius << std::endl;
             }
 
             // is its norm correct ?
-            if ((i > 0) && (i < _numIterations) &&
-                (std::abs(velocity * velocity / radius - accelerationNorm) > tolerance)) {
-                std::cout << "calculateAccelerationsCenterOfGravity failed in arbitraryTrajectory "
+            if ((i > 0) && (i < _numIterations) && (std::abs(velocity * velocity / radius - accelerationNorm) > tolerance)) {
+                std::cout << "calculateAccelerationsCenterOfGravity failed in "
+                             "arbitraryTrajectory "
                              "-- wrong norm"
                           << std::endl;
-                std::cout << "acceleration: " << accelerationNorm
-                          << " expected: " << velocity * velocity / radius << std::endl;
+                std::cout << "acceleration: " << accelerationNorm << " expected: " << velocity * velocity / radius << std::endl;
             }
 
             // check correctness of the fr acceleration
-            accelerationNorm = std::sqrt(_tyreAccelerationsX_fr[i] * _tyreAccelerationsX_fr[i] +
-                                         _tyreAccelerationsY_fr[i] * _tyreAccelerationsY_fr[i]);
+            accelerationNorm = std::sqrt(_tyreAccelerationsX_fr[i] * _tyreAccelerationsX_fr[i] + _tyreAccelerationsY_fr[i] * _tyreAccelerationsY_fr[i]);
 
             legRadius = radius + latitude;
             legVelocity = legRadius * angularVelocity;
 
             // is its norm correct ?
-            if ((i > 0) && (i < _numIterations) &&
-                (std::abs(legVelocity * legVelocity / legRadius - accelerationNorm) > tolerance)) {
-                std::cout << "calculateAccelerationsCenterOfGravity failed in arbitraryTrajectory "
+            if ((i > 0) && (i < _numIterations) && (std::abs(legVelocity * legVelocity / legRadius - accelerationNorm) > tolerance)) {
+                std::cout << "calculateAccelerationsCenterOfGravity failed in "
+                             "arbitraryTrajectory "
                              "-- wrong norm of the front-left wheel"
                           << std::endl;
-                std::cout << "acceleration: " << accelerationNorm
-                          << " expected: " << velocity * velocity / radius << std::endl;
+                std::cout << "acceleration: " << accelerationNorm << " expected: " << velocity * velocity / radius << std::endl;
             }
 
             // check correctness of the rl acceleration
-            accelerationNorm = std::sqrt(_tyreAccelerationsX_rl[i] * _tyreAccelerationsX_rl[i] +
-                                         _tyreAccelerationsY_rl[i] * _tyreAccelerationsY_rl[i]);
+            accelerationNorm = std::sqrt(_tyreAccelerationsX_rl[i] * _tyreAccelerationsX_rl[i] + _tyreAccelerationsY_rl[i] * _tyreAccelerationsY_rl[i]);
 
             legRadius = radius - latitude;
             legVelocity = legRadius * angularVelocity;
 
             // is its norm correct ?
-            if ((i > 0) && (i < _numIterations) &&
-                (std::abs(legVelocity * legVelocity / legRadius - accelerationNorm) > tolerance)) {
-                std::cout << "calculateAccelerationsCenterOfGravity failed in arbitraryTrajectory "
+            if ((i > 0) && (i < _numIterations) && (std::abs(legVelocity * legVelocity / legRadius - accelerationNorm) > tolerance)) {
+                std::cout << "calculateAccelerationsCenterOfGravity failed in "
+                             "arbitraryTrajectory "
                              "-- wrong norm of the front-left wheel"
                           << std::endl;
-                std::cout << "acceleration: " << accelerationNorm
-                          << " expected: " << velocity * velocity / radius << std::endl;
+                std::cout << "acceleration: " << accelerationNorm << " expected: " << velocity * velocity / radius << std::endl;
             }
 
             // check correctness of the rr acceleration
-            accelerationNorm = std::sqrt(_tyreAccelerationsX_rr[i] * _tyreAccelerationsX_rr[i] +
-                                         _tyreAccelerationsY_rr[i] * _tyreAccelerationsY_rr[i]);
+            accelerationNorm = std::sqrt(_tyreAccelerationsX_rr[i] * _tyreAccelerationsX_rr[i] + _tyreAccelerationsY_rr[i] * _tyreAccelerationsY_rr[i]);
 
             legRadius = radius + latitude;
             legVelocity = legRadius * angularVelocity;
 
             // is its norm correct ?
-            if ((i > 0) && (i < _numIterations) &&
-                (std::abs(legVelocity * legVelocity / legRadius - accelerationNorm) > tolerance)) {
-                std::cout << "calculateAccelerationsCenterOfGravity failed in arbitraryTrajectory "
+            if ((i > 0) && (i < _numIterations) && (std::abs(legVelocity * legVelocity / legRadius - accelerationNorm) > tolerance)) {
+                std::cout << "calculateAccelerationsCenterOfGravity failed in "
+                             "arbitraryTrajectory "
                              "-- wrong norm of the front-left wheel"
                           << std::endl;
-                std::cout << "acceleration: " << accelerationNorm
-                          << " expected: " << velocity * velocity / radius << std::endl;
+                std::cout << "acceleration: " << accelerationNorm << " expected: " << velocity * velocity / radius << std::endl;
             }
         }
     }
@@ -729,45 +636,66 @@ private:
     const T _delta_t;  // time step size of the simulation
 
     // Eulerframe
-    T _amplitudeRight;  // amplitude of the sinusoidal curve acting on the right tyres
-    T _amplitudeLeft;   // amplitude of the sinusoidal curve acting on the left tyres
+    T _amplitudeRight;  // amplitude of the sinusoidal curve acting on the right
+                        // tyres
+    T _amplitudeLeft;   // amplitude of the sinusoidal curve acting on the left
+                        // tyres
 
-    T _frequencyRight;  // frequency of the sinusoidal curve acting on the right tyres
-    T _frequencyLeft;   // frequency of the sinusoidal curve acting on the left tyres
+    T _frequencyRight;  // frequency of the sinusoidal curve acting on the right
+                        // tyres
+    T _frequencyLeft;   // frequency of the sinusoidal curve acting on the left
+                        // tyres
 
-    T _phaseShift_fl;  // phase shift of the sinusoidal curve acting on the front_left tyres
-    T _phaseShift_fr;  // phase shift of the sinusoidal curve acting on the front-right tyres
-    T _phaseShift_rl;  // phase shift of the sinusoidal curve acting on the rear_left tyres
-    T _phaseShift_rr;  // phase shift of the sinusoidal curve acting on the rear_right tyres
+    T _phaseShift_fl;  // phase shift of the sinusoidal curve acting on the
+                       // front_left tyres
+    T _phaseShift_fr;  // phase shift of the sinusoidal curve acting on the
+                       // front-right tyres
+    T _phaseShift_rl;  // phase shift of the sinusoidal curve acting on the
+                       // rear_left tyres
+    T _phaseShift_rr;  // phase shift of the sinusoidal curve acting on the
+                       // rear_right tyres
 
-    T* _tyreAccelerationsZ_fl;  // Acceleration that acts on the tyre in Z direction
-    T* _tyreAccelerationsZ_fr;  // Acceleration that acts on the tyre in Z direction
-    T* _tyreAccelerationsZ_rl;  // Acceleration that acts on the tyre in Z direction
-    T* _tyreAccelerationsZ_rr;  // Acceleration that acts on the tyre in Z direction
+    T* _tyreAccelerationsZ_fl;  // Acceleration that acts on the tyre in Z
+                                // direction
+    T* _tyreAccelerationsZ_fr;  // Acceleration that acts on the tyre in Z
+                                // direction
+    T* _tyreAccelerationsZ_rl;  // Acceleration that acts on the tyre in Z
+                                // direction
+    T* _tyreAccelerationsZ_rr;  // Acceleration that acts on the tyre in Z
+                                // direction
 
     // Lagrangian frame
     T* _roadPointsX;  // X-coordinates of the trajectory at all iterations
     T* _roadPointsY;  // Y-coordinates of the trajectory at all iterations
 
-    T* _tyreAccelerationsX_fl;  // Acceleration that acts on the tyre in X direction
-    T* _tyreAccelerationsX_fr;  // Acceleration that acts on the tyre in X direction
-    T* _tyreAccelerationsX_rl;  // Acceleration that acts on the tyre in X direction
-    T* _tyreAccelerationsX_rr;  // Acceleration that acts on the tyre in X direction
+    T* _tyreAccelerationsX_fl;  // Acceleration that acts on the tyre in X
+                                // direction
+    T* _tyreAccelerationsX_fr;  // Acceleration that acts on the tyre in X
+                                // direction
+    T* _tyreAccelerationsX_rl;  // Acceleration that acts on the tyre in X
+                                // direction
+    T* _tyreAccelerationsX_rr;  // Acceleration that acts on the tyre in X
+                                // direction
 
-    T* _tyreAccelerationsY_fl;  // Acceleration that acts on the tyre in Y direction
-    T* _tyreAccelerationsY_fr;  // Acceleration that acts on the tyre in Y direction
-    T* _tyreAccelerationsY_rl;  // Acceleration that acts on the tyre in Y direction
-    T* _tyreAccelerationsY_rr;  // Acceleration that acts on the tyre in Y direction
+    T* _tyreAccelerationsY_fl;  // Acceleration that acts on the tyre in Y
+                                // direction
+    T* _tyreAccelerationsY_fr;  // Acceleration that acts on the tyre in Y
+                                // direction
+    T* _tyreAccelerationsY_rl;  // Acceleration that acts on the tyre in Y
+                                // direction
+    T* _tyreAccelerationsY_rr;  // Acceleration that acts on the tyre in Y
+                                // direction
 
-    T* _roadAccelerationX;  // X-components of the Acceleration acting on the center of gravity at
-                            // all iterations
-    T* _roadAccelerationY;  // Y-components of the Acceleration acting on the center of gravity at
-                            // all iterations
+    T* _roadAccelerationX;  // X-components of the Acceleration acting on the
+                            // center of gravity at all iterations
+    T* _roadAccelerationY;  // Y-components of the Acceleration acting on the
+                            // center of gravity at all iterations
 
     T* _roadAngles;  // contains all angles
 
-    T* _roadAngularAcceleration;  // Z-components of the AngularAcceleration acting on the center of
-                                  // gravity at all iterations
+    T* _roadAngularAcceleration;  // Z-components of the AngularAcceleration
+                                  // acting on the center of gravity at all
+                                  // iterations
 
     T* _normedDistance;  // absolute distance since the beginning of the road
 
@@ -778,17 +706,13 @@ private:
     void calculateAccelerations(T* acceleration, T* points) {
         T invDeltaT = 1. / (_delta_t * _delta_t);
         if (_numIterations > 3) {
-            acceleration[0] =
-                -(2 * points[0] + 5 * points[1] + 4 * points[2] + points[3]) * invDeltaT;
+            acceleration[0] = -(2 * points[0] + 5 * points[1] + 4 * points[2] + points[3]) * invDeltaT;
 
             for (int i = 1; i < _numIterations; ++i) {
                 acceleration[i] = (points[i - 1] - 2 * points[i] + points[i + 1]) * invDeltaT;
             }
 
-            acceleration[_numIterations] =
-                -(2 * points[_numIterations] + 5 * points[_numIterations - 1] +
-                  4 * points[_numIterations - 2] + points[_numIterations - 3]) *
-                invDeltaT;
+            acceleration[_numIterations] = -(2 * points[_numIterations] + 5 * points[_numIterations - 1] + 4 * points[_numIterations - 2] + points[_numIterations - 3]) * invDeltaT;
         }
         else {
             for (int i = 0; i < _numIterations + 1; ++i) {

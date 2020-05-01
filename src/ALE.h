@@ -45,7 +45,8 @@ private:
     T* torque;
     T* new_torque;
 
-    // global positions, velocities [XY] and angles [Z] of the center of mass of the car
+    // global positions, velocities [XY] and angles [Z] of the center of mass of
+    // the car
     T* posXY_vec;
     T* angleZ;
     T* velXY_vec;
@@ -58,8 +59,7 @@ public:
     /**
      * Constructor
      */
-    ALE(Car<T>* Car_obj_val, LoadModule<T>* Load_module_val,
-        TwoTrackModelParent<T>* TwoTrackModel_val) {
+    ALE(Car<T>* Car_obj_val, LoadModule<T>* Load_module_val, TwoTrackModelParent<T>* TwoTrackModel_val) {
         Car_obj = Car_obj_val;
         Load_module_obj = Load_module_val;
         TwoTrackModel_obj = TwoTrackModel_val;
@@ -74,24 +74,18 @@ public:
     ~ALE() { Math::free<T>(u_sol); }
 
     /**
-     * Applies the Verlet_Stoermer algorithm to update the global XY position of the car and its Z
-     * orientation
-     * Store the global coordinates in the VelocityXY and PositionXY from the car object
-     * \param t current simulation time
+     * Applies the Verlet_Stoermer algorithm to update the global XY position of
+     * the car and its Z orientation Store the global coordinates in the
+     * VelocityXY and PositionXY from the car object \param t current simulation
+     * time
      */
     void global_frame_solver(T& t) {
         // 2. Update global X,Y positions of the car
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(
-            Car_obj->currentPositionLagrangian[0], Car_obj->currentVelocityLagrangian[0],
-            centripetal_force[0], h_, Car_obj->massFullCar);
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(
-            Car_obj->currentPositionLagrangian[1], Car_obj->currentVelocityLagrangian[1],
-            centripetal_force[1], h_, Car_obj->massFullCar);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->currentPositionLagrangian[0], Car_obj->currentVelocityLagrangian[0], centripetal_force[0], h_, Car_obj->massFullCar);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->currentPositionLagrangian[1], Car_obj->currentVelocityLagrangian[1], centripetal_force[1], h_, Car_obj->massFullCar);
 
         // 4. Update Z-rotation
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->currentAngleLagrangian,
-                                                        Car_obj->currentAngularVelocityLagrangian,
-                                                        torque[2], h_, global_inertia_Z);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->currentAngleLagrangian, Car_obj->currentAngularVelocityLagrangian, torque[2], h_, global_inertia_Z);
 
         // get forces
         Load_module_obj->update_force(t, force_vector, new_centripetal_force);
@@ -100,21 +94,16 @@ public:
         Math::scal<T>(2, -1, new_centripetal_force, 1);
 
         // 1. Update global X,Y velocities
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
-            Car_obj->currentVelocityLagrangian[0], centripetal_force[0], new_centripetal_force[0],
-            h_, Car_obj->massFullCar);
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
-            Car_obj->currentVelocityLagrangian[1], centripetal_force[1], new_centripetal_force[1],
-            h_, Car_obj->massFullCar);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->currentVelocityLagrangian[0], centripetal_force[0], new_centripetal_force[0], h_, Car_obj->massFullCar);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->currentVelocityLagrangian[1], centripetal_force[1], new_centripetal_force[1], h_, Car_obj->massFullCar);
 
         // 3. Update Z-angular velocities
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->currentAngularVelocityLagrangian,
-                                                        torque[2], new_torque[2], h_,
-                                                        global_inertia_Z);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->currentAngularVelocityLagrangian, torque[2], new_torque[2], h_, global_inertia_Z);
 
         /*
-         * Idea!! What if we do it at the end, since the displacement is a vector and by triangle
-         * rule sum of all should add up force is computed using on
+         * Idea!! What if we do it at the end, since the displacement is a
+         * vector and by triangle rule sum of all should add up force is
+         * computed using on
          */
         Car_obj->apply_ALE_change();
 
@@ -136,7 +125,8 @@ public:
         force_vector_11dof = Math::calloc<T>(Constants::DOF);
         centripetal_force = Math::calloc<T>(centripetal_force_dimensions);
 
-        // this was 2 dimensional allocation and update force updates 3 dimension on this
+        // this was 2 dimensional allocation and update force updates 3
+        // dimension on this
         new_centripetal_force = Math::calloc<T>(centripetal_force_dimensions);
 
         Delta_x_vec = Math::calloc<T>(2 * Constants::NUM_LEGS);
@@ -161,7 +151,8 @@ public:
             // Car_obj->compute_dx(Delta_x_vec);
             Load_module_obj->update_force(t, force_vector, centripetal_force);
             Load_module_obj->update_torque(t, torque, force_vector);
-            // convert centrifugal force to centripetal (only for x, y direction)
+            // convert centrifugal force to centripetal (only for x, y
+            // direction)
             Math::scal<T>(centripetal_force_dimensions - 1, -1, centripetal_force, 1);
             if (iter == 100) IO::writeVector(centripetal_force, centripetal_force_dimensions);
             global_frame_solver(t);
@@ -169,23 +160,18 @@ public:
             // translate 27 force vector + 3 torques into 11DOF
             Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
 
-            TwoTrackModel_obj->update_step(force_vector_11dof,
-                                           Car_obj->currentDisplacementTwoTrackModel);
+            TwoTrackModel_obj->update_step(force_vector_11dof, Car_obj->currentDisplacementTwoTrackModel);
             Car_obj->updateLengthsTwoTrackModel();
             solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
 
             // only call this function at every checkpoint
-            Car_obj->combineEulerianLagrangianVectors(Car_obj->currentPositionLagrangian,
-                                                      Car_obj->currentDisplacementTwoTrackModel,
-                                                      solution_vect);
+            Car_obj->combineEulerianLagrangianVectors(Car_obj->currentPositionLagrangian, Car_obj->currentDisplacementTwoTrackModel, solution_vect);
 
             t += h_;
             iter++;
         }
 
-        Math::copy<T>(Constants::VEC_DIM * Constants::DIM,
-                      u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect,
-                      1);
+        Math::copy<T>(Constants::VEC_DIM * Constants::DIM, u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
         Car_obj->combine_results();
 
         Math::free<T>(time_vec);
@@ -201,29 +187,22 @@ public:
     }
 
     /**
-     * Executes the time iteration of the ALE solvers, switches from global position update to
-     * solving of the linear 11DOF system
+     * Executes the time iteration of the ALE solvers, switches from global
+     * position update to solving of the linear 11DOF system
      */
     void solve(T* sol_vect) { solve(sol_vect, u_sol); }
 
     /**
-     * Adds the contribution of the wheels and tyres to the inertia moment of the car
+     * Adds the contribution of the wheels and tyres to the inertia moment of
+     * the car
      */
     void calculate_global_inertia_Z() {
         // get the global inertia actiing in Z direction
         global_inertia_Z = Car_obj->momentOfInertia[8];
-        global_inertia_Z +=
-            (Car_obj->massComponents[1] + Car_obj->massComponents[2]) *
-            (Car_obj->l_lat[0] * Car_obj->l_lat[0] + Car_obj->l_long[0] * Car_obj->l_long[0]);
-        global_inertia_Z +=
-            (Car_obj->massComponents[3] + Car_obj->massComponents[4]) *
-            (Car_obj->l_lat[1] * Car_obj->l_lat[1] + Car_obj->l_long[1] * Car_obj->l_long[1]);
-        global_inertia_Z +=
-            (Car_obj->massComponents[5] + Car_obj->massComponents[6]) *
-            (Car_obj->l_lat[2] * Car_obj->l_lat[2] + Car_obj->l_long[2] * Car_obj->l_long[2]);
-        global_inertia_Z +=
-            (Car_obj->massComponents[7] + Car_obj->massComponents[8]) *
-            (Car_obj->l_lat[3] * Car_obj->l_lat[3] + Car_obj->l_long[3] * Car_obj->l_long[3]);
+        global_inertia_Z += (Car_obj->massComponents[1] + Car_obj->massComponents[2]) * (Car_obj->l_lat[0] * Car_obj->l_lat[0] + Car_obj->l_long[0] * Car_obj->l_long[0]);
+        global_inertia_Z += (Car_obj->massComponents[3] + Car_obj->massComponents[4]) * (Car_obj->l_lat[1] * Car_obj->l_lat[1] + Car_obj->l_long[1] * Car_obj->l_long[1]);
+        global_inertia_Z += (Car_obj->massComponents[5] + Car_obj->massComponents[6]) * (Car_obj->l_lat[2] * Car_obj->l_lat[2] + Car_obj->l_long[2] * Car_obj->l_long[2]);
+        global_inertia_Z += (Car_obj->massComponents[7] + Car_obj->massComponents[8]) * (Car_obj->l_lat[3] * Car_obj->l_lat[3] + Car_obj->l_long[3] * Car_obj->l_long[3]);
     }
 
     /**
@@ -231,26 +210,16 @@ public:
      */
     void print_final_results() {
         T* sln = Car_obj->Position_vec;
-        std::cout << "ALE: orientation angles=\n\t[" << Car_obj->angle_CG[0] << "\n\t "
-                  << Car_obj->angle_CG[1] << "\n\t " << Car_obj->angle_CG[2] << "]" << std::endl;
-        std::cout << "ALE: car body position pc=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t "
-                  << sln[2] << "]" << std::endl;
-        std::cout << "ALE: rear-right wheel position pw1=\n\t[" << sln[21] << "\n\t " << sln[22]
-                  << "\n\t " << sln[23] << "]" << std::endl;
-        std::cout << "ALE: rear-left wheel position pw2=\n\t[" << sln[15] << "\n\t " << sln[16]
-                  << "\n\t " << sln[17] << "]" << std::endl;
-        std::cout << "ALE: front-left wheel position pw3=\n\t[" << sln[3] << "\n\t " << sln[4]
-                  << "\n\t " << sln[5] << "]" << std::endl;
-        std::cout << "ALE: front-right wheel position pw4=\n\t[" << sln[9] << "\n\t " << sln[10]
-                  << "\n\t " << sln[11] << "]" << std::endl;
-        std::cout << "ALE: rear-right tyre position pt1=\n\t[" << sln[24] << "\n\t " << sln[25]
-                  << "\n\t " << sln[26] << "]" << std::endl;
-        std::cout << "ALE: rear-left tyre position pt2=\n\t[" << sln[18] << "\n\t " << sln[19]
-                  << "\n\t " << sln[20] << "]" << std::endl;
-        std::cout << "ALE: front-left tyre position pt3=\n\t[" << sln[6] << "\n\t " << sln[7]
-                  << "\n\t " << sln[8] << "]" << std::endl;
-        std::cout << "ALE: front-right tyre position pt4=\n\t[" << sln[12] << "\n\t " << sln[13]
-                  << "\n\t " << sln[14] << "]" << std::endl;
+        std::cout << "ALE: orientation angles=\n\t[" << Car_obj->angle_CG[0] << "\n\t " << Car_obj->angle_CG[1] << "\n\t " << Car_obj->angle_CG[2] << "]" << std::endl;
+        std::cout << "ALE: car body position pc=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
+        std::cout << "ALE: rear-right wheel position pw1=\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
+        std::cout << "ALE: rear-left wheel position pw2=\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
+        std::cout << "ALE: front-left wheel position pw3=\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;
+        std::cout << "ALE: front-right wheel position pw4=\n\t[" << sln[9] << "\n\t " << sln[10] << "\n\t " << sln[11] << "]" << std::endl;
+        std::cout << "ALE: rear-right tyre position pt1=\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
+        std::cout << "ALE: rear-left tyre position pt2=\n\t[" << sln[18] << "\n\t " << sln[19] << "\n\t " << sln[20] << "]" << std::endl;
+        std::cout << "ALE: front-left tyre position pt3=\n\t[" << sln[6] << "\n\t " << sln[7] << "\n\t " << sln[8] << "]" << std::endl;
+        std::cout << "ALE: front-right tyre position pt4=\n\t[" << sln[12] << "\n\t " << sln[13] << "\n\t " << sln[14] << "]" << std::endl;
     }
 };
 

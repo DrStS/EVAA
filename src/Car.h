@@ -20,34 +20,26 @@ private:
      */
     void ConstructALEVectors(T* globalVector, T* localVector) {
         for (size_t i = 0; i < Constants::VEC_DIM; ++i) {
-            Math::copy<T>(Constants::DIM - 1, globalVector + i * Constants::DIM, 1,
-                          localVector + i * (Constants::DIM - 1), 1);
+            Math::copy<T>(Constants::DIM - 1, globalVector + i * Constants::DIM, 1, localVector + i * (Constants::DIM - 1), 1);
         }
     }
 
     /**
-     * \brief compute the positions of the unexciting Euler system in the Euler frame
+     * \brief compute the positions of the unexciting Euler system in the Euler
+     * frame
      */
     void ComputeUnexcitedTwoTrackPosition() {
         unexcitedPositionTwoTrackModel[0] = initialPositionGlobal[2];  // CG
         unexcitedPositionTwoTrackModel[1] = 0;                         // angles
         unexcitedPositionTwoTrackModel[2] = 0;
-        unexcitedPositionTwoTrackModel[3] =
-            initialPositionGlobal[2] - unexcitedSpringsLength[0];  // fl
-        unexcitedPositionTwoTrackModel[4] =
-            initialPositionGlobal[2] - unexcitedSpringsLength[0] - unexcitedSpringsLength[1];
-        unexcitedPositionTwoTrackModel[5] =
-            initialPositionGlobal[2] - unexcitedSpringsLength[2];  // fr
-        unexcitedPositionTwoTrackModel[6] =
-            initialPositionGlobal[2] - unexcitedSpringsLength[2] - unexcitedSpringsLength[3];
-        unexcitedPositionTwoTrackModel[7] =
-            initialPositionGlobal[2] - unexcitedSpringsLength[4];  // rl
-        unexcitedPositionTwoTrackModel[8] =
-            initialPositionGlobal[2] - unexcitedSpringsLength[4] - unexcitedSpringsLength[5];
-        unexcitedPositionTwoTrackModel[9] =
-            initialPositionGlobal[2] - unexcitedSpringsLength[6];  // rr
-        unexcitedPositionTwoTrackModel[10] =
-            initialPositionGlobal[2] - unexcitedSpringsLength[6] - unexcitedSpringsLength[7];
+        unexcitedPositionTwoTrackModel[3] = initialPositionGlobal[2] - unexcitedSpringsLength[0];  // fl
+        unexcitedPositionTwoTrackModel[4] = initialPositionGlobal[2] - unexcitedSpringsLength[0] - unexcitedSpringsLength[1];
+        unexcitedPositionTwoTrackModel[5] = initialPositionGlobal[2] - unexcitedSpringsLength[2];  // fr
+        unexcitedPositionTwoTrackModel[6] = initialPositionGlobal[2] - unexcitedSpringsLength[2] - unexcitedSpringsLength[3];
+        unexcitedPositionTwoTrackModel[7] = initialPositionGlobal[2] - unexcitedSpringsLength[4];  // rl
+        unexcitedPositionTwoTrackModel[8] = initialPositionGlobal[2] - unexcitedSpringsLength[4] - unexcitedSpringsLength[5];
+        unexcitedPositionTwoTrackModel[9] = initialPositionGlobal[2] - unexcitedSpringsLength[6];  // rr
+        unexcitedPositionTwoTrackModel[10] = initialPositionGlobal[2] - unexcitedSpringsLength[6] - unexcitedSpringsLength[7];
     }
 
     /**
@@ -57,22 +49,14 @@ private:
         currentDisplacementTwoTrackModel[0] = 0;
         currentDisplacementTwoTrackModel[1] = initialAngleGlobal[0];
         currentDisplacementTwoTrackModel[2] = initialAngleGlobal[1];
-        currentDisplacementTwoTrackModel[3] = unexcitedSpringsLength[0] - currentSpringsLength[0] +
-                                              currentCornerPositions[8] - initialPositionGlobal[2];
-        currentDisplacementTwoTrackModel[4] = currentDisplacementTwoTrackModel[3] +
-                                              unexcitedSpringsLength[1] - currentSpringsLength[1];
-        currentDisplacementTwoTrackModel[5] = unexcitedSpringsLength[2] - currentSpringsLength[2] +
-                                              currentCornerPositions[9] - initialPositionGlobal[2];
-        currentDisplacementTwoTrackModel[6] = currentDisplacementTwoTrackModel[5] +
-                                              unexcitedSpringsLength[3] - currentSpringsLength[3];
-        currentDisplacementTwoTrackModel[7] = unexcitedSpringsLength[4] - currentSpringsLength[4] +
-                                              currentCornerPositions[10] - initialPositionGlobal[2];
-        currentDisplacementTwoTrackModel[8] = currentDisplacementTwoTrackModel[7] +
-                                              unexcitedSpringsLength[5] - currentSpringsLength[5];
-        currentDisplacementTwoTrackModel[9] = unexcitedSpringsLength[6] - currentSpringsLength[6] +
-                                              currentCornerPositions[11] - initialPositionGlobal[2];
-        currentDisplacementTwoTrackModel[10] = currentDisplacementTwoTrackModel[9] +
-                                               unexcitedSpringsLength[7] - currentSpringsLength[7];
+        currentDisplacementTwoTrackModel[3] = unexcitedSpringsLength[0] - currentSpringsLength[0] + currentCornerPositions[8] - initialPositionGlobal[2];
+        currentDisplacementTwoTrackModel[4] = currentDisplacementTwoTrackModel[3] + unexcitedSpringsLength[1] - currentSpringsLength[1];
+        currentDisplacementTwoTrackModel[5] = unexcitedSpringsLength[2] - currentSpringsLength[2] + currentCornerPositions[9] - initialPositionGlobal[2];
+        currentDisplacementTwoTrackModel[6] = currentDisplacementTwoTrackModel[5] + unexcitedSpringsLength[3] - currentSpringsLength[3];
+        currentDisplacementTwoTrackModel[7] = unexcitedSpringsLength[4] - currentSpringsLength[4] + currentCornerPositions[10] - initialPositionGlobal[2];
+        currentDisplacementTwoTrackModel[8] = currentDisplacementTwoTrackModel[7] + unexcitedSpringsLength[5] - currentSpringsLength[5];
+        currentDisplacementTwoTrackModel[9] = unexcitedSpringsLength[6] - currentSpringsLength[6] + currentCornerPositions[11] - initialPositionGlobal[2];
+        currentDisplacementTwoTrackModel[10] = currentDisplacementTwoTrackModel[9] + unexcitedSpringsLength[7] - currentSpringsLength[7];
     }
 
     /**
@@ -100,20 +84,17 @@ private:
     /**
      * Calculates the values of Corners for general angles.
      */
-    void UpdateCorners11DOF(T* angles, T* rotation_mat_buffer, T* initial_corners,
-                            T* updated_corners) {
+    void UpdateCorners11DOF(T* angles, T* rotation_mat_buffer, T* initial_corners, T* updated_corners) {
         // zz, yy, xx
         Math::get_rotation_matrix<T>(angles[2], angles[1], angles[0], rotation_mat_buffer);
 
         // do rotation: rotationMat * r
-        // void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE transa, const
-        // CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT n, const MKL_INT k, const double
-        // alpha, const double* a, const MKL_INT lda, const double* b, const MKL_INT ldb, const
-        // double beta, double* c, const MKL_INT ldc);
-        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DIM,
-                      Constants::NUM_LEGS, Constants::DIM, 1, rotation_mat_buffer, Constants::DIM,
-                      initial_corners, Constants::NUM_LEGS, 0, updated_corners,
-                      Constants::NUM_LEGS);
+        // void cblas_dgemm(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE
+        // transa, const CBLAS_TRANSPOSE transb, const MKL_INT m, const MKL_INT
+        // n, const MKL_INT k, const double alpha, const double* a, const
+        // MKL_INT lda, const double* b, const MKL_INT ldb, const double beta,
+        // double* c, const MKL_INT ldc);
+        Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DIM, Constants::NUM_LEGS, Constants::DIM, 1, rotation_mat_buffer, Constants::DIM, initial_corners, Constants::NUM_LEGS, 0, updated_corners, Constants::NUM_LEGS);
     }
 
     /**
@@ -128,7 +109,8 @@ private:
     }
 
     /**
-     * Calculates the values of currentCornerPositions according to the current orientation
+     * Calculates the values of currentCornerPositions according to the current
+     * orientation
      */
     void UpdateCorners11DOF() {
         pos_buffer[0] = currentPositionLagrangian[0];
@@ -139,8 +121,7 @@ private:
         angle_buffer[2] = currentAngleLagrangian;
 
         ConstructCornerRelativeToCG(relativeCornerPositions);
-        UpdateCorners11DOF(angle_buffer, currentRotationMatrix, relativeCornerPositions,
-                           currentCornerPositions);
+        UpdateCorners11DOF(angle_buffer, currentRotationMatrix, relativeCornerPositions, currentCornerPositions);
         CornerAboutCenter(currentCornerPositions, pos_buffer);
     }
 
@@ -176,57 +157,69 @@ public:
     */
 
     // physical parameters
-    T* massComponents;   // [CG,  W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr]    9 x 1
-    T massFullCar;       // 1 scalar
-    T* momentOfInertia;  // [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izz]
-    T* vehicleCIR;       // [XYZ]
-    T* unexcitedPositionTwoTrackModel;  // [CG:Z, theta:XY, W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z,
+    T* massComponents;                  // [CG,  W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr]
+                                        // 9 x 1
+    T massFullCar;                      // 1 scalar
+    T* momentOfInertia;                 // [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izz]
+    T* vehicleCIR;                      // [XYZ]
+    T* unexcitedPositionTwoTrackModel;  // [CG:Z, theta:XY, W_fl:Z, T_fl:Z,
+                                        // W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z,
+                                        // W_rr:Z, T_rr:Z]
+    T* unexcitedSpringsLength;          // [W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z,
                                         // T_rl:Z, W_rr:Z, T_rr:Z]
-    T* unexcitedSpringsLength;  // [W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z, W_rr:Z, T_rr:Z]
 
     // only use to write to HDF5 DISCUSS
-    T* Position_vec;  // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ, T_fr:XYZ, W_rl:XYZ, T_rl:XYZ,
-                      // W_rr:XYZ, T_rr:XYZ] n x 9 x 3 !!! global Consider Constants::ALIGNMENT
-                      // (3+1),(3+1),...
-    T* Velocity_vec;  // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ, T_fr:XYZ, W_rl:XYZ, T_rl:XYZ,
-                      // W_rr:XYZ, T_rr:XYZ] n x 9 x 3 !!! global
+    T* Position_vec;  // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ, T_fr:XYZ,
+                      // W_rl:XYZ, T_rl:XYZ, W_rr:XYZ, T_rr:XYZ] n x 9 x 3 !!!
+                      // global Consider Constants::ALIGNMENT (3+1),(3+1),...
+    T* Velocity_vec;  // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ, T_fr:XYZ,
+                      // W_rl:XYZ, T_rl:XYZ, W_rr:XYZ, T_rr:XYZ] n x 9 x 3 !!!
+                      // global
     T* angle_CG;      // [XYZ]
     T* w_CG;          // [XYZ]
 
     // Initial Conditions of the car
-    T* initialPositionGlobal;         // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ, T_fr:XYZ, W_rl:XYZ,
-                                      // T_rl:XYZ, W_rr:XYZ, T_rr:XYZ] !!! global
-    T* initialVelocityGlobal;         // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ, T_fr:XYZ, W_rl:XYZ,
-                                      // T_rl:XYZ, W_rr:XYZ, T_rr:XYZ] !!! global
+    T* initialPositionGlobal;         // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ,
+                                      // T_fr:XYZ, W_rl:XYZ, T_rl:XYZ, W_rr:XYZ,
+                                      // T_rr:XYZ] !!! global
+    T* initialVelocityGlobal;         // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ,
+                                      // T_fr:XYZ, W_rl:XYZ, T_rl:XYZ, W_rr:XYZ,
+                                      // T_rr:XYZ] !!! global
     T* initialAngleGlobal;            // [XYZ]
     T* initialAngularVelocityGlobal;  // [XYZ]
     T* relativeCornerPositions;       // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]
 
     // vectors to use in regular iteration
     // For 11DOF
-    T* currentVelocityTwoTrackModel;  // [CG:Z, theta:XY, W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z,
-                                      // T_rl:Z, W_rr:Z, T_rr:Z]
-    T* currentPositionTwoTrackModel;  // [CG:Z, theta:XY, W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z,
-                                      // T_rl:Z, W_rr:Z, T_rr:Z]
-    T* currentDisplacementTwoTrackModel;  // [CG:Z, theta:XY, W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z,
+    T* currentVelocityTwoTrackModel;      // [CG:Z, theta:XY, W_fl:Z, T_fl:Z,
+                                          // W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z, W_rr:Z,
+                                          // T_rr:Z]
+    T* currentPositionTwoTrackModel;      // [CG:Z, theta:XY, W_fl:Z, T_fl:Z,
+                                          // W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z, W_rr:Z,
+                                          // T_rr:Z]
+    T* currentDisplacementTwoTrackModel;  // [CG:Z, theta:XY, W_fl:Z, T_fl:Z,
+                                          // W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z,
+                                          // W_rr:Z, T_rr:Z]
+    T* currentCIRTwoTrackModel;           // [CG:Z, W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z,
                                           // W_rl:Z, T_rl:Z, W_rr:Z, T_rr:Z]
-    T* currentCIRTwoTrackModel;  // [CG:Z, W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z, W_rr:Z,
-                                 // T_rr:Z]
-    T* currentSpringsLength;     // [W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z, W_rr:Z, T_rr:Z]
+    T* currentSpringsLength;              // [W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z,
+                                          // T_rl:Z, W_rr:Z, T_rr:Z]
 
     // For ALE || suggestion: reduce it to only leg position (wheel == tyre)
-    T* currentPositionLagrangian;  // [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY, T_fr:XY, W_rl:XY, T_rl:XY,
-                                   // W_rr:XY, T_rr:XY]
+    T* currentPositionLagrangian;  // [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY,
+                                   // T_fr:XY, W_rl:XY, T_rl:XY, W_rr:XY,
+                                   // T_rr:XY]
 
     T currentAngularVelocityLagrangian;  // [CG:Z]
     T currentAngleLagrangian;            // [CG:Z]
-    T* currentVelocityLagrangian;  // [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY, T_fr:XY, W_rl:XY, T_rl:XY,
-                                   // W_rr:XY, T_rr:XY]
+    T* currentVelocityLagrangian;        // [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY,
+                                         // T_fr:XY, W_rl:XY, T_rl:XY, W_rr:XY,
+                                         // T_rr:XY]
 
     // For global necessary updates
     T* currentRotationMatrix;   // [xx, xy, xz, yx, yy, yz, zx, zy, zz]
-    T* currentCornerPositions;  // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]         sorry for
-                                // everyone
+    T* currentCornerPositions;  // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]
+                                // sorry for everyone
 
     // Members from 11 DOF system
 
@@ -298,11 +291,11 @@ public:
 
         Math::copy<T>(Constants::DIMDIM, db.getMomentOfInertiaVector(), 1, momentOfInertia, 1);
 
-        // TODO: Current order [CG, W W W W T T T T] does not perform at its best for the [W+T] part
-        // (alignment is not to 64). Rework the formulation to put CG at the end.
+        // TODO: Current order [CG, W W W W T T T T] does not perform at its
+        // best for the [W+T] part (alignment is not to 64). Rework the
+        // formulation to put CG at the end.
         massComponents[0] = db.getBodyMass();
-        Math::copy<T>(2 * Constants::NUM_LEGS, db.getWheelTyreMassVector(), 1, massComponents + 1,
-                      1);
+        Math::copy<T>(2 * Constants::NUM_LEGS, db.getWheelTyreMassVector(), 1, massComponents + 1, 1);
 
         massFullCar = getMassFullCar();
 
@@ -341,12 +334,11 @@ public:
         // Interpolator
         // Initialization: read init corners vectors into matrix
 
-        ConstructCornerRelativeToCG(
-            relativeCornerPositions);  // only CG position is used to construct corners
+        ConstructCornerRelativeToCG(relativeCornerPositions);  // only CG position is used to construct
+                                                               // corners
         Math::copy<T>(Constants::DIM, initialAngleGlobal, 1, angle_buffer, 1);
         // angle_buffer[2] = 0;
-        UpdateCorners11DOF(angle_buffer, currentRotationMatrix, relativeCornerPositions,
-                           currentCornerPositions);
+        UpdateCorners11DOF(angle_buffer, currentRotationMatrix, relativeCornerPositions, currentCornerPositions);
         CornerAboutCenter(currentCornerPositions, initialPositionGlobal);
 
         // Remaining position initialization
@@ -354,8 +346,8 @@ public:
         const T* xml_start;
         T* position_start;
         if (db.getFlagInitialLeg()) {  // DEBUG to  be removed
-            // if prescribed initial position (add a check for consistency with spring lengths)
-            // W1 = W_fl
+            // if prescribed initial position (add a check for consistency with
+            // spring lengths) W1 = W_fl
             xml_start = db.getWheelInitialPositionFrontLeft();
             position_start = initialPositionGlobal + 3;  //(end at 5)
             Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
@@ -374,23 +366,25 @@ public:
 
             // T1 = T_fl
             xml_start = db.getTyreInitialPositionFrontLeft();
-            position_start =
-                initialPositionGlobal + 6;  // skip 3 for center of mass and 3 for the wheel
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 8)
+            position_start = initialPositionGlobal + 6;  // skip 3 for center of mass and 3 for the wheel
+            Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                          1);  // (end at 8)
             // T2 = T_fr
             xml_start = db.getTyreInitialPositionFrontRight();
-            position_start += 6;                                             // skip 3 for the wheel
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 14)
+            position_start += 6;  // skip 3 for the wheel
+            Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                          1);  // (end at 14)
             // T3 = T_rl
             xml_start = db.getTyreInitialPositionRearLeft();
-            position_start += 6;                                             // skip 3 for the wheel
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 20)
+            position_start += 6;  // skip 3 for the wheel
+            Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                          1);  // (end at 20)
             // T4 = T_rr
             xml_start = db.getTyreInitialPositionRearRight();
-            position_start += 6;                                             // skip 3 for the wheel
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 26)
-            Math::copy<T>(Constants::DIM * Constants::VEC_DIM, initialPositionGlobal, 1,
-                          Position_vec, 1);
+            position_start += 6;  // skip 3 for the wheel
+            Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                          1);  // (end at 26)
+            Math::copy<T>(Constants::DIM * Constants::VEC_DIM, initialPositionGlobal, 1, Position_vec, 1);
         }
         else {
             T* W_fl = initialPositionGlobal + 3;
@@ -401,11 +395,9 @@ public:
             T* T_fr = initialPositionGlobal + 12;
             T* T_rl = initialPositionGlobal + 18;
             T* T_rr = initialPositionGlobal + 24;
-            computeGlobalPositionWheelTyre(currentCornerPositions, currentSpringsLength, W_fl, T_fl,
-                                           W_fr, T_fr, W_rl, T_rl, W_rr, T_rr);
+            computeGlobalPositionWheelTyre(currentCornerPositions, currentSpringsLength, W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr);
             /* Update the mean position where changes are to be added */
-            Math::copy<T>(Constants::DIM * Constants::VEC_DIM, initialPositionGlobal, 1,
-                          Position_vec, 1);
+            Math::copy<T>(Constants::DIM * Constants::VEC_DIM, initialPositionGlobal, 1, Position_vec, 1);
         }
 
         // Initial Velocity (Reuse the pointers)
@@ -413,47 +405,52 @@ public:
         // W1 = W_fl
         xml_start = db.getWheelInitialVelocityFrontLeft();
         position_start = initialVelocityGlobal + 3;
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 5)
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                      1);  // (end at 5)
         // W2 = W_fr
         xml_start = db.getWheelInitialVelocityFrontRight();
-        position_start += 6;                                             // skip 3 for tyre
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 11)
+        position_start += 6;  // skip 3 for tyre
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                      1);  // (end at 11)
         // W3 = W_rl
         xml_start = db.getWheelInitialVelocityRearLeft();
-        position_start += 6;                                             // skip 3 for tyre
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 17)
+        position_start += 6;  // skip 3 for tyre
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                      1);  // (end at 17)
         // W2 = W_rr
         xml_start = db.getWheelInitialVelocityRearRight();
-        position_start += 6;                                             // skip 3 for tyre
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 23)
+        position_start += 6;  // skip 3 for tyre
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                      1);  // (end at 23)
 
         // T1 = T_fl
         xml_start = db.getTyreInitialVelocityFrontLeft();
-        position_start =
-            initialVelocityGlobal + 6;  // skip 3 for center of mass and 3 for the wheel
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 8)
+        position_start = initialVelocityGlobal + 6;  // skip 3 for center of mass and 3 for the wheel
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                      1);  // (end at 8)
 
         // T2 = T_fr
         xml_start = db.getTyreInitialVelocityFrontRight();
-        position_start += 6;                                             // skip 3 for the Tyre
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 14)
+        position_start += 6;  // skip 3 for the Tyre
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                      1);  // (end at 14)
         // T3 = T_rl
         xml_start = db.getTyreInitialVelocityRearLeft();
-        position_start += 6;                                             // skip 3 for the wheel
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 20)
+        position_start += 6;  // skip 3 for the wheel
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                      1);  // (end at 20)
 
         // T4 = T_rr
         xml_start = db.getTyreInitialVelocityRearRight();
-        position_start += 6;                                             // skip 3 for the wheel
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 26)
+        position_start += 6;  // skip 3 for the wheel
+        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+                      1);  // (end at 26)
 
         // copy the initial position to the position vector
-        Math::copy<T>(Constants::DIM * Constants::VEC_DIM, initialVelocityGlobal, 1, Velocity_vec,
-                      1);
+        Math::copy<T>(Constants::DIM * Constants::VEC_DIM, initialVelocityGlobal, 1, Velocity_vec, 1);
 
         // Initial Angular velocity
-        Math::copy<T>(Constants::DIM, db.getBodyInitialAngularVelocity(), 1,
-                      initialAngularVelocityGlobal, 1);
+        Math::copy<T>(Constants::DIM, db.getBodyInitialAngularVelocity(), 1, initialAngularVelocityGlobal, 1);
         Math::copy<T>(Constants::DIM, initialAngularVelocityGlobal, 1, w_CG, 1);
 
         /* Global assignments Done */
@@ -472,12 +469,10 @@ public:
         ComputeInitialDisplacement();
 
         // initial velocity
-        construct_11DOF_vector(initialVelocityGlobal, initialAngularVelocityGlobal,
-                               currentVelocityTwoTrackModel);
+        construct_11DOF_vector(initialVelocityGlobal, initialAngularVelocityGlobal, currentVelocityTwoTrackModel);
 
         // initial position
-        construct_11DOF_vector(initialPositionGlobal, initialAngleGlobal,
-                               currentPositionTwoTrackModel);
+        construct_11DOF_vector(initialPositionGlobal, initialAngleGlobal, currentPositionTwoTrackModel);
 
         // we updated the initial global position, so we
         updateRadiusToCIR();
@@ -514,7 +509,8 @@ public:
     }
 
     /**
-     * If forces and positiosn are negative, set them to zero, elsewise, keep them
+     * If forces and positiosn are negative, set them to zero, elsewise, keep
+     * them
      */
     void apply_normal_force(T* force, T* u, size_t* index, size_t n) {
 #pragma loop(ivdep)
@@ -528,7 +524,8 @@ public:
     }
 
     /**
-     * compute a reaction which is opposite to the internal force acting on the tyre
+     * compute a reaction which is opposite to the internal force acting on the
+     * tyre
      */
     void compute_normal_force(T* K, T* u, T* force, size_t* index, size_t n) {
 #pragma loop(ivdep)
@@ -539,9 +536,10 @@ public:
 
     /**
      * Get the solution vector as required for the 11DOF system
-     * \param Global_position in the format [GC:XYZ,W_fl:XYZ,T_fl:XYZ,W_fr:XYZ,T_fr:XYZ,...]
-     * \param Global_angle with three angles [X,Y,Z]
-     * \return Position_11dof in the format [GC:Y,angle:XY,W_fl:Y,T_fl:Y,W_fr:Y,T_fr:Y,...]
+     * \param Global_position in the format
+     * [GC:XYZ,W_fl:XYZ,T_fl:XYZ,W_fr:XYZ,T_fr:XYZ,...] \param Global_angle with
+     * three angles [X,Y,Z] \return Position_11dof in the format
+     * [GC:Y,angle:XY,W_fl:Y,T_fl:Y,W_fr:Y,T_fr:Y,...]
      */
     void construct_11DOF_vector(T* Global_position, T* Global_angle, T* Position_11dof) {
         Position_11dof[0] = Global_position[2];  // z coordinate of CG
@@ -552,8 +550,7 @@ public:
         Math::copy<T>(Constants::VEC_DIM - 1, Global_position + 5, 3, Position_11dof + 3, 1);
     }
 
-    void computeGlobalPositionWheelTyre(T* Corners, T* curr_spring_len, T* W_fl, T* T_fl, T* W_fr,
-                                        T* T_fr, T* W_rl, T* T_rl, T* W_rr, T* T_rr) {
+    void computeGlobalPositionWheelTyre(T* Corners, T* curr_spring_len, T* W_fl, T* T_fl, T* W_fr, T* T_fr, T* W_rl, T* T_rl, T* W_rr, T* T_rr) {
         // W_fl & T_fl
         Math::copy<T>(Constants::DIM, Corners, 4, W_fl, 1);
         W_fl[2] -= curr_spring_len[0];
@@ -590,14 +587,12 @@ public:
     }
 
     /**
-     * \brief From the current elongations, calculate the differences to the rest positions
-     * \return length differences
+     * \brief From the current elongations, calculate the differences to the
+     * rest positions \return length differences
      */
     inline void compute_dx(T* dx) { compute_dx(currentSpringsLength, dx); }
 
-    inline void compute_dx_tyre(T* dx) {
-        Math::copy<T>(Constants::NUM_LEGS, currentDisplacementTwoTrackModel + 4, 2, dx, 1);
-    }
+    inline void compute_dx_tyre(T* dx) { Math::copy<T>(Constants::NUM_LEGS, currentDisplacementTwoTrackModel + 4, 2, dx, 1); }
 
     /**
      * \*brief compute current spring lengths
@@ -606,42 +601,36 @@ public:
         // upper spring_length = corner - wheel
         // lower spring length = wheel - tyre
         Math::copy<T>(Constants::NUM_LEGS, currentCornerPositions + 8, 1, currentSpringsLength, 2);
-        Math::axpy<T>(Constants::NUM_LEGS, -1, currentPositionTwoTrackModel + 3, 2,
-                      currentSpringsLength, 2);
-        Math::copy<T>(Constants::NUM_LEGS, currentPositionTwoTrackModel + 3, 2,
-                      currentSpringsLength + 1, 2);
-        Math::axpy<T>(Constants::NUM_LEGS, -1, currentPositionTwoTrackModel + 4, 2,
-                      currentSpringsLength + 1, 2);
+        Math::axpy<T>(Constants::NUM_LEGS, -1, currentPositionTwoTrackModel + 3, 2, currentSpringsLength, 2);
+        Math::copy<T>(Constants::NUM_LEGS, currentPositionTwoTrackModel + 3, 2, currentSpringsLength + 1, 2);
+        Math::axpy<T>(Constants::NUM_LEGS, -1, currentPositionTwoTrackModel + 4, 2, currentSpringsLength + 1, 2);
     }
 
     /**
-     * \brief updates the global position of the components based on euler frame displacement
+     * \brief updates the global position of the components based on euler frame
+     * displacement
      */
     void updateGlobalTwoTrackVectors() {
         // currentPositionTwoTrackModel = unexcitedPositionTwoTrackModel +
         // currentDisplacementTwoTrackModel;
-        Math::copy<T>(Constants::DOF, unexcitedPositionTwoTrackModel, 1,
-                      currentPositionTwoTrackModel, 1);
-        Math::axpy<T>(Constants::DOF, 1, currentDisplacementTwoTrackModel, 1,
-                      currentPositionTwoTrackModel, 1);
+        Math::copy<T>(Constants::DOF, unexcitedPositionTwoTrackModel, 1, currentPositionTwoTrackModel, 1);
+        Math::axpy<T>(Constants::DOF, 1, currentDisplacementTwoTrackModel, 1, currentPositionTwoTrackModel, 1);
     }
 
     /**
      * \brief calculate the Z-distance from each car component to the CIR
      */
     void updateRadiusToCIR() {
-        T globalNickpolPosition = currentPositionTwoTrackModel[0] +
-                                  vehicleCIR[2];      // get global Z position of the Nickpol
-        currentCIRTwoTrackModel[0] = -vehicleCIR[2];  // initialize in the constructor
+        T globalNickpolPosition = currentPositionTwoTrackModel[0] + vehicleCIR[2];  // get global Z position of the Nickpol
+        currentCIRTwoTrackModel[0] = -vehicleCIR[2];                                // initialize in the constructor
         for (int i = 1; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-            currentCIRTwoTrackModel[i] =
-                currentPositionTwoTrackModel[2 + i] - globalNickpolPosition;
+            currentCIRTwoTrackModel[i] = currentPositionTwoTrackModel[2 + i] - globalNickpolPosition;
         }
     }
 
     /**
-     * \brief update global corner positions, compute global Euler vectors, compute current spring
-     * lengths, compute CIR functions
+     * \brief update global corner positions, compute global Euler vectors,
+     * compute current spring lengths, compute CIR functions
      */
     void updateLengthsTwoTrackModel() {
         UpdateCorners11DOF();
@@ -657,9 +646,10 @@ public:
 
     /**
      * Fills the global vector with all entries (checkpointing)
-     * \param ALE_vectors contains X and Y components [GC:XY,W_fl:XY,T_fl:XY,W_fr:XY,T_fr:XY,...]
-     * \param vector 11DOF contains Z components [GC:Z,W_fl:Z,T_fl:Z,W_fr:Z,T_fr:Z,...]
-     * \return global_vector [GC:XYZ,W_fl:XYZ,T_fl:XYZ,W_fr:XYZ,T_fr:XYZ,...]
+     * \param ALE_vectors contains X and Y components
+     * [GC:XY,W_fl:XY,T_fl:XY,W_fr:XY,T_fr:XY,...] \param vector 11DOF contains
+     * Z components [GC:Z,W_fl:Z,T_fl:Z,W_fr:Z,T_fr:Z,...] \return global_vector
+     * [GC:XYZ,W_fl:XYZ,T_fl:XYZ,W_fr:XYZ,T_fr:XYZ,...]
      */
     void combineEulerianLagrangianVectors(T* ALE_vector, T* vector_11DOF, T* global_vector) {
         ConvertALEToGlobal(ALE_vector, global_vector);
@@ -667,11 +657,11 @@ public:
     }
 
     /**
-     * \brief flush the result to the output (checkpointing) || combine with function above
+     * \brief flush the result to the output (checkpointing) || combine with
+     * function above
      */
     void combine_results() {
-        Math::copy<T>(Constants::VEC_DIM * Constants::DIM, initialPositionGlobal, 1, Position_vec,
-                      1);
+        Math::copy<T>(Constants::VEC_DIM * Constants::DIM, initialPositionGlobal, 1, Position_vec, 1);
         ConvertALEToGlobal(currentPositionLagrangian, Position_vec);
         Convert11DOFToGlobal(currentDisplacementTwoTrackModel, Position_vec);
 
@@ -686,14 +676,10 @@ public:
     // Sums up all the 9 masses
     inline T getMassFullCar() {
         return (massComponents[0] +  // CG
-                massComponents[1] + massComponents[2] + massComponents[3] + massComponents[4] +
-                massComponents[5] + massComponents[6] + massComponents[7] + massComponents[8]);
+                massComponents[1] + massComponents[2] + massComponents[3] + massComponents[4] + massComponents[5] + massComponents[6] + massComponents[7] + massComponents[8]);
     }
 
-    void get_Velocity_vec_xy(T* Vel) {
-        Math::copy<T>((Constants::DIM - 1) * Constants::VEC_DIM, currentVelocityLagrangian, 1, Vel,
-                      1);
-    }
+    void get_Velocity_vec_xy(T* Vel) { Math::copy<T>((Constants::DIM - 1) * Constants::VEC_DIM, currentVelocityLagrangian, 1, Vel, 1); }
 
     void get_k_vec(T* k) { Math::copy<T>(2 * Constants::NUM_LEGS, kVec, 1, k, 1); }
     void get_k_vec_tyre(T* k) { Math::copy<T>(Constants::NUM_LEGS, kVec + 1, 2, k, 1); }
@@ -702,17 +688,14 @@ public:
     void get_Mass_vec(T* M) { Math::copy<T>(Constants::VEC_DIM, massComponents, 1, M, 1); }
 
     /**
-     * get distance vector from each important Point of the car (9: CG, 4*W_i, 4*T_i)
-     * \param Point_P,
-     * \return each entry from Position_vec
+     * get distance vector from each important Point of the car (9: CG, 4*W_i,
+     * 4*T_i) \param Point_P, \return each entry from Position_vec
      */
     void get_dist_vector_xy(T* Point_P, T* dist_vector) {
         for (auto i = 0; i < Constants::VEC_DIM; ++i) {
-            Math::copy<T>(Constants::DIM - 1, Point_P, Constants::INCX,
-                          &dist_vector[(Constants::DIM - 1) * i], Constants::INCX);
+            Math::copy<T>(Constants::DIM - 1, Point_P, Constants::INCX, &dist_vector[(Constants::DIM - 1) * i], Constants::INCX);
         }
-        Math::vSub<T>((Constants::DIM - 1) * Constants::VEC_DIM, currentPositionLagrangian,
-                      dist_vector, dist_vector);
+        Math::vSub<T>((Constants::DIM - 1) * Constants::VEC_DIM, currentPositionLagrangian, dist_vector, dist_vector);
     }
 
     void get_ALE_change(T* current_ALE_vect, T* global_vect, T* change_vect) {
@@ -722,8 +705,8 @@ public:
 
     void apply_ALE_change() {
         /*
-         * Now both vector are at current state. swap pointer and CG location in new previous will
-         * be updated and following will be obselete which
+         * Now both vector are at current state. swap pointer and CG location in
+         * new previous will be updated and following will be obselete which
          */
         // Suggestion: reuse the values from the corners (cheaper)
 
@@ -731,31 +714,21 @@ public:
         T s = std::sin(currentAngleLagrangian);
 
         // get the XY positions of all legs taking leg  = CG + R * r
-        currentPositionLagrangian[2] =
-            currentPositionLagrangian[0] + l_long[0] * c - l_lat[0] * s;  // fl
-        currentPositionLagrangian[3] =
-            currentPositionLagrangian[1] + l_lat[0] * c + l_long[0] * s;  // fl
+        currentPositionLagrangian[2] = currentPositionLagrangian[0] + l_long[0] * c - l_lat[0] * s;  // fl
+        currentPositionLagrangian[3] = currentPositionLagrangian[1] + l_lat[0] * c + l_long[0] * s;  // fl
 
-        currentPositionLagrangian[6] =
-            currentPositionLagrangian[0] + l_long[1] * c + l_lat[1] * s;  // fr
-        currentPositionLagrangian[7] =
-            currentPositionLagrangian[1] - l_lat[1] * c + l_long[1] * s;  // fr
+        currentPositionLagrangian[6] = currentPositionLagrangian[0] + l_long[1] * c + l_lat[1] * s;  // fr
+        currentPositionLagrangian[7] = currentPositionLagrangian[1] - l_lat[1] * c + l_long[1] * s;  // fr
 
-        currentPositionLagrangian[10] =
-            currentPositionLagrangian[0] - l_long[2] * c - l_lat[2] * s;  // rl
-        currentPositionLagrangian[11] =
-            currentPositionLagrangian[1] + l_lat[2] * c - l_long[2] * s;  // rl
+        currentPositionLagrangian[10] = currentPositionLagrangian[0] - l_long[2] * c - l_lat[2] * s;  // rl
+        currentPositionLagrangian[11] = currentPositionLagrangian[1] + l_lat[2] * c - l_long[2] * s;  // rl
 
-        currentPositionLagrangian[14] =
-            currentPositionLagrangian[0] - l_long[3] * c + l_lat[3] * s;  // rr
-        currentPositionLagrangian[15] =
-            currentPositionLagrangian[1] - l_lat[3] * c - l_long[3] * s;  // rr
+        currentPositionLagrangian[14] = currentPositionLagrangian[0] - l_long[3] * c + l_lat[3] * s;  // rr
+        currentPositionLagrangian[15] = currentPositionLagrangian[1] - l_lat[3] * c - l_long[3] * s;  // rr
 
         // copy all position value from the wheels to the tyres
-        Math::copy<T>(Constants::NUM_LEGS, currentPositionLagrangian + 2, 4,
-                      currentPositionLagrangian + 4, 4);
-        Math::copy<T>(Constants::NUM_LEGS, currentPositionLagrangian + 3, 4,
-                      currentPositionLagrangian + 5, 4);
+        Math::copy<T>(Constants::NUM_LEGS, currentPositionLagrangian + 2, 4, currentPositionLagrangian + 4, 4);
+        Math::copy<T>(Constants::NUM_LEGS, currentPositionLagrangian + 3, 4, currentPositionLagrangian + 5, 4);
     }
 
     ~Car() {

@@ -53,9 +53,7 @@ class Model;
 class QVTKFramebufferObjectItem;
 class ProcessingEngine;
 
-class QVTKFramebufferObjectRenderer : public QObject,
-                                      public QQuickFramebufferObject::Renderer,
-                                      protected QOpenGLFunctions {
+class QVTKFramebufferObjectRenderer : public QObject, public QQuickFramebufferObject::Renderer, protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
@@ -97,9 +95,7 @@ private:
     void clearSelectedModel();
     void setIsModelSelected(const bool isModelSelected);
 
-    void createLine(const double x1, const double y1, const double z1, const double x2,
-                    const double y2, const double z2, vtkSmartPointer<vtkPoints> points,
-                    vtkSmartPointer<vtkCellArray> cells);
+    void createLine(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2, vtkSmartPointer<vtkPoints> points, vtkSmartPointer<vtkCellArray> cells);
     std::shared_ptr<Model> getSelectedModelNoLock() const;
 
     std::shared_ptr<ProcessingEngine> m_processingEngine;

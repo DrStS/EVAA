@@ -58,8 +58,7 @@ public:
     std::shared_ptr<Model> getModelFromActor(const vtkSmartPointer<vtkActor> modelActor) const;
 
 private:
-    vtkSmartPointer<vtkPolyData> preprocessPolydata(
-        const vtkSmartPointer<vtkPolyData> inputData) const;
+    vtkSmartPointer<vtkPolyData> preprocessPolydata(const vtkSmartPointer<vtkPolyData> inputData) const;
 
     std::vector<std::shared_ptr<Model>> m_models;
 };

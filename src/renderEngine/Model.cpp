@@ -120,9 +120,7 @@ void Model::setSelected(const bool selected) {
     }
 }
 
-void Model::setSelectedModelColor(const QColor &selectedModelColor) {
-    m_selectedModelColor = selectedModelColor;
-}
+void Model::setSelectedModelColor(const QColor &selectedModelColor) { m_selectedModelColor = selectedModelColor; }
 
 void Model::updateModelColor() {
     if (m_selected) {
@@ -133,9 +131,7 @@ void Model::updateModelColor() {
     }
 }
 
-void Model::setColor(const QColor &color) {
-    m_modelActor->GetProperty()->SetColor(color.redF(), color.greenF(), color.blueF());
-}
+void Model::setColor(const QColor &color) { m_modelActor->GetProperty()->SetColor(color.redF(), color.greenF(), color.blueF()); }
 
 const double Model::getMouseDeltaX() const { return m_mouseDeltaX; }
 

@@ -22,10 +22,11 @@
  *
  *  Additional permission under GNU GPL version 3 section 7
  *
- * If you modify this Program, or any covered work, by linking or combining it with Intel Math
- * Kernel Libraries(MKL) (or a modified version of that library), containing parts covered by the
- * terms of the license of the MKL, the licensors of this Program grant you additional permission to
- * convey the resulting work.
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with Intel Math Kernel Libraries(MKL) (or a modified version of that
+ * library), containing parts covered by the terms of the license of the MKL,
+ * the licensors of this Program grant you additional permission to convey the
+ * resulting work.
  *
  * \section DESCRIPTION
  *  This is the main file of EVAA
@@ -38,8 +39,9 @@
  * <a href="https://github.com/DrStS/EVAA">EVAA Project</a>
  *
  *
- * <EM> Note: The Makefile suppresses per default all compile and linking command output to the
- * terminal. You may enable this information by make VEREBOSE=1</EM>
+ * <EM> Note: The Makefile suppresses per default all compile and linking
+ * command output to the terminal. You may enable this information by make
+ * VEREBOSE=1</EM>
  */
 
 /**
@@ -74,12 +76,9 @@ int main(int argc, char **argv) {
     }
     // allArgs[0] = "EVAA.exe"
     if (allArgs.size() > 2) {
-        EVAA::EVAAComputeEngine *myComputeEngine =
-            new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
+        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
     }
-    EVAA::EVAAComputeEngine *myComputeEngine =
-        new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml",
-                                    "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
+    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
     myComputeEngine->printInfo();
 
     auto &timer1 = EVAA::anaysisTimer01;
@@ -87,51 +86,38 @@ int main(int argc, char **argv) {
     timer1.start();
     myComputeEngine->computeMKL11DOF();
     timer1.stop();
-    std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec()
-              << " ms to run the solver(MKL) .\n\n\n " << std::endl;
+    std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(MKL) .\n\n\n " << std::endl;
     timer1.start();
     myComputeEngine->computeEigen11DOF();
     timer1.stop();
-    std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec()
-              << " ms to run the solver(Eigen) .\n\n\n " << std::endl;
+    std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Eigen) .\n\n\n " << std::endl;
     timer1.start();
     myComputeEngine->computeBlaze11DOF();
     timer1.stop();
-    std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
-              << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
+    std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
 #endif
 
     timer1.start();
     // myComputeEngine->computeMKLTwoTrackModel();
     timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec()
-              << " ms to run the solver(computeMKLlinear11dof).\n\n\n"
-              << std::endl;
+    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver(computeMKLlinear11dof).\n\n\n" << std::endl;
     timer1.start();
     // myComputeEngine->computeALE();
     timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec()
-              << " ms to run the solver(computeALE).\n\n\n"
-              << std::endl;
+    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver(computeALE).\n\n\n" << std::endl;
     timer1.start();
     myComputeEngine->computeMBD();
     timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec()
-              << " ms to run the solver(computeMBD).\n\n\n"
-              << std::endl;
+    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
     timer1.start();
     // myComputeEngine->compare_ALE_MBD();
     timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec()
-              << " ms to run the solver(Compare).\n\n\n"
-              << std::endl;
+    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver(Compare).\n\n\n" << std::endl;
 
     timer1.start();
     myComputeEngine->computeMKLTwoTrackModelBE();
     timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec()
-              << " ms to run the solver 11dofBE.\n\n\n"
-              << std::endl;
+    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
 
     delete myComputeEngine;
     std::cout << "\nWe did a great job! Awesome!" << std::endl;

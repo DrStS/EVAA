@@ -58,7 +58,8 @@ public:
             throw "Lookup block are not available in the XML!";
         }
         if (fixspring) {
-            throw "Cannot use constant block with interpolation. Check the XML!";
+            throw "Cannot use constant block with interpolation. Check the "
+                  "XML!";
         }
 #else
         if (fixspring) {
@@ -96,8 +97,7 @@ public:
         _I_body[7] = twoTrackModel.InertiaXML().ZY();
         _I_body[8] = twoTrackModel.InertiaXML().ZZ();
 
-        CheckStiffnessXML(twoTrackModel.StiffnessXML().LookupTableXML().present(),
-                          twoTrackModel.StiffnessXML().ConstantXML().present());
+        CheckStiffnessXML(twoTrackModel.StiffnessXML().LookupTableXML().present(), twoTrackModel.StiffnessXML().ConstantXML().present());
 
 #ifdef INTERPOLATION
         readLookupParameters(twoTrackModel.StiffnessXML().LookupTableXML().get().FilePathXML());
@@ -109,8 +109,7 @@ public:
         readLegs(_c_body, twoTrackModel.DampingCoefficientsXML().BodyXML());
         readLegs(_l_long, twoTrackModel.GeometryXML().LongitudinalReferenceToWheelXML());
         readLegs(_l_lat, twoTrackModel.GeometryXML().LateralReferenceToWheelXML());
-        readVector(_vehicleCIR,
-                   twoTrackModel.GeometryXML().RelativeCenterOfInstanteneousRotation());
+        readVector(_vehicleCIR, twoTrackModel.GeometryXML().RelativeCenterOfInstanteneousRotation());
         readLegs(_lower_spring_length, twoTrackModel.GeometryXML().SuspensionSpringsXML());
         readLegs(_upper_spring_length, twoTrackModel.GeometryXML().TyreSpringsXML());
 
@@ -194,23 +193,14 @@ public:
             readVector(_profile_center, load_data->roadProfile().circularRoadProfile()->center());
         }
         else if (load_data->roadProfile().arbitraryRoadProfile().present()) {
-            const auto sinusoidalProfile = load_data->roadProfile()
-                                               .arbitraryRoadProfile()
-                                               .get()
-                                               .verticalProfile()
-                                               .sinusoidalProfile();
-            const auto horizontalProfile =
-                load_data->roadProfile().arbitraryRoadProfile().get().horizontalProfile();
+            const auto sinusoidalProfile = load_data->roadProfile().arbitraryRoadProfile().get().verticalProfile().sinusoidalProfile();
+            const auto horizontalProfile = load_data->roadProfile().arbitraryRoadProfile().get().horizontalProfile();
             _boundary_condition_road = BoundaryConditionRoad::ARBITRARY;
             std::cout << "Run the simulation on an arbitrary road" << std::endl;
-            _trajectory = new ArbitraryTrajectory<T>(
-                _num_time_iter, _timestep, sinusoidalProfile.rightTyre().amplitude(),
-                sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(),
-                sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(),
-                sinusoidalProfile.leftTyre().shift());  // TODO: free memory without leaks
+            _trajectory = new ArbitraryTrajectory<T>(_num_time_iter, _timestep, sinusoidalProfile.rightTyre().amplitude(), sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(), sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(),
+                                                     sinusoidalProfile.leftTyre().shift());  // TODO: free memory without leaks
 
-            T initialVelocity = sqrt(_initial_vel_body[0] * _initial_vel_body[0] +
-                                     _initial_vel_body[1] * _initial_vel_body[1]);
+            T initialVelocity = sqrt(_initial_vel_body[0] * _initial_vel_body[0] + _initial_vel_body[1] * _initial_vel_body[1]);
 
             std::vector<T> wayPointsX;
             std::vector<T> wayPointsY;
@@ -218,33 +208,26 @@ public:
 
             size_t numWayPoints = 0;
 
-            for (auto i = horizontalProfile.wayPoint().begin();
-                 i < horizontalProfile.wayPoint().end(); ++i) {
+            for (auto i = horizontalProfile.wayPoint().begin(); i < horizontalProfile.wayPoint().end(); ++i) {
                 numWayPoints++;
                 wayPointsX.push_back(i->X());
                 wayPointsY.push_back(i->Y());
                 wayPointsTimes.push_back(i->time());
             }
 
-            _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(),
-                                               wayPointsTimes.data());
-            _trajectory->calculateTyreShifts(
-                _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
-                _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT]);
+            _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(), wayPointsTimes.data());
+            _trajectory->calculateTyreShifts(_l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT], _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT]);
             _trajectory->calculateTravelledDistance();
             _trajectory->calculateAngles();
             _trajectory->calculateAccelerationsCenterOfGravity();
-            _trajectory->calculateAccelerationsLegs(
-                _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
-                _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT],
-                _l_lat[Constants::FRONT_LEFT], _l_lat[Constants::FRONT_RIGHT],
-                _l_lat[Constants::REAR_LEFT], _l_lat[Constants::REAR_RIGHT]);
+            _trajectory->calculateAccelerationsLegs(_l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT], _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT], _l_lat[Constants::FRONT_LEFT], _l_lat[Constants::FRONT_RIGHT], _l_lat[Constants::REAR_LEFT], _l_lat[Constants::REAR_RIGHT]);
 
             _trajectory->calculateVerticalAccelerations();
         }
         else {
             throw std::logic_error(
-                "Wrong boundary conditions. Implemented so far: circle, fixed, nonfixed.");
+                "Wrong boundary conditions. Implemented so far: circle, fixed, "
+                "nonfixed.");
         }
 
         readVectorLegs(_external_force_tyre, load_data->forces().forceTyre());
@@ -252,7 +235,8 @@ public:
         readVector(_external_force_body, load_data->forces().forceBody());
     }
 
-    /* Getters. TODO: make all "T *get<X>" return const ref, mark the getter as const. */
+    /* Getters. TODO: make all "T *get<X>" return const ref, mark the getter as
+     * const. */
     inline T getTyreStiffnessFrontLeft() const { return _k_tyre[Constants::FRONT_LEFT]; }
     inline T getTyreStiffnessFrontRight() const { return _k_tyre[Constants::FRONT_RIGHT]; }
     inline T getTyreStiffnessRearLeft() const { return _k_tyre[Constants::REAR_LEFT]; }
@@ -305,7 +289,8 @@ public:
 
     /**
      * Returns the leg mass vector.
-     * \return A mass vector in format [W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr]
+     * \return A mass vector in format [W_fl, T_fl, W_fr, T_fr, W_rl, T_rl,
+     * W_rr, T_rr]
      */
     inline const T* getWheelTyreMassVector() { return _mass; }
 
@@ -313,96 +298,49 @@ public:
 
     inline T getMomentOfInertiaXX() const { return _I_body[0]; }
     inline T getMomentOfInertiaYY() const { return _I_body[4]; }
-    // contains all elements of the InertiaMatrix in the format [XX,XY,XZ,YX,YY,YZ,ZX,ZY,ZZ]
+    // contains all elements of the InertiaMatrix in the format
+    // [XX,XY,XZ,YX,YY,YZ,ZX,ZY,ZZ]
     inline T* getMomentOfInertiaVector() { return _I_body; }
 
-    inline T getTyreSpringLengthFrontLeft() const {
-        return _lower_spring_length[Constants::FRONT_LEFT];
-    }
-    inline T getTyreSpringLengthFrontRight() const {
-        return _lower_spring_length[Constants::FRONT_RIGHT];
-    }
-    inline T getTyreSpringLengthRearLeft() const {
-        return _lower_spring_length[Constants::REAR_LEFT];
-    }
-    inline T getTyreSpringLengthRearRight() const {
-        return _lower_spring_length[Constants::REAR_RIGHT];
-    }
+    inline T getTyreSpringLengthFrontLeft() const { return _lower_spring_length[Constants::FRONT_LEFT]; }
+    inline T getTyreSpringLengthFrontRight() const { return _lower_spring_length[Constants::FRONT_RIGHT]; }
+    inline T getTyreSpringLengthRearLeft() const { return _lower_spring_length[Constants::REAR_LEFT]; }
+    inline T getTyreSpringLengthRearRight() const { return _lower_spring_length[Constants::REAR_RIGHT]; }
     // vector in the format fl fr rl rr
     inline T* getTyreSpringLengthVector() { return _lower_spring_length; }
 
-    inline T getBodySpringLengthFrontLeft() const {
-        return _upper_spring_length[Constants::FRONT_LEFT];
-    }
-    inline T getBodySpringLengthFrontRight() const {
-        return _upper_spring_length[Constants::FRONT_RIGHT];
-    }
-    inline T getBodySpringLengthRearLeft() const {
-        return _upper_spring_length[Constants::REAR_LEFT];
-    }
-    inline T getBodySpringLengthRearRight() const {
-        return _upper_spring_length[Constants::REAR_RIGHT];
-    }
+    inline T getBodySpringLengthFrontLeft() const { return _upper_spring_length[Constants::FRONT_LEFT]; }
+    inline T getBodySpringLengthFrontRight() const { return _upper_spring_length[Constants::FRONT_RIGHT]; }
+    inline T getBodySpringLengthRearLeft() const { return _upper_spring_length[Constants::REAR_LEFT]; }
+    inline T getBodySpringLengthRearRight() const { return _upper_spring_length[Constants::REAR_RIGHT]; }
     // vector in the format fl fr rl rr
     inline T* getBodySpringLengthVector() { return _upper_spring_length; }
 
-    inline T getTyreSpringInitialLengthFrontLeft() const {
-        return _initial_lower_spring_length[Constants::FRONT_LEFT];
-    }
-    inline T getTyreSpringInitialLengthFrontRight() const {
-        return _initial_lower_spring_length[Constants::FRONT_RIGHT];
-    }
-    inline T getTyreSpringInitialLengthRearLeft() const {
-        return _initial_lower_spring_length[Constants::REAR_LEFT];
-    }
-    inline T getTyreSpringInitialLengthRearRight() const {
-        return _initial_lower_spring_length[Constants::REAR_RIGHT];
-    }
+    inline T getTyreSpringInitialLengthFrontLeft() const { return _initial_lower_spring_length[Constants::FRONT_LEFT]; }
+    inline T getTyreSpringInitialLengthFrontRight() const { return _initial_lower_spring_length[Constants::FRONT_RIGHT]; }
+    inline T getTyreSpringInitialLengthRearLeft() const { return _initial_lower_spring_length[Constants::REAR_LEFT]; }
+    inline T getTyreSpringInitialLengthRearRight() const { return _initial_lower_spring_length[Constants::REAR_RIGHT]; }
     // vector in the format fl fr rl rr
     inline T* getTyreSpringInitialLengthVector() { return _initial_lower_spring_length; }
 
-    inline T getBodySpringInitialLengthFrontLeft() const {
-        return _initial_upper_spring_length[Constants::FRONT_LEFT];
-    }
-    inline T getBodySpringInitialLengthFrontRight() const {
-        return _initial_upper_spring_length[Constants::FRONT_RIGHT];
-    }
-    inline T getBodySpringInitialLengthRearLeft() const {
-        return _initial_upper_spring_length[Constants::REAR_LEFT];
-    }
-    inline T getBodySpringInitialLengthRearRight() const {
-        return _initial_upper_spring_length[Constants::REAR_RIGHT];
-    }
+    inline T getBodySpringInitialLengthFrontLeft() const { return _initial_upper_spring_length[Constants::FRONT_LEFT]; }
+    inline T getBodySpringInitialLengthFrontRight() const { return _initial_upper_spring_length[Constants::FRONT_RIGHT]; }
+    inline T getBodySpringInitialLengthRearLeft() const { return _initial_upper_spring_length[Constants::REAR_LEFT]; }
+    inline T getBodySpringInitialLengthRearRight() const { return _initial_upper_spring_length[Constants::REAR_RIGHT]; }
     // vector in the format fl fr rl rr
     inline T* getBodySpringInitialLengthVector() { return _initial_upper_spring_length; }
 
     inline T* getBodyInitialVelocity() { return _initial_vel_body; }
 
-    inline T* getWheelInitialVelocityFrontLeft() {
-        return _initial_vel_wheel + Constants::DIM * Constants::FRONT_LEFT;
-    }
-    inline T* getWheelInitialVelocityFrontRight() {
-        return _initial_vel_wheel + Constants::DIM * Constants::FRONT_RIGHT;
-    }
-    inline T* getWheelInitialVelocityRearLeft() {
-        return _initial_vel_wheel + Constants::DIM * Constants::REAR_LEFT;
-    }
-    inline T* getWheelInitialVelocityRearRight() {
-        return _initial_vel_wheel + Constants::DIM * Constants::REAR_RIGHT;
-    }
+    inline T* getWheelInitialVelocityFrontLeft() { return _initial_vel_wheel + Constants::DIM * Constants::FRONT_LEFT; }
+    inline T* getWheelInitialVelocityFrontRight() { return _initial_vel_wheel + Constants::DIM * Constants::FRONT_RIGHT; }
+    inline T* getWheelInitialVelocityRearLeft() { return _initial_vel_wheel + Constants::DIM * Constants::REAR_LEFT; }
+    inline T* getWheelInitialVelocityRearRight() { return _initial_vel_wheel + Constants::DIM * Constants::REAR_RIGHT; }
 
-    inline T* getTyreInitialVelocityFrontLeft() {
-        return _initial_vel_tyre + Constants::DIM * Constants::FRONT_LEFT;
-    }
-    inline T* getTyreInitialVelocityFrontRight() {
-        return _initial_vel_tyre + Constants::DIM * Constants::FRONT_RIGHT;
-    }
-    inline T* getTyreInitialVelocityRearLeft() {
-        return _initial_vel_tyre + Constants::DIM * Constants::REAR_LEFT;
-    }
-    inline T* getTyreInitialVelocityRearRight() {
-        return _initial_vel_tyre + Constants::DIM * Constants::REAR_RIGHT;
-    }
+    inline T* getTyreInitialVelocityFrontLeft() { return _initial_vel_tyre + Constants::DIM * Constants::FRONT_LEFT; }
+    inline T* getTyreInitialVelocityFrontRight() { return _initial_vel_tyre + Constants::DIM * Constants::FRONT_RIGHT; }
+    inline T* getTyreInitialVelocityRearLeft() { return _initial_vel_tyre + Constants::DIM * Constants::REAR_LEFT; }
+    inline T* getTyreInitialVelocityRearRight() { return _initial_vel_tyre + Constants::DIM * Constants::REAR_RIGHT; }
 
     inline T* getBodyInitialAngularVelocity() { return _initial_ang_vel_body; }
 
@@ -410,31 +348,15 @@ public:
 
     inline T* getBodyInitialPosition() { return _initial_pos_body; }
 
-    inline T* getWheelInitialPositionFrontLeft() {
-        return _initial_pos_wheel + Constants::DIM * Constants::FRONT_LEFT;
-    }
-    inline T* getWheelInitialPositionFrontRight() {
-        return _initial_pos_wheel + Constants::DIM * Constants::FRONT_RIGHT;
-    }
-    inline T* getWheelInitialPositionRearLeft() {
-        return _initial_pos_wheel + Constants::DIM * Constants::REAR_LEFT;
-    }
-    inline T* getWheelInitialPositionRearRight() {
-        return _initial_pos_wheel + Constants::DIM * Constants::REAR_RIGHT;
-    }
+    inline T* getWheelInitialPositionFrontLeft() { return _initial_pos_wheel + Constants::DIM * Constants::FRONT_LEFT; }
+    inline T* getWheelInitialPositionFrontRight() { return _initial_pos_wheel + Constants::DIM * Constants::FRONT_RIGHT; }
+    inline T* getWheelInitialPositionRearLeft() { return _initial_pos_wheel + Constants::DIM * Constants::REAR_LEFT; }
+    inline T* getWheelInitialPositionRearRight() { return _initial_pos_wheel + Constants::DIM * Constants::REAR_RIGHT; }
 
-    inline T* getTyreInitialPositionFrontLeft() {
-        return _initial_pos_tyre + Constants::DIM * Constants::FRONT_LEFT;
-    }
-    inline T* getTyreInitialPositionFrontRight() {
-        return _initial_pos_tyre + Constants::DIM * Constants::FRONT_RIGHT;
-    }
-    inline T* getTyreInitialPositionRearLeft() {
-        return _initial_pos_tyre + Constants::DIM * Constants::REAR_LEFT;
-    }
-    inline T* getTyreInitialPositionRearRight() {
-        return _initial_pos_tyre + Constants::DIM * Constants::REAR_RIGHT;
-    }
+    inline T* getTyreInitialPositionFrontLeft() { return _initial_pos_tyre + Constants::DIM * Constants::FRONT_LEFT; }
+    inline T* getTyreInitialPositionFrontRight() { return _initial_pos_tyre + Constants::DIM * Constants::FRONT_RIGHT; }
+    inline T* getTyreInitialPositionRearLeft() { return _initial_pos_tyre + Constants::DIM * Constants::REAR_LEFT; }
+    inline T* getTyreInitialPositionRearRight() { return _initial_pos_tyre + Constants::DIM * Constants::REAR_RIGHT; }
 
     inline T* getBodyInitialOrientation() { return _initialAngleGlobal; }
     bool getFlagInitialLeg() const { return _initial_leg_flag; }
@@ -455,31 +377,15 @@ public:
 
     inline T* getBodyExternalForce() { return _external_force_body; }
 
-    inline T* getWheelExternalForceFrontLeft() {
-        return _external_force_wheel + Constants::DIM * Constants::FRONT_LEFT;
-    }
-    inline T* getWheelExternalForceFrontRight() {
-        return _external_force_wheel + Constants::DIM * Constants::FRONT_RIGHT;
-    }
-    inline T* getWheelExternalForceRearLeft() {
-        return _external_force_wheel + Constants::DIM * Constants::REAR_LEFT;
-    }
-    inline T* getWheelExternalForceRearRight() {
-        return _external_force_wheel + Constants::DIM * Constants::REAR_RIGHT;
-    }
+    inline T* getWheelExternalForceFrontLeft() { return _external_force_wheel + Constants::DIM * Constants::FRONT_LEFT; }
+    inline T* getWheelExternalForceFrontRight() { return _external_force_wheel + Constants::DIM * Constants::FRONT_RIGHT; }
+    inline T* getWheelExternalForceRearLeft() { return _external_force_wheel + Constants::DIM * Constants::REAR_LEFT; }
+    inline T* getWheelExternalForceRearRight() { return _external_force_wheel + Constants::DIM * Constants::REAR_RIGHT; }
 
-    inline T* getTyreExternalForceFrontLeft() {
-        return _external_force_tyre + Constants::DIM * Constants::FRONT_LEFT;
-    }
-    inline T* getTyreExternalForceFrontRight() {
-        return _external_force_tyre + Constants::DIM * Constants::FRONT_RIGHT;
-    }
-    inline T* getTyreExternalForceRearLeft() {
-        return _external_force_tyre + Constants::DIM * Constants::REAR_LEFT;
-    }
-    inline T* getTyreExternalForceRearRight() {
-        return _external_force_tyre + Constants::DIM * Constants::REAR_RIGHT;
-    }
+    inline T* getTyreExternalForceFrontLeft() { return _external_force_tyre + Constants::DIM * Constants::FRONT_LEFT; }
+    inline T* getTyreExternalForceFrontRight() { return _external_force_tyre + Constants::DIM * Constants::FRONT_RIGHT; }
+    inline T* getTyreExternalForceRearLeft() { return _external_force_tyre + Constants::DIM * Constants::REAR_LEFT; }
+    inline T* getTyreExternalForceRearRight() { return _external_force_tyre + Constants::DIM * Constants::REAR_RIGHT; }
     ArbitraryTrajectory<T>* getArbitraryTrajectory() { return _trajectory; }
 
     inline T getCircularRoadRadius() const { return _profile_radius; }
@@ -546,8 +452,7 @@ private:
             a[6] = _k_body[1];
             a[7] = _k_tyre[3];
 
-            _lookupStiffness =
-                new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
+            _lookupStiffness = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
             _interpolation = 1;  // to switch from constant to interpolation type
 
             // damping is /100 from the stiffness for the start
@@ -556,8 +461,7 @@ private:
                 a[j] /= 100;
             }
 
-            _lookupDamping =
-                new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
+            _lookupDamping = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
 
             delete[] a;
             delete[] _k_body;
@@ -567,9 +471,9 @@ private:
 
     /**
      * \brief Reads 4 legs which contain each EVAA::Constants::DIM vectors.
-     * Reads the vectors of the positions of the legs relative to the center of mass.
-     * \param vec XML parser
-     * \return storage all components in one vector with 12 elements [fl:XYZ,fr:XYZ,rl:XYZ,rr:XYZ]
+     * Reads the vectors of the positions of the legs relative to the center of
+     * mass. \param vec XML parser \return storage all components in one vector
+     * with 12 elements [fl:XYZ,fr:XYZ,rl:XYZ,rr:XYZ]
      */
     template <typename S>
     void readVectorLegs(T* storage, S vec) {
@@ -583,7 +487,8 @@ private:
      * \brief Read 4 legs which contain each 1 T.
      * Reads paramaters which are given for all the legs.
      * \param[in] vec XML parser
-     * \param[out] storage all components in one vector with 4 consecutive elements [fl,fr,rl,rr]
+     * \param[out] storage all components in one vector with 4 consecutive
+     * elements [fl,fr,rl,rr]
      */
     template <typename S>
     void readLegs(T* storage, S vec) {
@@ -591,11 +496,10 @@ private:
     }
 
     /**
-     * \brief Read 4 legs which contain each 1 T with increment in output storage.
-     * Reads paramaters which are given for all the legs.
-     * \param[in] vec XML parser
-     * \param[in] inc increment in storage
-     * \param[out] storage components in one vector at indices 0, inc, 2*inc, 3*inc [fl,fr,rl,rr]
+     * \brief Read 4 legs which contain each 1 T with increment in output
+     * storage. Reads paramaters which are given for all the legs. \param[in]
+     * vec XML parser \param[in] inc increment in storage \param[out] storage
+     * components in one vector at indices 0, inc, 2*inc, 3*inc [fl,fr,rl,rr]
      */
     template <typename S>
     void readLegs(T* storage, size_t inc, S vec) {
@@ -631,8 +535,8 @@ private:
     }
 
     /*
-    All general simulation parameters and car specific parameters (such as geometry and
-    initial conditions)
+    All general simulation parameters and car specific parameters (such as
+    geometry and initial conditions)
     */
     T _k_tyre[Constants::NUM_LEGS];
     T _k_body[Constants::NUM_LEGS];

@@ -65,34 +65,33 @@ EVAAMainWindow::EVAAMainWindow(int argc, char **argv) {
 
     // Give the vtkFboItem reference to the EVAAMainWindow
     if (m_vtkFboItem) {
-        qDebug() << "EVAAMainWindow::EVAAMainWindow: setting vtkFboItem to EVAAMainWindow";
+        qDebug() << "EVAAMainWindow::EVAAMainWindow: setting vtkFboItem to "
+                    "EVAAMainWindow";
 
         m_vtkFboItem->setProcessingEngine(m_processingEngine);
 
-        connect(m_vtkFboItem, &QVTKFramebufferObjectItem::rendererInitialized, this,
-                &EVAAMainWindow::startApplication);
-        connect(m_vtkFboItem, &QVTKFramebufferObjectItem::isModelSelectedChanged, this,
-                &EVAAMainWindow::isModelSelectedChanged);
-        connect(m_vtkFboItem, &QVTKFramebufferObjectItem::selectedModelPositionXChanged, this,
-                &EVAAMainWindow::selectedModelPositionXChanged);
-        connect(m_vtkFboItem, &QVTKFramebufferObjectItem::selectedModelPositionYChanged, this,
-                &EVAAMainWindow::selectedModelPositionYChanged);
+        connect(m_vtkFboItem, &QVTKFramebufferObjectItem::rendererInitialized, this, &EVAAMainWindow::startApplication);
+        connect(m_vtkFboItem, &QVTKFramebufferObjectItem::isModelSelectedChanged, this, &EVAAMainWindow::isModelSelectedChanged);
+        connect(m_vtkFboItem, &QVTKFramebufferObjectItem::selectedModelPositionXChanged, this, &EVAAMainWindow::selectedModelPositionXChanged);
+        connect(m_vtkFboItem, &QVTKFramebufferObjectItem::selectedModelPositionYChanged, this, &EVAAMainWindow::selectedModelPositionYChanged);
     }
     else {
-        qCritical() << "EVAAMainWindow::EVAAMainWindow: Unable to get vtkFboItem instance";
+        qCritical() << "EVAAMainWindow::EVAAMainWindow: Unable to get "
+                       "vtkFboItem instance";
         return;
     }
 
     int rc = app.exec();
 
-    qDebug() << "EVAAMainWindow::EVAAMainWindow: Execution finished with return code:" << rc;
+    qDebug() << "EVAAMainWindow::EVAAMainWindow: Execution finished with "
+                "return code:"
+             << rc;
 }
 
 void EVAAMainWindow::startApplication() const {
     qDebug() << "EVAAMainWindow::startApplication()";
 
-    disconnect(m_vtkFboItem, &QVTKFramebufferObjectItem::rendererInitialized, this,
-               &EVAAMainWindow::startApplication);
+    disconnect(m_vtkFboItem, &QVTKFramebufferObjectItem::rendererInitialized, this, &EVAAMainWindow::startApplication);
 }
 
 void EVAAMainWindow::openModel(const QUrl &path) const {
@@ -112,8 +111,7 @@ void EVAAMainWindow::openModel(const QUrl &path) const {
 }
 
 bool EVAAMainWindow::isModelExtensionValid(const QUrl &modelPath) const {
-    if (modelPath.toString().toLower().endsWith(".stl") ||
-        modelPath.toString().toLower().endsWith(".obj")) {
+    if (modelPath.toString().toLower().endsWith(".stl") || modelPath.toString().toLower().endsWith(".obj")) {
         return true;
     }
 
@@ -194,17 +192,11 @@ double EVAAMainWindow::getSelectedModelPositionY() const {
     return m_vtkFboItem->getSelectedModelPositionY();
 }
 
-void EVAAMainWindow::setModelsRepresentation(const int representationOption) {
-    m_vtkFboItem->setModelsRepresentation(representationOption);
-}
+void EVAAMainWindow::setModelsRepresentation(const int representationOption) { m_vtkFboItem->setModelsRepresentation(representationOption); }
 
-void EVAAMainWindow::setModelsOpacity(const double opacity) {
-    m_vtkFboItem->setModelsOpacity(opacity);
-}
+void EVAAMainWindow::setModelsOpacity(const double opacity) { m_vtkFboItem->setModelsOpacity(opacity); }
 
-void EVAAMainWindow::setGouraudInterpolation(const bool gouraudInterpolation) {
-    m_vtkFboItem->setGouraudInterpolation(gouraudInterpolation);
-}
+void EVAAMainWindow::setGouraudInterpolation(const bool gouraudInterpolation) { m_vtkFboItem->setGouraudInterpolation(gouraudInterpolation); }
 
 void EVAAMainWindow::setModelColorR(const int colorR) { m_vtkFboItem->setModelColorR(colorR); }
 

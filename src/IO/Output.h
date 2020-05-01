@@ -71,17 +71,14 @@ void writeMatrix(std::string& fname, const T* mat, const size_t rows, const size
 };
 
 /**
- * \brief function to print the values for the lookup table and the interpolated values for
- * debugging
+ * \brief function to print the values for the lookup table and the interpolated
+ * values for debugging
  */
 template <typename T>
-void writeLookUpGridPlusInterpolateValues(
-    T* axis /**< [in] pointer to axis */, T* grid /**< [in] pointer to grid */,
-    int n /**< [in] number of elements in arrays */,
-    T* interpolationPoints /**< [in] pointer to interpolation points */,
-    T* interpolation /**< [in] pointer to interpolation points at points of axis */,
-    int ni /**< [in] number of elements in arrays */,
-    std::string fname /**< [in] name of output file */
+void writeLookUpGridPlusInterpolateValues(T* axis /**< [in] pointer to axis */, T* grid /**< [in] pointer to grid */, int n /**< [in] number of elements in arrays */, T* interpolationPoints /**< [in] pointer to interpolation points */, T* interpolation /**< [in] pointer to interpolation points at points of axis
+                                                                                                                                                                                                                                                              */
+                                          ,
+                                          int ni /**< [in] number of elements in arrays */, std::string fname /**< [in] name of output file */
 ) {
     std::ofstream myfile(fname);
     myfile << std::setprecision(15);
@@ -99,11 +96,13 @@ void writeLookUpGridPlusInterpolateValues(
  * \brief function to print the values for the trajectory debugging
  */
 template <typename T>
-void writeRoadTrajectoryCSV(
-    T* interpolationx /**< [in] pointer to interpolation points at points of axis */,
-    T* interpolationy /**< [in] pointer to interpolation points at points of axis */,
-    int ni /**< [in] number of elements in arrays */,
-    std::string fname /**< [in] name of output file */
+void writeRoadTrajectoryCSV(T* interpolationx /**< [in] pointer to interpolation
+                                                 points at points of axis */
+                            ,
+                            T* interpolationy /**< [in] pointer to interpolation
+                                                 points at points of axis */
+                            ,
+                            int ni /**< [in] number of elements in arrays */, std::string fname /**< [in] name of output file */
 ) {
     std::ofstream myfile(fname);
     myfile << std::setprecision(15);

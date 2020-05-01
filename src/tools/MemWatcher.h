@@ -66,8 +66,7 @@ public:
     size_t getCurrentUsedPhysicalMemory(void) {
 #if defined(_WIN32) || defined(__WIN32__)
         PROCESS_MEMORY_COUNTERS_EX pmc;
-        GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc),
-                             sizeof(pmc));
+        GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc), sizeof(pmc));
         SIZE_T physMemUsedByMe = pmc.WorkingSetSize;
         return physMemUsedByMe;
 #endif
@@ -83,8 +82,7 @@ public:
     size_t getCurrentUsedVirtualMemory(void) {
 #if defined(_WIN32) || defined(__WIN32__)
         PROCESS_MEMORY_COUNTERS_EX pmc;
-        GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc),
-                             sizeof(pmc));
+        GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc), sizeof(pmc));
         SIZE_T virtualMemUsedByMe = pmc.PrivateUsage;
         return virtualMemUsedByMe;
 #endif

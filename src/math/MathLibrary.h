@@ -51,8 +51,7 @@ namespace Math {
  * \param[in] _pivot elements
  * \author Stefan Sicklinger
  */
-void computeDenseSymLUFactorisation(const int _nElements, std::vector<double>& _A,
-                                    std::vector<int>& _pivots);
+void computeDenseSymLUFactorisation(const int _nElements, std::vector<double>& _A, std::vector<int>& _pivots);
 
 /**
  * \brief Compute backward/forward substitution
@@ -61,19 +60,15 @@ void computeDenseSymLUFactorisation(const int _nElements, std::vector<double>& _
  * \param[in] _pivot elements
  * \author Stefan Sicklinger
  */
-void computeDenseSymSolution(const int _nElements, std::vector<double>& _A,
-                             std::vector<int>& _pivots, std::vector<double>& _rhs);
+void computeDenseSymSolution(const int _nElements, std::vector<double>& _A, std::vector<int>& _pivots, std::vector<double>& _rhs);
 
 /**
- * \brief Computes a vector-scalar product and adds the result to a vector. vec2 <- a*vec1 + vec2
- * \param[in] _vec1 the 1st vector
- * \param[in] _vec2 the 2nd vector
- * \param[in] _alpha   scalar
- * \param[in] _nElements number of elements in vec1
- * \author Stefan Sicklinger
+ * \brief Computes a vector-scalar product and adds the result to a vector. vec2
+ * <- a*vec1 + vec2 \param[in] _vec1 the 1st vector \param[in] _vec2 the 2nd
+ * vector \param[in] _alpha   scalar \param[in] _nElements number of elements in
+ * vec1 \author Stefan Sicklinger
  */
-void computeDenseVectorAddition(double* vec1, double* vec2, const double _alpha,
-                                const int _nElements);
+void computeDenseVectorAddition(double* vec1, double* vec2, const double _alpha, const int _nElements);
 
 /**
  * \brief Print info of the Intel MKL
@@ -115,9 +110,8 @@ void vector_elem_wise_product(T* v1, T* v2, T* result, size_t dim) {
 }
 
 /**
- * Creates a diagonal matrix with one same value on all diagonal entries (or overwrites the
- * diagonal elements)
- * \param dim size of the matrix (dim x dim)
+ * Creates a diagonal matrix with one same value on all diagonal entries (or
+ * overwrites the diagonal elements) \param dim size of the matrix (dim x dim)
  * \param val value to be written to all diagonal entries
  * \return mat the diagonal matrix
  */
@@ -144,11 +138,9 @@ void swap_address(T*& a, T*& b) {
 }
 
 /**
- * Creates a diagonal matrix with diagonal entries from a vector(or overwrites the diagonal
- * elements)
- * \param dim size of the matrix (dim x dim)
- * \param vector to be written to all diagonal entries
- * \return mat the diagonal matrix
+ * Creates a diagonal matrix with diagonal entries from a vector(or overwrites
+ * the diagonal elements) \param dim size of the matrix (dim x dim) \param
+ * vector to be written to all diagonal entries \return mat the diagonal matrix
  */
 template <typename T>
 void allocate_to_diagonal(T* matrix, T* vector, size_t dim) {
@@ -202,10 +194,10 @@ void crossProduct_unitvecZ2D(const T* vect_A, T* cross_P)
 }
 
 /**
- * Performs the cross product of 2 vector A and B with no component on Z direction
- * \param vect_A first vector; A = [xA, yA, 0]
- * \param vect_B second vector; B = [xB, yB, 0]
- * \return cross_P = vect_A x vect_B = [0, 0, xA * yB - xB * yA]
+ * Performs the cross product of 2 vector A and B with no component on Z
+ * direction \param vect_A first vector; A = [xA, yA, 0] \param vect_B second
+ * vector; B = [xB, yB, 0] \return cross_P = vect_A x vect_B = [0, 0, xA * yB -
+ * xB * yA]
  */
 template <typename T>
 void crossProduct_unitvecXY(const T* vect_A, const T* vect_B, T* cross_P)
@@ -251,15 +243,11 @@ void ToEulerAngles(const T* q, T* E) {
 template <typename T>
 void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R) {
     R[0] = (std::cos(yaw)) * (std::cos(pitch));
-    R[1] = ((std::cos(yaw)) * (std::sin(pitch)) * (std::sin(roll)) -
-            (std::sin(yaw)) * (std::cos(roll)));
-    R[2] = ((std::cos(yaw)) * (std::sin(pitch)) * (std::cos(roll)) +
-            (std::sin(yaw)) * (std::sin(roll)));
+    R[1] = ((std::cos(yaw)) * (std::sin(pitch)) * (std::sin(roll)) - (std::sin(yaw)) * (std::cos(roll)));
+    R[2] = ((std::cos(yaw)) * (std::sin(pitch)) * (std::cos(roll)) + (std::sin(yaw)) * (std::sin(roll)));
     R[3] = (std::sin(yaw)) * (std::cos(pitch));
-    R[4] = ((std::sin(yaw)) * (std::sin(pitch)) * (std::sin(roll)) +
-            (std::cos(yaw)) * (std::cos(roll)));
-    R[5] = ((std::sin(yaw)) * (std::sin(pitch)) * (std::cos(roll)) -
-            (std::cos(yaw)) * (std::sin(roll)));
+    R[4] = ((std::sin(yaw)) * (std::sin(pitch)) * (std::sin(roll)) + (std::cos(yaw)) * (std::cos(roll)));
+    R[5] = ((std::sin(yaw)) * (std::sin(pitch)) * (std::cos(roll)) - (std::cos(yaw)) * (std::sin(roll)));
     R[6] = -(std::sin(pitch));
     R[7] = (std::cos(pitch)) * (std::sin(roll));
     R[8] = (std::cos(pitch)) * (std::cos(roll));
@@ -356,11 +344,12 @@ void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis) 
  */
 template <typename T>
 void get_basis(const T* initial_orientation, T* transfrormed_basis) {
-    // quaternion initial_orientation yields basis(calculates basically the matrix rotation
-    // the euclidian basis to the local basis)
+    // quaternion initial_orientation yields basis(calculates basically the
+    // matrix rotation the euclidian basis to the local basis)
 
     // get local basis vectors using unit quaternion rotation
-    // s = 1 / norm(q) ^ 2;      %normalizer, only to remove numerical stuffy stuff
+    // s = 1 / norm(q) ^ 2;      %normalizer, only to remove numerical stuffy
+    // stuff
     size_t quad_dim = 4;
     size_t dim = 3;
     T nrm = Math::nrm2<T>(quad_dim, initial_orientation, 1);
@@ -374,40 +363,25 @@ void get_basis(const T* initial_orientation, T* transfrormed_basis) {
     }
     i = 0;
     j = 0;
-    transfrormed_basis[i * dim + j] =
-        1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
     j = 1;
-    transfrormed_basis[i * dim + j] = 2 * s *
-                                      (initial_orientation[i] * initial_orientation[j] -
-                                       initial_orientation[i + 2] * initial_orientation[j + 2]);
+    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
     j = 2;
-    transfrormed_basis[i * dim + j] = 2 * s *
-                                      (initial_orientation[i] * initial_orientation[j] +
-                                       initial_orientation[i + 1] * initial_orientation[j + 1]);
+    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
     i = 1;
     j = 0;
-    transfrormed_basis[i * dim + j] = 2 * s *
-                                      (initial_orientation[i] * initial_orientation[j] +
-                                       initial_orientation[i + 2] * initial_orientation[j + 2]);
+    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
     j = 1;
-    transfrormed_basis[i * dim + j] =
-        1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
     j = 2;
-    transfrormed_basis[i * dim + j] = 2 * s *
-                                      (initial_orientation[i] * initial_orientation[j] -
-                                       initial_orientation[i - 1] * initial_orientation[j + 1]);
+    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
     i = 2;
     j = 0;
-    transfrormed_basis[i * dim + j] = 2 * s *
-                                      (initial_orientation[i] * initial_orientation[j] -
-                                       initial_orientation[i + 1] * initial_orientation[j + 1]);
+    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
     j = 1;
-    transfrormed_basis[i * dim + j] = 2 * s *
-                                      (initial_orientation[i] * initial_orientation[j] +
-                                       initial_orientation[i + 1] * initial_orientation[j - 1]);
+    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
     j = 2;
-    transfrormed_basis[i * dim + j] =
-        1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
 }
 
 /**
@@ -419,9 +393,9 @@ void get_basis(const T* initial_orientation, T* transfrormed_basis) {
 template <typename T>
 void get_tilda(const T* input_vector, T* tilda_output) {
     /*
-    This function is only suitable for a 3 dimensional system and renders unusable, might throw
-    exceptions when used with other dimensions.
-    given y: x_tilda*y = cross(x,y) [Stoneking, page 3 bottom]
+    This function is only suitable for a 3 dimensional system and renders
+    unusable, might throw exceptions when used with other dimensions. given y:
+    x_tilda*y = cross(x,y) [Stoneking, page 3 bottom]
     x_tilda = [	0, -x(3), x(2) x(3), 0, -x(1) -x(2), x(1), 0	]
     */
     tilda_output[0] = 0;
@@ -437,7 +411,8 @@ void get_tilda(const T* input_vector, T* tilda_output) {
 
 /**
  * Implements different numerical schemes.
- * \note: TODO: Check if C has the get_solution_dimension() public member function.
+ * \note: TODO: Check if C has the get_solution_dimension() public member
+ * function.
  */
 template <typename T, class C>
 class Solvers {
@@ -451,8 +426,7 @@ public:
      *  \param x_previous previous solution
      *  \return new solution
      */
-    static void Broyden_Euler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
-                              T tol, size_t max_iter) {
+    static void Broyden_Euler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
         T* f_old = Math::malloc<T>(x_len);
         T* f_new = Math::malloc<T>(x_len);
@@ -483,8 +457,8 @@ public:
             // f_old = f(t(n-1), x_previous');
             obj->compute_f3D_reduced(it_start, t, f_old);
 
-            // in case the velocity is 0 add nuggets to avoid singular matrices (slow check for
-            // improvement) f_old(abs(f_old) < 0.01) = 0.01;
+            // in case the velocity is 0 add nuggets to avoid singular matrices
+            // (slow check for improvement) f_old(abs(f_old) < 0.01) = 0.01;
             val = eps * (2 * (1 + rand() % 2) - 3);
             transmutate_elements(f_old, 0, x_len, val, eps);
 
@@ -529,7 +503,8 @@ public:
                 Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
                 Math::copy<T>(x_len, F, 1, x_new, 1);
                 Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-                Math::axpy<T>(x_len, -1, x, 1, x_new, 1);  // result here is -x_new
+                Math::axpy<T>(x_len, -1, x, 1, x_new,
+                              1);  // result here is -x_new
                 Math::scal<T>(x_len, -1, x_new, 1);
 
                 // Calculate new derivative
@@ -593,8 +568,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void Broyden_PDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
-                             T tol, size_t max_iter) {
+    static void Broyden_PDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
         T* f_old = Math::malloc<T>(x_len);
         T* f_new = Math::malloc<T>(x_len);
@@ -626,8 +600,8 @@ public:
         // 1. Initialize guess from previous time step
         // f_old = f(t(n-1), x_previous');
         obj->compute_f3D_reduced(it_start, t, f_old);
-        // in case the velocity is 0 add nuggets to avoid singular matrices (slow check for
-        // improvement) f_old(abs(f_old) < 0.01) = 0.01;
+        // in case the velocity is 0 add nuggets to avoid singular matrices
+        // (slow check for improvement) f_old(abs(f_old) < 0.01) = 0.01;
         val = eps * (2 * (1 + rand() % 2) - 3);
         transmutate_elements(f_old, 0, x_len, val, eps);
 
@@ -720,8 +694,9 @@ public:
                 // 1. Initialize guess from previous time step
                 // f_old = f(t(n-1), x_previous');
                 obj->compute_f3D_reduced(it_start, t, f_old);
-                // in case the velocity is 0 add nuggets to avoid singular matrices (slow check for
-                // improvement) f_old(abs(f_old) < 0.01) = 0.01;
+                // in case the velocity is 0 add nuggets to avoid singular
+                // matrices (slow check for improvement) f_old(abs(f_old) <
+                // 0.01) = 0.01;
                 val = eps * (2 * (1 + rand() % 2) - 3);
                 transmutate_elements(f_old, 0, x_len, val, eps);
 
@@ -751,7 +726,8 @@ public:
 
                 // calculate initial F for stopping condition
                 // x_dot = f_new';
-                // F = x - 4/3 * x_previous + 1/3 * x_previous_previous - 2/3 * delta_t * x_dot;
+                // F = x - 4/3 * x_previous + 1/3 * x_previous_previous - 2/3 *
+                // delta_t * x_dot;
                 Math::copy<T>(x_len, dx, 1, F, 1);
                 Math::axpy<T>(x_len, -1. / 3.0, it_start, 1, F, 1);
                 Math::axpy<T>(x_len, 1. / 3.0, prev_prev_pos, 1, F, 1);
@@ -768,13 +744,15 @@ public:
                     Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
                     Math::copy<T>(x_len, F, 1, x_new, 1);
                     Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-                    Math::axpy<T>(x_len, -1, x, 1, x_new, 1);  // result here is -x_new
+                    Math::axpy<T>(x_len, -1, x, 1, x_new,
+                                  1);  // result here is -x_new
                     Math::scal<T>(x_len, -1, x_new, 1);
 
                     // Calculate new derivative
                     obj->compute_f3D_reduced(x_new, t - dt, f_new);
 
-                    // F_new = x_new - 4/3 * x_previous + 1/3 * x_previous_previous - 2/3 * delta_t
+                    // F_new = x_new - 4/3 * x_previous + 1/3 *
+                    // x_previous_previous - 2/3 * delta_t
                     // * x_dot;
                     Math::copy<T>(x_len, x_new, 1, F_new, 1);
                     Math::axpy<T>(x_len, -4.0 / 3.0, it_start, 1, F_new, 1);
@@ -795,8 +773,8 @@ public:
                     Math::scal<T>(x_len, 1. / nrm, dx, 1);
                     Math::scal<T>(x_len, 1. / nrm, dF, 1);
                     // y := alpha*A*x + beta*y, dgemv operation
-                    Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1, J, x_len, dx, 1, 1,
-                                  dF, 1);  // using dF to store data
+                    Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1, J, x_len, dx, 1, 1, dF,
+                                  1);  // using dF to store data
                     Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
                     // F = F_new; interchanging pointers to avoid copy
@@ -834,8 +812,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter,
-                           T tol, size_t max_iter) {
+    static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         // std::cout << "Broyden started!\n" << std::endl;
 
         size_t x_len = obj->get_solution_dimension();
@@ -869,8 +846,8 @@ public:
             // f_old = f(t(n-1), x_previous');
             obj->compute_f3D_reduced(it_start, t, f_old);
 
-            // in case the velocity is 0 add nuggets to avoid singular matrices (slow check for
-            // improvement) f_old(abs(f_old) < 0.001) = 0.001;
+            // in case the velocity is 0 add nuggets to avoid singular matrices
+            // (slow check for improvement) f_old(abs(f_old) < 0.001) = 0.001;
             val = eps * (2 * (1 + rand() % 2) - 3);
             transmutate_elements(f_old, 0, x_len, val, eps);
 
@@ -919,13 +896,15 @@ public:
                 Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
                 Math::copy<T>(x_len, F, 1, x_new, 1);
                 Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', x_len, 1, J_tmp, x_len, piv, x_new, 1);
-                Math::axpy<T>(x_len, -1, x, 1, x_new, 1);  // result here is -x_new
+                Math::axpy<T>(x_len, -1, x, 1, x_new,
+                              1);  // result here is -x_new
                 Math::scal<T>(x_len, -1, x_new, 1);
 
                 // Calculate new derivative
                 obj->compute_f3D_reduced(x_new, t, f_new);
 
-                // F_new = x_new - x_previous - delta_t * 0.5 * (x_dot + x_dot_previous);
+                // F_new = x_new - x_previous - delta_t * 0.5 * (x_dot +
+                // x_dot_previous);
                 Math::copy<T>(x_len, x_new, 1, F_new, 1);
                 Math::axpy<T>(x_len, -1, it_start, 1, F_new, 1);
                 Math::axpy<T>(x_len, -dt / 2.0, f_new, 1, F_new, 1);
@@ -981,13 +960,8 @@ public:
     /**
      * \brief newton loop for the 11 Dof system
      */
-    static void Newton(C* obj /**< instance of 11dof class*/,
-                       T* force /**< pointer to force vector (not from 11dof class)*/,
-                       T* J /**< pointer to Jacobian from 11dofClass*/,
-                       T* res /**< residual from 11Dof class*/,
-                       T* res_norm /**< norm of the residual from the 11 Dof class*/,
-                       T* u_n_p_1 /**< current position vector*/,
-                       T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/
+    static void Newton(C* obj /**< instance of 11dof class*/, T* force /**< pointer to force vector (not from 11dof class)*/, T* J /**< pointer to Jacobian from 11dofClass*/, T* res /**< residual from 11Dof class*/, T* res_norm /**< norm of the residual from the 11 Dof class*/, T* u_n_p_1 /**< current position vector*/, T* temp /**< pointer to temp vector from 11 dof class for stopping
+                                                                                                                                                                                                                                                                                                                                             criteria*/
     ) {
         int count = 0;
         T delta_norm = 1, delta_norm2 = 0;
@@ -1011,8 +985,8 @@ public:
             obj->updateSystem();
             // calculate the newton function
             obj->calcResidual(force);
-            // copy the new residual to a temp to check if newton has converged without losing
-            // residual
+            // copy the new residual to a temp to check if newton has converged
+            // without losing residual
             Math::copy<T>(Constants::DOF, res, 1, temp, 1);
             Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
             delta_norm2 = Math::nrm2<T>(Constants::DOF, temp, 1);
@@ -1026,8 +1000,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol,
-                    size_t max_iter) {
+    static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
         T* f_old = Math::malloc<T>(x_len);
         T* k1 = Math::malloc<T>(x_len);
@@ -1099,13 +1072,12 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void Linear_Backward_Euler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x,
-                                      size_t dim) {
+    static void Linear_Backward_Euler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
         /*
-         * This works for only symmetric positive definite A the provided matrix A would be
-         * overwritten and results stored in x computes the backward euler step of following form:
-         * Ax = B*x_prev + C*x_prev_prev + b
-         * A, B, C are coefficient of the euler formation matrix not implemented
+         * This works for only symmetric positive definite A the provided matrix
+         * A would be overwritten and results stored in x computes the backward
+         * euler step of following form: Ax = B*x_prev + C*x_prev_prev + b A, B,
+         * C are coefficient of the euler formation matrix not implemented
          */
         lapack_int status;
         // get A=LL^T
@@ -1123,19 +1095,16 @@ public:
     }
 
     /**
-     * linear backward Euler - C (Mass_matrix) diagonal matrix, considered as vector
-     * \param num_time_iter number of time steps to perform
-     * \param dt timestep
-     * \param x_previous previous solution
-     * \return new solution
+     * linear backward Euler - C (Mass_matrix) diagonal matrix, considered as
+     * vector \param num_time_iter number of time steps to perform \param dt
+     * timestep \param x_previous previous solution \return new solution
      */
-    static void Linear_Backward_Euler_diag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x,
-                                           size_t dim) {
+    static void Linear_Backward_Euler_diag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
         /*
-         * This works for only symmetric positive definite A the provided matrix A would be
-         * overwritten and results stored in x computes the backward euler step of following form:
-         * Ax = B*x_prev + C*x_prev_prev + b
-         * A, B, C are coefficient of the euler formation matrix not implemented
+         * This works for only symmetric positive definite A the provided matrix
+         * A would be overwritten and results stored in x computes the backward
+         * euler step of following form: Ax = B*x_prev + C*x_prev_prev + b A, B,
+         * C are coefficient of the euler formation matrix not implemented
          */
         lapack_int status;
         // get A=LL^T
@@ -1145,7 +1114,8 @@ public:
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, dim, dim, 1, B, dim, x_prev, 1, 0, x, 1);
 
         // u_n_p_1 += C * u_n_m_1 <=> u_n_p_1 += ((1/(h*h))*M)*(-u_n_m_1)
-        // cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim,1, C, dim, x_prev_prev, 1, 1, x, 1);
+        // cblas_dgemv(CblasRowMajor, CblasNoTrans, dim, dim,1, C, dim,
+        // x_prev_prev, 1, 1, x, 1);
         T vec_tmp[11];
         Math::vMul<T>(dim, C, x_prev_prev, vec_tmp);
         Math::axpy<T>(dim, 1, vec_tmp, 1, x, 1);
@@ -1164,10 +1134,7 @@ public:
      * \param[in] delta_t timestep
      * \param[in] mass mass
      */
-    static void Stoermer_Verlet_Position(T& x, const T v, const T F, const T delta_t,
-                                         const T mass) {
-        x += delta_t * v + delta_t * delta_t / (2 * mass) * F;
-    }
+    static void Stoermer_Verlet_Position(T& x, const T v, const T F, const T delta_t, const T mass) { x += delta_t * v + delta_t * delta_t / (2 * mass) * F; }
 
     /**
      * 2nd order Stoermer-Verlet algorithm to update the velocity of one scalar
@@ -1177,18 +1144,15 @@ public:
      * \param[in] delta_t timestep
      * \param[in] mass mass
      */
-    static void Stoermer_Verlet_Velocity(T& v, const T F, const T F_new, const T delta_t,
-                                         const T mass) {
-        v += delta_t / (2 * mass) * (F + F_new);
-    }
+    static void Stoermer_Verlet_Velocity(T& v, const T F, const T F_new, const T delta_t, const T mass) { v += delta_t / (2 * mass) * (F + F_new); }
 
-    static void Linear_BDF2(T* A, T* B, T* C, T* D, T* E, T* x_n, T* x_n_m_1, T* x_n_m_2,
-                            T* x_n_m_3, T* b, T* x_n_p_1, size_t dim) {
+    static void Linear_BDF2(T* A, T* B, T* C, T* D, T* E, T* x_n, T* x_n_m_1, T* x_n_m_2, T* x_n_m_3, T* b, T* x_n_p_1, size_t dim) {
         /*
-         * This works for only symmetric positive definite A the provided matrix A would be
-         * overwritten and results stored in x computes the backward euler step of following form:
-         * A*x_n_p_1 = B*x_n + C*x_n_m_1 + D*x_n_m_2 + E*x_n_m_3 + b
-         * A, B, C are coefficient of the euler formation matrix not implemented
+         * This works for only symmetric positive definite A the provided matrix
+         * A would be overwritten and results stored in x computes the backward
+         * euler step of following form: A*x_n_p_1 = B*x_n + C*x_n_m_1 +
+         * D*x_n_m_2 + E*x_n_m_3 + b A, B, C are coefficient of the euler
+         * formation matrix not implemented
          */
         lapack_int status;
         // get A=LL^T

@@ -73,8 +73,7 @@ const std::shared_ptr<Model>& ProcessingEngine::addModel(const QUrl& modelFilePa
     return m_models.back();
 }
 
-vtkSmartPointer<vtkPolyData> ProcessingEngine::preprocessPolydata(
-    const vtkSmartPointer<vtkPolyData> inputData) const {
+vtkSmartPointer<vtkPolyData> ProcessingEngine::preprocessPolydata(const vtkSmartPointer<vtkPolyData> inputData) const {
     // Center the polygon
     double center[3];
     inputData->GetCenter(center);
@@ -82,8 +81,7 @@ vtkSmartPointer<vtkPolyData> ProcessingEngine::preprocessPolydata(
     vtkSmartPointer<vtkTransform> translation = vtkSmartPointer<vtkTransform>::New();
     translation->Translate(-center[0], -center[1], -center[2]);
 
-    vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter =
-        vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transformFilter->SetInputData(inputData);
     transformFilter->SetTransform(translation);
     transformFilter->Update();
@@ -132,8 +130,7 @@ void ProcessingEngine::updateModelsColor() const {
     }
 }
 
-std::shared_ptr<Model> ProcessingEngine::getModelFromActor(
-    const vtkSmartPointer<vtkActor> modelActor) const {
+std::shared_ptr<Model> ProcessingEngine::getModelFromActor(const vtkSmartPointer<vtkActor> modelActor) const {
     for (const std::shared_ptr<Model>& model : m_models) {
         if (model->getModelActor() == modelActor) {
             return model;
