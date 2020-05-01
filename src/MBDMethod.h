@@ -34,10 +34,6 @@ private:
     // Car Definition
 
     // bool use_interpolation;
-    T l_long_fl;
-    T l_long_fr;
-    T l_long_rl;
-    T l_long_rr;
     T l_lat_fl;
     T l_lat_fr;
     T l_lat_rl;
@@ -335,11 +331,6 @@ private:
 
         // Car Definition
 
-        l_long_fl = db.getLongitudalLegPositionFrontLeft();
-        l_long_fr = db.getLongitudalLegPositionFrontRight();
-        l_long_rl = db.getLongitudalLegPositionRearLeft();
-        l_long_rr = db.getLongitudalLegPositionRearRight();
-
         l_lat_fl = db.getLatidudalLegPositionFrontLeft();
         l_lat_fr = db.getLatidudalLegPositionFrontRight();
         l_lat_rl = db.getLatidudalLegPositionRearLeft();
@@ -380,11 +371,10 @@ private:
         int i;
 
         i = 0;
-        r_fl[i] = l_long_fl;
-        r_fr[i] = l_long_fr;
-        r_rl[i] = -l_long_rl;
-        r_rr[i] = -l_long_rr;
-        Ic[i * Constants::DIM + i] = I_body_xx;
+        r_fl[i] = db.getLongitudalLegPositionFrontLeft();
+        r_fr[i] = db.getLongitudalLegPositionFrontRight();
+        r_rl[i] = -db.getLongitudalLegPositionRearLeft();
+        r_rr[i] = -db.getLongitudalLegPositionRearRight();
 
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
