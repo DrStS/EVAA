@@ -33,7 +33,6 @@ private:
 
     // Car Definition
 
-    // bool use_interpolation;
     T I_body_xx;
     T I_body_yy;
     T I_body_zz;
@@ -323,7 +322,6 @@ private:
         solution_dim = db.getSolutionVectorSize();  /// this is by the formulation
         used_solver = db.getUsedSolverForMBD();
         boundary_conditions = db.getRoadConditions();
-        // use_interpolation = db.getUseInterpolation();
 
         // Car Definition
 
@@ -865,9 +863,10 @@ private:
         Math::get_basis<T>(qc_, cf_C_cN);
     }
 
+    /**
+     * Computes the stiffness from lookup table.
+     */
     void apply_stiffness_interpolation() {
-        /* Compute stiffness from lookup table*/
-#ifdef INTERPOLATION
         // populate the lenght_vector
         current_spring_lengths[0] = norm_r_up_fl;
         current_spring_lengths[1] = norm_r_low_fl;
@@ -890,7 +889,6 @@ private:
         lower_spring_stiffness[2] = stiffness_vector[5];
         upper_spring_stiffness[3] = stiffness_vector[6];
         lower_spring_stiffness[3] = stiffness_vector[7];
-#endif  // Interpolation compile flag, PLEASE USE THIS ONE ONLY !!!!!!!!!!!!!!!!!!!!!!!!!
     }
 
     void compute_angles() {
@@ -1874,7 +1872,9 @@ public:
         compute_spring_lengths(pcc_, pw_rr_, pt_rr_, cf_r_up_rr, cf_r_low_rr, this->r_rr,
                                norm_r_up_rr, inv_norm_r_up_rr, norm_r_low_rr, inv_norm_r_low_rr);
 
+#ifdef INTERPOLATION
         apply_stiffness_interpolation();
+#endif
 
         compute_angles();
 
