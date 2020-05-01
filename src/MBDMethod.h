@@ -133,7 +133,7 @@ private:
         const T* initial_lower_spring_length = db.getTyreSpringInitialLengthVector();
 
         T* global_z = Math::calloc<T>(Constants::DIM);
-        T* C_Nc = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        T* C_Nc = Math::calloc<T>(Constants::DIMDIM);
 
         // 1. qc = qc/norm(qc); This is in quaternions
         T nrm = Math::nrm2<T>(Constants::NUM_LEGS, initial_orientation_, 1);
@@ -266,7 +266,7 @@ private:
         r_fr = Math::calloc<T>(Constants::DIM);
         r_rl = Math::calloc<T>(Constants::DIM);
         r_rr = Math::calloc<T>(Constants::DIM);
-        Ic = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        Ic = Math::calloc<T>(Constants::DIMDIM);
         upper_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
         lower_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
         upper_spring_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
@@ -287,10 +287,10 @@ private:
         vt_rr = Math::calloc<T>(Constants::DIM);
         pcc = Math::calloc<T>(Constants::DIM);
         FC = Math::calloc<T>(Constants::DIM);
-        r_fl_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
-        r_fr_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
-        r_rl_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
-        r_rr_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        r_fl_tilda = Math::calloc<T>(Constants::DIMDIM);
+        r_fr_tilda = Math::calloc<T>(Constants::DIMDIM);
+        r_rl_tilda = Math::calloc<T>(Constants::DIMDIM);
+        r_rr_tilda = Math::calloc<T>(Constants::DIMDIM);
         FT_fl = Math::calloc<T>(Constants::DIM);
         FT_rr = Math::calloc<T>(Constants::DIM);
         FT_rl = Math::calloc<T>(Constants::DIM);
@@ -299,9 +299,9 @@ private:
         FW_rr = Math::calloc<T>(Constants::DIM);
         FW_rl = Math::calloc<T>(Constants::DIM);
         FW_fr = Math::calloc<T>(Constants::DIM);
-        A_Ic = Math::calloc<T>(Constants::DIM * Constants::DIM);
-        A_rem = Math::calloc<T>(Constants::DIM * Constants::DIM * Constants::DIM);
-        accelerations = Math::calloc<T>(Constants::DIM * Constants::DIM * Constants::DIM);
+        A_Ic = Math::calloc<T>(Constants::DIMDIM);
+        A_rem = Math::calloc<T>(Constants::DIMDIM * Constants::DIM);
+        accelerations = Math::calloc<T>(Constants::DIMDIM * Constants::DIM);
     }
 
     void ReadFromXML() {
@@ -392,7 +392,7 @@ private:
 
     void getCholeskyDecomposition() {
         // A_Ic has cholesky factorization of Ic
-        Math::copy<T>(Constants::DIM * Constants::DIM, Ic, 1, A_Ic, 1);
+        Math::copy<T>(Constants::DIMDIM, Ic, 1, A_Ic, 1);
         Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', Constants::DIM, A_Ic, Constants::DIM);
     }
 
@@ -570,7 +570,7 @@ private:
         // add to members
         ///// All the members belong to compute f function and are kind of nasty
         //// cf_* means parameter used in compute f function
-        cf_C_cN = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        cf_C_cN = Math::calloc<T>(Constants::DIMDIM);
         cf_r_up_fl = Math::calloc<T>(Constants::DIM);
         cf_r_up_fr = Math::calloc<T>(Constants::DIM);
         cf_r_up_rl = Math::calloc<T>(Constants::DIM);
@@ -653,13 +653,13 @@ private:
         cf_Hc = Math::calloc<T>(Constants::DIM);
         cf_sum_torque_spring_car = Math::calloc<T>(Constants::DIM);
         cf_Tc = Math::calloc<T>(Constants::DIM);
-        cf_wc_tilda = Math::calloc<T>(Constants::DIM * Constants::DIM);
+        cf_wc_tilda = Math::calloc<T>(Constants::DIMDIM);
 
         cf_Tc[0] = 0;
         cf_Tc[1] = 0;
         cf_Tc[2] = 0;
 
-        cf_b_rem = Math::calloc<T>(Constants::DIM * Constants::DIM * Constants::DIM);
+        cf_b_rem = Math::calloc<T>(Constants::DIMDIM * Constants::DIM);
         cf_Qc = Math::calloc<T>(Constants::NUM_LEGS * Constants::DIM);
         cf_qc_dot = Math::calloc<T>(Constants::NUM_LEGS);
 

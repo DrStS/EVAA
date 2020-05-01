@@ -252,7 +252,7 @@ public:
         massComponents = Math::malloc<T>(Constants::VEC_DIM);
         angle_CG = Math::malloc<T>(Constants::DIM);
         w_CG = Math::malloc<T>(Constants::DIM);
-        momentOfInertia = Math::malloc<T>(Constants::DIM * Constants::DIM);
+        momentOfInertia = Math::malloc<T>(Constants::DIMDIM);
 
         // Initial Params for Global coordinate
 
@@ -270,7 +270,7 @@ public:
         l_lat = Math::malloc<T>(Constants::NUM_LEGS);
         l_long = Math::malloc<T>(Constants::NUM_LEGS);
         unexcitedSpringsLength = Math::malloc<T>(2 * Constants::NUM_LEGS);
-        currentCIRTwoTrackModel = Math::malloc<T>(Constants::DIM * Constants::DIM);
+        currentCIRTwoTrackModel = Math::malloc<T>(Constants::DIMDIM);
         currentSpringsLength = Math::malloc<T>(2 * Constants::NUM_LEGS);
         tyre_index_set = Math::malloc<size_t>(Constants::NUM_LEGS);
         currentPositionTwoTrackModel = Math::malloc<T>(Constants::DOF);
@@ -279,7 +279,7 @@ public:
         // Memory allocation for interpolator
 
         currentCornerPositions = Math::malloc<T>(Constants::NUM_LEGS * Constants::DIM);
-        currentRotationMatrix = Math::malloc<T>(Constants::DIM * Constants::DIM);
+        currentRotationMatrix = Math::malloc<T>(Constants::DIMDIM);
         relativeCornerPositions = Math::malloc<T>(Constants::NUM_LEGS * Constants::DIM);
         angle_buffer = Math::malloc<T>(Constants::DIM);
         pos_buffer = Math::malloc<T>(Constants::DIM);
@@ -296,8 +296,7 @@ public:
 
         Math::copy<T>(Constants::NUM_LEGS, db.getLatidudalLegPositionVector(), 1, l_lat, 1);
 
-        Math::copy<T>(Constants::DIM * Constants::DIM, db.getMomentOfInertiaVector(), 1,
-                      momentOfInertia, 1);
+        Math::copy<T>(Constants::DIMDIM, db.getMomentOfInertiaVector(), 1, momentOfInertia, 1);
 
         // TODO: Current order [CG, W W W W T T T T] does not perform at its best for the [W+T] part
         // (alignment is not to 64). Rework the formulation to put CG at the end.

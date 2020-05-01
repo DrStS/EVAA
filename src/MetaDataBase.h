@@ -642,7 +642,7 @@ private:
     T _l_lat[Constants::NUM_LEGS];
     T _vehicleCIR[Constants::DIM];
     T _mass_body;
-    T _I_body[9];
+    T _I_body[Constants::DIMDIM];
     T _mass[2 * Constants::NUM_LEGS];
     T _lower_spring_length[Constants::NUM_LEGS];
     T _upper_spring_length[Constants::NUM_LEGS];
