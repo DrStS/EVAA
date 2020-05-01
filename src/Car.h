@@ -299,15 +299,12 @@ public:
         Math::copy<T>(Constants::DIM * Constants::DIM, db.getMomentOfInertiaVector(), 1,
                       momentOfInertia, 1);
 
+        // TODO: Current order [CG, W W W W T T T T] does not perform at its best for the [W+T] part
+        // (alignment is not to 64). Rework the formulation to put CG at the end.
         massComponents[0] = db.getBodyMass();
-        massComponents[1] = db.getWheelMassFrontLeft();
-        massComponents[2] = db.getTyreMassFrontLeft();
-        massComponents[3] = db.getWheelMassFrontRight();
-        massComponents[4] = db.getTyreMassFrontRight();
-        massComponents[5] = db.getWheelMassRearLeft();
-        massComponents[6] = db.getTyreMassRearLeft();
-        massComponents[7] = db.getWheelMassRearRight();
-        massComponents[8] = db.getTyreMassRearRight();
+        Math::copy<T>(2 * Constants::NUM_LEGS, db.getWheelTyreMassVector(), 1, massComponents + 1,
+                      1);
+
         massFullCar = getMassFullCar();
 
         unexcitedSpringsLength[0] = db.getBodySpringLengthFrontLeft();
