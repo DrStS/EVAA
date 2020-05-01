@@ -354,6 +354,8 @@ private:
         Math::copy(Constants::DIM, db.getMomentOfInertiaVector(), Constants::DIM + 1, Ic,
                    Constants::DIM + 1);
 
+        Math::copy(Constants::DIM, db.getBodyInitialVelocity(), 1, vc, 1);
+
         int i;
 
         i = 0;
@@ -362,7 +364,6 @@ private:
         r_rl[i] = -db.getLongitudalLegPositionRearLeft();
         r_rr[i] = -db.getLongitudalLegPositionRearRight();
 
-        vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i];
         FT_fl[i] = db.getTyreExternalForceFrontLeft()[i];
@@ -379,7 +380,6 @@ private:
         r_fr[i] = db.getLatidudalLegPositionFrontRight();
         r_rl[i] = -db.getLatidudalLegPositionRearLeft();
         r_rr[i] = db.getLatidudalLegPositionRearRight();
-        vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i];
         FT_fl[i] = db.getTyreExternalForceFrontLeft()[i];
@@ -396,7 +396,6 @@ private:
         r_fr[i] = 0;
         r_rl[i] = 0;
         r_rr[i] = 0;
-        vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
         FC[i] = db.getBodyExternalForce()[i] - db.getBodyMass() * g;
         FT_fl[i] = db.getTyreExternalForceFrontLeft()[i] - db.getTyreMassFrontLeft() * g;
