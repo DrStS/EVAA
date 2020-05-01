@@ -356,6 +356,15 @@ private:
 
         Math::copy(Constants::DIM, db.getBodyInitialVelocity(), 1, vc, 1);
         Math::copy(Constants::DIM, db.getBodyInitialPosition(), 1, pcc, 1);
+        Math::copy(Constants::DIM, db.getBodyExternalForce(), 1, FC, 1);
+        Math::copy(Constants::DIM, db.getTyreExternalForceFrontLeft(), 1, FT_fl, 1);
+        Math::copy(Constants::DIM, db.getTyreExternalForceFrontRight(), 1, FT_fr, 1);
+        Math::copy(Constants::DIM, db.getTyreExternalForceRearLeft(), 1, FT_rl, 1);
+        Math::copy(Constants::DIM, db.getTyreExternalFrontRearRight(), 1, FT_rr, 1);
+        Math::copy(Constants::DIM, db.getWheelExternalForceFrontLeft(), 1, FW_fl, 1);
+        Math::copy(Constants::DIM, db.getWheelExternalForceFrontRight(), 1, FW_fr, 1);
+        Math::copy(Constants::DIM, db.getWheelExternalForceRearLeft(), 1, FW_rl, 1);
+        Math::copy(Constants::DIM, db.getWheelExternalForceRearRight(), 1, FW_rr, 1);
 
         int i;
 
@@ -365,45 +374,26 @@ private:
         r_rl[i] = -db.getLongitudalLegPositionRearLeft();
         r_rr[i] = -db.getLongitudalLegPositionRearRight();
 
-        FC[i] = db.getBodyExternalForce()[i];
-        FT_fl[i] = db.getTyreExternalForceFrontLeft()[i];
-        FT_fr[i] = db.getTyreExternalForceFrontRight()[i];
-        FT_rl[i] = db.getTyreExternalForceRearLeft()[i];
-        FT_rr[i] = db.getTyreExternalForceRearRight()[i];
-        FW_fl[i] = db.getWheelExternalForceFrontLeft()[i];
-        FW_fr[i] = db.getWheelExternalForceFrontRight()[i];
-        FW_rl[i] = db.getWheelExternalForceRearLeft()[i];
-        FW_rr[i] = db.getWheelExternalForceRearRight()[i];
-
         i = 1;
         r_fl[i] = -db.getLatidudalLegPositionFrontLeft();
         r_fr[i] = db.getLatidudalLegPositionFrontRight();
         r_rl[i] = -db.getLatidudalLegPositionRearLeft();
         r_rr[i] = db.getLatidudalLegPositionRearRight();
-        FC[i] = db.getBodyExternalForce()[i];
-        FT_fl[i] = db.getTyreExternalForceFrontLeft()[i];
-        FT_fr[i] = db.getTyreExternalForceFrontRight()[i];
-        FT_rl[i] = db.getTyreExternalForceRearLeft()[i];
-        FT_rr[i] = db.getTyreExternalForceRearRight()[i];
-        FW_fl[i] = db.getWheelExternalForceFrontLeft()[i];
-        FW_fr[i] = db.getWheelExternalForceFrontRight()[i];
-        FW_rl[i] = db.getWheelExternalForceRearLeft()[i];
-        FW_rr[i] = db.getWheelExternalForceRearRight()[i];
 
         i = 2;
         r_fl[i] = 0;
         r_fr[i] = 0;
         r_rl[i] = 0;
         r_rr[i] = 0;
-        FC[i] = db.getBodyExternalForce()[i] - db.getBodyMass() * g;
-        FT_fl[i] = db.getTyreExternalForceFrontLeft()[i] - db.getTyreMassFrontLeft() * g;
-        FT_fr[i] = db.getTyreExternalForceFrontRight()[i] - db.getTyreMassFrontRight() * g;
-        FT_rl[i] = db.getTyreExternalForceRearLeft()[i] - db.getTyreMassRearLeft() * g;
-        FT_rr[i] = db.getTyreExternalForceRearRight()[i] - db.getTyreMassRearRight() * g;
-        FW_fl[i] = db.getWheelExternalForceFrontLeft()[i] - db.getWheelMassFrontLeft() * g;
-        FW_fr[i] = db.getWheelExternalForceFrontRight()[i] - db.getWheelMassFrontRight() * g;
-        FW_rl[i] = db.getWheelExternalForceRearLeft()[i] - db.getWheelMassRearLeft() * g;
-        FW_rr[i] = db.getWheelExternalForceRearRight()[i] - db.getWheelMassRearRight() * g;
+        FC[i] -= db.getBodyMass() * g;
+        FT_fl[i] -= db.getTyreMassFrontLeft() * g;
+        FT_fr[i] -= db.getTyreMassFrontRight() * g;
+        FT_rl[i] -= db.getTyreMassRearLeft() * g;
+        FT_rr[i] -= db.getTyreMassRearRight() * g;
+        FW_fl[i] -= db.getWheelMassFrontLeft() * g;
+        FW_fr[i] -= db.getWheelMassFrontRight() * g;
+        FW_rl[i] -= db.getWheelMassRearLeft() * g;
+        FW_rr[i] -= db.getWheelMassRearRight() * g;
     }
 
     void getCholeskyDecomposition() {
