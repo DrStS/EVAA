@@ -84,8 +84,8 @@ public:
         const auto twoTrackModel = settings->VehicleXML().TwoTrackModelXML();
 
         _mass_body = twoTrackModel.MassXML().BodyXML();
-        readLegs(_mass_wheel, twoTrackModel.MassXML().UnsprungMassXML());
-        readLegs(_mass_tyre, twoTrackModel.MassXML().TyreXML());
+        readLegs(_mass, 2, twoTrackModel.MassXML().UnsprungMassXML());
+        readLegs(_mass + 1, 2, twoTrackModel.MassXML().TyreXML());
         _I_body[0] = twoTrackModel.InertiaXML().XX();
         _I_body[1] = twoTrackModel.InertiaXML().XY();
         _I_body[2] = twoTrackModel.InertiaXML().XZ();
@@ -293,19 +293,21 @@ public:
 
     inline T* getPositionCenterOfInstantaneousRotation() { return _vehicleCIR; }
 
-    inline T getTyreMassFrontLeft() const { return _mass_tyre[Constants::FRONT_LEFT]; }
-    inline T getTyreMassFrontRight() const { return _mass_tyre[Constants::FRONT_RIGHT]; }
-    inline T getTyreMassRearLeft() const { return _mass_tyre[Constants::REAR_LEFT]; }
-    inline T getTyreMassRearRight() const { return _mass_tyre[Constants::REAR_RIGHT]; }
-    // vector in the format fl fr rl rr
-    inline T* getTyreMassVector() { return _mass_tyre; }
+    inline T getTyreMassFrontLeft() const { return _mass[2 * Constants::FRONT_LEFT + 1]; }
+    inline T getTyreMassFrontRight() const { return _mass[2 * Constants::FRONT_RIGHT + 1]; }
+    inline T getTyreMassRearLeft() const { return _mass[2 * Constants::REAR_LEFT + 1]; }
+    inline T getTyreMassRearRight() const { return _mass[2 * Constants::REAR_RIGHT + 1]; }
 
-    inline T getWheelMassFrontLeft() const { return _mass_wheel[Constants::FRONT_LEFT]; }
-    inline T getWheelMassFrontRight() const { return _mass_wheel[Constants::FRONT_RIGHT]; }
-    inline T getWheelMassRearLeft() const { return _mass_wheel[Constants::REAR_LEFT]; }
-    inline T getWheelMassRearRight() const { return _mass_wheel[Constants::REAR_RIGHT]; }
-    // vector in the format fl fr rl rr
-    inline T* getWheelMassVector() { return _mass_wheel; }
+    inline T getWheelMassFrontLeft() const { return _mass[2 * Constants::FRONT_LEFT]; }
+    inline T getWheelMassFrontRight() const { return _mass[2 * Constants::FRONT_RIGHT]; }
+    inline T getWheelMassRearLeft() const { return _mass[2 * Constants::REAR_LEFT]; }
+    inline T getWheelMassRearRight() const { return _mass[2 * Constants::REAR_RIGHT]; }
+
+    /**
+     * Returns the leg mass vector.
+     * \return A mass vector in format [W_fl, T_fl, W_fr, T_fr, W_rl, T_rl, W_rr, T_rr]
+     */
+    inline const T* getWheelTyreMassVector() { return _mass; }
 
     inline T getBodyMass() const { return _mass_body; }
 
@@ -567,7 +569,7 @@ private:
      * \brief Reads 4 legs which contain each EVAA::Constants::DIM vectors.
      * Reads the vectors of the positions of the legs relative to the center of mass.
      * \param vec XML parser
-     * \return storage all components in one vector with 12 elements [rr:XYZ,rl:XYZ,fl:XYZ,rl:XYZ]
+     * \return storage all components in one vector with 12 elements [fl:XYZ,fr:XYZ,rl:XYZ,rr:XYZ]
      */
     template <typename S>
     void readVectorLegs(T* storage, S vec) {
@@ -580,15 +582,27 @@ private:
     /**
      * \brief Read 4 legs which contain each 1 T.
      * Reads paramaters which are given for all the legs.
-     * \param vec XML parser
-     * \return storage all components in one vector with 4 elements [rr,rl,fl,rl]
+     * \param[in] vec XML parser
+     * \param[out] storage all components in one vector with 4 consecutive elements [fl,fr,rl,rr]
      */
     template <typename S>
     void readLegs(T* storage, S vec) {
-        storage[Constants::FRONT_LEFT] = vec.FrontLeft();
-        storage[Constants::FRONT_RIGHT] = vec.FrontRight();
-        storage[Constants::REAR_LEFT] = vec.ReerLeft();
-        storage[Constants::REAR_RIGHT] = vec.ReerRight();
+        readLegs(storage, 1, vec);
+    }
+
+    /**
+     * \brief Read 4 legs which contain each 1 T with increment in output storage.
+     * Reads paramaters which are given for all the legs.
+     * \param[in] vec XML parser
+     * \param[in] inc increment in storage
+     * \param[out] storage components in one vector at indices 0, inc, 2*inc, 3*inc [fl,fr,rl,rr]
+     */
+    template <typename S>
+    void readLegs(T* storage, size_t inc, S vec) {
+        storage[Constants::FRONT_LEFT * inc] = vec.FrontLeft();
+        storage[Constants::FRONT_RIGHT * inc] = vec.FrontRight();
+        storage[Constants::REAR_LEFT * inc] = vec.ReerLeft();
+        storage[Constants::REAR_RIGHT * inc] = vec.ReerRight();
     }
 
     /**
@@ -629,8 +643,7 @@ private:
     T _vehicleCIR[Constants::DIM];
     T _mass_body;
     T _I_body[9];
-    T _mass_tyre[Constants::NUM_LEGS];
-    T _mass_wheel[Constants::NUM_LEGS];
+    T _mass[2 * Constants::NUM_LEGS];
     T _lower_spring_length[Constants::NUM_LEGS];
     T _upper_spring_length[Constants::NUM_LEGS];
     T _initial_lower_spring_length[Constants::NUM_LEGS];
