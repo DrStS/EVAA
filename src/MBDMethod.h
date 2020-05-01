@@ -44,7 +44,6 @@ private:
 
     // External Forces terms
 
-    T g;
     T* FC;
     T *FT_fl, *FT_fr, *FT_rl, *FT_rr;
     T *FW_fl, *FW_fr, *FW_rl, *FW_rr;
@@ -322,7 +321,7 @@ private:
 
         // Car Definition
 
-        g = db.getGravityField()[2];
+        T g = db.getGravityField()[2];
 
         // Fill up vectors
         Math::copy(Constants::NUM_LEGS, db.getBodyStiffnessVector(), 1, upper_spring_stiffness, 1);
