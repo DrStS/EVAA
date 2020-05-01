@@ -3,11 +3,11 @@
 ---
 BasedOnStyle: Google
 
-# Keep comments at 100.
+# Keep comments at 1000.
 ReflowComments: true
 
 # Enforce max line length.
-ColumnLimit: 100
+ColumnLimit: 1000
 
 # Indent
 IndentWidth: 4

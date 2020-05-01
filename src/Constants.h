@@ -5,24 +5,24 @@
 namespace EVAA {
 namespace Constants {
 /** alignment for mkl malloc */
-constexpr int ALIGNMENT = 64;
+constexpr size_t ALIGNMENT = 64;
 
 // consider Constants::DIM = 4 for efficiency!!!
 // 10 Constants::DIMensions because of torque of the body
 /** dimension of solution space */
-constexpr int DIM = 3;
+constexpr size_t DIM = 3;
 
 /** [CG, Wi, Ti] (9 positions / vectors for CG, wheels and tyres) */
-constexpr int VEC_DIM = 9;
+constexpr size_t VEC_DIM = 9;
 
 /** MKL constant incx */
-constexpr int INCX = 1;
+constexpr size_t INCX = 1;
 
 /** number of tyres, wheels, legs */
-constexpr int NUM_LEGS = 4;
+constexpr size_t NUM_LEGS = 4;
 
 /** Degrees of Freedom in the Eulerian Frame */
-constexpr int DOF = 11;
+constexpr size_t DOF = 11;
 
 // TODO: FIX the single precision problem
 #ifdef DOUBLE_PRECISION
@@ -33,17 +33,18 @@ using floatEVAA = float;
 
 constexpr floatEVAA TOLERANCE = 1.e-8;
 
-constexpr int DOFDOF = 121;
+constexpr size_t DOFDOF = 121;
+constexpr size_t DIMDIM = 9;
 
 /** Convention order for front left leg/wheel/tire. */
-constexpr int FRONT_LEFT = 0;
+constexpr size_t FRONT_LEFT = 0;
 /** Convention order for front right leg/wheel/tire. */
-constexpr int FRONT_RIGHT = 1;
+constexpr size_t FRONT_RIGHT = 1;
 /** Convention order for rear left leg/wheel/tire. */
-constexpr int REAR_LEFT = 2;
+constexpr size_t REAR_LEFT = 2;
 /** Convention order for rear right leg/wheel/tire. */
-constexpr int REAR_RIGHT = 3;
+constexpr size_t REAR_RIGHT = 3;
 /** It's PI come on */
-const double PI = 3.141592653589793238463;
+const floatEVAA PI = 3.141592653589793238463;
 };  // namespace Constants
 }  // namespace EVAA

@@ -48,8 +48,7 @@ public:
         double targetPositionY{0};
     } TranslateParams_t;
 
-    CommandModelTranslate(QVTKFramebufferObjectRenderer *vtkFboRenderer,
-                          const TranslateParams_t &translateVector, bool inTransition);
+    CommandModelTranslate(QVTKFramebufferObjectRenderer *vtkFboRenderer, const TranslateParams_t &translateVector, bool inTransition);
 
     bool isReady() const override;
     void execute() override;

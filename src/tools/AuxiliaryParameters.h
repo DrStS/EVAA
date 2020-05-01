@@ -27,15 +27,13 @@
 
 #pragma once
 
-#if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || \
-    (defined(__ICC) && (__ICC >= 600)) || defined(__ghs__)
+#if defined(__GNUC__) || (defined(__MWERKS__) && (__MWERKS__ >= 0x3000)) || (defined(__ICC) && (__ICC >= 600)) || defined(__ghs__)
 #define CURRENT_FUNCTION __PRETTY_FUNCTION__
 #elif defined(__DMC__) && (__DMC__ >= 0x810)
 #define CURRENT_FUNCTION __PRETTY_FUNCTION__
 #elif defined(__FUNCSIG__)
 #define CURRENT_FUNCTION __FUNCSIG__
-#elif (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 600)) || \
-    (defined(__IBMCPP__) && (__IBMCPP__ >= 500))
+#elif (defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 600)) || (defined(__IBMCPP__) && (__IBMCPP__ >= 500))
 #define CURRENT_FUNCTION __FUNCTION__
 #elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x550)
 #define CURRENT_FUNCTION __FUNC__
@@ -51,7 +49,8 @@
 
 namespace EVAA {
 /**
- * \brief Class AuxiliaryParameters provides a central place for STACCATO wide parameters
+ * \brief Class AuxiliaryParameters provides a central place for STACCATO wide
+ * parameters
  */
 class AuxiliaryParameters {
 public:
@@ -61,8 +60,8 @@ public:
     /// How many threads are used for the element loop
     static const int denseVectorMatrixThreads;
 
-    /// Machine epsilon (the difference between 1 and the least value greater than 1 that is
-    /// representable).
+    /// Machine epsilon (the difference between 1 and the least value greater
+    /// than 1 that is representable).
     static const double machineEpsilon;
 
     /// Git hash is determined during configure by cmake
