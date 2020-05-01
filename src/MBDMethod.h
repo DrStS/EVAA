@@ -481,46 +481,38 @@ private:
     /**
      * Fixes the tyres to their initial position
      * The forces acting on the tyres are now always zero
-     * \param v is the velocity of the tyre
-     * \param m is the mass of the tyre
-     * \param p is the global position of the tyre
-     * \result Fr The only force acting on the tyre
+     * \param[out] Fr_fl The force acting on the fl tyre
+     * \param[out] Fr_fr The force acting on the fr tyre
+     * \param[out] Fr_rl The force acting on the rl tyre
+     * \param[out] Fr_rr The force acting on the rr tyre
      */
     void get_fixed_road_force(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr) {
-        Fr_fl[0] = 0;
-        Fr_fl[1] = 0;
-        Fr_fl[2] = 0;
-
-        Fr_fr[0] = 0;
-        Fr_fr[1] = 0;
-        Fr_fr[2] = 0;
-
-        Fr_rl[0] = 0;
-        Fr_rl[1] = 0;
-        Fr_rl[2] = 0;
-
-        Fr_rr[0] = 0;
-        Fr_rr[1] = 0;
-        Fr_rr[2] = 0;
+        for (auto i = 0; i < Constants::DIM; i++) {
+            Fr_fl[i] = 0;
+            Fr_fr[i] = 0;
+            Fr_rl[i] = 0;
+            Fr_rr[i] = 0;
+        }
     }
 
     /**
      * No interaction with the road, no additional forces on the tyres
-     * \param v is the velocity of the tyre
-     * \param m is the mass of the tyre
-     * \param p is the global position of the tyre
-     * \result Fr The only force acting on the tyre
+     * \param[out] Fr_fl The force acting on the fl tyre
+     * \param[out] Fr_fr The force acting on the fr tyre
+     * \param[out] Fr_rl The force acting on the rl tyre
+     * \param[out] Fr_rr The force acting on the rr tyre
+     * TODO: implement method
      */
     void get_nonfixed_road_force(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr) {}
 
     /**
      * calculates the force in the tyre only with respect to its velocity, mass and position
-     * \param v is the velocity of the tyre
-     * \param m is the mass of the tyre
-     * \param p is the global position of the tyre
-     * \result Fr The only force acting on the tyre
+     * \param[out] Fr The only force acting on the tyre
+     * \param[in] v is the velocity of the tyre
+     * \param[in] m is the mass of the tyre
+     * \param[in] p is the global position of the tyre
      */
-    void get_circular_road_force(T* Fr, T* v, T& m, T* p) {
+    void get_circular_road_force(T* Fr, const T* v, const T& m, const T* p) {
         T *unit_z_vector, *velocity_direction_tyre;
         T velocity_magnitude_tyre, inv_radius, force_magnitude_tyre;
 
