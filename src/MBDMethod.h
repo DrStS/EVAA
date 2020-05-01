@@ -30,7 +30,6 @@ private:
     // Environment conditions
 
     BoundaryConditionRoad boundary_conditions;
-    T radius_circular_path;
     T* center_of_circle;
 
     // Car Definition
@@ -345,7 +344,6 @@ private:
         solution_dim = db.getSolutionVectorSize();  /// this is by the formulation
         used_solver = db.getUsedSolverForMBD();
         boundary_conditions = db.getRoadConditions();
-        radius_circular_path = db.getCircularRoadRadius();
         // use_interpolation = db.getUseInterpolation();
 
         // Car Definition
@@ -513,7 +511,7 @@ private:
      */
     void circular_path_initialization(T* vc, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr, T* vt_fl,
                                       T* vt_fr, T* vt_rl, T* vt_rr, T* omega, T* pcc, T* pt_fl,
-                                      T* pt_fr, T* pt_rl, T* pt_rr, T& radius_param) {
+                                      T* pt_fr, T* pt_rl, T* pt_rr) {
         const MKL_INT dim = Constants::DIM;
         const MKL_INT incx = 1;
 
@@ -536,10 +534,10 @@ private:
         // vector out of the XY-plane (unit Z direction)
         perpendicular_dir[2] = 1;
 
-        if (abs(radius - radius_param) > 0.1)
+        if (abs(radius - db.getCircularRoadRadius()) > 0.1)
             std::cout << "Warning! the initial position of the car is not on the trajectory "
                          "provided in the circular path. \n The expected radius is "
-                      << radius_circular_path << ", but the car is at an initial distance of "
+                      << db.getCircularRoadRadius() << ", but the car is at an initial distance of "
                       << radius
                       << " from the center of the circle.\n The execution procedes with the "
                          "current spatial configuration and with the current distance to the "
@@ -1790,7 +1788,7 @@ public:
         if (boundary_conditions == BoundaryConditionRoad::CIRCULAR)
             circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr,
                                          initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_,
-                                         pt_rr_, radius_circular_path);
+                                         pt_rr_);
         i = 0;
         j = 0;
         // wc
