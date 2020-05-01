@@ -257,21 +257,25 @@ public:
     inline T getTyreStiffnessFrontRight() const { return _k_tyre[Constants::FRONT_RIGHT]; }
     inline T getTyreStiffnessRearLeft() const { return _k_tyre[Constants::REAR_LEFT]; }
     inline T getTyreStiffnessRearRight() const { return _k_tyre[Constants::REAR_RIGHT]; }
+    inline const T* getTyreStiffnessVector() const { return _k_tyre; }
 
     inline T getBodyStiffnessFrontLeft() const { return _k_body[Constants::FRONT_LEFT]; }
     inline T getBodyStiffnessFrontRight() const { return _k_body[Constants::FRONT_RIGHT]; }
     inline T getBodyStiffnessRearLeft() const { return _k_body[Constants::REAR_LEFT]; }
     inline T getBodyStiffnessRearRight() const { return _k_body[Constants::REAR_RIGHT]; }
+    inline const T* getBodyStiffnessVector() const { return _k_body; }
 
     inline T getTyreDampingFrontLeft() const { return _c_tyre[Constants::FRONT_LEFT]; }
     inline T getTyreDampingFrontRight() const { return _c_tyre[Constants::FRONT_RIGHT]; }
     inline T getTyreDampingRearLeft() const { return _c_tyre[Constants::REAR_LEFT]; }
     inline T getTyreDampingRearRight() const { return _c_tyre[Constants::REAR_RIGHT]; }
+    inline const T* getTyreDampingVector() const { return _c_tyre; }
 
     inline T getBodyDampingFrontLeft() const { return _c_body[Constants::FRONT_LEFT]; }
     inline T getBodyDampingFrontRight() const { return _c_body[Constants::FRONT_RIGHT]; }
     inline T getBodyDampingRearLeft() const { return _c_body[Constants::REAR_LEFT]; }
     inline T getBodyDampingRearRight() const { return _c_body[Constants::REAR_RIGHT]; }
+    inline const T* getBodyDampingVector() const { return _c_body; }
 
     inline T getLongitudalLegPositionFrontLeft() const { return _l_long[Constants::FRONT_LEFT]; }
     inline T getLongitudalLegPositionFrontRight() const { return _l_long[Constants::FRONT_RIGHT]; }
