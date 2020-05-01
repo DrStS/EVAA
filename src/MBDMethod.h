@@ -359,7 +359,7 @@ private:
         Math::copy(Constants::DIM, db.getTyreExternalForceFrontLeft(), 1, FT_fl, 1);
         Math::copy(Constants::DIM, db.getTyreExternalForceFrontRight(), 1, FT_fr, 1);
         Math::copy(Constants::DIM, db.getTyreExternalForceRearLeft(), 1, FT_rl, 1);
-        Math::copy(Constants::DIM, db.getTyreExternalFrontRearRight(), 1, FT_rr, 1);
+        Math::copy(Constants::DIM, db.getTyreExternalForceRearRight(), 1, FT_rr, 1);
         Math::copy(Constants::DIM, db.getWheelExternalForceFrontLeft(), 1, FW_fl, 1);
         Math::copy(Constants::DIM, db.getWheelExternalForceFrontRight(), 1, FW_fr, 1);
         Math::copy(Constants::DIM, db.getWheelExternalForceRearLeft(), 1, FW_rl, 1);
