@@ -207,7 +207,8 @@ public:
                 _num_time_iter, _timestep, sinusoidalProfile.rightTyre().amplitude(),
                 sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(),
                 sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(),
-                sinusoidalProfile.leftTyre().shift());  // TODO: free memory without leaks
+                sinusoidalProfile.leftTyre().shift(), _initial_upper_spring_length,
+                _initial_lower_spring_length, _l_lat, _l_long);  // TODO: free memory without leaks
 
             T initialVelocity = sqrt(_initial_vel_body[0] * _initial_vel_body[0] +
                                      _initial_vel_body[1] * _initial_vel_body[1]);
@@ -228,17 +229,11 @@ public:
 
             _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(),
                                                wayPointsTimes.data());
-            _trajectory->calculateTyreShifts(
-                _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
-                _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT]);
+            _trajectory->calculateTyreShifts();
             _trajectory->calculateTravelledDistance();
             _trajectory->calculateAngles();
             _trajectory->calculateAccelerationsCenterOfGravity();
-            _trajectory->calculateAccelerationsLegs(
-                _l_long[Constants::FRONT_LEFT], _l_long[Constants::FRONT_RIGHT],
-                _l_long[Constants::REAR_LEFT], _l_long[Constants::REAR_RIGHT],
-                _l_lat[Constants::FRONT_LEFT], _l_lat[Constants::FRONT_RIGHT],
-                _l_lat[Constants::REAR_LEFT], _l_lat[Constants::REAR_RIGHT]);
+            _trajectory->calculateAccelerationsLegs();
 
             _trajectory->calculateVerticalAccelerations();
         }
