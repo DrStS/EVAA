@@ -44,13 +44,9 @@ private:
     T k_tyre_rot_fr;
     T k_tyre_rot_rl;
     T k_tyre_rot_rr;
-    T c_body_fl;
     T c_tyre_fl;
-    T c_body_fr;
     T c_tyre_fr;
-    T c_body_rl;
     T c_tyre_rl;
-    T c_body_rr;
     T c_tyre_rr;
     T l_long_fl;
     T l_long_fr;
@@ -383,13 +379,9 @@ private:
         k_tyre_rot_rl = 1e5;
         k_tyre_rot_rr = 1e5;
 
-        c_body_fl = db.getBodyDampingFrontLeft();
         c_tyre_fl = db.getTyreDampingFrontLeft();
-        c_body_fr = db.getBodyDampingFrontRight();
         c_tyre_fr = db.getTyreDampingFrontRight();
-        c_body_rl = db.getBodyDampingRearLeft();
         c_tyre_rl = db.getTyreDampingRearLeft();
-        c_body_rr = db.getBodyDampingRearRight();
         c_tyre_rr = db.getTyreDampingRearRight();
 
         l_long_fl = db.getLongitudalLegPositionFrontLeft();
@@ -432,6 +424,7 @@ private:
         // Fill up vectors
         Math::copy(Constants::NUM_LEGS, db.getBodyStiffnessVector(), 1, upper_spring_stiffness, 1);
         Math::copy(Constants::NUM_LEGS, db.getTyreStiffnessVector(), 1, lower_spring_stiffness, 1);
+        Math::copy(Constants::NUM_LEGS, db.getBodyDampingVector(), 1, upper_spring_damping, 1);
         int i;
 
         i = 0;
@@ -446,7 +439,6 @@ private:
         lower_spring_length[i] = lower_spring_length_fl;
         upper_rotational_stiffness[i] = k_body_rot_fl;
         lower_rotational_stiffness[i] = k_tyre_rot_fl;
-        upper_spring_damping[i] = c_body_fl;
         lower_spring_damping[i] = c_tyre_fl;
 
         initial_upper_spring_length[i] = db.getBodySpringInitialLengthFrontLeft();
@@ -485,7 +477,6 @@ private:
         lower_spring_length[i] = lower_spring_length_fr;
         upper_rotational_stiffness[i] = k_body_rot_fr;
         lower_rotational_stiffness[i] = k_tyre_rot_fr;
-        upper_spring_damping[i] = c_body_fr;
         lower_spring_damping[i] = c_tyre_fr;
         initial_upper_spring_length[i] = db.getBodySpringInitialLengthFrontRight();
         initial_lower_spring_length[i] = db.getTyreSpringInitialLengthFrontRight();
@@ -523,7 +514,6 @@ private:
         lower_spring_length[i] = lower_spring_length_rl;
         upper_rotational_stiffness[i] = k_body_rot_rl;
         lower_rotational_stiffness[i] = k_tyre_rot_rl;
-        upper_spring_damping[i] = c_body_rl;
         lower_spring_damping[i] = c_tyre_rl;
         initial_upper_spring_length[i] = db.getBodySpringInitialLengthRearLeft();
         initial_lower_spring_length[i] = db.getTyreSpringInitialLengthRearLeft();
@@ -556,7 +546,6 @@ private:
         lower_spring_length[i] = lower_spring_length_rr;
         upper_rotational_stiffness[i] = k_body_rot_rr;
         lower_rotational_stiffness[i] = k_tyre_rot_rr;
-        upper_spring_damping[i] = c_body_rr;
         lower_spring_damping[i] = c_tyre_rr;
         initial_upper_spring_length[i] = db.getBodySpringInitialLengthRearRight();
         initial_lower_spring_length[i] = db.getTyreSpringInitialLengthRearRight();
