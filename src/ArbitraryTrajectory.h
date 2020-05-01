@@ -668,7 +668,7 @@ public:
         pw_fl[2] = -_initialUpperSpringLength_fl + this->getVerticalPositionFrontLeft(0);        
         pw_fl[2] = -_initialUpperSpringLength_fr + this->getVerticalPositionFrontRight(0);
         pw_fl[2] = -_initialUpperSpringLength_rl + this->getVerticalPositionRearLeft(0);
-        pw_fl[2] = -_initialUpperSpringLength_rr + this->getVerticalPositionRearRight(0); 
+        pw_fl[2] = -_initialUpperSpringLength_rr + this->getVerticalPositionRearRight(0);
    
         // tyre positions
         pt_fl[0] = _legPointsX_fl[0];        
@@ -735,9 +735,7 @@ public:
             (-1.5 * _legPointsX_fl[0] + 2 * _legPointsX_fl[1] - 0.5 * _legPointsX_fl[2]) / _delta_t;
         vt_fl[1] =
             (-1.5 * _legPointsY_fl[0] + 2 * _legPointsY_fl[1] - 0.5 * _legPointsY_fl[2]) / _delta_;
-        vt_fl[2] = (-1.5 * this->getVerticalPositionFrontLeft(0) +
-                    2 * this->getVerticalPositionFrontLeft(1) -
-                    0.5 * this->getVerticalPositionFrontLeft(2)) /
+        vt_fl[2] = (-1.5 * this->getVerticalPositionFrontLeft(0) +  2 * this->getVerticalPositionFrontLeft(1) - 0.5 * this->getVerticalPositionFrontLeft(2)) /
                    _delta_t;
 
         vt_fr[0] =
