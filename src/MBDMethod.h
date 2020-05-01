@@ -881,14 +881,8 @@ private:
                                                                              stiffness_vector);
 
         // overwrite stiffness values
-        upper_spring_stiffness[0] = stiffness_vector[0];
-        lower_spring_stiffness[0] = stiffness_vector[1];
-        upper_spring_stiffness[1] = stiffness_vector[2];
-        lower_spring_stiffness[1] = stiffness_vector[3];
-        upper_spring_stiffness[2] = stiffness_vector[4];
-        lower_spring_stiffness[2] = stiffness_vector[5];
-        upper_spring_stiffness[3] = stiffness_vector[6];
-        lower_spring_stiffness[3] = stiffness_vector[7];
+        Math::copy(Constants::NUM_LEGS, stiffness_vector, 2, upper_spring_stiffness, 1);
+        Math::copy(Constants::NUM_LEGS, stiffness_vector + 1, 2, lower_spring_stiffness, 1);
     }
 
     void compute_angles() {
