@@ -64,10 +64,6 @@ private:
     T mass_tyre_rl;
     T mass_wheel_rr;
     T mass_tyre_rr;
-    T upper_spring_length_rr;
-    T upper_spring_length_rl;
-    T upper_spring_length_fl;
-    T upper_spring_length_fr;
     T lower_spring_length_rr;
     T lower_spring_length_rl;
     T lower_spring_length_fl;
@@ -400,11 +396,6 @@ private:
         mass_wheel_rr = db.getWheelMassRearRight();
         mass_tyre_rr = db.getTyreMassRearRight();
 
-        upper_spring_length_fl = db.getBodySpringLengthFrontLeft();
-        upper_spring_length_fr = db.getBodySpringLengthFrontRight();
-        upper_spring_length_rl = db.getBodySpringLengthRearLeft();
-        upper_spring_length_rr = db.getBodySpringLengthRearRight();
-
         lower_spring_length_fl = db.getTyreSpringLengthFrontLeft();
         lower_spring_length_fr = db.getTyreSpringLengthFrontRight();
         lower_spring_length_rl = db.getTyreSpringLengthRearLeft();
@@ -417,6 +408,7 @@ private:
         Math::copy(Constants::NUM_LEGS, db.getTyreStiffnessVector(), 1, lower_spring_stiffness, 1);
         Math::copy(Constants::NUM_LEGS, db.getBodyDampingVector(), 1, upper_spring_damping, 1);
         Math::copy(Constants::NUM_LEGS, db.getTyreDampingVector(), 1, lower_spring_damping, 1);
+        Math::copy(Constants::NUM_LEGS, db.getBodySpringLengthVector(), 1, upper_spring_length, 1);
         int i;
 
         i = 0;
@@ -427,7 +419,6 @@ private:
         Ic[i * Constants::DIM + i] = I_body_xx;
         mass_wheel[i] = mass_wheel_fl;
         mass_tyre[i] = mass_tyre_fl;
-        upper_spring_length[i] = upper_spring_length_fl;
         lower_spring_length[i] = lower_spring_length_fl;
         upper_rotational_stiffness[i] = k_body_rot_fl;
         lower_rotational_stiffness[i] = k_tyre_rot_fl;
@@ -464,7 +455,6 @@ private:
         Ic[i * Constants::DIM + i] = I_body_yy;
         mass_wheel[i] = mass_wheel_fr;
         mass_tyre[i] = mass_tyre_fr;
-        upper_spring_length[i] = upper_spring_length_fr;
         lower_spring_length[i] = lower_spring_length_fr;
         upper_rotational_stiffness[i] = k_body_rot_fr;
         lower_rotational_stiffness[i] = k_tyre_rot_fr;
@@ -500,7 +490,6 @@ private:
         Ic[i * Constants::DIM + i] = I_body_zz;
         mass_wheel[i] = mass_wheel_rl;
         mass_tyre[i] = mass_tyre_rl;
-        upper_spring_length[i] = upper_spring_length_rl;
         lower_spring_length[i] = lower_spring_length_rl;
         upper_rotational_stiffness[i] = k_body_rot_rl;
         lower_rotational_stiffness[i] = k_tyre_rot_rl;
@@ -531,7 +520,6 @@ private:
         i = 3;
         mass_wheel[i] = mass_wheel_rr;
         mass_tyre[i] = mass_tyre_rr;
-        upper_spring_length[i] = upper_spring_length_rr;
         lower_spring_length[i] = lower_spring_length_rr;
         upper_rotational_stiffness[i] = k_body_rot_rr;
         lower_rotational_stiffness[i] = k_tyre_rot_rr;
