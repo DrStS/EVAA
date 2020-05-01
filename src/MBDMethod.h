@@ -30,7 +30,6 @@ private:
     // Environment conditions
 
     BoundaryConditionRoad boundary_conditions;
-    T* center_of_circle;
 
     // Car Definition
 
@@ -329,7 +328,6 @@ private:
         FW_fr = Math::calloc<T>(Constants::DIM);
         A_Ic = Math::calloc<T>(Constants::DIM * Constants::DIM);
         A_rem = Math::calloc<T>(Constants::DIM * Constants::DIM * Constants::DIM);
-        center_of_circle = Math::calloc<T>(Constants::DIM);
         accelerations = Math::calloc<T>(Constants::DIM * Constants::DIM * Constants::DIM);
     }
 
@@ -422,7 +420,6 @@ private:
         FW_fr[i] = db.getWheelExternalForceFrontRight()[i];
         FW_rl[i] = db.getWheelExternalForceRearLeft()[i];
         FW_rr[i] = db.getWheelExternalForceRearRight()[i];
-        center_of_circle[i] = db.getCircularRoadCenter()[i];
 
         i = 1;
         r_fl[i] = -l_lat_fl;
@@ -454,7 +451,6 @@ private:
         FW_fr[i] = db.getWheelExternalForceFrontRight()[i];
         FW_rl[i] = db.getWheelExternalForceRearLeft()[i];
         FW_rr[i] = db.getWheelExternalForceRearRight()[i];
-        center_of_circle[i] = db.getCircularRoadCenter()[i];
 
         i = 2;
         r_fl[i] = 0;
@@ -486,7 +482,6 @@ private:
         FW_fr[i] = db.getWheelExternalForceFrontRight()[i] - mass_wheel_fr * g;
         FW_rl[i] = db.getWheelExternalForceRearLeft()[i] - mass_wheel_rl * g;
         FW_rr[i] = db.getWheelExternalForceRearRight()[i] - mass_wheel_rr * g;
-        center_of_circle[i] = db.getCircularRoadCenter()[i];
 
         i = 3;
         mass_wheel[i] = mass_wheel_rr;
@@ -512,6 +507,7 @@ private:
     void circular_path_initialization(T* vc, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr, T* vt_fl,
                                       T* vt_fr, T* vt_rl, T* vt_rr, T* omega, T* pcc, T* pt_fl,
                                       T* pt_fr, T* pt_rl, T* pt_rr) {
+        auto &db = MetaDataBase<T>::getDataBase();
         const MKL_INT dim = Constants::DIM;
         const MKL_INT incx = 1;
 
@@ -524,6 +520,7 @@ private:
         T* radial_vector = Math::calloc<T>(Constants::DIM);
 
         // vector from the car to the center of the circle
+        const auto center_of_circle = db.getCircularRoadCenter();
         radial_vector[0] = pcc[0] - center_of_circle[0];
         radial_vector[1] = pcc[1] - center_of_circle[1];
         radial_vector[2] = 0;
@@ -2101,7 +2098,6 @@ public:
         Math::free<T>(FT_rr);
         Math::free<T>(A_Ic);
         Math::free<T>(A_rem);
-        Math::free<T>(center_of_circle);
     }
 };
 
