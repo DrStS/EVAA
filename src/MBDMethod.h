@@ -1465,7 +1465,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DIM, 1, A_Ic, Constants::DIM,
                        cf_sum_torque_spring_car, 1);
 
-        Math::vector_elem_wise_product<T>(A_rem, cf_b_rem, accelerations, 9 * Constants::DIM);
+        Math::vMul<T>(Constants::VEC_DIM * Constants::DIM, A_rem, cf_b_rem, accelerations);
     }
 
     void compute_quaternion_change_rate() {
