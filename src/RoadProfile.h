@@ -17,35 +17,74 @@ template <typename T>
 class Profile {
 protected:
     std::string Name;
+	T* lagrangianVeclocity;			// [GC: XY, W1: XY, T1: XY, ... ]			size: 18
+	T* eulerianVelocity;			// [GC: Z, Angle: XY, W1: Z, T1: Z, ... ]   size: 11
+	T* massOfComponents;            // [GC, W1, T1, ... ]						size: 9
 
 public:
-    /**
-     * Get external force acting on the car system
-     * \param Car
-     * \return F_vec forces acting on each component [GC:XYZ,W1:XYZ,T1:XYZ, ...]
-     * \return Normal_ext on the car as a whole [XYZ]
-     */
+
+	Profile() {
+		lagrangianVeclocity = Math::malloc<T>(2 * Constants::VEC_DIM);
+		eulerianVelocity = Math::malloc<T>(Constants::DOF);
+		massOfComponents = Math::malloc<T>(Constants::VEC_DIM);
+	}
+
+	/**
+	 * Get external force acting on the car system in the Lagrangian Frame
+	 * \param Car
+	 * \return profileInducedForce forces acting on each component [GC: XY, W1: XY, T1: XY, ...]
+	 * \return reactionOnTyre reaction force on the tyre induced by profile forcce [T: XY, T2: XY, T3: XY, T4: XY]
+	 */
+	virtual void GetProfileForceLagrangian(Car<T>* carObj, T* profileInducedForce, T* reactionOnTyre) = 0;
+	
+	/**
+	 * Get external force acting on the car system in the Eulerian Frame
+	 * \param Car
+	 * \return profileInducedForce forces acting on each component [GC: Z, W1: Z, T1: Z, ...]
+	 * \return reactionOnTyre reaction force on the tyre induced by profile forcce [T: Z, T2: Z, T3: Z, T4: Z]
+	 */
+	virtual void GetProfileForceEulerian(Car<T>* carObj, T* profileInducedForce, T* reactionOnTyre) = 0;
+	
+	/**
+	 * Get external torque acting on the car system in Lagrangian Frame
+	 * \param Car
+	 * \return externalTorque torque acting on the car system [GC: Z]
+	 */
+	virtual void GetProfileTorqueLagrangian(Car<T> carObj, T* externalTorque) = 0;
+	
+	/**
+	 * Get external torque acting on the car system in Eulerian Frame
+	 * \param Car
+	 * \return externalTorque torque acting on the car system in Lagrangian Frame [GC: XY]
+	 */
+	virtual void GetProfileTorqueEulerian(Car<T> carObj, T* externalTorque) = 0;
+	
+	/**
+	 * In case the initial conditions have to be specific to a road profile
+	 * \param Car
+	 */
+	virtual void ApplyProfileInitialCondition(Car<T>* carObj) = 0;
+    
     virtual void get_Profile_force(Car<T>* Car1, T* F_vec, T* Normal_ext){};
     virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext){};
 
-    /**
-     * Get external torque acting on the car system
-     * \param Car
-     * \return F_vec torque acting on teh car system [XYZ]
-     */
+    
     virtual void get_Profile_torque(Car<T>* Car1, T* Torque_vec){};
 
-    /**
-     * In case the initial conditions have to be specific to a road profile
-     * \param Car
-     */
+    
     virtual void update_initial_condition(Car<T>* Car1) {
         std::cout << "No update of initial conditions" << std::endl;
     };
     virtual void set_fixed_index(size_t* index){};
 
-    virtual ~Profile(){};
+    virtual ~Profile(){
+		Math::free<T>(lagrangianVeclocity);
+		Math::free<T>(eulerianVelocity);
+		Math::free<T>(massOfComponents);
+	};
 };
+
+
 
 /** Follow a circular road profile with radius R and center C */
 template <typename T>
@@ -64,8 +103,7 @@ private:
     // distance vector between center of circle and the car =
     // Positions of points from the car vs Center of Circle, seen as 0
     T* dist_car_center;  // 3 x 9
-    T* Velocity_vec;
-    T* Mass_vec;
+    
 
 public:
     Circular(T* Pos, T Rad) {
