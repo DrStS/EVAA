@@ -42,7 +42,6 @@ private:
     T l_lat_fr;
     T l_lat_rl;
     T l_lat_rr;
-    T mass;
     T I_body_xx;
     T I_body_yy;
     T I_body_zz;
@@ -157,7 +156,6 @@ private:
 
         T* global_z = Math::calloc<T>(Constants::DIM);
         T* C_Nc = Math::calloc<T>(Constants::DIM * Constants::DIM);
-
 
         // 1. qc = qc/norm(qc); This is in quaternions
         T nrm = Math::nrm2<T>(Constants::NUM_LEGS, initial_orientation_, 1);
@@ -355,8 +353,6 @@ private:
         l_lat_rl = db.getLatidudalLegPositionRearLeft();
         l_lat_rr = db.getLatidudalLegPositionRearRight();
 
-        mass = db.getBodyMass();
-
         I_body_xx = db.getMomentOfInertiaXX();
         I_body_yy = db.getMomentOfInertiaYY();
         I_body_zz = db.getMomentOfInertiaZZ();
@@ -449,7 +445,7 @@ private:
         mass_tyre[i] = mass_tyre_rl;
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
-        FC[i] = db.getBodyExternalForce()[i] - mass * g;
+        FC[i] = db.getBodyExternalForce()[i] - db.getBodyMass() * g;
         FT_fl[i] = db.getTyreExternalForceFrontLeft()[i] - mass_tyre_fl * g;
         FT_fr[i] = db.getTyreExternalForceFrontRight()[i] - mass_tyre_fr * g;
         FT_rl[i] = db.getTyreExternalForceRearLeft()[i] - mass_tyre_rl * g;
@@ -1805,7 +1801,7 @@ public:
         j = 0;
         i = 0;
         while (i < Constants::DIM) {
-            A_rem[j] = 1. / this->mass;
+            A_rem[j] = 1. / MetaDataBase<T>::getDataBase().getBodyMass();
             i++;
             j++;
         }
