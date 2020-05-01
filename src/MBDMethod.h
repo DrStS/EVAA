@@ -34,7 +34,6 @@ private:
     // Car Definition
 
     T* Ic;
-    T *mass_wheel, *mass_tyre;
     T *upper_spring_length, *lower_spring_length;
     T *upper_spring_stiffness, *lower_spring_stiffness, *upper_spring_damping,
         *lower_spring_damping;
@@ -268,8 +267,6 @@ private:
         r_rl = Math::calloc<T>(Constants::DIM);
         r_rr = Math::calloc<T>(Constants::DIM);
         Ic = Math::calloc<T>(Constants::DIM * Constants::DIM);
-        mass_wheel = Math::calloc<T>(Constants::NUM_LEGS);
-        mass_tyre = Math::calloc<T>(Constants::NUM_LEGS);
         upper_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
         lower_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
         upper_spring_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
@@ -330,8 +327,6 @@ private:
         Math::copy(Constants::NUM_LEGS, db.getTyreDampingVector(), 1, lower_spring_damping, 1);
         Math::copy(Constants::NUM_LEGS, db.getBodySpringLengthVector(), 1, upper_spring_length, 1);
         Math::copy(Constants::NUM_LEGS, db.getTyreSpringLengthVector(), 1, lower_spring_length, 1);
-        Math::copy(Constants::NUM_LEGS, db.getWheelMassVector(), 1, mass_wheel, 1);
-        Math::copy(Constants::NUM_LEGS, db.getTyreMassVector(), 1, mass_tyre, 1);
 
         // TODO: Extract constant or use MetaDataBase and vectorize copying.
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
@@ -1604,6 +1599,7 @@ public:
      */
     void solve(T* solution_vector) {
         // From the formulation we have 61 dimensions in the solution vector
+        auto& db = MetaDataBase<T>::getDataBase();
         size_t solution_size = (this->num_iter + 1) * this->solution_dim;
         T* complete_vector = Math::calloc<T>(solution_size);
         x_vector = Math::calloc<T>(solution_dim);
@@ -1724,61 +1720,15 @@ public:
         Math::copy<T>(Constants::DIM, vt_rr, 1, vt_rr_, 1);
         i++;
 
-        j = 0;
-        i = 0;
-        while (i < Constants::DIM) {
-            A_rem[j] = 1. / MetaDataBase<T>::getDataBase().getBodyMass();
-            i++;
-            j++;
+        // A_rem = 1 / x, for x in [CG W1 T1 W2 T2 W3 T3 W4 T4].
+        for (auto i = 0; i < Constants::DIM; i++) {
+            A_rem[i] = db.getBodyMass();
+            Math::copy<T>(Constants::NUM_LEGS, db.getWheelTyreMassVector(), 2,
+                          A_rem + Constants::DIM + i, 3);
+            Math::copy<T>(Constants::NUM_LEGS, db.getWheelTyreMassVector() + 1, 2,
+                          A_rem + (Constants::NUM_LEGS + 1) * Constants::DIM + i, 3);
         }
-        i = 0;
-        while (i < Constants::DIM) {
-            A_rem[j] = 1. / mass_wheel[0];
-            i++;
-            j++;
-        }
-        i = 0;
-        while (i < Constants::DIM) {
-            A_rem[j] = 1. / mass_wheel[1];
-            i++;
-            j++;
-        }
-        i = 0;
-        while (i < Constants::DIM) {
-            A_rem[j] = 1. / mass_wheel[2];
-            i++;
-            j++;
-        }
-        i = 0;
-        while (i < Constants::DIM) {
-            A_rem[j] = 1. / mass_wheel[3];
-            i++;
-            j++;
-        }
-        i = 0;
-        while (i < Constants::DIM) {
-            A_rem[j] = 1. / mass_tyre[0];
-            i++;
-            j++;
-        }
-        i = 0;
-        while (i < Constants::DIM) {
-            A_rem[j] = 1. / mass_tyre[1];
-            i++;
-            j++;
-        }
-        i = 0;
-        while (i < Constants::DIM) {
-            A_rem[j] = 1. / mass_tyre[2];
-            i++;
-            j++;
-        }
-        i = 0;
-        while (i < Constants::DIM) {
-            A_rem[j] = 1. / mass_tyre[3];
-            i++;
-            j++;
-        }
+        Math::vInv<T>(Constants::VEC_DIM * Constants::DIM, A_rem, A_rem);
 
         compute_f_mem_alloc();
 
@@ -1872,10 +1822,11 @@ public:
             get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
         else if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) {
-            get_circular_road_force(cf_local_FR_fl, vt_fl_, mass_tyre[0], pt_fl_);
-            get_circular_road_force(cf_local_FR_fr, vt_fr_, mass_tyre[1], pt_fr_);
-            get_circular_road_force(cf_local_FR_rl, vt_rl_, mass_tyre[2], pt_rl_);
-            get_circular_road_force(cf_local_FR_rr, vt_rr_, mass_tyre[3], pt_rr_);
+            auto& db = MetaDataBase<T>::getDataBase();
+            get_circular_road_force(cf_local_FR_fl, vt_fl_, db.getTyreMassFrontLeft(), pt_fl_);
+            get_circular_road_force(cf_local_FR_fr, vt_fr_, db.getTyreMassFrontRight(), pt_fr_);
+            get_circular_road_force(cf_local_FR_rl, vt_rl_, db.getTyreMassRearLeft(), pt_rl_);
+            get_circular_road_force(cf_local_FR_rr, vt_rr_, db.getTyreMassRearRight(), pt_rr_);
         }
 
         compute_car_body_total_torque();
@@ -1956,8 +1907,6 @@ public:
         Math::free<T>(r_rl);
         Math::free<T>(r_rr);
         Math::free<T>(Ic);
-        Math::free<T>(mass_wheel);
-        Math::free<T>(mass_tyre);
         Math::free<T>(upper_spring_length);
         Math::free<T>(lower_spring_length);
         Math::free<T>(upper_spring_stiffness);
