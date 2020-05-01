@@ -72,8 +72,7 @@ private:
 
     // Initial condition params
 
-    T *initial_upper_spring_length, *initial_lower_spring_length, *initial_orientation,
-        *initial_angular_velocity;
+    T *initial_orientation, *initial_angular_velocity;
 
     // Arrays for intermediate steps
 
@@ -122,8 +121,7 @@ private:
      * at rest
      */
     void get_initial_length(T* initial_orientation_, const T* r_fl_, const T* r_fr_, const T* r_rl_,
-                            const T* r_rr_, const T* pcc_, const T* initial_upper_spring_length_,
-                            const T* initial_lower_spring_length_, T* wheel_coordinate_fl_,
+                            const T* r_rr_, const T* pcc_, T* wheel_coordinate_fl_,
                             T* wheel_coordinate_fr_, T* wheel_coordinate_rl_,
                             T* wheel_coordinate_rr_, T* tyre_coordinate_fl_, T* tyre_coordinate_fr_,
                             T* tyre_coordinate_rl_, T* tyre_coordinate_rr_)
@@ -153,9 +151,13 @@ private:
          * 8. pt_fl = pw_fl
          * 9. pt_fl	= pt_fl + lower_length(_fl)*global_z;
          */
+        auto& db = MetaDataBase<T>::getDataBase();
+        const T* initial_upper_spring_length = db.getBodySpringInitialLengthVector();
+        const T* initial_lower_spring_length = db.getTyreSpringInitialLengthVector();
 
         T* global_z = Math::calloc<T>(Constants::DIM);
         T* C_Nc = Math::calloc<T>(Constants::DIM * Constants::DIM);
+
 
         // 1. qc = qc/norm(qc); This is in quaternions
         T nrm = Math::nrm2<T>(Constants::NUM_LEGS, initial_orientation_, 1);
@@ -181,14 +183,14 @@ private:
                       Constants::DIM, r_fl_, 1, 1, wheel_coordinate_fl_, 1);
 
         // 7.	pw1 = pw1 + upper_length(1)*global_z;
-        Math::axpy<T>(Constants::DIM, initial_upper_spring_length_[0], global_z, 1,
+        Math::axpy<T>(Constants::DIM, initial_upper_spring_length[0], global_z, 1,
                       wheel_coordinate_fl_, 1);
 
         // 8.	pt1 = pw1
         Math::copy<T>(Constants::DIM, wheel_coordinate_fl_, 1, tyre_coordinate_fl_, 1);
 
         // 9.	pt1 = pw1 + lower_length(1)*global_z;
-        Math::axpy<T>(Constants::DIM, initial_lower_spring_length_[0], global_z, 1,
+        Math::axpy<T>(Constants::DIM, initial_lower_spring_length[0], global_z, 1,
                       tyre_coordinate_fl_, 1);
 
         // Leg 2
@@ -201,14 +203,14 @@ private:
                       Constants::DIM, r_fr_, 1, 1, wheel_coordinate_fr_, 1);
 
         // 7.	pw2 = pw2 + upper_length(2)*global_z;
-        Math::axpy<T>(Constants::DIM, initial_upper_spring_length_[1], global_z, 1,
+        Math::axpy<T>(Constants::DIM, initial_upper_spring_length[1], global_z, 1,
                       wheel_coordinate_fr_, 1);
 
         // 8.	pt2 = pw2
         Math::copy<T>(Constants::DIM, wheel_coordinate_fr_, 1, tyre_coordinate_fr_, 1);
 
         // 9.	pt2 = pw2 + lower_length(2)*global_z;
-        Math::axpy<T>(Constants::DIM, initial_lower_spring_length_[1], global_z, 1,
+        Math::axpy<T>(Constants::DIM, initial_lower_spring_length[1], global_z, 1,
                       tyre_coordinate_fr_, 1);
 
         // Leg 3
@@ -221,14 +223,14 @@ private:
                       Constants::DIM, r_rl_, 1, 1, wheel_coordinate_rl_, 1);
 
         // 7.	pw3 = pw3 + upper_length(3)*global_z;
-        Math::axpy<T>(Constants::DIM, initial_upper_spring_length_[2], global_z, 1,
+        Math::axpy<T>(Constants::DIM, initial_upper_spring_length[2], global_z, 1,
                       wheel_coordinate_rl_, 1);
 
         // 8.	pt3 = pw3
         Math::copy<T>(Constants::DIM, wheel_coordinate_rl_, 1, tyre_coordinate_rl_, 1);
 
         // 9.	pt3 = pw3 + lower_length(3)*global_z;
-        Math::axpy<T>(Constants::DIM, initial_lower_spring_length_[2], global_z, 1,
+        Math::axpy<T>(Constants::DIM, initial_lower_spring_length[2], global_z, 1,
                       tyre_coordinate_rl_, 1);
 
         // Leg 4
@@ -241,14 +243,14 @@ private:
                       Constants::DIM, r_rr_, 1, 1, wheel_coordinate_rr_, 1);
 
         // 7.	pw4 = pw4 + upper_length(4)*global_z;
-        Math::axpy<T>(Constants::DIM, initial_upper_spring_length_[3], global_z, 1,
+        Math::axpy<T>(Constants::DIM, initial_upper_spring_length[3], global_z, 1,
                       wheel_coordinate_rr_, 1);
 
         // 8.	pt4 = pw4
         Math::copy<T>(Constants::DIM, wheel_coordinate_rr_, 1, tyre_coordinate_rr_, 1);
 
         // 9.	pt4 = pw4 + lower_length(4)*global_z;
-        Math::axpy<T>(Constants::DIM, initial_lower_spring_length_[3], global_z, 1,
+        Math::axpy<T>(Constants::DIM, initial_lower_spring_length[3], global_z, 1,
                       tyre_coordinate_rr_, 1);
 
         Math::free<T>(global_z);
@@ -297,8 +299,6 @@ private:
         lower_spring_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
         upper_rotational_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
         lower_rotational_stiffness = Math::calloc<T>(Constants::NUM_LEGS);
-        initial_upper_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
-        initial_lower_spring_length = Math::calloc<T>(Constants::NUM_LEGS);
         initial_orientation = Math::calloc<T>(Constants::NUM_LEGS);
         initial_angular_velocity = Math::calloc<T>(Constants::DIM);
         upper_spring_damping = Math::calloc<T>(Constants::NUM_LEGS);
@@ -379,7 +379,7 @@ private:
         Math::copy(Constants::NUM_LEGS, db.getBodyDampingVector(), 1, upper_spring_damping, 1);
         Math::copy(Constants::NUM_LEGS, db.getTyreDampingVector(), 1, lower_spring_damping, 1);
         Math::copy(Constants::NUM_LEGS, db.getBodySpringLengthVector(), 1, upper_spring_length, 1);
-        Math::copy(Constants::NUM_LEGS, db.getTyreSpringLengthVector(), 1 lower_spring_length, 1);
+        Math::copy(Constants::NUM_LEGS, db.getTyreSpringLengthVector(), 1, lower_spring_length, 1);
 
         // TODO: Extract constant or use MetaDataBase and vectorize copying.
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
@@ -408,8 +408,6 @@ private:
         mass_wheel[i] = mass_wheel_fl;
         mass_tyre[i] = mass_tyre_fl;
 
-        initial_upper_spring_length[i] = db.getBodySpringInitialLengthFrontLeft();
-        initial_lower_spring_length[i] = db.getTyreSpringInitialLengthFrontLeft();
         initial_orientation[i] = db.getBodyInitialOrientation()[i];
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
@@ -431,8 +429,6 @@ private:
         Ic[i * Constants::DIM + i] = I_body_yy;
         mass_wheel[i] = mass_wheel_fr;
         mass_tyre[i] = mass_tyre_fr;
-        initial_upper_spring_length[i] = db.getBodySpringInitialLengthFrontRight();
-        initial_lower_spring_length[i] = db.getTyreSpringInitialLengthFrontRight();
         initial_orientation[i] = db.getBodyInitialOrientation()[i];
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
@@ -454,8 +450,6 @@ private:
         Ic[i * Constants::DIM + i] = I_body_zz;
         mass_wheel[i] = mass_wheel_rl;
         mass_tyre[i] = mass_tyre_rl;
-        initial_upper_spring_length[i] = db.getBodySpringInitialLengthRearLeft();
-        initial_lower_spring_length[i] = db.getTyreSpringInitialLengthRearLeft();
         initial_orientation[i] = db.getBodyInitialOrientation()[i];
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
@@ -472,8 +466,6 @@ private:
         i = 3;
         mass_wheel[i] = mass_wheel_rr;
         mass_tyre[i] = mass_tyre_rr;
-        initial_upper_spring_length[i] = db.getBodySpringInitialLengthRearRight();
-        initial_lower_spring_length[i] = db.getTyreSpringInitialLengthRearRight();
         initial_orientation[i] = db.getBodyInitialOrientation()[i];
     }
 
@@ -1763,8 +1755,7 @@ public:
         // pt_rr
         pt_rr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 
-        get_initial_length(qc_, r_fl, r_fr, r_rl, r_rr, pcc, initial_upper_spring_length,
-                           initial_lower_spring_length, pw_fl_, pw_fr_, pw_rl_, pw_rr_, pt_fl_,
+        get_initial_length(qc_, r_fl, r_fr, r_rl, r_rr, pcc, pw_fl_, pw_fr_, pw_rl_, pw_rr_, pt_fl_,
                            pt_fr_, pt_rl_, pt_rr_);
 
         // overwrites the initial velocity values
@@ -2053,8 +2044,6 @@ public:
         Math::free<T>(lower_spring_stiffness);
         Math::free<T>(upper_rotational_stiffness);
         Math::free<T>(lower_rotational_stiffness);
-        Math::free<T>(initial_upper_spring_length);
-        Math::free<T>(initial_lower_spring_length);
         Math::free<T>(initial_orientation);
         Math::free<T>(initial_angular_velocity);
         Math::free<T>(upper_spring_damping);
