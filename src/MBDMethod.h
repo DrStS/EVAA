@@ -45,13 +45,9 @@ private:
     T I_body_xx;
     T I_body_yy;
     T I_body_zz;
-    T mass_wheel_fl;
     T mass_tyre_fl;
-    T mass_wheel_fr;
     T mass_tyre_fr;
-    T mass_wheel_rl;
     T mass_tyre_rl;
-    T mass_wheel_rr;
     T mass_tyre_rr;
     T* Ic;
     T *mass_wheel, *mass_tyre;
@@ -357,13 +353,9 @@ private:
         I_body_yy = db.getMomentOfInertiaYY();
         I_body_zz = db.getMomentOfInertiaZZ();
 
-        mass_wheel_fl = db.getWheelMassFrontLeft();
         mass_tyre_fl = db.getTyreMassFrontLeft();
-        mass_wheel_fr = db.getWheelMassFrontRight();
         mass_tyre_fr = db.getTyreMassFrontRight();
-        mass_wheel_rl = db.getWheelMassRearLeft();
         mass_tyre_rl = db.getTyreMassRearLeft();
-        mass_wheel_rr = db.getWheelMassRearRight();
         mass_tyre_rr = db.getTyreMassRearRight();
 
         g = db.getGravityField()[2];
@@ -375,6 +367,7 @@ private:
         Math::copy(Constants::NUM_LEGS, db.getTyreDampingVector(), 1, lower_spring_damping, 1);
         Math::copy(Constants::NUM_LEGS, db.getBodySpringLengthVector(), 1, upper_spring_length, 1);
         Math::copy(Constants::NUM_LEGS, db.getTyreSpringLengthVector(), 1, lower_spring_length, 1);
+        Math::copy(Constants::NUM_LEGS, db.getWheelMassVector(), 1, mass_wheel, 1);
 
         // TODO: Extract constant or use MetaDataBase and vectorize copying.
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
@@ -400,7 +393,6 @@ private:
         r_rl[i] = -l_long_rl;
         r_rr[i] = -l_long_rr;
         Ic[i * Constants::DIM + i] = I_body_xx;
-        mass_wheel[i] = mass_wheel_fl;
         mass_tyre[i] = mass_tyre_fl;
 
         vc[i] = db.getBodyInitialVelocity()[i];
@@ -421,7 +413,6 @@ private:
         r_rl[i] = -l_lat_rl;
         r_rr[i] = l_lat_rr;
         Ic[i * Constants::DIM + i] = I_body_yy;
-        mass_wheel[i] = mass_wheel_fr;
         mass_tyre[i] = mass_tyre_fr;
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
@@ -441,7 +432,6 @@ private:
         r_rl[i] = 0;
         r_rr[i] = 0;
         Ic[i * Constants::DIM + i] = I_body_zz;
-        mass_wheel[i] = mass_wheel_rl;
         mass_tyre[i] = mass_tyre_rl;
         vc[i] = db.getBodyInitialVelocity()[i];
         pcc[i] = db.getBodyInitialPosition()[i];
@@ -450,13 +440,12 @@ private:
         FT_fr[i] = db.getTyreExternalForceFrontRight()[i] - mass_tyre_fr * g;
         FT_rl[i] = db.getTyreExternalForceRearLeft()[i] - mass_tyre_rl * g;
         FT_rr[i] = db.getTyreExternalForceRearRight()[i] - mass_tyre_rr * g;
-        FW_fl[i] = db.getWheelExternalForceFrontLeft()[i] - mass_wheel_fl * g;
-        FW_fr[i] = db.getWheelExternalForceFrontRight()[i] - mass_wheel_fr * g;
-        FW_rl[i] = db.getWheelExternalForceRearLeft()[i] - mass_wheel_rl * g;
-        FW_rr[i] = db.getWheelExternalForceRearRight()[i] - mass_wheel_rr * g;
+        FW_fl[i] = db.getWheelExternalForceFrontLeft()[i] - db.getWheelMassFrontLeft() * g;
+        FW_fr[i] = db.getWheelExternalForceFrontRight()[i] - db.getWheelMassFrontRight() * g;
+        FW_rl[i] = db.getWheelExternalForceRearLeft()[i] - db.getWheelMassRearLeft() * g;
+        FW_rr[i] = db.getWheelExternalForceRearRight()[i] - db.getWheelMassRearRight() * g;
 
         i = 3;
-        mass_wheel[i] = mass_wheel_rr;
         mass_tyre[i] = mass_tyre_rr;
     }
 
