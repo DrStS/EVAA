@@ -476,7 +476,7 @@ private:
     void circular_path_initialization(T* vc, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr, T* vt_fl,
                                       T* vt_fr, T* vt_rl, T* vt_rr, T* omega, T* pcc, T* pt_fl,
                                       T* pt_fr, T* pt_rl, T* pt_rr) {
-        auto &db = MetaDataBase<T>::getDataBase();
+        auto& db = MetaDataBase<T>::getDataBase();
         const MKL_INT dim = Constants::DIM;
         const MKL_INT incx = 1;
 
@@ -1032,7 +1032,6 @@ private:
         scale = this->lower_spring_stiffness[3] *
                 (1. - this->lower_spring_length[3] * inv_norm_r_low_rr);
         Math::scal<T>(Constants::DIM, scale, cf_lower_force_rr, 1);
-
     }
 
     void compute_damping_forces() {
@@ -1400,7 +1399,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_fl, 1, cf_local_FR_fl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_fl, 1, cf_local_FR_fl, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_fl, 1, cf_local_FR_fl, 1);
-   //     Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
+        //     Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_fl, 1, cf_local_FR_fl, 1);
 
         // local_FR2 = lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...
@@ -1408,7 +1407,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_fr, 1, cf_local_FR_fr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_fr, 1, cf_local_FR_fr, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_fr, 1, cf_local_FR_fr, 1);
-    //    Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
+        //    Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_fr, 1, cf_local_FR_fr, 1);
 
         // local_FR3 = lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...
@@ -1416,7 +1415,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_rl, 1, cf_local_FR_rl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_rl, 1, cf_local_FR_rl, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_rl, 1, cf_local_FR_rl, 1);
-    //    Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
+        //    Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_rl, 1, cf_local_FR_rl, 1);
 
         // local_FR4 = lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];
@@ -1424,7 +1423,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_rr, 1, cf_local_FR_rr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_rr, 1, cf_local_FR_rr, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_rr, 1, cf_local_FR_rr, 1);
-     //   Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
+        //   Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_rr, 1, cf_local_FR_rr, 1);
     }
 
@@ -1488,25 +1487,24 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
     }
 
     void construct_right_hand_side() {
-
-            /*
-             * b = [sum_torque_spring_car; ...% w_dot_c
-             * FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...% vc_dot
-             * upper_force1 - lower_force1 + upper_dampf1 - lower_dampf1 + local_FW1 + ...
-             * upper_rot_force1 - car_rot_force1 - lower_rot_force1; ...% vw1_dot
-             * upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + ...
-             * upper_rot_force2 - car_rot_force2 - lower_rot_force2; ...% vw2_dot
-             * upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + ...
-             * upper_rot_force3 - car_rot_force3 - lower_rot_force3; ...% vw3_dot
-             * upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + ...
-             * upper_rot_force4 - car_rot_force4 - lower_rot_force4; ...% vw4_dot
-             * lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...% vt1_dot
-             * lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...% vt2_dot
-             * lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...% vt3_dot
-             * lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];% vt4_dot
-             */
-            // FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ... %vc_dot
-            T* brem_start = cf_b_rem;
+        /*
+         * b = [sum_torque_spring_car; ...% w_dot_c
+         * FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ...% vc_dot
+         * upper_force1 - lower_force1 + upper_dampf1 - lower_dampf1 + local_FW1 + ...
+         * upper_rot_force1 - car_rot_force1 - lower_rot_force1; ...% vw1_dot
+         * upper_force2 - lower_force2 + upper_dampf2 - lower_dampf2 + local_FW2 + ...
+         * upper_rot_force2 - car_rot_force2 - lower_rot_force2; ...% vw2_dot
+         * upper_force3 - lower_force3 + upper_dampf3 - lower_dampf3 + local_FW3 + ...
+         * upper_rot_force3 - car_rot_force3 - lower_rot_force3; ...% vw3_dot
+         * upper_force4 - lower_force4 + upper_dampf4 - lower_dampf4 + local_FW4 + ...
+         * upper_rot_force4 - car_rot_force4 - lower_rot_force4; ...% vw4_dot
+         * lower_force1 + lower_dampf1 + local_FT1 + local_FR1 + lower_rot_force1; ...% vt1_dot
+         * lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...% vt2_dot
+         * lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...% vt3_dot
+         * lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];% vt4_dot
+         */
+        // FC + sum_car_force1 + sum_car_force2 + sum_car_force3 + sum_car_force4; ... %vc_dot
+        T* brem_start = cf_b_rem;
         Math::copy<T>(Constants::DIM, this->FC, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_sum_car_force_fl, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_sum_car_force_fr, 1, brem_start, 1);
@@ -1576,7 +1574,6 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         // local_FR4];			              %vt4_dot
         brem_start += Constants::DIM;
         Math::copy<T>(Constants::DIM, cf_local_FR_rr, 1, brem_start, 1);
-
     }
 
     void solve_accelerations() {

@@ -12,7 +12,7 @@ namespace EVAA {
 
 /**
  * Parent class for generic road profiles
- */	
+ */
 template <typename T>
 class Profile {
 protected:
