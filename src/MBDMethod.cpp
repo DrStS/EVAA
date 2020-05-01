@@ -6,7 +6,6 @@ namespace EVAA {
 #if MIGHT_BE_USEFUL
 
 void create_basis_car(floatEVAA* qc, floatEVAA* basis_c) {
-    const MKL_INT n = 4, incx = 1;
     floatEVAA q_norm_inv = 2 / (floatEVAA)cblas_ddot(n, qc, incx, qc, incx);  // 2 / (||q||_2)^2
     basis_c[0] = 1 - q_norm_inv * (qc[1] * qc[1] + qc[2] * qc[2]);
     basis_c[1] = q_norm_inv * (qc[0] * qc[1] + qc[2] * qc[3]);

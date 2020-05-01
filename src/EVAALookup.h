@@ -204,8 +204,8 @@ public:
         T* length /**< [in] pointer to array of size k with length values of springs*/,
         T* inter /**< [out] pointer to array of size k to store interpolation values*/
     ) const {
-        const MKL_INT ndorder =
-            1;  // size of array describing derivative (dorder), which is definde two lines below
+        // size of array describing derivative (dorder), which is definde two lines below
+        const MKL_INT ndorder = 1;
         const MKL_INT dorder[1] = {1};  // only the values are computed
 
         for (auto i = 0; i < ny; i++) {

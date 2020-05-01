@@ -243,7 +243,7 @@ public:
 
         // Memory Allocation and matrix formulation
 
-        const int positionAllocSize = Constants::DIM * Constants::VEC_DIM;  // 27 dimensions
+        const size_t positionAllocSize = Constants::DIM * Constants::VEC_DIM;  // 27 dimensions
 
         // Params for Global coordinate
 

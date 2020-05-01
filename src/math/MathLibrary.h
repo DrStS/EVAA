@@ -278,9 +278,7 @@ T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim) {
     T nrm_v1, nrm_v2;
     nrm_v1 = Math::nrm2<T>(dim, v1, 1);
     nrm_v2 = Math::nrm2<T>(dim, v2, 1);
-    const MKL_INT DIM = dim;
-    const MKL_INT incx = 1;
-    angle = Math::dot<T>(DIM, v1, incx, v2, incx);
+    angle = Math::dot<T>(dim, v1, Constants::INCX, v2, Constants::INCX);
     // angle = dot_product<T>(v1, v2, dim);
     angle = angle / (nrm_v1 * nrm_v2);
     angle = angle >= 1 ? 1. : angle;
@@ -292,19 +290,18 @@ T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim) {
  * Calculates the rotation quaternion between two angles
  * \param v1 first vector
  * \param v2 second vector
- * \param dim size of the vector
  * \return angle the angle between the two vectors (in radians)
  * \return rotation_axis unit axis
  */
 template <typename T>
-void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t dim_) {
+void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis) {
     T nrm_v1, nrm_v2, ra_nrm, q_nrm;
-    nrm_v1 = Math::nrm2<T>(dim_, v1, 1);
-    nrm_v2 = Math::nrm2<T>(dim_, v2, 1);
+    nrm_v1 = Math::nrm2<T>(Constants::DIM, v1, 1);
+    nrm_v2 = Math::nrm2<T>(Constants::DIM, v2, 1);
     crossProduct(v1, v2, rotation_axis);
-    Math::scal<T>(dim_, 1. / (nrm_v1 * nrm_v2), rotation_axis, 1);
-    *angle = compute_angle_using_dot_product<T>(v1, v2, dim_);
-    ra_nrm = Math::nrm2<T>(dim_, rotation_axis, 1);
+    Math::scal<T>(Constants::DIM, 1. / (nrm_v1 * nrm_v2), rotation_axis, 1);
+    *angle = compute_angle_using_dot_product<T>(v1, v2, Constants::DIM);
+    ra_nrm = Math::nrm2<T>(Constants::DIM, rotation_axis, 1);
     T eps = 1e-8;
     if (ra_nrm < eps) {
         *angle = 0;
@@ -328,23 +325,22 @@ void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis, size_t
             rotation_axis[1] = 0;
             rotation_axis[2] = 0;
         }
-        ra_nrm = Math::nrm2<T>(dim_, rotation_axis, 1);
+        ra_nrm = Math::nrm2<T>(Constants::DIM, rotation_axis, 1);
     }
-    Math::scal<T>(dim_, 1. / (ra_nrm), rotation_axis, 1);
+    Math::scal<T>(Constants::DIM, 1. / (ra_nrm), rotation_axis, 1);
 }
 
 /**
  * Calculates the rotation quaternion between two angles
  * \param v1 first vector
  * \param v2 second vector
- * \param dim size of the vector
  * \return angle the angle between the two vectors (in radians)
  * \return rotation_axis unit axis
  * \return q the quaternion
  */
 template <typename T>
-void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis, size_t dim_) {
-    get_quaternion(v1, v2, angle, rotation_axis, dim_);
+void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis) {
+    get_quaternion(v1, v2, angle, rotation_axis);
     q[0] = rotation_axis[0] * std::sin(*angle / 2.0);
     q[1] = rotation_axis[1] * std::sin(*angle / 2.0);
     q[2] = rotation_axis[2] * std::sin(*angle / 2.0);
