@@ -1,3 +1,5 @@
+#include <string>
+
 #include "H5Cpp.h"
 #include "H5FloatType.h"
 #include "H5PredType.h"
