@@ -24,4 +24,6 @@ void writeVectorToFile(const std::string& fileName, const std::string& vectorNam
 template<typename T>
 void readVectorFromFile(const std::string& fileName, const std::string& vectorName, T* vector, size_t size);
 
-#include "outputhdf5.cpp"
+#ifdef USE_HDF5
+#include "OutputHDF5.cpp"
+#endif  // USE_HDF5

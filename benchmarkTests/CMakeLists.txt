@@ -21,6 +21,8 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Suppressing benchmark's tests" FORC
 add_subdirectory("C:/software/libs/GBENCH" ${CMAKE_BINARY_DIR}/gbench)
 include_directories(${EVAA_INCLUDES})
 include_directories(${EVAA_BenchTest_INCLUDES})
+#MultiThreaded Compile with -MT 
+#MultiThreadedDLL Compile with -MD
 IF (CMAKE_SYSTEM_NAME MATCHES "Windows") 
 	set_property(TARGET benchmark PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 ENDIF()

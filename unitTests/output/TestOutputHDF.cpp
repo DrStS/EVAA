@@ -1,11 +1,11 @@
-#include "outputhdf5.h"
+#include "OutputHDF5.h"
 #include "gtest/gtest.h"
 
 #include <array>
 
 class OutputTest : public ::testing::Test {};
 
-
+#ifdef USE_HDF5
 TEST_F(OutputTest, writeHDF5file) {
 	const int vec_dim = 6;
 	std::array<double, vec_dim> vec{ 5, 9, 91, 26, 5, 94 };
@@ -18,3 +18,4 @@ TEST_F(OutputTest, writeHDF5file) {
 		EXPECT_EQ(vec[i], vec_another[i]) << "Vectors differ at index " << i;
 	}
 }
+#endif
