@@ -21,20 +21,14 @@
       <horizontalProfile>
         <wayPoint X="0"   Y="0"   time="0"/>
         <wayPoint X="5"  Y="1"   time="1"/>
-        <wayPoint X="8"  Y="2"   time="2"/>
-        <wayPoint X="12"  Y="5"   time="3"/>
-        <wayPoint X="18"  Y="10"   time="4"/>
-        <wayPoint X="24"  Y="15"   time="5"/>
-        <wayPoint X="31"  Y="16"   time="6"/>
-        <wayPoint X="40"  Y="18"   time="7"/>
-        <wayPoint X="50"  Y="19"   time="8"/>
-        <wayPoint X="56"  Y="19.5"   time="9"/>
-        <wayPoint X="60"  Y="20"   time="10"/>
+        <wayPoint X="10"  Y="2"   time="2"/>
+        <wayPoint X="15"  Y="3.2"   time="3"/>
+        <wayPoint X="20"  Y="4.4"   time="4"/>
       </horizontalProfile>
       <verticalProfile>
         <sinusoidalProfile>
-          <rightTyre amplitude="0.2" period="2" shift="0"/>
-          <leftTyre amplitude="0.2" period="2" shift="1"/>
+          <rightTyre amplitude="0" period="2" shift="0"/>
+          <leftTyre amplitude="0" period="2" shift="1"/>
         </sinusoidalProfile>
       </verticalProfile>
     </arbitraryRoadProfile>
@@ -43,7 +37,7 @@
     <forceBody>
       <x>0</x>
       <y>0</y>
-      <z>4.4e3</z>
+      <z>0</z>
     </forceBody>
     <forceWheel>
       <ReerRight>

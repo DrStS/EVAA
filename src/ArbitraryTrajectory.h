@@ -28,27 +28,16 @@ public:
         _numIterations(numIterations), _delta_t(delta_t) {
 
         // Read Eulerian force parameters
-        if (period_right == 0) {
-            _frequencyRight = 0;
-        }
-        else {
-            _frequencyRight = 2 * Constants::PI / period_right;
-        }
-
-        if (period_left == 0) {
-            _frequencyLeft = 0;
-        }
-        else {
-            _frequencyLeft = 2 * Constants::PI / period_left;
-        }
-
+        _frequencyRight = (period_right == 0) ? 0 : 2 * Constants::PI / period_right;
+        _frequencyLeft = (period_left == 0) ? 0 : 2 * Constants::PI / period_left;
+        
         _amplitudeRight = amplitude_right;
         _amplitudeLeft = amplitude_left;
 
-        _phaseShift_fl = 2 * Constants::PI / shift_left;
-        _phaseShift_fr = 2 * Constants::PI / shift_right;
-        _phaseShift_rl = 2 * Constants::PI / shift_left;
-        _phaseShift_rr = 2 * Constants::PI / shift_right;
+        _phaseShift_fl = (shift_left == 0) ? 0 : 2 * Constants::PI / shift_left;
+        _phaseShift_fr = (shift_right == 0) ? 0 : 2 * Constants::PI / shift_right;
+        _phaseShift_rl = (shift_left == 0) ? 0 : 2 * Constants::PI / shift_left;
+        _phaseShift_rr = (shift_right == 0) ? 0 : 2 * Constants::PI / shift_right;
 
         // Read simulation parameters
         _initialUpperSpringLength_fl = initialUpperSpringLengths[Constants::FRONT_LEFT];
@@ -326,7 +315,7 @@ public:
     void calculateAccelerationsLegs() {
         // get true local coordinates
         T localXcoordinates[Constants::NUM_LEGS] = {_l_long_fl, _l_long_fr, -_l_long_rl, -_l_long_rr};
-        T localYcoordinates[Constants::NUM_LEGS] = {_l_lat_fl, -_l_lat_fr, _l_lat_rl, -_l_lat_rr};
+        T localYcoordinates[Constants::NUM_LEGS] = {-_l_lat_fl, _l_lat_fr, -_l_lat_rl, _l_lat_rr};
 
         // get all leg positions
         for (int i = 0; i < _numIterations + 1; ++i) {
@@ -448,27 +437,30 @@ public:
     /**
      * \brief calculates the Acceleration acting on the tyre due to bumpy road
      * \param time at which this happens
+     * \param mass of the object the force is applied 
      */
-    T getVerticalRoadAccelerationsFrontLeft(size_t iteration) { return _tyreAccelerationsZ_fl[iteration]; }
+    T getVerticalRoadForcesFrontLeft(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_fl[iteration]; }
 
     /**
-     * \brief calculates the Acceleration acting on the tyre due to bumpy road
+     * \brief calculates the force acting on the tyre due to bumpy road
      * \param time at which this happens
-     */
-    T getVerticalRoadAccelerationsFrontRight(size_t iteration) { return _tyreAccelerationsZ_rl[iteration]; }
+      * \param mass of the object the force is applied 
+    */
+    T getVerticalRoadForcesFrontRight(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_rl[iteration]; }
 
     /**
-     * \brief calculates the Acceleration acting on the tyre due to bumpy road
+     * \brief calculates the Force acting on the tyre due to bumpy road
      * \param time at which this happens
+     * \param mass of the object the force is applied
      */
-    T getVerticalRoadAccelerationsRearLeft(size_t iteration) { return _tyreAccelerationsZ_fr[iteration]; }
+    T getVerticalRoadForcesRearLeft(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_fr[iteration]; }
 
     /**
-     * \brief calculates the Acceleration acting on the tyre due to bumpy road
+     * \brief calculates the Force acting on the tyre due to bumpy road
      * \param time at which this happens
+     * \param mass of the object the force is applied
      */
-    T getVerticalRoadAccelerationsRearRight(size_t iteration) {
-        return _tyreAccelerationsZ_rr[iteration];
+    T getVerticalRoadForcesRearRight(size_t iteration, T mass) {return mass * _tyreAccelerationsZ_rr[iteration];
     }
 
     /**
@@ -491,67 +483,75 @@ public:
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionRearLeft(size_t iteration) { return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_rl)); }
+    T getVerticalPositionRearLeft(size_t iteration) { 
+        return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_rl)); }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionRearRight(size_t iteration) { return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_rr)); }
+    T getVerticalPositionRearRight(size_t iteration) { 
+        return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_rr)); }
 
     /**
      * \param iteration index of the current time iteration
      * \return vector the 2D vector to be written too [GC:XY]
-     */
-    void getLagrangianAccelerationsCenterOfGravity(size_t iteration, T* vector) {
-        vector[0] = _roadAccelerationX[i];
-        vector[1] = _roadAccelerationY[i];
+      * \param mass of the object the force is applied 
+    */
+    void getLagrangianForcesCenterOfGravity(size_t iteration, T* vector, T mass) {
+        vector[0] = mass * _roadAccelerationX[i];
+        vector[1] = mass * _roadAccelerationY[i];
     }
     /**
      * \param iteration index of the current time iteration
+     * \param Z-component of the moment of inertia
      * \return the Z component [GC:Z]
      */
-    T getLagrangianAngularAcceleration(size_t iteration) { return _roadAngularAcceleration[i]; }
+    T getLagrangianTorque(size_t iteration, T momentOfInertia) { return momentOfInertia * _roadAngularAcceleration[i]; }
 
     /**
      * \param iteration index of the current time iteration
+     * \param mass of the object the force is applied
      * \return vector the 2D vector to be written too [leg:XY]
      */
-    void getLagrangianAccelerationsFrontLeft(size_t iteration, T* vector) {
-        vector[0] = _tyreAccelerationsX_fl[iteration];
-        vector[1] = _tyreAccelerationsY_fl[iteration];
+    void getLagrangianForcesFrontLeft(size_t iteration, T mass, T* vector) {
+        vector[0] = mass * _tyreAccelerationsX_fl[iteration];
+        vector[1] = mass * _tyreAccelerationsY_fl[iteration];
     }
 
     /**
      * \param iteration index of the current time iteration
-     * \return vector the 2D vector to be written too [leg:XY]
+      * \param mass of the object the force is applied 
+    * \return vector the 2D vector to be written too [leg:XY]
      */
-    void getLagrangianAccelerationsFrontRight(size_t iteration, T* vector) {
-        vector[0] = _tyreAccelerationsX_fr[iteration];
-        vector[1] = _tyreAccelerationsY_fr[iteration];
+    void getLagrangianForcesFrontRight(size_t iteration, T mass, T* vector) {
+        vector[0] = mass * _tyreAccelerationsX_fr[iteration];
+        vector[1] = mass * _tyreAccelerationsY_fr[iteration];
     }
 
     /**
      * \param iteration index of the current time iteration
+     * \param mass of the object the force is applied
      * \return vector the 2D vector to be written too [leg:XY]
      */
-    void getLagrangianAccelerationsRearLeft(size_t iteration, T* vector) {
-        vector[0] = _tyreAccelerationsX_rl[iteration];
-        vector[1] = _tyreAccelerationsY_rl[iteration];
+    void getLagrangianForcesRearLeft(size_t iteration, T mass, T* vector) {
+        vector[0] = mass * _tyreAccelerationsX_rl[iteration];
+        vector[1] = mass * _tyreAccelerationsY_rl[iteration];
     }
 
     /**
      * \param iteration index of the current time iteration
+     * \param mass of the object the force is applied
      * \return vector the 2D vector to be written too [leg:XY]
      */
-    void getLagrangianAccelerationsRearRight(size_t iteration, T* vector) {
-        vector[0] = _tyreAccelerationsX_rr[iteration];
-        vector[1] = _tyreAccelerationsY_rr[iteration];
+    void getLagrangianForcesRearRight(size_t iteration, T mass, T* vector) {
+        vector[0] = mass * _tyreAccelerationsX_rr[iteration];
+        vector[1] = mass * _tyreAccelerationsY_rr[iteration];
     }
 
     /**
-     * \param iteration index of the current time iteration
-     * \return vector the 2D vector to be written too [GC:XY]
+    * \param iteration index of the current time iteration
+    * \return vector the 2D vector to be written too [GC:XY]
      */
     void getLagrangianPositionCenterOfGravity(size_t iteration, T* vector) {
         vector[0] = _roadPointsX[iteration];
@@ -719,6 +719,7 @@ public:
                     2 * this->getVerticalPositionRearRight(1) -
                     0.5 * this->getVerticalPositionRearRight(2)) /
                    _delta_t;
+
 
 
     }
