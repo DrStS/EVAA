@@ -227,6 +227,7 @@ public:
             Math::dfCheckError(err);
         }
         Math::free(coeff);
+        dfDeleteTask(&Task);
     }
 
     /**
