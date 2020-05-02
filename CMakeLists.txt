@@ -67,6 +67,7 @@ option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
 option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  OFF)
 option(INTERPOLATION         "Use Interpolation"  ON)
+option(WRITECSV         "Write the solution into a CSV"  OFF)
 set(DataType_Precision "DOUBLE" CACHE STRING "DataType_Precision chosen by the user at CMake configure time")
 set_property(CACHE DataType_Precision PROPERTY STRINGS DOUBLE SINGLE INVALID)
 ######################################################################################
@@ -259,6 +260,12 @@ ENDIF()
 IF (${INTERPOLATION}) 
    MESSAGE("Using Interpolation")
    add_definitions(-DINTERPOLATION)
+ENDIF()
+#------------------------------------------------------------------------------------#
+# Check WRITECSV
+IF (${WRITECSV}) 
+   MESSAGE("Writing to CSV")
+   add_definitions(-DWRITECSV)
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Check DataType_Precision

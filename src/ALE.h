@@ -140,6 +140,12 @@ public:
         // start time iteration
         T t = h_;
 
+#ifdef WRITECSV
+        IO::MyFile<T> solutionCSV("aleSolution.txt");
+#endif // WRITECSV
+
+
+
         T* solution_vect;
         int iter = 1;
         // time iteration
