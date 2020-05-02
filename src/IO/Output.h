@@ -133,77 +133,85 @@ public:
     * \brief write one time step to the file
     */
     void writeSoltionVector(
-        T* solVec /**< of size Constants::VEC_DIM * Constants::DIM = 27 */
+        T* solVec, /**< of size Constants::VEC_DIM * Constants::DIM = 27 */
+        T* lagVelVec, /**< Constants::DIM - 1) * Constants::VEC_DIM [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY, T_fr:XY, W_rl:XY, T_rl:XY, W_rr:XY, T_rr:XY] */
+        T* angVec /**< of size 3 */
     ) {
-        myfile << solVec[0] << ",";  // 1 wc[x]
-        myfile << solVec[0] << ",";  // 2 wc[z]
-        myfile << solVec[0] << ",";  // 3 wc[y]
-        myfile << solVec[0] << ",";  // 4 vc[x]
-        myfile << solVec[0] << ",";  // 5 vc[z]
-        myfile << solVec[0] << ",";  // 6 vc[y]
-        myfile << solVec[0] << ",";  // 7 vw1[x]
-        myfile << solVec[0] << ",";  // 8 vw1[z]
-        myfile << solVec[0] << ",";  // 9 vw1[y]
-        myfile << solVec[0] << ",";  // 10 vw2[x]
-        myfile << solVec[0] << ",";  // 11 vw2[z]
-        myfile << solVec[0] << ",";  // 12 vw2[y]
-        myfile << solVec[0] << ",";  // 13 vw3[x]
-        myfile << solVec[0] << ",";  // 14 vw3[z]
-        myfile << solVec[0] << ",";  // 15 vw3[y]
-        myfile << solVec[0] << ",";  // 16 vw4[x]
-        myfile << solVec[0] << ",";  // 17 vw4[z]
-        myfile << solVec[0] << ",";  // 18 vw4[y]
-        myfile << solVec[0] << ",";  // 19 vt1[x]
-        myfile << solVec[0] << ",";  // 20 vt1[z]
-        myfile << solVec[0] << ",";  // 21 vt1[y]
-        myfile << solVec[0] << ",";  // 22 vt2[x]
-        myfile << solVec[0] << ",";  // 23 vt2[z]
-        myfile << solVec[0] << ",";  // 24 vt2[y]
-        myfile << solVec[0] << ",";  // 25 vt3[x]
-        myfile << solVec[0] << ",";  // 26 vt3[z]
-        myfile << solVec[0] << ",";  // 27 vt3[y]
-        myfile << solVec[0] << ",";  // 28 vt4[x]
-        myfile << solVec[0] << ",";  // 29 vt4[z]
-        myfile << solVec[0] << ",";  // 30 vt4[y]
-        myfile << solVec[0] << ",";  // 31 qc[0]
-        myfile << solVec[0] << ",";  // 32 qc[1]
-        myfile << solVec[0] << ",";  // 33 qc[2]
-        myfile << solVec[0] << ",";  // 34 qc[3]
+        myfile << 0 << ",";  // 1 wc[x]
+        myfile << 0 << ",";  // 2 wc[z]
+        myfile << 0 << ",";  // 3 wc[y]
+        myfile << lagVelVec[0] << ",";  // 4 vc[x] currentVelocityLagrangian[0]
+        myfile << 0 << ",";  // 5 vc[z]
+        myfile << lagVelVec[1] << ",";  // 6 vc[y] currentVelocityLagrangian[1]
+        myfile << lagVelVec[7 * (Constants::DIM - 1)] << ",";  // 7 vw_rr[x]
+        myfile << 0 << ",";  // 8 vw1[z]
+        myfile << lagVelVec[7 * (Constants::DIM - 1) + 1] << ",";  // 9 vw_rr[y]
+        myfile << lagVelVec[5 * (Constants::DIM - 1)] << ",";  // 10 vw_rl[x]
+        myfile << 0 << ",";  // 11 vw2[z]
+        myfile << lagVelVec[5 * (Constants::DIM - 1) + 1] << ",";  // 12 vw_rl[y]
+        myfile << lagVelVec[1 * (Constants::DIM - 1)] << ",";  // 13 vw_fl[x]
+        myfile << 0 << ",";  // 14 vw3[z]
+        myfile << lagVelVec[1 * (Constants::DIM - 1) + 1] << ",";  // 15 vw_fl[y]
+        myfile << lagVelVec[3 * (Constants::DIM - 1)] << ",";  // 16 vw_fr[x]
+        myfile << 0 << ",";  // 17 vw4[z]
+        myfile << lagVelVec[3 * (Constants::DIM - 1) + 1] << ",";  // 18 vw_Fr[y]
+        myfile << lagVelVec[8 * (Constants::DIM - 1)] << ",";  // 19 vt1[x]
+        myfile << 0 << ",";  // 20 vt1[z]
+        myfile << lagVelVec[8 * (Constants::DIM - 1) + 1] << ",";  // 21 vt1[y]
+        myfile << lagVelVec[6 * (Constants::DIM - 1)] << ",";  // 22 vt2[x]
+        myfile << 0 << ",";  // 23 vt2[z]
+        myfile << lagVelVec[6 * (Constants::DIM - 1) + 1] << ",";  // 24 vt2[y]
+        myfile << lagVelVec[2 * (Constants::DIM - 1)] << ",";  // 25 vt3[x]
+        myfile << 0 << ",";  // 26 vt3[z]
+        myfile << lagVelVec[2 * (Constants::DIM - 1) + 1] << ",";  // 27 vt3[y]
+        myfile << lagVelVec[4 * (Constants::DIM - 1)] << ",";  // 28 vt4[x]
+        myfile << 0 << ",";  // 29 vt4[z]
+        myfile << lagVelVec[4 * (Constants::DIM - 1) + 1] << ",";  // 30 vt4[y]
+        myfile << angVec[0] << ",";  // 31 qc[0] // here x
+        myfile << angVec[2] << ",";  // 32 qc[1] // here z
+        myfile << angVec[1] << ",";  // 33 qc[2] // here y
+        myfile << 0 << ",";  // 34 qc[3]
         myfile << solVec[0] << ",";  // 35 pcc[x]
-        myfile << solVec[0] << ",";  // 36 pcc[z]
-        myfile << solVec[0] << ",";  // 37 pcc[y]
-        myfile << solVec[0] << ",";  // 38 pw1[x]
-        myfile << solVec[0] << ",";  // 39 pw1[z]
-        myfile << solVec[0] << ",";  // 40 pw1[y]
-        myfile << solVec[0] << ",";  // 41 pw2[x]
-        myfile << solVec[0] << ",";  // 42 pw2[z]
-        myfile << solVec[0] << ",";  // 43 pw2[y]
-        myfile << solVec[0] << ",";  // 44 pw3[x]
-        myfile << solVec[0] << ",";  // 45 pw3[z]
-        myfile << solVec[0] << ",";  // 46 pw3[y]
-        myfile << solVec[0] << ",";  // 47 pw4[x]
-        myfile << solVec[0] << ",";  // 48 pw4[z]
-        myfile << solVec[0] << ",";  // 49 pw4[y]
-        myfile << solVec[0] << ",";  // 50 pt1[x]
-        myfile << solVec[0] << ",";  // 51 pt1[z]
-        myfile << solVec[0] << ",";  // 52 pt1[y]
-        myfile << solVec[0] << ",";  // 53 pt2[x]
-        myfile << solVec[0] << ",";  // 54 pt2[z]
-        myfile << solVec[0] << ",";  // 55 pt2[y]
-        myfile << solVec[0] << ",";  // 56 pt3[x]
-        myfile << solVec[0] << ",";  // 57 pt3[z]
-        myfile << solVec[0] << ",";  // 58 pt3[y]
-        myfile << solVec[0] << ",";  // 59 pt4[x]
-        myfile << solVec[0] << ",";  // 60 pt4[z]
-        myfile << solVec[0] << "\n";  // 61 pt4[y]
+        myfile << solVec[1] << ",";  // 36 pcc[z]
+        myfile << solVec[2] << ",";  // 37 pcc[y]
+        myfile << solVec[7 * Constants::DIM] << ",";  // 38 pw_rr[x]
+        myfile << solVec[7 * Constants::DIM + 1] << ",";  // 39 pw_rr[z]
+        myfile << solVec[7 * Constants::DIM + 2] << ",";  // 40 pw_rr[y]
+        myfile << solVec[5 * Constants::DIM + 1] << ",";  // 41 pw_rl[x]
+        myfile << solVec[5 * Constants::DIM + 1] << ",";  // 42 pw_rl[z]
+        myfile << solVec[5 * Constants::DIM + 1] << ",";  // 43 pw_rl[y]
+        myfile << solVec[1 * Constants::DIM + 1] << ",";  // 44 pw_fl[x]
+        myfile << solVec[1 * Constants::DIM + 1] << ",";  // 45 pw_fl[z]
+        myfile << solVec[1 * Constants::DIM + 1] << ",";  // 46 pw_fl[y]
+        myfile << solVec[3 * Constants::DIM + 1] << ",";  // 47 pw_fr[x]
+        myfile << solVec[3 * Constants::DIM + 1] << ",";  // 48 pw_fr[z]
+        myfile << solVec[3 * Constants::DIM + 1] << ",";  // 49 pw_fr[y]
+        myfile << solVec[8 * Constants::DIM + 1] << ",";  // 50 pt_rr[x]
+        myfile << solVec[8 * Constants::DIM + 1] << ",";  // 51 pt_rr[z]
+        myfile << solVec[8 * Constants::DIM + 1] << ",";  // 52 pt_rr[y]
+        myfile << solVec[6 * Constants::DIM + 1] << ",";  // 53 pt_rl[x]
+        myfile << solVec[6 * Constants::DIM + 1] << ",";  // 54 pt_rl[z]
+        myfile << solVec[6 * Constants::DIM + 1] << ",";  // 55 pt_rl[y]
+        myfile << solVec[2 * Constants::DIM + 1] << ",";  // 56 pt_fl[x]
+        myfile << solVec[2 * Constants::DIM + 1] << ",";  // 57 pt_fl[z]
+        myfile << solVec[2 * Constants::DIM + 1] << ",";  // 58 pt_fl[y]
+        myfile << solVec[4 * Constants::DIM + 1] << ",";  // 59 pt_fr[x]
+        myfile << solVec[4 * Constants::DIM + 1] << ",";  // 60 pt_fr[z]
+        myfile << solVec[4 * Constants::DIM + 1] << "\n";  // 61 pt_fr[y]
     };
 
     void writeSolutionMatrix(
          T* solVec, /**< of size sol_size * Constants::VEC_DIM * Constants::DIM = 27 */
+        T* velVec,
+        T* angVec,
         size_t sol_size
     ) {
         for (auto i = 0; i < sol_size; i++) {
-            writeSoltionVector(solVec + i * Constants::VEC_DIM * Constants::DIM);
+            writeSoltionVector(
+                solVec + i * Constants::VEC_DIM * Constants::DIM,
+                velVec + i * (Constants::DIM - 1) * Constants::VEC_DIM,
+                angVec + i * Constants::DIM
+                );
         }
     };
 

@@ -23,6 +23,7 @@ private:
     // simulation parameters
     T tend_;
     T h_;
+    size_t sol_size;
 
     // time and solution vectors
     T* time_vec;
@@ -67,7 +68,7 @@ public:
         h_ = MetaDataBase<T>::getDataBase().getTimeStepSize();
         tend_ = MetaDataBase<T>::getDataBase().getNumberOfTimeIterations() * h_;
 
-        size_t sol_size = (floor(tend_ / h_) + 1);
+        sol_size = (floor(tend_ / h_) + 1);
         u_sol = Math::malloc<T>(sol_size * (Constants::VEC_DIM * Constants::DIM));
     }
 
@@ -142,6 +143,8 @@ public:
 
 #ifdef WRITECSV
         IO::MyFile<T> solutionCSV("aleSolution.txt");
+        T* angleVec = Math::malloc<T>(sol_size * Constants::DIM);
+        T* velVec = Math::malloc<T>(sol_size * (Constants::DIM - 1) * Constants::VEC_DIM);
 #endif // WRITECSV
 
 
@@ -173,9 +176,21 @@ public:
             // only call this function at every checkpoint
             Car_obj->combineEulerianLagrangianVectors(Car_obj->currentPositionLagrangian, Car_obj->currentDisplacementTwoTrackModel, solution_vect);
 
+#ifdef WRITECSV
+            Car_obj->update_angleCG();
+            Math::copy(Constants::DIM, Car_obj->angle_CG, 1, angleVec + iter * Constants::DIM, 1);
+            Math::copy(Constants::DIM, Car_obj->currentVelocityLagrangian, 1, velVec + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
+#endif // WRITECSV
+
             t += h_;
             iter++;
         }
+
+#ifdef WRITECSV
+        solutionCSV.writeSolutionMatrix(u_sol, velVec, angleVec, sol_size);
+        Math::free(angleVec);
+        Math::free(velVec);
+#endif // WRITECSV
 
         Math::copy<T>(Constants::VEC_DIM * Constants::DIM, u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
         Car_obj->combine_results();
