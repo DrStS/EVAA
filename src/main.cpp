@@ -66,6 +66,8 @@
 #include "EVAAMainWindow.h"
 #endif  // EVAA_COMMANDLINE_ON
 
+#include "outputhdf5.h"
+
 int main(int argc, char **argv) {
 #ifdef EVAA_COMMANDLINE_ON
     std::cout << "Hello EVAA is fired up!" << std::endl;
@@ -121,6 +123,12 @@ int main(int argc, char **argv) {
 
     delete myComputeEngine;
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
+
+    double *d = (double *)calloc(10, sizeof(double));
+    writeVectorToFile<double>("tampit", "nume", d, 10);
+    free(d);
+    d = nullptr;
+
 #endif  // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON
 #ifdef __linux
