@@ -124,10 +124,12 @@ int main(int argc, char **argv) {
     delete myComputeEngine;
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
 
+    // Here is the call to HDF5 component from writeVectorToFile (in outputhdf5.h)
     double *d = (double *)calloc(10, sizeof(double));
-    writeVectorToFile<double>("tampit", "nume", d, 10);
+    writeVectorToFile<double>("file1", "name1", d, 10);
     free(d);
     d = nullptr;
+    /// 
 
 #endif  // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON
