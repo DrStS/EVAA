@@ -26,6 +26,7 @@ public:
                         T period_right, T period_left, T shift_right, T shift_left,
                         T* initialUpperSpringLengths, T* initialLowerSpringLengths, T* latitudes, T* longitudes) :
         _numIterations(numIterations), _delta_t(delta_t) {
+
         // Read Eulerian force parameters
         if (period_right == 0) {
             _frequencyRight = 0;
@@ -331,7 +332,7 @@ public:
         for (int i = 0; i < _numIterations + 1; ++i) {
             T c = std::cos(_roadAngles[i]);
             T s = std::sin(_roadAngles[i]);
-
+            
             _legPointsX_fl[i] =
                 _roadPointsX[i] + localXcoordinates[0] * c - localYcoordinates[0] * s;
             _legPointsY_fl[i] =
@@ -371,7 +372,6 @@ public:
         IO::writeRoadTrajectoryCSV(_legPointsX_rl, _legPointsY_rl, _numIterations + 1, "LegRl.txt");
         IO::writeRoadTrajectoryCSV(_legPointsX_rr, _legPointsY_rr, _numIterations + 1, "LegRr.txt");
 
-        // delete leg positions
     }
 
     /**
@@ -476,7 +476,7 @@ public:
      * \param time at which this happens
      */
     T getVerticalPositionFrontLeft(size_t iteration) {
-        return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fl));
+        return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_fl));
     }
 
     /**
@@ -484,20 +484,20 @@ public:
      * \param time at which this happens
      */
     T getVerticalPositionFrontRight(size_t iteration) {
-        return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fr));
+        return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_fr));
     }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionRearLeft(size_t iteration) { return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rl)); }
+    T getVerticalPositionRearLeft(size_t iteration) { return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_rl)); }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionRearRight(size_t iteration) { return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rr)); }
+    T getVerticalPositionRearRight(size_t iteration) { return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_rr)); }
 
     /**
      * \param iteration index of the current time iteration
@@ -518,8 +518,8 @@ public:
      * \return vector the 2D vector to be written too [leg:XY]
      */
     void getLagrangianAccelerationsFrontLeft(size_t iteration, T* vector) {
-        vector[0] = _tyreAccelerationsX_fl[i];
-        vector[1] = _tyreAccelerationsY_fl[i];
+        vector[0] = _tyreAccelerationsX_fl[iteration];
+        vector[1] = _tyreAccelerationsY_fl[iteration];
     }
 
     /**
@@ -527,8 +527,8 @@ public:
      * \return vector the 2D vector to be written too [leg:XY]
      */
     void getLagrangianAccelerationsFrontRight(size_t iteration, T* vector) {
-        vector[0] = _tyreAccelerationsX_fr[i];
-        vector[1] = _tyreAccelerationsY_fr[i];
+        vector[0] = _tyreAccelerationsX_fr[iteration];
+        vector[1] = _tyreAccelerationsY_fr[iteration];
     }
 
     /**
@@ -536,8 +536,8 @@ public:
      * \return vector the 2D vector to be written too [leg:XY]
      */
     void getLagrangianAccelerationsRearLeft(size_t iteration, T* vector) {
-        vector[0] = _tyreAccelerationsX_rl[i];
-        vector[1] = _tyreAccelerationsY_rl[i];
+        vector[0] = _tyreAccelerationsX_rl[iteration];
+        vector[1] = _tyreAccelerationsY_rl[iteration];
     }
 
     /**
@@ -545,8 +545,8 @@ public:
      * \return vector the 2D vector to be written too [leg:XY]
      */
     void getLagrangianAccelerationsRearRight(size_t iteration, T* vector) {
-        vector[0] = _tyreAccelerationsX_rr[i];
-        vector[1] = _tyreAccelerationsY_rr[i];
+        vector[0] = _tyreAccelerationsX_rr[iteration];
+        vector[1] = _tyreAccelerationsY_rr[iteration];
     }
 
     /**
@@ -554,8 +554,8 @@ public:
      * \return vector the 2D vector to be written too [GC:XY]
      */
     void getLagrangianPositionCenterOfGravity(size_t iteration, T* vector) {
-        vector[0] = _roadPointsX[i];
-        vector[1] = _roadPointsY[i];
+        vector[0] = _roadPointsX[iteration];
+        vector[1] = _roadPointsY[iteration];
     }
 
     /**
@@ -585,6 +585,8 @@ public:
                                  T* pt_rr, T* pw_fl, T* pw_fr, T* pw_rl, T* pw_rr, T* vt_fl,
                                  T* vt_fr, T* vt_rl, T* vt_rr, T* vw_fl, T* vw_fr, T* vw_rl,
                                  T* vw_rr) {
+   
+  
         // angles
         angle[0] = 0;
         angle[1] = 0;
@@ -604,6 +606,8 @@ public:
         vcc[0] = (-1.5 * _roadPointsX[0] + 2 * _roadPointsX[1] - 0.5 * _roadPointsX[2]) / _delta_t;
         vcc[1] = (-1.5 * _roadPointsY[0] + 2 * _roadPointsY[1] - 0.5 * _roadPointsY[2]) / _delta_t;
         vcc[2] = 0;
+
+  
 
         // wheel positions
         pw_fl[0] = _legPointsX_fl[0];        
@@ -642,7 +646,7 @@ public:
         vw_fl[0] =
             (-1.5 * _legPointsX_fl[0] + 2 * _legPointsX_fl[1] - 0.5 * _legPointsX_fl[2]) / _delta_t;
         vw_fl[1] =
-            (-1.5 * _legPointsY_fl[0] + 2 * _legPointsY_fl[1] - 0.5 * _legPointsY_fl[2]) / _delta_;
+            (-1.5 * _legPointsY_fl[0] + 2 * _legPointsY_fl[1] - 0.5 * _legPointsY_fl[2]) / _delta_t;
         vw_fl[2] = (-1.5 * this->getVerticalPositionFrontLeft(0) +
                     2 * this->getVerticalPositionFrontLeft(1) -
                     0.5 * this->getVerticalPositionFrontLeft(2)) /
@@ -685,7 +689,7 @@ public:
         vt_fl[0] =
             (-1.5 * _legPointsX_fl[0] + 2 * _legPointsX_fl[1] - 0.5 * _legPointsX_fl[2]) / _delta_t;
         vt_fl[1] =
-            (-1.5 * _legPointsY_fl[0] + 2 * _legPointsY_fl[1] - 0.5 * _legPointsY_fl[2]) / _delta_;
+            (-1.5 * _legPointsY_fl[0] + 2 * _legPointsY_fl[1] - 0.5 * _legPointsY_fl[2]) / _delta_t;
         vt_fl[2] = (-1.5 * this->getVerticalPositionFrontLeft(0) +  2 * this->getVerticalPositionFrontLeft(1) - 0.5 * this->getVerticalPositionFrontLeft(2)) /
                    _delta_t;
 

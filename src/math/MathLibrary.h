@@ -455,7 +455,7 @@ public:
 
             // 1. Initialize guess from previous time step
             // f_old = f(t(n-1), x_previous');
-            obj->compute_f3D_reduced(it_start, t, f_old);
+            obj->compute_f3D_reduced(it_start, t, f_old,i);
 
             // in case the velocity is 0 add nuggets to avoid singular matrices
             // (slow check for improvement) f_old(abs(f_old) < 0.01) = 0.01;
@@ -468,7 +468,7 @@ public:
             t += dt;
             Math::copy<T>(x_len, it_start, 1, x, 1);
             Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
-            obj->compute_f3D_reduced(x, t, f_new);
+            obj->compute_f3D_reduced(x, t, f_new,i);
 
             // Initial approximation of the Jacobian
             // dx = x - x_previous;
@@ -508,7 +508,7 @@ public:
                 Math::scal<T>(x_len, -1, x_new, 1);
 
                 // Calculate new derivative
-                obj->compute_f3D_reduced(x_new, t, f_new);
+                obj->compute_f3D_reduced(x_new, t, f_new,i);
 
                 // F_new = x_new - x_previous - delta_t * x_dot
                 Math::copy<T>(x_len, x_new, 1, F_new, 1);
@@ -599,7 +599,7 @@ public:
 
         // 1. Initialize guess from previous time step
         // f_old = f(t(n-1), x_previous');
-        obj->compute_f3D_reduced(it_start, t, f_old);
+        obj->compute_f3D_reduced(it_start, t, f_old,i);
         // in case the velocity is 0 add nuggets to avoid singular matrices
         // (slow check for improvement) f_old(abs(f_old) < 0.01) = 0.01;
         val = eps * (2 * (1 + rand() % 2) - 3);
@@ -611,7 +611,7 @@ public:
         t += dt;
         Math::copy<T>(x_len, it_start, 1, x, 1);
         Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
-        obj->compute_f3D_reduced(x, t, f_new);
+        obj->compute_f3D_reduced(x, t, f_new,i);
 
         // Initial approximation of the Jacobian
         // dx = x - x_previous;
@@ -650,7 +650,7 @@ public:
             Math::scal<T>(x_len, -1, x_new, 1);
 
             // Calculate new derivative
-            obj->compute_f3D_reduced(x_new, t, f_new);
+            obj->compute_f3D_reduced(x_new, t, f_new,i);
 
             // F_new = x_new - x_previous - delta_t * x_dot
             Math::copy<T>(x_len, x_new, 1, F_new, 1);
@@ -693,7 +693,7 @@ public:
 
                 // 1. Initialize guess from previous time step
                 // f_old = f(t(n-1), x_previous');
-                obj->compute_f3D_reduced(it_start, t, f_old);
+                obj->compute_f3D_reduced(it_start, t, f_old,i);
                 // in case the velocity is 0 add nuggets to avoid singular
                 // matrices (slow check for improvement) f_old(abs(f_old) <
                 // 0.01) = 0.01;
@@ -706,7 +706,7 @@ public:
                 t += dt;
                 Math::copy<T>(x_len, it_start, 1, x, 1);
                 Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
-                obj->compute_f3D_reduced(x, t, f_new);
+                obj->compute_f3D_reduced(x, t, f_new,i);
 
                 // Initial approximation of the Jacobian
                 // dx = x - x_previous;
@@ -749,7 +749,7 @@ public:
                     Math::scal<T>(x_len, -1, x_new, 1);
 
                     // Calculate new derivative
-                    obj->compute_f3D_reduced(x_new, t - dt, f_new);
+                    obj->compute_f3D_reduced(x_new, t - dt, f_new,i);
 
                     // F_new = x_new - 4/3 * x_previous + 1/3 *
                     // x_previous_previous - 2/3 * delta_t
@@ -844,7 +844,7 @@ public:
 
             // 1. Initialize guess from previous time step
             // f_old = f(t(n-1), x_previous');
-            obj->compute_f3D_reduced(it_start, t, f_old);
+            obj->compute_f3D_reduced(it_start, t, f_old,i);
 
             // in case the velocity is 0 add nuggets to avoid singular matrices
             // (slow check for improvement) f_old(abs(f_old) < 0.001) = 0.001;
@@ -857,7 +857,7 @@ public:
             t += dt;
             Math::copy<T>(x_len, it_start, 1, x, 1);
             Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
-            obj->compute_f3D_reduced(x, t, f_new);
+            obj->compute_f3D_reduced(x, t, f_new,i);
 
             // Initial approximation of the Jacobian
             // dx = x - x_previous;
@@ -901,7 +901,7 @@ public:
                 Math::scal<T>(x_len, -1, x_new, 1);
 
                 // Calculate new derivative
-                obj->compute_f3D_reduced(x_new, t, f_new);
+                obj->compute_f3D_reduced(x_new, t, f_new,i);
 
                 // F_new = x_new - x_previous - delta_t * 0.5 * (x_dot +
                 // x_dot_previous);
@@ -1022,7 +1022,7 @@ public:
             it_start = x_vector_new + (i - 1) * x_len;
             curr_time_start_pos = x_vector_new + (i)*x_len;
             // k1 = delta_t * f(t_prev, x_previous')';
-            obj->compute_f3D_reduced(it_start, t, f_old);
+            obj->compute_f3D_reduced(it_start, t, f_old, i);
             Math::copy<T>(x_len, f_old, 1, k1, 1);
             Math::scal<T>(x_len, dt, k1, 1);
 
@@ -1030,7 +1030,7 @@ public:
             Math::copy<T>(x_len, k1, 1, x, 1);
             Math::scal<T>(x_len, 1. / 2.0, x, 1);
             Math::axpy<T>(x_len, 1, it_start, 1, x, 1);
-            obj->compute_f3D_reduced(x, t + dt / 2.0, f_old);
+            obj->compute_f3D_reduced(x, t + dt / 2.0, f_old,i);
             Math::copy<T>(x_len, f_old, 1, k2, 1);
             Math::scal<T>(x_len, dt, k2, 1);
 
@@ -1038,14 +1038,14 @@ public:
             Math::copy<T>(x_len, k2, 1, x, 1);
             Math::scal<T>(x_len, 1. / 2.0, x, 1);
             Math::axpy<T>(x_len, 1, it_start, 1, x, 1);
-            obj->compute_f3D_reduced(x, t + dt / 2.0, f_old);
+            obj->compute_f3D_reduced(x, t + dt / 2.0, f_old,i);
             Math::copy<T>(x_len, f_old, 1, k3, 1);
             Math::scal<T>(x_len, dt, k3, 1);
 
             // k4 = delta_t * f(t_prev + delta_t, x_previous' + k3')';
             Math::copy<T>(x_len, k3, 1, x, 1);
             Math::axpy<T>(x_len, 1, it_start, 1, x, 1);
-            obj->compute_f3D_reduced(x, t + dt, f_old);
+            obj->compute_f3D_reduced(x, t + dt, f_old,i);
             Math::copy<T>(x_len, f_old, 1, k4, 1);
             Math::scal<T>(x_len, dt, k4, 1);
 

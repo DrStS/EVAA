@@ -16,7 +16,7 @@ namespace EVAA {
  */
 template <class T>
 class MBDMethod {
-private:
+   private:
     // Simulation Parameters
 
     T h;
@@ -498,6 +498,27 @@ private:
         // free memory
         Math::free<T>(unit_z_vector);
         Math::free<T>(velocity_direction_tyre);
+    }
+
+
+    /**
+    * \brief set the road forces to the one from the trajectory
+    */
+    void getArbitraryRoadForces(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr, size_t i) { 
+        
+        auto& db = MetaDataBase<T>::getDataBase();
+
+        db.getArbitraryTrajectory()->getLagrangianAccelerationsFrontLeft(i, Fr_fl);
+        Fr_fl[2] = db.getArbitraryTrajectory()->getVerticalPositionFrontLeft(i);
+
+        db.getArbitraryTrajectory()->getLagrangianAccelerationsFrontRight(i, Fr_fr);
+        Fr_fr[2] = db.getArbitraryTrajectory()->getVerticalPositionFrontRight(i);
+
+        db.getArbitraryTrajectory()->getLagrangianAccelerationsRearLeft(i, Fr_rl);
+        Fr_rl[2] = db.getArbitraryTrajectory()->getVerticalPositionRearLeft(i);
+
+        db.getArbitraryTrajectory()->getLagrangianAccelerationsRearRight(i, Fr_rr);   
+        Fr_rr[2] = db.getArbitraryTrajectory()->getVerticalPositionRearRight(i);
     }
 
     /** Functions needed for compute_f */
@@ -1502,7 +1523,7 @@ lower_normal4;
         start_next += Constants::DIM;
     }
 
-public:
+   public:
     /**
      * Constructor
      */
@@ -1590,7 +1611,17 @@ public:
         get_initial_length(qc_, r_fl, r_fr, r_rl, r_rr, pcc, pw_fl_, pw_fr_, pw_rl_, pw_rr_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
 
         // overwrites the initial velocity values
-        if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
+        if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, 
+            vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
+        if (boundary_conditions == BoundaryConditionRoad::ARBITRARY) {
+            T angle[3];
+            db.getArbitraryTrajectory()->updateInitialConditions(angle, initial_angular_velocity, pcc_, vc, pt_fl_, pt_fr_, pt_rl_, pt_rr_, pw_fl_, pw_fr_, pw_rl_, pw_rr_, vt_fl, vt_fr, vt_rl, vt_rr, vw_fl, vw_fr, vw_rl, vw_rr);
+            // update quaternion
+            qc_[0] = 0;
+            qc_[1] = 0;
+            qc_[2] = -std::sin(angle[2] * 0.5);
+            qc_[3] = std::cos(angle[2] * 0.5);
+        }
         i = 0;
         j = 0;
         // wc
@@ -1646,26 +1677,18 @@ public:
 
         if (used_solver == MBDSolver::BROYDEN_CN) {
             Math::Solvers<T, MBDMethod>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
-        }
-        else if (used_solver == MBDSolver::RUNGE_KUTTA_4) {
+        } else if (used_solver == MBDSolver::RUNGE_KUTTA_4) {
             Math::Solvers<T, MBDMethod>::RK4(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
-        }
-        else if (used_solver == MBDSolver::BROYDEN_BDF2) {
+        } else if (used_solver == MBDSolver::BROYDEN_BDF2) {
             Math::Solvers<T, MBDMethod>::Broyden_PDF2(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
-        }
-        else if (used_solver == MBDSolver::BROYDEN_EULER) {
+        } else if (used_solver == MBDSolver::BROYDEN_EULER) {
             Math::Solvers<T, MBDMethod>::Broyden_Euler(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
-        }
-        else if (used_solver == MBDSolver::EXPLICIT_EULER) {
+        } else if (used_solver == MBDSolver::EXPLICIT_EULER) {
             std::cout << "Explicit solver hasn't been implemented, you don't "
-                         "want to use it"
-                      << std::endl;
-        }
-        else {
+                         "want to use it" << std::endl;
+        } else {
             std::cout << "sorry man, the solver you picked for MBD is weird "
-                         "and hasn't been "
-                         "implemented yet"
-                      << std::endl;
+                         "and hasn't been implemented yet" << std::endl;
         }
 
         compute_f_clean();
@@ -1682,9 +1705,10 @@ public:
      * Computes the forces and torques on each point mass and computes the right
      * hand side of the ODE \param[in] x_ current solution of the system
      * \param[in] t_ current simulation time
+     * \param [in] iteration count of the current iteration
      * \param[out] f_ the load vector
      */
-    void compute_f3D_reduced(T* x_, T t_, T* f_) {
+    void compute_f3D_reduced(T* x_, T t_, T* f_, size_t iteration) {
         /*
          * Small performance gain might be possible by transforming C_cN to
          * column major Note: corresponding MKL function call have to be changed
@@ -1720,16 +1744,17 @@ public:
 
         if (boundary_conditions == BoundaryConditionRoad::FIXED) {
             get_fixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
-        }
-        else if (boundary_conditions == BoundaryConditionRoad::NONFIXED) {
+        } else if (boundary_conditions == BoundaryConditionRoad::NONFIXED) {
             get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
-        }
-        else if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) {
+        } else if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) {
             auto& db = MetaDataBase<T>::getDataBase();
             get_circular_road_force(cf_local_FR_fl, vt_fl_, db.getTyreMassFrontLeft(), pt_fl_);
             get_circular_road_force(cf_local_FR_fr, vt_fr_, db.getTyreMassFrontRight(), pt_fr_);
             get_circular_road_force(cf_local_FR_rl, vt_rl_, db.getTyreMassRearLeft(), pt_rl_);
             get_circular_road_force(cf_local_FR_rr, vt_rr_, db.getTyreMassRearRight(), pt_rr_);
+        }
+        else if (boundary_conditions == BoundaryConditionRoad::NONFIXED) {
+            getArbitraryRoadForces(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr, iteration);
         }
 
         compute_car_body_total_torque();
