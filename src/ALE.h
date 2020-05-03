@@ -167,7 +167,7 @@ public:
             Math::scal<T>(centripetal_force_dimensions - 1, -1, centripetal_force, 1);
 
             // TODO: write this at checkpoint times from the XML
-            if (iter == 100) IO::writeVector(centripetal_force, centripetal_force_dimensions);
+            if (iter == 1000) IO::writeVector(centripetal_force, centripetal_force_dimensions);
             global_frame_solver(t);
 
             // translate 27 force vector + 3 torques into 11DOF

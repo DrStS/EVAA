@@ -960,16 +960,25 @@ public:
     /**
      * \brief newton loop for the 11 Dof system
      */
-    static void Newton(C* obj /**< instance of 11dof class*/, T* force /**< pointer to force vector (not from 11dof class)*/, T* J /**< pointer to Jacobian from 11dofClass*/, T* res /**< residual from 11Dof class*/, T* res_norm /**< norm of the residual from the 11 Dof class*/, T* u_n_p_1 /**< current position vector*/, T* temp /**< pointer to temp vector from 11 dof class for stopping
-                                                                                                                                                                                                                                                                                                                                             criteria*/
+    static void Newton(
+        C* obj /**< instance of 11dof class*/,
+        T* force /**< pointer to force vector (not from 11dof class)*/,
+        T* J /**< pointer to Jacobian from 11dofClass*/,
+        T* res /**< residual from 11Dof class*/,
+        T* res_norm /**< norm of the residual from the 11 Dof class*/,
+        T* u_n_p_1 /**< current position vector*/,
+        T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/,
+        T* tolerance /**< pointer to tolerance from 11 dof class for stopping criteria*/,
+        int* maxNewtonIteratins /**< pointer to maxiumum number of neton iterations*/,
+        int* count /**< pointer to iteration count */
     ) {
-        int count = 0;
+        *count = 0;
         T delta_norm = 1, delta_norm2 = 0;
         lapack_int status;
         obj->calcResidual(force);
 
         do {
-            count++;
+            *count= *count + 1;
             obj->constructJacobian();
 
             // get J=LL^T
@@ -990,7 +999,7 @@ public:
             Math::copy<T>(Constants::DOF, res, 1, temp, 1);
             Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
             delta_norm2 = Math::nrm2<T>(Constants::DOF, temp, 1);
-        } while (*res_norm > Constants::TOLERANCE && delta_norm2 < delta_norm && count < 10);
+        } while (*res_norm > *tolerance && delta_norm2 < delta_norm && *count < *maxNewtonIteratins);
     }
 
     /**

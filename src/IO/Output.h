@@ -275,6 +275,9 @@ public:
     }
 
     void writeSingleValue(T value) { myfile << value << ","; }
+    void writeSingleValue(int value) { myfile << value << ","; }
+
+    void newLine() { myfile << "\n"; }
     
 
     void writeParameters() { 

@@ -169,7 +169,9 @@ public:
         }
 
         // for debugging purposes
+#ifdef WRITECSV
         generateLookupOutputFile(l_min, l_max, a[0]);
+#endif // WRITECSV
 
         Math::free<T>(grid);
     }
@@ -255,7 +257,7 @@ public:
             Math::dfInterpolate1D<T>(task[0], DF_INTERP, DF_METHOD_PP, 1, &interpolationPoints[i], DF_NO_HINT, ndorder, dorder, nullptr, &interpolation[i], rhint, 0);
         }
 
-        IO::writeLookUpGridPlusInterpolateValues<T>(axis, grid, nx, interpolationPoints, interpolation, 2 * nx - 1, "LookupTablePlusInterpolation" + std::to_string(add) + ".txt");
+        IO::writeLookUpGridPlusInterpolateValues<T>(axis, grid, nx, interpolationPoints, interpolation, 2 * nx - 1, "C:\\software\\repos\\EVAA\\output\\LookupTablePlusInterpolation" + std::to_string(add) + ".txt");
         Math::free<T>(interpolation);
     }
 };

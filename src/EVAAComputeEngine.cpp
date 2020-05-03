@@ -618,11 +618,11 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
-    if (db.getRoadConditions() == BoundaryConditionRoad::NONFIXED) {
+    if (true) {
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
         TwoTrackModelFull<Constants::floatEVAA> solver(car);
-        solver.apply_boundary_condition(db.getRoadConditions());
+        // solver.apply_boundary_condition(db.getRoadConditions());
 
         solver.solve(sol);
 
@@ -700,7 +700,14 @@ void EVAAComputeEngine::computeALE(void) {
 
     roadProfile->update_initial_condition(car);
     LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(roadProfile, car);
-    TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car);
+    TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj;
+    ALESolver solver = db.getALESolver();
+    if (solver == ALESolver::IMPLICIT_EULER) {
+        TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car);
+    }
+    else if (solver == ALESolver::BDF2) {
+        TwoTrackModel_obj = new TwoTrackModelBDF2<Constants::floatEVAA>(car);
+    } // Metadatabase already checked if a non valid solver was seleceted
     ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
 
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
