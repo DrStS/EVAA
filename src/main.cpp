@@ -66,6 +66,10 @@
 #include "EVAAMainWindow.h"
 #endif  // EVAA_COMMANDLINE_ON
 
+#ifdef USE_HDF5
+#include "OutputHDF5.h"
+#endif  // USE_HDF5
+
 int main(int argc, char **argv) {
 #ifdef EVAA_COMMANDLINE_ON
     std::cout << "Hello EVAA is fired up!" << std::endl;
@@ -121,6 +125,15 @@ int main(int argc, char **argv) {
 
     delete myComputeEngine;
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
+
+    // Here is the call to HDF5 component from writeVectorToFile (in outputhdf5.h)
+#ifdef USE_HDF5
+    double *d = (double *)calloc(10, sizeof(double));
+    writeVectorToFile<double>("file1", "name1", d, 10);
+    free(d);
+    d = nullptr;
+#endif  // USE_HDF5
+
 #endif  // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON
 #ifdef __linux
