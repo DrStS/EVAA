@@ -630,7 +630,9 @@ public:
      * compute current spring lengths, compute CIR functions
      */
     void updateLengthsTwoTrackModel() {
+
         UpdateCorners11DOF();
+
         // global vector update
         updateGlobalTwoTrackVectors();
 
@@ -661,7 +663,6 @@ public:
         Math::copy<T>(Constants::VEC_DIM * Constants::DIM, initialPositionGlobal, 1, Position_vec, 1);
         ConvertALEToGlobal(currentPositionLagrangian, Position_vec);
         Convert11DOFToGlobal(currentDisplacementTwoTrackModel, Position_vec);
-        
         update_angleCG();
         w_CG[2] = currentAngularVelocityLagrangian;
         ConvertALEToGlobal(currentVelocityLagrangian, Velocity_vec);
