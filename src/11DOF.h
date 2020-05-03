@@ -262,8 +262,8 @@ public:
      */
     virtual void update_step(T* force, T* solution) {
         // Math::scal<T>(Constants::DOF, -1, u_n_m_1, Constants::INCX);
-        //Math::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
-        //constructAMatrix();
+        Math::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
+        constructAMatrix();
 #ifdef INTERPOLATION
         Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration, &newtonIteration);
 #endif
@@ -851,7 +851,7 @@ public:
      */
     void update_step_bdf2(T* force, T* solution) {
         // cblas_dscal(DOF,0, force, 1);
-        //getInitialGuess(force);
+        getInitialGuess(force);
 #ifdef INTERPOLATION
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration, &newtonIteration);
 #endif

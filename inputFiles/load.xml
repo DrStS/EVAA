@@ -43,7 +43,7 @@
     <forceBody>
       <x>0</x>
       <y>0</y>
-      <z>1.1e3</z>
+      <z>1.1</z>
     </forceBody>
     <forceWheel>
       <ReerRight>
