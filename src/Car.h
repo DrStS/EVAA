@@ -206,9 +206,7 @@ public:
                                           // T_rl:Z, W_rr:Z, T_rr:Z]
 
     // For ALE || suggestion: reduce it to only leg position (wheel == tyre)
-    T* currentPositionLagrangian;  // [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY,
-                                   // T_fr:XY, W_rl:XY, T_rl:XY, W_rr:XY,
-                                   // T_rr:XY]
+    T* currentPositionLagrangian;  // [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY, T_fr:XY, W_rl:XY, T_rl:XY, W_rr:XY, T_rr:XY]
 
     T currentAngularVelocityLagrangian;  // [CG:Z]
     T currentAngleLagrangian;            // [CG:Z]
@@ -536,10 +534,9 @@ public:
 
     /**
      * Get the solution vector as required for the 11DOF system
-     * \param Global_position in the format
-     * [GC:XYZ,W_fl:XYZ,T_fl:XYZ,W_fr:XYZ,T_fr:XYZ,...] \param Global_angle with
-     * three angles [X,Y,Z] \return Position_11dof in the format
-     * [GC:Y,angle:XY,W_fl:Y,T_fl:Y,W_fr:Y,T_fr:Y,...]
+     * \param Global_position in the format [GC:XYZ,W_fl:XYZ,T_fl:XYZ,W_fr:XYZ,T_fr:XYZ,...] 
+     * \param Global_angle with three angles [X,Y,Z] 
+     * \return Position_11dof in the format [GC:Y,angle:XY,W_fl:Y,T_fl:Y,W_fr:Y,T_fr:Y,...]
      */
     void construct_11DOF_vector(T* Global_position, T* Global_angle, T* Position_11dof) {
         Position_11dof[0] = Global_position[2];  // z coordinate of CG
@@ -633,7 +630,9 @@ public:
      * compute current spring lengths, compute CIR functions
      */
     void updateLengthsTwoTrackModel() {
+
         UpdateCorners11DOF();
+
         // global vector update
         updateGlobalTwoTrackVectors();
 
@@ -664,13 +663,19 @@ public:
         Math::copy<T>(Constants::VEC_DIM * Constants::DIM, initialPositionGlobal, 1, Position_vec, 1);
         ConvertALEToGlobal(currentPositionLagrangian, Position_vec);
         Convert11DOFToGlobal(currentDisplacementTwoTrackModel, Position_vec);
+        update_angleCG();
+        w_CG[2] = currentAngularVelocityLagrangian;
+        ConvertALEToGlobal(currentVelocityLagrangian, Velocity_vec);
+    }
 
+    /**
+    * \brief updates the angles of the CG
+    */
+    void update_angleCG() {
         // Angles manually
         angle_CG[0] = initialAngleGlobal[0] + currentDisplacementTwoTrackModel[1];
         angle_CG[1] = initialAngleGlobal[1] + currentDisplacementTwoTrackModel[2];
         angle_CG[2] = currentAngleLagrangian;
-        w_CG[2] = currentAngularVelocityLagrangian;
-        ConvertALEToGlobal(currentVelocityLagrangian, Velocity_vec);
     }
 
     // Sums up all the 9 masses

@@ -23,6 +23,7 @@ private:
     // simulation parameters
     T tend_;
     T h_;
+    size_t sol_size;
 
     // time and solution vectors
     T* time_vec;
@@ -67,7 +68,7 @@ public:
         h_ = MetaDataBase<T>::getDataBase().getTimeStepSize();
         tend_ = MetaDataBase<T>::getDataBase().getNumberOfTimeIterations() * h_;
 
-        size_t sol_size = (floor(tend_ / h_) + 1);
+        sol_size = (floor(tend_ / h_) + 1);
         u_sol = Math::malloc<T>(sol_size * (Constants::VEC_DIM * Constants::DIM));
     }
 
@@ -113,6 +114,7 @@ public:
 
         torque[2] = new_torque[2];  // z - component
     }
+
     void solve(T* sol_vect, T* u_sol_param) {
         // initialize solution vector
         int sol_size = (floor(tend_ / h_) + 1);
@@ -141,10 +143,13 @@ public:
         T t = h_;
 
 #ifdef WRITECSV
-        IO::MyFile<T> solutionCSV("aleSolution.txt");
+        IO::MyFile<T> solutionCSV("C:\\software\\repos\\EVAA\\output\\aleSolution.txt");
+        IO::MyFile<T> parametersCSV("C:\\software\\repos\\EVAA\\output\\simulationParameters.txt");
+        parametersCSV.writeParameters();
+        T* angleVecCSV = Math::malloc<T>(sol_size * Constants::DIM);
+        T* posVecCSV = Math::malloc<T>(sol_size * Constants::DIM * Constants::VEC_DIM);
+        T* velVecCSV = Math::malloc<T>(sol_size * (Constants::DIM - 1) * Constants::VEC_DIM);
 #endif // WRITECSV
-
-
 
         T* solution_vect;
         int iter = 1;
@@ -160,6 +165,8 @@ public:
             // convert centrifugal force to centripetal (only for x, y
             // direction)
             Math::scal<T>(centripetal_force_dimensions - 1, -1, centripetal_force, 1);
+
+            // TODO: write this at checkpoint times from the XML
             if (iter == 100) IO::writeVector(centripetal_force, centripetal_force_dimensions);
             global_frame_solver(t);
 
@@ -170,12 +177,27 @@ public:
             Car_obj->updateLengthsTwoTrackModel();
             solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
 
-            // only call this function at every checkpoint
+            // TODO: only call this function at every checkpoint
             Car_obj->combineEulerianLagrangianVectors(Car_obj->currentPositionLagrangian, Car_obj->currentDisplacementTwoTrackModel, solution_vect);
+
+#ifdef WRITECSV
+            Car_obj->update_angleCG();
+            Car_obj->combine_results();            
+            Math::copy(Constants::VEC_DIM * Constants::DIM, Car_obj->Position_vec, 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
+            Math::copy(Constants::DIM, Car_obj->angle_CG, 1, angleVecCSV + iter * Constants::DIM, 1);
+            Math::copy(Constants::DIM, Car_obj->currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
+#endif // WRITECSV
 
             t += h_;
             iter++;
         }
+
+#ifdef WRITECSV
+        solutionCSV.writeSolutionMatrix(posVecCSV, velVecCSV, angleVecCSV, sol_size);
+        Math::free(angleVecCSV);
+        Math::free(velVecCSV);
+        Math::free(posVecCSV);
+#endif  // WRITECSV
 
         Math::copy<T>(Constants::VEC_DIM * Constants::DIM, u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
         Car_obj->combine_results();

@@ -6,7 +6,7 @@
   <!--roadProfile>
     <detachedTyre></detachedTyre>
   </roadProfile-->
-  <!--roadProfile>
+  <roadProfile>
     <circularRoadProfile>
       <radius>50</radius>
       <center>
@@ -15,8 +15,8 @@
         <z>0</z>
       </center>
     </circularRoadProfile>
-  </roadProfile-->
-  <roadProfile>
+  </roadProfile>
+  <!--roadProfile>
     <arbitraryRoadProfile>
       <horizontalProfile>
         <wayPoint X="0"   Y="0"   time="0"/>
@@ -32,7 +32,7 @@
         </sinusoidalProfile>
       </verticalProfile>
     </arbitraryRoadProfile>
-  </roadProfile>
+  </roadProfile-->
   <forces>
     <forceBody>
       <x>0</x>

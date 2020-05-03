@@ -189,8 +189,10 @@ public:
                             timeInterpolationPoints, _roadPointsX);
             interpolateAxis(numProvidedPoints, providedPointsY, providedTimes,
                             timeInterpolationPoints, _roadPointsY);
+#ifdef WRITECSV
             IO::writeRoadTrajectoryCSV(_roadPointsX, _roadPointsY, _numIterations + 1,
-                                       "Trajectory.txt");
+                                       "C:\\software\\repos\\EVAA\\output\\Trajectory.txt");
+#endif // WRITECSV
         }
         Math::free(timeInterpolationPoints);
     }
@@ -357,10 +359,12 @@ public:
         calculateAccelerations(_tyreAccelerationsX_rr, _legPointsX_rr);
         calculateAccelerations(_tyreAccelerationsY_rr, _legPointsY_rr);
 
-        IO::writeRoadTrajectoryCSV(_legPointsX_fl, _legPointsY_fl, _numIterations + 1, "LegFl.txt");
-        IO::writeRoadTrajectoryCSV(_legPointsX_fr, _legPointsY_fr, _numIterations + 1, "LegFr.txt");
-        IO::writeRoadTrajectoryCSV(_legPointsX_rl, _legPointsY_rl, _numIterations + 1, "LegRl.txt");
-        IO::writeRoadTrajectoryCSV(_legPointsX_rr, _legPointsY_rr, _numIterations + 1, "LegRr.txt");
+#ifdef WRITECSV
+        IO::writeRoadTrajectoryCSV(_legPointsX_fl, _legPointsY_fl, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegFl.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_fr, _legPointsY_fr, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegFr.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_rl, _legPointsY_rl, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegRl.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_rr, _legPointsY_rr, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegRr.txt");
+#endif //WRITECSV
 
     }
 
