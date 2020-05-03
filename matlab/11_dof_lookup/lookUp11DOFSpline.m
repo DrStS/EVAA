@@ -178,7 +178,7 @@ x11)	d8*(x10 - x11)];
 %% parameters
 % time
 num_iter = 1e2
-delta_t = 1e-2; 
+delta_t = 1e-3; 
 t = 0:delta_t:(num_iter - 1)*delta_t;
 
 tol = 1e-8;
@@ -235,9 +235,9 @@ rhs =[-1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 %%
-fixed = false;
+fixed = true;
 euler = true;
-bdf2 = true;
+bdf2 = false;
 if bdf2
   %  A = (9/4)*M_div_h2 + K;
     B = (6)*M_div_h2;
