@@ -618,11 +618,11 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
-    if (db.getRoadConditions() == BoundaryConditionRoad::NONFIXED) {
+    if (true) {
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
         TwoTrackModelFull<Constants::floatEVAA> solver(car);
-        solver.apply_boundary_condition(db.getRoadConditions());
+        // solver.apply_boundary_condition(db.getRoadConditions());
 
         solver.solve(sol);
 

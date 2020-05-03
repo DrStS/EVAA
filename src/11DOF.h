@@ -33,6 +33,7 @@ protected:
 
     T tolerance;
     int maxNewtonIteration;
+    int newtonIteration;
 
     // solution in next timestep
     T* u_n_p_1;
@@ -59,7 +60,6 @@ protected:
     T* residual;
     T res_norm;
     T *dkdl, *dddl;
-
 public:
     TwoTrackModelParent() {}
     /**
@@ -265,8 +265,9 @@ public:
         Math::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
         constructAMatrix();
 #ifdef INTERPOLATION
-        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration);
+        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration, &newtonIteration);
 #endif
+
         updateVelocity();
         // solution = solution[t_n] = u_n_p_1
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, solution, 1);
@@ -852,7 +853,7 @@ public:
         // cblas_dscal(DOF,0, force, 1);
         getInitialGuess(force);
 #ifdef INTERPOLATION
-        Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration);
+        Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration, &newtonIteration);
 #endif
         updateVelocity();
         /*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF,
@@ -1000,6 +1001,9 @@ public:
         }
     }
     void solve(T* sol_vect) {
+#ifdef WRITECSV
+    IO::MyFile<T> newtonFile("C:\\software\\repos\\EVAA\\output\\newtonOutput.txt");
+#endif
         int iter = 1;
         T t = _h;
         double eps = _h / 100;
@@ -1008,6 +1012,11 @@ public:
         while (std::abs(t - (tend_ + _h)) > eps) {
             // solution_vect = u_sol + iter * (DOF);
             update_step(f_n_p_1, sol_vect);
+#ifdef WRITECSV
+        newtonFile.writeSingleValue(newtonIteration);
+        newtonFile.writeSingleValue(res_norm);
+        newtonFile.newLine();
+#endif // WRITECSV
             iter++;
             t += _h;
         }
