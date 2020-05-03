@@ -36,6 +36,7 @@ protected:
 
     // solution in next timestep
     T* u_n_p_1;
+    T* v_n_p_1;
 
     // solution in previous timestep
     T* u_n_m_1;
@@ -123,6 +124,20 @@ private:
         Math::scal<T>(Constants::DOFDOF, -1, C, 1);
     }
 
+    /**
+    * \brief update the velocity vector
+    *
+    * v = (x[n+1]-x[n])/h
+    */
+    void updateVelocity() {
+        // v = x[n+1]
+        Math::copy<T>(Constants::DOF, u_n_p_1, 1, v_n_p_1, 1);
+        // v -= x[n]
+        Math::axpy<T>(Constants::DOF, -1, u_n, 1, v_n_p_1, 1);
+        // v /= h
+        Math::scal<T>(Constants::DOF, factor_h, v_n_p_1, 1);
+    }
+
 protected:
     /**
      * \brief construct Mass matrix
@@ -171,6 +186,7 @@ public:
         u_n_m_1 = Math::malloc<T>(Constants::DOF);         // velocity
         u_n = Math::malloc<T>(Constants::DOF);             // position
         u_n_p_1 = _car->currentDisplacementTwoTrackModel;  // position
+        v_n_p_1 = _car->currentVelocityTwoTrackModel; // velocity
 
         A = Math::malloc<T>(Constants::DOFDOF);
         B = Math::calloc<T>(Constants::DOFDOF);
@@ -251,7 +267,8 @@ public:
 #ifdef INTERPOLATION
         Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration);
 #endif
-        // solutio = solution[t_n] = u_n_p_1
+        updateVelocity();
+        // solution = solution[t_n] = u_n_p_1
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, solution, 1);
         // copy update to car
 
@@ -775,6 +792,24 @@ private:
         constructAMatrix();
     }
 
+    /**
+    * \brief update the velocity vector
+    *
+    * v = (3x[n+1]-4x[n]+x[n-1])/(2h)
+    */
+    void updateVelocity() {
+        // v = x[n+1]
+        Math::copy<T>(Constants::DOF, u_n_p_1, 1, v_n_p_1, 1);
+        // v *= 3;
+        Math::scal<T>(Constants::DOF, 3, v_n_p_1, 1);
+        // v -= 4x[n]
+        Math::axpy<T>(Constants::DOF, -4, u_n, 1, v_n_p_1, 1);
+        // v += x[n-1]
+        Math::axpy<T>(Constants::DOF, 1, u_n_m_1, 1, v_n_p_1, 1);
+        // v /= 2h
+        Math::scal<T>(Constants::DOF, factor_h/2, v_n_p_1, 1);
+    }
+
 public:
     /**
      * Constructor.
@@ -819,6 +854,7 @@ public:
 #ifdef INTERPOLATION
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration);
 #endif
+        updateVelocity();
         /*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF,
         num_tyre); apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set,
         num_tyre);*/
