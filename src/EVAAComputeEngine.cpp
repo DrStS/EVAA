@@ -689,6 +689,10 @@ void EVAAComputeEngine::computeALE(void) {
         roadProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[1]);
         roadProfile->set_fixed_index(car->tyre_index_set);
         break;
+    case BoundaryConditionRoad::ARBITRARY:
+        // TODO 
+        return;
+        break;
     default:
         throw std::logic_error("MetaDataBase not read? It should throw on invalid file content.");
         break;

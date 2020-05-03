@@ -105,12 +105,15 @@ void writeRoadTrajectoryCSV(T* interpolationx /**< [in] pointer to interpolation
                             T* interpolationy /**< [in] pointer to interpolation
                                                  points at points of axis */
                             ,
+                            T* interpolationz /**< [in] pointer to interpolation
+                                             points at points of axis */
+                            ,
                             int ni /**< [in] number of elements in arrays */, std::string fname /**< [in] name of output file */
 ) {
     std::ofstream myfile(fname);
     myfile << std::setprecision(15);
     for (auto i = 0; i < ni; i++) {
-        myfile << interpolationx[i] << "," << interpolationy[i] << "\n";
+        myfile << interpolationx[i] << "," << interpolationy[i] << "," << ((interpolationz == nullptr) ? 0 : interpolationz[i]) << "\n";
     }
     myfile.close();
 }
@@ -203,6 +206,74 @@ public:
         myfile << solVec[2 * Constants::DIM + 1] << "\n";  // 61 pt_fr[y]
     };
 
+    /**
+     * \brief write one time step to the file
+     */
+    void writeSoltionVectorMBD(T* solVec    /**< of size 61 */    ) {
+
+        myfile << solVec[0] << ",";                                // 1 wc[x]
+        myfile << solVec[2] << ",";                                // 2 wc[z]
+        myfile << solVec[1] << ",";                                // 3 wc[y]
+        myfile << solVec[3] << ",";                                // 4 vc[x]
+        myfile << solVec[5] << ",";                                // 5 vc[z]
+        myfile << solVec[4] << ",";                                // 6 vc[y] 
+        myfile << solVec[6 + 3 * Constants::DIM + 0] << ",";       // 7 vw_rr[x]
+        myfile << solVec[6 + 3 * Constants::DIM + 2] << ",";       // 8 vw_rr[z]
+        myfile << solVec[6 + 3 * Constants::DIM + 1] << ",";       // 9 vw_rr[y]
+        myfile << solVec[6 + 2 * Constants::DIM + 0] << ",";       // 10 vw_rl[x]
+        myfile << solVec[6 + 2 * Constants::DIM + 2] << ",";       // 11 vw_rl[z]
+        myfile << solVec[6 + 2 * Constants::DIM + 1] << ",";       // 12 vw_rl[y]
+        myfile << solVec[6 + 0 * Constants::DIM + 0] << ",";       // 13 vw_fl[x]
+        myfile << solVec[6 + 0 * Constants::DIM + 2] << ",";       // 14 vw_fl[z]
+        myfile << solVec[6 + 0 * Constants::DIM + 1] << ",";       // 15 vw_fl[y]
+        myfile << solVec[6 + 1 * Constants::DIM + 0] << ",";       // 16 vw_fr[x]
+        myfile << solVec[6 + 1 * Constants::DIM + 2] << ",";       // 17 vw_fr[z]
+        myfile << solVec[6 + 1 * Constants::DIM + 1] << ",";       // 18 vw_fr[y]
+        myfile << solVec[18 + 3 * Constants::DIM + 0] << ",";      // 19 vt_rr[x]
+        myfile << solVec[18 + 3 * Constants::DIM + 2] << ",";      // 20 vt_rr[z]
+        myfile << solVec[18 + 3 * Constants::DIM + 1] << ",";      // 21 vt_rr[y]
+        myfile << solVec[18 + 2 * Constants::DIM + 0] << ",";      // 22 vt_rl[x]
+        myfile << solVec[18 + 2 * Constants::DIM + 2] << ",";      // 23 vt_rl[z]
+        myfile << solVec[18 + 2 * Constants::DIM + 1] << ",";      // 24 vt_rl[y]
+        myfile << solVec[18 + 0 * Constants::DIM + 0] << ",";      // 25 vt_fl[x]
+        myfile << solVec[18 + 0 * Constants::DIM + 2] << ",";      // 26 vt_fl[z]
+        myfile << solVec[18 + 0 * Constants::DIM + 1] << ",";      // 27 vt_fl[y]
+        myfile << solVec[18 + 1 * Constants::DIM + 0] << ",";      // 28 vt_fr[x]
+        myfile << solVec[18 + 1 * Constants::DIM + 2] << ",";      // 29 vt_fr[z]
+        myfile << solVec[18 + 1 * Constants::DIM + 1] << ",";      // 30 vt_fr[y]
+        myfile << solVec[30] << ",";                               // 31 qc[0] 
+        myfile << -solVec[32] << ",";                               // 32 qc[1] 
+        myfile << -solVec[31] << ",";                               // 33 qc[2] 
+        myfile << solVec[33] << ",";                               // 34 qc[3]
+        myfile << solVec[34] << ",";                               // 35 pcc[x]
+        myfile << solVec[36] << ",";                               // 36 pcc[z]
+        myfile << solVec[35] << ",";                               // 37 pcc[y]
+        myfile << solVec[37 + 3 * Constants::DIM + 0] << ",";       // 38 pw_rr[x]
+        myfile << solVec[37 + 3 * Constants::DIM + 2] << ",";       // 39 pw_rr[z]
+        myfile << solVec[37 + 3 * Constants::DIM + 1] << ",";       // 40 pw_rr[y]
+        myfile << solVec[37 + 2 * Constants::DIM + 0] << ",";       // 41 pw_rl[x]
+        myfile << solVec[37 + 2 * Constants::DIM + 2] << ",";       // 42 pw_rl[z]
+        myfile << solVec[37 + 2 * Constants::DIM + 1] << ",";       // 43 pw_rl[y]
+        myfile << solVec[37 + 0 * Constants::DIM + 0] << ",";       // 44 pw_fl[x]
+        myfile << solVec[37 + 0 * Constants::DIM + 2] << ",";       // 45 pw_fl[z]
+        myfile << solVec[37 + 0 * Constants::DIM + 1] << ",";       // 46 pw_fl[y]
+        myfile << solVec[37 + 1 * Constants::DIM + 0] << ",";       // 47 pw_fr[x]
+        myfile << solVec[37 + 1 * Constants::DIM + 2] << ",";       // 48 pw_fr[z]
+        myfile << solVec[37 + 1 * Constants::DIM + 1] << ",";       // 49 pw_fr[y]
+        myfile << solVec[49 + 3 * Constants::DIM + 0] << ",";      // 50 pt_rr[x]
+        myfile << solVec[49 + 3 * Constants::DIM + 2] << ",";      // 51 pt_rr[z]
+        myfile << solVec[49 + 3 * Constants::DIM + 1] << ",";      // 52 pt_rr[y]
+        myfile << solVec[49 + 2 * Constants::DIM + 0] << ",";      // 53 pt_rl[x]
+        myfile << solVec[49 + 2 * Constants::DIM + 2] << ",";      // 54 pt_rl[z]
+        myfile << solVec[49 + 2 * Constants::DIM + 1] << ",";      // 55 pt_rl[y]
+        myfile << solVec[49 + 0 * Constants::DIM + 0] << ",";      // 56 pt_fl[x]
+        myfile << solVec[49 + 0 * Constants::DIM + 2] << ",";      // 57 pt_fl[z]
+        myfile << solVec[49 + 0 * Constants::DIM + 1] << ",";      // 58 pt_fl[y]
+        myfile << solVec[49 + 1 * Constants::DIM + 0] << ",";      // 59 pt_fr[x]
+        myfile << solVec[49 + 1 * Constants::DIM + 2] << ",";      // 60 pt_fr[z]
+        myfile << solVec[49 + 1 * Constants::DIM + 1] << "\n";      // 61 pt_fr[y]
+    }
+
     void writeSingleValue(T value) { myfile << value << ","; }
     
 
@@ -246,6 +317,13 @@ public:
                 );
         }
     };
+
+    void writeSolutionMatrixMBD(T* solVec, size_t sol_size) {
+        for (auto i = 0; i < sol_size; i++) {
+            writeSoltionVectorMBD(solVec + i * 61);
+        }
+    };
+
 
 private:
     std::ofstream myfile;

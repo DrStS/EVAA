@@ -22,15 +22,11 @@ public:
     /**
      * \brief Constructor
      */
-    ArbitraryTrajectory(size_t numIterations, T delta_t, T amplitude_right, T amplitude_left,
-                        T period_right, T period_left, T shift_right, T shift_left,
-                        T* initialUpperSpringLengths, T* initialLowerSpringLengths, T* latitudes, T* longitudes) :
-        _numIterations(numIterations), _delta_t(delta_t) {
-
+    ArbitraryTrajectory(size_t numIterations, T delta_t, T amplitude_right, T amplitude_left, T period_right, T period_left, T shift_right, T shift_left, T* initialUpperSpringLengths, T* initialLowerSpringLengths, T* latitudes, T* longitudes) : _numIterations(numIterations), _delta_t(delta_t) {
         // Read Eulerian force parameters
         _frequencyRight = (period_right == 0) ? 0 : 2 * Constants::PI / period_right;
         _frequencyLeft = (period_left == 0) ? 0 : 2 * Constants::PI / period_left;
-        
+
         _amplitudeRight = amplitude_right;
         _amplitudeLeft = amplitude_left;
 
@@ -59,7 +55,6 @@ public:
         _l_long_fr = longitudes[Constants::FRONT_RIGHT];
         _l_long_rl = longitudes[Constants::REAR_LEFT];
         _l_long_rr = longitudes[Constants::REAR_RIGHT];
-
 
         // allocate memory
         _roadPointsX = Math::malloc<T>(numIterations + 1);
@@ -97,6 +92,10 @@ public:
         _legPointsY_rl = Math::malloc<T>(_numIterations + 1);
         _legPointsY_rr = Math::malloc<T>(_numIterations + 1);
 
+        _legPointsZ_fl = Math::malloc<T>(_numIterations + 1);
+        _legPointsZ_fr = Math::malloc<T>(_numIterations + 1);
+        _legPointsZ_rl = Math::malloc<T>(_numIterations + 1);
+        _legPointsZ_rr = Math::malloc<T>(_numIterations + 1);
     }
 
     /**
@@ -132,6 +131,10 @@ public:
         Math::free<T>(_legPointsY_rl);
         Math::free<T>(_legPointsY_rr);
 
+        Math::free<T>(_legPointsZ_fl);
+        Math::free<T>(_legPointsZ_fr);
+        Math::free<T>(_legPointsZ_rl);
+        Math::free<T>(_legPointsZ_rr);
     }
 
     /**
@@ -158,15 +161,12 @@ public:
     * This means, that between two XML points  [X(i), Y(i)] and [X(�+1),
     Y(i+1)], there will be n=(times(�+1) - times(i)) / delta_t true road points
      */
-    void interpolateRoadPoints(size_t numProvidedPoints, T* providedPointsX, T* providedPointsY,
-                               T* providedTimes) {
+    void interpolateRoadPoints(size_t numProvidedPoints, T* providedPointsX, T* providedPointsY, T* providedTimes) {
         for (auto i = 0; i < numProvidedPoints - 1; i++) {
             if (providedTimes[i] >= providedTimes[i + 1]) {
-                std::cout << providedTimes[i]  << std::endl;
-                std::cout << providedTimes[i+1] << std::endl;
-                throw std::domain_error("time is not increasing in road trajectory: " +
-                                        std::to_string(providedTimes[i]) + " <= " +
-                                        std::to_string(providedTimes[i + 1]));
+                std::cout << providedTimes[i] << std::endl;
+                std::cout << providedTimes[i + 1] << std::endl;
+                throw std::domain_error("time is not increasing in road trajectory: " + std::to_string(providedTimes[i]) + " <= " + std::to_string(providedTimes[i + 1]));
             }
         }
         T maxTime = providedTimes[numProvidedPoints - 1];
@@ -175,9 +175,7 @@ public:
         T interpolationTime = _delta_t * _numIterations;
         // when interpolationTime is longer than road defined exit
         if (interpolationTime > maxTime) {
-            throw std::domain_error("Simulation time is longer than road is defined: " +
-                                    std::to_string(interpolationTime) + " > " +
-                                    std::to_string(maxTime));
+            throw std::domain_error("Simulation time is longer than road is defined: " + std::to_string(interpolationTime) + " > " + std::to_string(maxTime));
         }
         else {
             // fill in time axis
@@ -185,14 +183,12 @@ public:
                 timeInterpolationPoints[i] = i * _delta_t;
             }
             // do the interpolation
-            interpolateAxis(numProvidedPoints, providedPointsX, providedTimes,
-                            timeInterpolationPoints, _roadPointsX);
-            interpolateAxis(numProvidedPoints, providedPointsY, providedTimes,
-                            timeInterpolationPoints, _roadPointsY);
+            interpolateAxis(numProvidedPoints, providedPointsX, providedTimes, timeInterpolationPoints, _roadPointsX);
+            interpolateAxis(numProvidedPoints, providedPointsY, providedTimes, timeInterpolationPoints, _roadPointsY);
 #ifdef WRITECSV
-            IO::writeRoadTrajectoryCSV(_roadPointsX, _roadPointsY, _numIterations + 1,
-                                       "C:\\software\\repos\\EVAA\\output\\Trajectory.txt");
-#endif // WRITECSV
+            T* noZComponent = nullptr;
+            IO::writeRoadTrajectoryCSV(_roadPointsX, _roadPointsY, noZComponent, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\Trajectory.txt");
+#endif  // WRITECSV
         }
         Math::free(timeInterpolationPoints);
     }
@@ -206,8 +202,7 @@ public:
      * \param [in] interpolationAxis
      * \param [out] axis
      */
-    void interpolateAxis(size_t numProvidedPoints, T* providedPoints, T* providedTimes,
-                         T* interpolationAxis, T* axis) {
+    void interpolateAxis(size_t numProvidedPoints, T* providedPoints, T* providedTimes, T* interpolationAxis, T* axis) {
         MKL_INT order = DF_PP_CUBIC;
         const MKL_INT dorder[1] = {1};
         DFTaskPtr Task;
@@ -224,8 +219,7 @@ public:
         Math::dfCheckError(err);
 
         for (auto i = 0; i < _numIterations + 1; i++) {
-            err = Math::dfInterpolate1D<T>(Task, DF_INTERP, DF_METHOD_PP, 1, &interpolationAxis[i],
-                                           DF_NO_HINT, 1, dorder, nullptr, &axis[i], DF_NO_HINT, 0);
+            err = Math::dfInterpolate1D<T>(Task, DF_INTERP, DF_METHOD_PP, 1, &interpolationAxis[i], DF_NO_HINT, 1, dorder, nullptr, &axis[i], DF_NO_HINT, 0);
             Math::dfCheckError(err);
         }
         Math::free(coeff);
@@ -238,11 +232,7 @@ public:
     void calculateTravelledDistance() {
         _normedDistance[0] = 0;
         for (int i = 1; i < _numIterations + 1; ++i) {
-            _normedDistance[i] =
-                _normedDistance[i - 1] + sqrt((_roadPointsX[i] - _roadPointsX[i - 1]) *
-                                                  (_roadPointsX[i] - _roadPointsX[i - 1]) +
-                                              (_roadPointsY[i] - _roadPointsY[i - 1]) *
-                                                  (_roadPointsY[i] - _roadPointsY[i - 1]));
+            _normedDistance[i] = _normedDistance[i - 1] + sqrt((_roadPointsX[i] - _roadPointsX[i - 1]) * (_roadPointsX[i] - _roadPointsX[i - 1]) + (_roadPointsY[i] - _roadPointsY[i - 1]) * (_roadPointsY[i] - _roadPointsY[i - 1]));
         }
     }
 
@@ -324,26 +314,18 @@ public:
         for (int i = 0; i < _numIterations + 1; ++i) {
             T c = std::cos(_roadAngles[i]);
             T s = std::sin(_roadAngles[i]);
-            
-            _legPointsX_fl[i] =
-                _roadPointsX[i] + localXcoordinates[0] * c - localYcoordinates[0] * s;
-            _legPointsY_fl[i] =
-                _roadPointsY[i] + localXcoordinates[0] * s + localYcoordinates[0] * c;
 
-            _legPointsX_fr[i] =
-                _roadPointsX[i] + localXcoordinates[1] * c - localYcoordinates[1] * s;
-            _legPointsY_fr[i] =
-                _roadPointsY[i] + localXcoordinates[1] * s + localYcoordinates[1] * c;
+            _legPointsX_fl[i] = _roadPointsX[i] + localXcoordinates[0] * c - localYcoordinates[0] * s;
+            _legPointsY_fl[i] = _roadPointsY[i] + localXcoordinates[0] * s + localYcoordinates[0] * c;
 
-            _legPointsX_rl[i] =
-                _roadPointsX[i] + localXcoordinates[2] * c - localYcoordinates[2] * s;
-            _legPointsY_rl[i] =
-                _roadPointsY[i] + localXcoordinates[2] * s + localYcoordinates[2] * c;
+            _legPointsX_fr[i] = _roadPointsX[i] + localXcoordinates[1] * c - localYcoordinates[1] * s;
+            _legPointsY_fr[i] = _roadPointsY[i] + localXcoordinates[1] * s + localYcoordinates[1] * c;
 
-            _legPointsX_rr[i] =
-                _roadPointsX[i] + localXcoordinates[3] * c - localYcoordinates[3] * s;
-            _legPointsY_rr[i] =
-                _roadPointsY[i] + localXcoordinates[3] * s + localYcoordinates[3] * c;
+            _legPointsX_rl[i] = _roadPointsX[i] + localXcoordinates[2] * c - localYcoordinates[2] * s;
+            _legPointsY_rl[i] = _roadPointsY[i] + localXcoordinates[2] * s + localYcoordinates[2] * c;
+
+            _legPointsX_rr[i] = _roadPointsX[i] + localXcoordinates[3] * c - localYcoordinates[3] * s;
+            _legPointsY_rr[i] = _roadPointsY[i] + localXcoordinates[3] * s + localYcoordinates[3] * c;
         }
 
         // calculate tyre forces
@@ -360,12 +342,11 @@ public:
         calculateAccelerations(_tyreAccelerationsY_rr, _legPointsY_rr);
 
 #ifdef WRITECSV
-        IO::writeRoadTrajectoryCSV(_legPointsX_fl, _legPointsY_fl, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegFl.txt");
-        IO::writeRoadTrajectoryCSV(_legPointsX_fr, _legPointsY_fr, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegFr.txt");
-        IO::writeRoadTrajectoryCSV(_legPointsX_rl, _legPointsY_rl, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegRl.txt");
-        IO::writeRoadTrajectoryCSV(_legPointsX_rr, _legPointsY_rr, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegRr.txt");
-#endif //WRITECSV
-
+        IO::writeRoadTrajectoryCSV(_legPointsX_fl, _legPointsY_fl, _legPointsZ_fl, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegFl.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_fr, _legPointsY_fr, _legPointsZ_fr, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegFr.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_rl, _legPointsY_rl, _legPointsZ_rl, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegRl.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_rr, _legPointsY_rr, _legPointsZ_rr, _numIterations + 1, "C:\\software\\repos\\EVAA\\output\\LegRr.txt");
+#endif  // WRITECSV
     }
 
     /**
@@ -442,15 +423,15 @@ public:
     /**
      * \brief calculates the Acceleration acting on the tyre due to bumpy road
      * \param time at which this happens
-     * \param mass of the object the force is applied 
+     * \param mass of the object the force is applied
      */
     T getVerticalRoadForcesFrontLeft(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_fl[iteration]; }
 
     /**
      * \brief calculates the force acting on the tyre due to bumpy road
      * \param time at which this happens
-      * \param mass of the object the force is applied 
-    */
+     * \param mass of the object the force is applied
+     */
     T getVerticalRoadForcesFrontRight(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_rl[iteration]; }
 
     /**
@@ -465,44 +446,53 @@ public:
      * \param time at which this happens
      * \param mass of the object the force is applied
      */
-    T getVerticalRoadForcesRearRight(size_t iteration, T mass) {return mass * _tyreAccelerationsZ_rr[iteration];
+    T getVerticalRoadForcesRearRight(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_rr[iteration]; }
+
+    /**
+     * \brief calculate vertical positions
+     */
+    void calculateVerticalPositionsLegs() {
+        for (int i = 0; i < _numIterations + 1; ++i) {
+            _legPointsZ_fl[i] = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fl)) 
+                - _initialUpperSpringLength_fl - _initialLowerSpringLength_fl;
+            _legPointsZ_fr[i] = _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fr))
+            -_initialUpperSpringLength_fr - _initialLowerSpringLength_fr;
+            _legPointsZ_rl[i] = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rl))
+            -_initialUpperSpringLength_rl - _initialLowerSpringLength_rl;
+            _legPointsZ_rr[i] = _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rr))
+            -_initialUpperSpringLength_rr - _initialLowerSpringLength_rr;
+        }
     }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionFrontLeft(size_t iteration) {
-        return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_fl));
-    }
+    T getVerticalPositionFrontLeft(size_t iteration) { return _legPointsZ_fl[iteration]; }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionFrontRight(size_t iteration) {
-        return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_fr));
-    }
+    T getVerticalPositionFrontRight(size_t iteration) { return _legPointsZ_fr[iteration]; }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionRearLeft(size_t iteration) { 
-        return _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_rl)); }
+    T getVerticalPositionRearLeft(size_t iteration) { return _legPointsZ_rl[iteration]; }
 
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
      */
-    T getVerticalPositionRearRight(size_t iteration) { 
-        return _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[iteration] + _phaseShift_rr)); }
+    T getVerticalPositionRearRight(size_t iteration) { return _legPointsZ_rr[iteration]; }
 
     /**
      * \param iteration index of the current time iteration
      * \return vector the 2D vector to be written too [GC:XY]
-      * \param mass of the object the force is applied 
-    */
+     * \param mass of the object the force is applied
+     */
     void getLagrangianForcesCenterOfGravity(size_t iteration, T* vector, T mass) {
         vector[0] = mass * _roadAccelerationX[i];
         vector[1] = mass * _roadAccelerationY[i];
@@ -526,8 +516,8 @@ public:
 
     /**
      * \param iteration index of the current time iteration
-      * \param mass of the object the force is applied 
-    * \return vector the 2D vector to be written too [leg:XY]
+     * \param mass of the object the force is applied
+     * \return vector the 2D vector to be written too [leg:XY]
      */
     void getLagrangianForcesFrontRight(size_t iteration, T mass, T* vector) {
         vector[0] = mass * _tyreAccelerationsX_fr[iteration];
@@ -555,8 +545,8 @@ public:
     }
 
     /**
-    * \param iteration index of the current time iteration
-    * \return vector the 2D vector to be written too [GC:XY]
+     * \param iteration index of the current time iteration
+     * \return vector the 2D vector to be written too [GC:XY]
      */
     void getLagrangianPositionCenterOfGravity(size_t iteration, T* vector) {
         vector[0] = _roadPointsX[iteration];
@@ -586,12 +576,7 @@ public:
      * \param[out] vw_rl wheel velocity rear left [XYZ]
      * \param[out] vw_rr wheel velocity rear right [XYZ]
      */
-    void updateInitialConditions(T* angle, T* wc, T* pcc, T* vcc, T* pt_fl, T* pt_fr, T* pt_rl,
-                                 T* pt_rr, T* pw_fl, T* pw_fr, T* pw_rl, T* pw_rr, T* vt_fl,
-                                 T* vt_fr, T* vt_rl, T* vt_rr, T* vw_fl, T* vw_fr, T* vw_rl,
-                                 T* vw_rr) {
-   
-  
+    void updateInitialConditions(T* angle, T* wc, T* pcc, T* vcc, T* pt_fl, T* pt_fr, T* pt_rl, T* pt_rr, T* pw_fl, T* pw_fr, T* pw_rl, T* pw_rr, T* vt_fl, T* vt_fr, T* vt_rl, T* vt_rr, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr) {
         // angles
         angle[0] = 0;
         angle[1] = 0;
@@ -612,121 +597,71 @@ public:
         vcc[1] = (-1.5 * _roadPointsY[0] + 2 * _roadPointsY[1] - 0.5 * _roadPointsY[2]) / _delta_t;
         vcc[2] = 0;
 
-  
-
         // wheel positions
-        pw_fl[0] = _legPointsX_fl[0];        
+        pw_fl[0] = _legPointsX_fl[0];
         pw_fr[0] = _legPointsX_fr[0];
         pw_rl[0] = _legPointsX_rl[0];
         pw_rr[0] = _legPointsX_rr[0];
 
-        pw_fl[1] = _legPointsY_fl[0];        
+        pw_fl[1] = _legPointsY_fl[0];
         pw_fr[1] = _legPointsY_fr[0];
         pw_rl[1] = _legPointsY_rl[0];
         pw_rr[1] = _legPointsY_rr[0];
 
-        pw_fl[2] = -_initialUpperSpringLength_fl + this->getVerticalPositionFrontLeft(0);        
-        pw_fl[2] = -_initialUpperSpringLength_fr + this->getVerticalPositionFrontRight(0);
-        pw_fl[2] = -_initialUpperSpringLength_rl + this->getVerticalPositionRearLeft(0);
-        pw_fl[2] = -_initialUpperSpringLength_rr + this->getVerticalPositionRearRight(0);
-   
+        pw_fl[2] = _initialUpperSpringLength_fl + _legPointsZ_fl[0];
+        pw_fl[2] = _initialUpperSpringLength_fr + _legPointsZ_fr[0];
+        pw_fl[2] = _initialUpperSpringLength_rl + _legPointsZ_rl[0];
+        pw_fl[2] = _initialUpperSpringLength_rr + _legPointsZ_rr[0];
+
         // tyre positions
-        pt_fl[0] = _legPointsX_fl[0];        
+        pt_fl[0] = _legPointsX_fl[0];
         pt_fr[0] = _legPointsX_fr[0];
         pt_rl[0] = _legPointsX_rl[0];
         pt_rr[0] = _legPointsX_rr[0];
 
-        pt_fl[1] = _legPointsY_fl[0];        
+        pt_fl[1] = _legPointsY_fl[0];
         pt_fr[1] = _legPointsY_fr[0];
         pt_rl[1] = _legPointsY_rl[0];
         pt_rr[1] = _legPointsY_rr[0];
 
-        pt_fl[2] = -_initialUpperSpringLength_fl -_initialLowerSpringLength_fl + this->getVerticalPositionFrontLeft(0);        
-        pt_fl[2] = -_initialUpperSpringLength_fr -_initialLowerSpringLength_fr + this->getVerticalPositionFrontRight(0);
-        pt_fl[2] = -_initialUpperSpringLength_rl -_initialLowerSpringLength_rl + this->getVerticalPositionRearLeft(0);
-        pt_fl[2] = -_initialUpperSpringLength_rr -_initialLowerSpringLength_rr + this->getVerticalPositionRearRight(0); 
-
+        pt_fl[2] = _legPointsZ_fl[0];
+        pt_fr[2] = _legPointsZ_fr[0];
+        pt_rl[2] = _legPointsZ_rl[0];
+        pt_rr[2] = _legPointsZ_rr[0];
 
         // initial wheel velocity
-        vw_fl[0] =
-            (-1.5 * _legPointsX_fl[0] + 2 * _legPointsX_fl[1] - 0.5 * _legPointsX_fl[2]) / _delta_t;
-        vw_fl[1] =
-            (-1.5 * _legPointsY_fl[0] + 2 * _legPointsY_fl[1] - 0.5 * _legPointsY_fl[2]) / _delta_t;
-        vw_fl[2] = (-1.5 * this->getVerticalPositionFrontLeft(0) +
-                    2 * this->getVerticalPositionFrontLeft(1) -
-                    0.5 * this->getVerticalPositionFrontLeft(2)) /
-                   _delta_t;
+        vw_fl[0] = (-1.5 * _legPointsX_fl[0] + 2 * _legPointsX_fl[1] - 0.5 * _legPointsX_fl[2]) / _delta_t;
+        vw_fl[1] = (-1.5 * _legPointsY_fl[0] + 2 * _legPointsY_fl[1] - 0.5 * _legPointsY_fl[2]) / _delta_t;
+        vw_fl[2] = (-1.5 * _legPointsZ_fl[0] + 2 * _legPointsZ_fl[1] - 0.5 * _legPointsZ_fl[2]) / _delta_t;
 
+        vw_fr[0] = (-1.5 * _legPointsX_fr[0] + 2 * _legPointsX_fr[1] - 0.5 * _legPointsX_fr[2]) / _delta_t;
+        vw_fr[1] = (-1.5 * _legPointsY_fr[0] + 2 * _legPointsY_fr[1] - 0.5 * _legPointsY_fr[2]) / _delta_t;
+        vw_fr[2] = (-1.5 * _legPointsZ_fr[0] + 2 * _legPointsZ_fr[1] - 0.5 * _legPointsZ_fr[2]) / _delta_t;
 
-        vw_fr[0] =
-            (-1.5 * _legPointsX_fr[0] + 2 * _legPointsX_fr[1] - 0.5 * _legPointsX_fr[2]) / _delta_t;
-        vw_fr[1] =
-            (-1.5 * _legPointsY_fr[0] + 2 * _legPointsY_fr[1] - 0.5 * _legPointsY_fr[2]) / _delta_t;
-        vw_fr[2] = (-1.5 * this->getVerticalPositionFrontRight(0) +
-                    2 * this->getVerticalPositionFrontRight(1) -
-                    0.5 * this->getVerticalPositionFrontRight(2)) /
-                   _delta_t;
+        vw_rl[0] = (-1.5 * _legPointsX_rl[0] + 2 * _legPointsX_rl[1] - 0.5 * _legPointsX_rl[2]) / _delta_t;
+        vw_rl[1] = (-1.5 * _legPointsY_rl[0] + 2 * _legPointsY_rl[1] - 0.5 * _legPointsY_rl[2]) / _delta_t;
+        vw_rl[2] = (-1.5 * _legPointsZ_rl[0] + 2 * _legPointsZ_rl[1] - 0.5 * _legPointsZ_rl[2]) / _delta_t;
 
+        vw_rr[0] = (-1.5 * _legPointsX_rr[0] + 2 * _legPointsX_rr[1] - 0.5 * _legPointsX_rr[2]) / _delta_t;
+        vw_rr[1] = (-1.5 * _legPointsY_rr[0] + 2 * _legPointsY_rr[1] - 0.5 * _legPointsY_rr[2]) / _delta_t;
+        vw_rr[2] = (-1.5 * _legPointsZ_rr[0] + 2 * _legPointsZ_rr[1] - 0.5 * _legPointsZ_rr[2]) / _delta_t;
 
+        // initial wheel velocity
+        vt_fl[0] = (-1.5 * _legPointsX_fl[0] + 2 * _legPointsX_fl[1] - 0.5 * _legPointsX_fl[2]) / _delta_t;
+        vt_fl[1] = (-1.5 * _legPointsY_fl[0] + 2 * _legPointsY_fl[1] - 0.5 * _legPointsY_fl[2]) / _delta_t;
+        vt_fl[2] = (-1.5 * _legPointsZ_fl[0] + 2 * _legPointsZ_fl[1] - 0.5 * _legPointsZ_fl[2]) / _delta_t;
 
-        vw_rl[0] =
-            (-1.5 * _legPointsX_rl[0] + 2 * _legPointsX_rl[1] - 0.5 * _legPointsX_rl[2]) / _delta_t;
-        vw_rl[1] =
-            (-1.5 * _legPointsY_rl[0] + 2 * _legPointsY_rl[1] - 0.5 * _legPointsY_rl[2]) / _delta_t;
-        vw_rl[2] = (-1.5 * this->getVerticalPositionRearLeft(0) +
-                    2 * this->getVerticalPositionRearLeft(1) -
-                    0.5 * this->getVerticalPositionRearLeft(2)) /
-                   _delta_t;
+        vt_fr[0] = (-1.5 * _legPointsX_fr[0] + 2 * _legPointsX_fr[1] - 0.5 * _legPointsX_fr[2]) / _delta_t;
+        vt_fr[1] = (-1.5 * _legPointsY_fr[0] + 2 * _legPointsY_fr[1] - 0.5 * _legPointsY_fr[2]) / _delta_t;
+        vt_fr[2] = (-1.5 * _legPointsZ_fr[0] + 2 * _legPointsZ_fr[1] - 0.5 * _legPointsZ_fr[2]) / _delta_t;
 
+        vt_rl[0] = (-1.5 * _legPointsX_rl[0] + 2 * _legPointsX_rl[1] - 0.5 * _legPointsX_rl[2]) / _delta_t;
+        vt_rl[1] = (-1.5 * _legPointsY_rl[0] + 2 * _legPointsY_rl[1] - 0.5 * _legPointsY_rl[2]) / _delta_t;
+        vt_rl[2] = (-1.5 * _legPointsZ_rl[0] + 2 * _legPointsZ_rl[1] - 0.5 * _legPointsZ_rl[2]) / _delta_t;
 
-
-        vw_rr[0] =
-            (-1.5 * _legPointsX_rr[0] + 2 * _legPointsX_rr[1] - 0.5 * _legPointsX_rr[2]) / _delta_t;
-        vw_rr[1] =
-            (-1.5 * _legPointsY_rr[0] + 2 * _legPointsY_rr[1] - 0.5 * _legPointsY_rr[2]) / _delta_t;
-        vw_rr[2] = (-1.5 * this->getVerticalPositionRearRight(0) +
-                    2 * this->getVerticalPositionRearRight(1) -
-                    0.5 * this->getVerticalPositionRearRight(2)) /
-                   _delta_t;
-
-
-                // initial wheel velocity
-        vt_fl[0] =
-            (-1.5 * _legPointsX_fl[0] + 2 * _legPointsX_fl[1] - 0.5 * _legPointsX_fl[2]) / _delta_t;
-        vt_fl[1] =
-            (-1.5 * _legPointsY_fl[0] + 2 * _legPointsY_fl[1] - 0.5 * _legPointsY_fl[2]) / _delta_t;
-        vt_fl[2] = (-1.5 * this->getVerticalPositionFrontLeft(0) +  2 * this->getVerticalPositionFrontLeft(1) - 0.5 * this->getVerticalPositionFrontLeft(2)) /
-                   _delta_t;
-
-        vt_fr[0] =
-            (-1.5 * _legPointsX_fr[0] + 2 * _legPointsX_fr[1] - 0.5 * _legPointsX_fr[2]) / _delta_t;
-        vt_fr[1] =
-            (-1.5 * _legPointsY_fr[0] + 2 * _legPointsY_fr[1] - 0.5 * _legPointsY_fr[2]) / _delta_t;
-        vt_fr[2] = (-1.5 * this->getVerticalPositionFrontRight(0) +
-                    2 * this->getVerticalPositionFrontRight(1) -
-                    0.5 * this->getVerticalPositionFrontRight(2)) /
-                   _delta_t;
-
-        vt_rl[0] =
-            (-1.5 * _legPointsX_rl[0] + 2 * _legPointsX_rl[1] - 0.5 * _legPointsX_rl[2]) / _delta_t;
-        vt_rl[1] =
-            (-1.5 * _legPointsY_rl[0] + 2 * _legPointsY_rl[1] - 0.5 * _legPointsY_rl[2]) / _delta_t;
-        vt_rl[2] = (-1.5 * this->getVerticalPositionRearLeft(0) +
-                    2 * this->getVerticalPositionRearLeft(1) -
-                    0.5 * this->getVerticalPositionRearLeft(2)) /
-                   _delta_t;
-
-        vt_rr[0] =
-            (-1.5 * _legPointsX_rr[0] + 2 * _legPointsX_rr[1] - 0.5 * _legPointsX_rr[2]) / _delta_t;
-        vt_rr[1] =
-            (-1.5 * _legPointsY_rr[0] + 2 * _legPointsY_rr[1] - 0.5 * _legPointsY_rr[2]) / _delta_t;
-        vt_rr[2] = (-1.5 * this->getVerticalPositionRearRight(0) +
-                    2 * this->getVerticalPositionRearRight(1) -
-                    0.5 * this->getVerticalPositionRearRight(2)) /
-                   _delta_t;
-
-
-
+        vt_rr[0] = (-1.5 * _legPointsX_rr[0] + 2 * _legPointsX_rr[1] - 0.5 * _legPointsX_rr[2]) / _delta_t;
+        vt_rr[1] = (-1.5 * _legPointsY_rr[0] + 2 * _legPointsY_rr[1] - 0.5 * _legPointsY_rr[2]) / _delta_t;
+        vt_rr[2] = (-1.5 * _legPointsZ_rr[0] + 2 * _legPointsZ_rr[1] - 0.5 * _legPointsZ_rr[2]) / _delta_t;
     }
 
     /**
@@ -815,8 +750,7 @@ public:
             }
 
             // check correctness of the fr acceleration
-            accelerationNorm = std::sqrt(_tyreAccelerationsX_fr[i] * _tyreAccelerationsX_fr[i] +
-                                         _tyreAccelerationsY_fr[i] * _tyreAccelerationsY_fr[i]);
+            accelerationNorm = std::sqrt(_tyreAccelerationsX_fr[i] * _tyreAccelerationsX_fr[i] + _tyreAccelerationsY_fr[i] * _tyreAccelerationsY_fr[i]);
 
             legRadius = radius + latitude;
             legVelocity = legRadius * angularVelocity;
@@ -865,30 +799,35 @@ public:
 private:
     // Simulation parameters
     const size_t _numIterations;  // total number of iterations
-    const T _delta_t;  // time step size of the simulation
+    const T _delta_t;             // time step size of the simulation
 
     // Geometry parameters
-    T _initialUpperSpringLength_fl;  
-    T _initialUpperSpringLength_fr;  
-    T _initialUpperSpringLength_rl;  
-    T _initialUpperSpringLength_rr;  
+    T _initialUpperSpringLength_fl;
+    T _initialUpperSpringLength_fr;
+    T _initialUpperSpringLength_rl;
+    T _initialUpperSpringLength_rr;
 
     T _initialLowerSpringLength_fl;
     T _initialLowerSpringLength_fr;
     T _initialLowerSpringLength_rl;
-    T _initialLowerSpringLength_rr;  
+    T _initialLowerSpringLength_rr;
 
     T _l_long_fl;
     T _l_long_fr;
     T _l_long_rl;
     T _l_long_rr;
-    
+
     T _l_lat_fl;
     T _l_lat_fr;
     T _l_lat_rl;
     T _l_lat_rr;
 
-    // Eulerframe
+    // Euler frame
+    T* _legPointsZ_fl;
+    T* _legPointsZ_fr;
+    T* _legPointsZ_rl;
+    T* _legPointsZ_rr;
+
     T _amplitudeRight;  // amplitude of the sinusoidal curve acting on the right
                         // tyres
     T _amplitudeLeft;   // amplitude of the sinusoidal curve acting on the left
@@ -930,7 +869,6 @@ private:
     T* _legPointsY_fr;
     T* _legPointsY_rl;
     T* _legPointsY_rr;
-
 
     T* _tyreAccelerationsX_fl;  // Acceleration that acts on the tyre in X direction
     T* _tyreAccelerationsX_fr;  // Acceleration that acts on the tyre in X direction

@@ -8,6 +8,7 @@
 #include "Constants.h"
 #include "MathLibrary.h"
 #include "MetaDataBase.h"
+#include "IO/Output.h"
 
 namespace EVAA {
 
@@ -1548,6 +1549,9 @@ public:
         Math::get_tilda<T>(r_rl, r_rl_tilda);
         Math::get_tilda<T>(r_rr, r_rr_tilda);
 
+
+
+
         /*
          * Preparing x_vector in the form of
          * x_vector = [wc; ...     % 3 1:3
@@ -1673,6 +1677,12 @@ public:
 
         compute_f_mem_alloc();
 
+#ifdef WRITECSV
+        IO::MyFile<T> solutionCSV("C:\\software\\repos\\EVAA\\output\\mbdSolution.txt");
+        IO::MyFile<T> parametersCSV("C:\\software\\repos\\EVAA\\output\\simulationParameters.txt");
+        parametersCSV.writeParameters();
+#endif  // WRITECSV
+
 
         if (used_solver == MBDSolver::BROYDEN_CN) {
             Math::Solvers<T, MBDMethod>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
@@ -1699,12 +1709,26 @@ public:
 
         compute_f_clean();
 
+#ifdef WRITECSV
+        solutionCSV.writeSolutionMatrixMBD(complete_vector, this->num_iter + 1);
+#endif  // WRITECSV
+
+
         T* start = complete_vector + (this->num_iter) * this->solution_dim;
         Math::copy<T>(this->solution_dim, start, 1, solution_vector, 1);
         //	std::cout << "Solution copied!\n" << std::endl;
         Math::free<T>(complete_vector);
         Math::free<T>(x_vector);
     }
+
+
+    /**
+    * \brief here comes everything which has to be done at the end of one time iteration
+    */
+    void postprocessingTimeIteration(size_t iteration) {
+        
+    }
+
 
     /**
      * Solver which is called at each time step

@@ -219,9 +219,10 @@ public:
                 wayPointsTimes.push_back(i->time());
             }
 
+            _trajectory->calculateTyreShifts();
+            _trajectory->calculateVerticalPositionsLegs();
             _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(),
                                                wayPointsTimes.data());
-            _trajectory->calculateTyreShifts();
             _trajectory->calculateTravelledDistance();
             _trajectory->calculateAngles();
             _trajectory->calculateAccelerationsCenterOfGravity();
