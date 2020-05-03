@@ -1,7 +1,7 @@
 clear; clc; close all;
 %% make lookup
 ak = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3];
-ad = ak/10;
+ad = ak/100;
 b = 1.59;
 c = 1.2;
 %b = 0;
@@ -67,22 +67,22 @@ k_spline7 = spline(X,k_grid(6*size_grid+1:7*size_grid));
 k_der7 = fnder(k_spline7,1);
 k_spline8 = spline(X,k_grid(7*size_grid+1:8*size_grid));
 k_der8 = fnder(k_spline8,1);
-d_spline1 = spline(X,k_grid(1:size_grid));
-d_der1 = fnder(k_spline1,1);
-d_spline2 = spline(X,k_grid(size_grid+1:2*size_grid));
-d_der2 = fnder(k_spline2,1);
-d_spline3 = spline(X,k_grid(2*size_grid+1:3*size_grid));
-d_der3 = fnder(k_spline3,1);
-d_spline4 = spline(X,k_grid(3*size_grid+1:4*size_grid));
-d_der4 = fnder(k_spline4,1);
-d_spline5 = spline(X,k_grid(4*size_grid+1:5*size_grid));
-d_der5 = fnder(k_spline5,1);
-d_spline6 = spline(X,k_grid(5*size_grid+1:6*size_grid));
-d_der6 = fnder(k_spline6,1);
-d_spline7 = spline(X,k_grid(6*size_grid+1:7*size_grid));
-d_der7 = fnder(k_spline7,1);
-d_spline8 = spline(X,k_grid(7*size_grid+1:8*size_grid));
-d_der8 = fnder(k_spline8,1);
+d_spline1 = spline(X,d_grid(1:size_grid));
+d_der1 = fnder(d_spline1,1);
+d_spline2 = spline(X,d_grid(size_grid+1:2*size_grid));
+d_der2 = fnder(d_spline2,1);
+d_spline3 = spline(X,d_grid(2*size_grid+1:3*size_grid));
+d_der3 = fnder(d_spline3,1);
+d_spline4 = spline(X,d_grid(3*size_grid+1:4*size_grid));
+d_der4 = fnder(d_spline4,1);
+d_spline5 = spline(X,d_grid(4*size_grid+1:5*size_grid));
+d_der5 = fnder(d_spline5,1);
+d_spline6 = spline(X,d_grid(5*size_grid+1:6*size_grid));
+d_der6 = fnder(d_spline6,1);
+d_spline7 = spline(X,d_grid(6*size_grid+1:7*size_grid));
+d_der7 = fnder(d_spline7,1);
+d_spline8 = spline(X,d_grid(7*size_grid+1:8*size_grid));
+d_der8 = fnder(d_spline8,1);
 
 %%
 global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr;
@@ -231,7 +231,7 @@ u_n_m_1 = u_n;
 u_n_m_1(1)=u_n(1);
 u_n_p_1=u_n;
 
-rhs =[-1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
+rhs =[1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 %%
@@ -261,7 +261,7 @@ for i = 1: length(t)
     % J += -(K(tidx,tidx)+ D/delta_t  + (dKdx(tidx,tidx) + dDdx(tidx,tidx) /delta_t )*u_n_p_1)
     if fixed
         if euler
-            newForce = (K + D/delta_t) * u_n_p_1 - D/delta_t * u_n;
+            newForce = K * u_n_p_1 + D *( u_n_p_1 - u_n) /delta_t;
             rhs(5) = newForce(5);
             rhs(7) = newForce(7);
             rhs(9) = newForce(9);
@@ -274,14 +274,14 @@ for i = 1: length(t)
             rhs(11) = vec_rhs(11);
         end
     end
-%     if euler
-%         u_n_p_1 = ( M_div_h2 + K + D/delta_t)\ ((2 * M_div_h2+D/delta_t) * u_n - M_div_h2 * u_n_m_1 + rhs);
-%     elseif bdf2
-%         vec_rhs = B*u_n + C*u_n_m_1 + DMat*u_n_m_2 + E*u_n_m_3 + D*(2*u_n-0.5*u_n_m_1)/delta_t;
-%         u_n_p_1 = ((9/4)*M_div_h2 +1.5* D / delta_t + K)\ (vec_rhs + rhs);
-%     end
-%     K = get_K();
-%     D = get_D();
+    if euler
+        u_n_p_1 = ( M_div_h2 + K + D/delta_t)\ (( 2 * M_div_h2 + D/delta_t ) * u_n - M_div_h2 * u_n_m_1 + rhs);
+    elseif bdf2
+        vec_rhs = B*u_n + C*u_n_m_1 + DMat*u_n_m_2 + E*u_n_m_3 + D*(2*u_n-0.5*u_n_m_1)/delta_t;
+        u_n_p_1 = ((9/4)*M_div_h2 +1.5* D / delta_t + K)\ (vec_rhs + rhs);
+    end
+    K = get_K();
+    D = get_D();
     if euler
         r = f_newton_BE(u_n_p_1, u_n, u_n_m_1, K, D, rhs);
     elseif bdf2
@@ -342,7 +342,7 @@ for i = 1: length(t)
         D = get_D();
         if fixed
             if euler
-            newForce = K * u_n_p_1;
+            newForce = K * u_n_p_1 + D *( u_n_p_1 - u_n) /delta_t;
             rhs(5) = newForce(5);
             rhs(7) = newForce(7);
             rhs(9) = newForce(9);
