@@ -177,8 +177,8 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1e1;
-delta_t = 1e-3; 
+num_iter = 1e2
+delta_t = 1e-2; 
 t = 0:delta_t:(num_iter - 1)*delta_t;
 
 tol = 1e-8;
@@ -231,26 +231,26 @@ u_n_m_1 = u_n;
 u_n_m_1(1)=u_n(1);
 u_n_p_1=u_n;
 
-rhs =[1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
+rhs =[-1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
 M_div_h2 = M / (delta_t * delta_t);
 %%
 fixed = false;
 euler = true;
-bdf2 = false;
+bdf2 = true;
 if bdf2
   %  A = (9/4)*M_div_h2 + K;
     B = (6)*M_div_h2;
     C = (-11/2)*M_div_h2;
-    D = (2)*M_div_h2;
+    DMat = (2)*M_div_h2;
     E = (-1/4)*M_div_h2;
     u_n_m_3 = zeros(11,1);
     u_n_m_2 = zeros(11,1);
 end
 %% time steps
-idx = [1 2 3 4 6 8 10];
+idx = [5 7 9 11];
 f_newton_BE = @(y_curr,y1,y2,K, D, rhs)( ( M_div_h2 + K + D/delta_t) * y_curr - (2 * M_div_h2 + D/delta_t) * y1 + M_div_h2 * y2 - rhs);
-f_newton_Bdf2 = @(y_curr,y1,y2,y3,y4,K,rhs)( ((9/4)*M_div_h2 + K) * y_curr - B * y1 - C * y2 - D * y3 - E * y4 - rhs);
+f_newton_Bdf2 = @(y_curr,y1,y2,y3,y4,K, D, rhs)( ((9/4)*M_div_h2 + 1.5* D / delta_t + K) * y_curr - B * y1 - C * y2 - DMat * y3 - E * y4 - D*(2*y1-0.5*y2)/delta_t - rhs);
 %dKcols_dk = eval(dKcols_dk); % evaluate it numerically
 condition = [];
 d = 0;
@@ -259,25 +259,33 @@ for i = 1: length(t)
     K = get_K();
     D = get_D();
     % J += -(K(tidx,tidx)+ D/delta_t  + (dKdx(tidx,tidx) + dDdx(tidx,tidx) /delta_t )*u_n_p_1)
-    if fixed && (bdf2 == false)
-        newForce = (K + D/delta_t) * u_n_p_1 - D/delta_t * u_n;
-        rhs(5) = newForce(5);
-        rhs(7) = newForce(7);
-        rhs(9) = newForce(9);
-        rhs(11) = newForce(11);
+    if fixed
+        if euler
+            newForce = (K + D/delta_t) * u_n_p_1 - D/delta_t * u_n;
+            rhs(5) = newForce(5);
+            rhs(7) = newForce(7);
+            rhs(9) = newForce(9);
+            rhs(11) = newForce(11);
+        elseif bdf2
+            vec_rhs = 1/(2*delta_t) * D *(3 * u_n_p_1 - 4 * u_n + u_n_m_1) + K * u_n_p_1;
+            rhs(5) = vec_rhs(5);
+            rhs(7) = vec_rhs(7);
+            rhs(9) = vec_rhs(9);
+            rhs(11) = vec_rhs(11);
+        end
     end
-    if euler
-        u_n_p_1 = ( M_div_h2 + K + D/delta_t)\ ((2 * M_div_h2+D/delta_t) * u_n - M_div_h2 * u_n_m_1 + rhs);
-    elseif bdf2
-        vec_rhs = B*u_n + C*u_n_m_1 + D*u_n_m_2 + E*u_n_m_3;
-        u_n_p_1 = ((9/4)*M_div_h2 + K)\ (vec_rhs + rhs);
-    end
-    K = get_K();
-    D = get_D();
+%     if euler
+%         u_n_p_1 = ( M_div_h2 + K + D/delta_t)\ ((2 * M_div_h2+D/delta_t) * u_n - M_div_h2 * u_n_m_1 + rhs);
+%     elseif bdf2
+%         vec_rhs = B*u_n + C*u_n_m_1 + DMat*u_n_m_2 + E*u_n_m_3 + D*(2*u_n-0.5*u_n_m_1)/delta_t;
+%         u_n_p_1 = ((9/4)*M_div_h2 +1.5* D / delta_t + K)\ (vec_rhs + rhs);
+%     end
+%     K = get_K();
+%     D = get_D();
     if euler
         r = f_newton_BE(u_n_p_1, u_n, u_n_m_1, K, D, rhs);
     elseif bdf2
-        r = f_newton_Bdf2(u_n_p_1, u_n, u_n_m_1, u_n_m_2, u_n_m_3, K, rhs);
+        r = f_newton_Bdf2(u_n_p_1, u_n, u_n_m_1, u_n_m_2, u_n_m_3, K, D, rhs);
     end
    % i
     iter = 0;
@@ -297,8 +305,10 @@ for i = 1: length(t)
             if fixed
                J(idx,:) = M_div_h2(idx,:);
             end
-        elseif bdf2
-            J = (9.0/4.0) * M_div_h2 + K + dKdx_x;
+        elseif bdf2 
+            setxforDBDF2(u_n_p_1, y, i);
+            dDdx_x = eval(dKdx_x_symb);
+            J = (9.0/4.0) * M_div_h2 + 3/(2* delta_t) * D + K + dKdx_x + dDdx_x * 3 / (2*delta_t);
             if fixed
                J(idx,:) = (9.0/4.0) * M_div_h2(idx,:);
             end
@@ -331,24 +341,32 @@ for i = 1: length(t)
         K = get_K();
         D = get_D();
         if fixed
+            if euler
             newForce = K * u_n_p_1;
             rhs(5) = newForce(5);
             rhs(7) = newForce(7);
             rhs(9) = newForce(9);
             rhs(11) = newForce(11); 
+            elseif bdf2
+            vec_rhs = 1/(2*delta_t) * D *(3 * u_n_p_1 - 4 * u_n + u_n_m_1) + K * u_n_p_1;
+            rhs(5) = vec_rhs(5);
+            rhs(7) = vec_rhs(7);
+            rhs(9) = vec_rhs(9);
+            rhs(11) = vec_rhs(11);
+            end
         end
         if euler
             r = f_newton_BE(u_n_p_1, u_n, u_n_m_1, K, D, rhs);
         elseif bdf2
-            r = f_newton_Bdf2(u_n_p_1, u_n, u_n_m_1, u_n_m_2, u_n_m_3, K, rhs);
+            r = f_newton_Bdf2(u_n_p_1, u_n, u_n_m_1, u_n_m_2, u_n_m_3, K, D, rhs);
         end
             
         %( M_div_h2 + K )\(2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs)-u_n_p_1
         err(iter) = norm(r);
-        if (iter == 100)
+        if (iter == 10)
             d = d + 1;
         end
-        if (err(iter) < tol || iter == 100 || norm(J\r) > norm(Delta))
+        if (err(iter) < tol || iter == 10 || norm(J\r) > norm(Delta))
             err_arr(i) = norm(r);
             break;
         end
@@ -492,4 +510,20 @@ function dd = getdd_dx()
     d6 = fnval(d_der6, l6);
     d7 = fnval(d_der7, l7);
     d8 = fnval(d_der8, l8);
+end
+
+function dd = setxforDBDF2(u, y, i)
+global x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11
+% update values
+        x1 = 3/2 * u(1) - 2 * y(i-1,1) + 1/2 * y(i-2,1);
+        x2 = 3/2 * u(2) - 2 * y(i-1,2) + 1/2 * y(i-2,2);
+        x3 = 3/2 * u(3) - 2 * y(i-1,3) + 1/2 * y(i-2,3);
+        x4 = 3/2 * u(4) - 2 * y(i-1,4) + 1/2 * y(i-2,4);
+        x5 = 3/2 * u(5) - 2 * y(i-1,5) + 1/2 * y(i-2,5);
+        x6 = 3/2 * u(6) - 2 * y(i-1,6) + 1/2 * y(i-2,6);
+        x7 = 3/2 * u(7) - 2 * y(i-1,7) + 1/2 * y(i-2,7);
+        x8 = 3/2 * u(8) - 2 * y(i-1,8) + 1/2 * y(i-2,8);
+        x9 = 3/2 * u(9) - 2 * y(i-1,9) + 1/2 * y(i-2,9);
+        x10 = 3/2 * u(10) - 2 * y(i-1,10) + 1/2 * y(i-2,10);
+        x11 = 3/2 * u(11) - 2 * y(i-1,11) + 1/2 * y(i-2,11);
 end
