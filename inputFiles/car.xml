@@ -242,7 +242,9 @@
       <SolutionDimensionXML>61</SolutionDimensionXML>
     </MultyBodyDynamicsXML>
     <LinearALEXML>
-      <DOFXML>11</DOFXML>
+      <Method>IMPLICIT_EULER</Method>
+	  <Tolerance>1e-7</Tolerance>
+	  <MaximumNumNewtonIterations>10</MaximumNumNewtonIterations>
     </LinearALEXML>
   </SimulationParametersXML>
 </EVAA_settings>

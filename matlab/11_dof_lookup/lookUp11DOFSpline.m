@@ -177,7 +177,7 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1e5;
+num_iter = 1e1;
 delta_t = 1e-3; 
 t = 0:delta_t:(num_iter - 1)*delta_t;
 
@@ -237,7 +237,7 @@ M_div_h2 = M / (delta_t * delta_t);
 %%
 fixed = false;
 euler = true;
-bdf2 = true;
+bdf2 = false;
 if bdf2
   %  A = (9/4)*M_div_h2 + K;
     B = (6)*M_div_h2;
@@ -249,7 +249,7 @@ if bdf2
 end
 %% time steps
 idx = [1 2 3 4 6 8 10];
-f_newton_BE = @(y_curr,y1,y2,K,rhs)( ( M_div_h2 + K ) * y_curr - 2 * M_div_h2 * y1 + M_div_h2 * y2 - rhs);
+f_newton_BE = @(y_curr,y1,y2,K, D, rhs)( ( M_div_h2 + K + D/delta_t) * y_curr - (2 * M_div_h2 + D/delta_t) * y1 + M_div_h2 * y2 - rhs);
 f_newton_Bdf2 = @(y_curr,y1,y2,y3,y4,K,rhs)( ((9/4)*M_div_h2 + K) * y_curr - B * y1 - C * y2 - D * y3 - E * y4 - rhs);
 %dKcols_dk = eval(dKcols_dk); % evaluate it numerically
 condition = [];
@@ -257,37 +257,25 @@ d = 0;
 
 for i = 1: length(t)
     K = get_K();
-    % J += -(K(tidx,tidx)+ dKdx(tidx,tidx)*u_n_p_1)
-    if fixed
-        newForce = K * u_n_p_1;
-        rhs(5) = newForce(5);
-        rhs(7) = newForce(7);
-        rhs(9) = newForce(9);
-        rhs(11) = newForce(11);
-        if euler
-            u_n_p_1 = ( M_div_h2 + K )\ (2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs);
-            if bdf2 && i==2
-                euler=false;
-            end
-        elseif bdf2
-            u_n_p_1 = ((9/4)*M_div_h2 + K)\ (B*u_n + C*u_n_m_1 + D*u_n_m_2 + E*u_n_m_3 + rhs);
-        end
-        K = get_K();
-        newForce = K * u_n_p_1;
+    D = get_D();
+    % J += -(K(tidx,tidx)+ D/delta_t  + (dKdx(tidx,tidx) + dDdx(tidx,tidx) /delta_t )*u_n_p_1)
+    if fixed && (bdf2 == false)
+        newForce = (K + D/delta_t) * u_n_p_1 - D/delta_t * u_n;
         rhs(5) = newForce(5);
         rhs(7) = newForce(7);
         rhs(9) = newForce(9);
         rhs(11) = newForce(11);
     end
     if euler
-        u_n_p_1 = ( M_div_h2 + K )\ (2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs);
+        u_n_p_1 = ( M_div_h2 + K + D/delta_t)\ ((2 * M_div_h2+D/delta_t) * u_n - M_div_h2 * u_n_m_1 + rhs);
     elseif bdf2
         vec_rhs = B*u_n + C*u_n_m_1 + D*u_n_m_2 + E*u_n_m_3;
         u_n_p_1 = ((9/4)*M_div_h2 + K)\ (vec_rhs + rhs);
     end
     K = get_K();
+    D = get_D();
     if euler
-        r = f_newton_BE(u_n_p_1, u_n, u_n_m_1, K, rhs);
+        r = f_newton_BE(u_n_p_1, u_n, u_n_m_1, K, D, rhs);
     elseif bdf2
         r = f_newton_Bdf2(u_n_p_1, u_n, u_n_m_1, u_n_m_2, u_n_m_3, K, rhs);
     end
@@ -301,8 +289,11 @@ for i = 1: length(t)
         temp = [];
         getdk_dx();
         dKdx_x = eval(dKdx_x_symb);
+        % here i reuse the big formula for the derivative
+        getdd_dx();
+        dDdx_x = eval(dKdx_x_symb);
         if euler
-            J = M_div_h2 + K + dKdx_x;
+            J = M_div_h2 + K + D/delta_t + dKdx_x + dDdx_x / delta_t;
             if fixed
                J(idx,:) = M_div_h2(idx,:);
             end
@@ -338,6 +329,7 @@ for i = 1: length(t)
         l8 = eval(l8_sym);
         len = [l1;l2;l3;l4;l5;l6;l7;l8];
         K = get_K();
+        D = get_D();
         if fixed
             newForce = K * u_n_p_1;
             rhs(5) = newForce(5);
@@ -346,7 +338,7 @@ for i = 1: length(t)
             rhs(11) = newForce(11); 
         end
         if euler
-            r = f_newton_BE(u_n_p_1, u_n, u_n_m_1, K,rhs);
+            r = f_newton_BE(u_n_p_1, u_n, u_n_m_1, K, D, rhs);
         elseif bdf2
             r = f_newton_Bdf2(u_n_p_1, u_n, u_n_m_1, u_n_m_2, u_n_m_3, K, rhs);
         end
@@ -448,28 +440,28 @@ function D = get_D()
     global l_lat_rr;
     global d_spline1 d_spline2 d_spline3 d_spline4 d_spline5 d_spline6 d_spline7 d_spline8;
     global l1 l2 l3 l4 l5 l6 l7 l8
+%     
+    d1=fnval(d_spline1,l1);
+    d2=fnval(d_spline2,l2);
+    d3=fnval(d_spline3,l3);
+    d4=fnval(d_spline4,l4);
+    d5=fnval(d_spline5,l5);
+    d6=fnval(d_spline6,l6);
+    d7=fnval(d_spline7,l7);
+    d8=fnval(d_spline8,l8);
     
-    k1=fnval(d_spline1,l1);
-    k2=fnval(d_spline2,l2);
-    k3=fnval(d_spline3,l3);
-    k4=fnval(d_spline4,l4);
-    k5=fnval(d_spline5,l5);
-    k6=fnval(d_spline6,l6);
-    k7=fnval(d_spline7,l7);
-    k8=fnval(d_spline8,l8);
-    
-    K = [k1+k3+k5+k7, k1*l_lat_fl-k3*l_lat_fr+k5*l_lat_rl-k7*l_lat_rr, -k1*l_long_fl-k3*l_long_fr+k5*l_long_rl+k7*l_long_rr,  -k1, 0, -k3, 0, -k5, 0, -k7, 0;
-   0, l_lat_fl*l_lat_fl*k1+l_lat_fr*l_lat_fr*k3+l_lat_rl*l_lat_rl*k5+l_lat_rr*l_lat_rr*k7, -l_long_fl*l_lat_fl*k1+l_lat_fr*l_long_fr*k3+l_long_rl*l_lat_rl*k5-l_long_rr*l_lat_rr*k7, -l_lat_fl*k1, 0, l_lat_fr*k3, 0, -l_lat_rl*k5, 0, l_lat_rr*k7, 0;
-   0, 0, l_long_fl*l_long_fl*k1+l_long_fr*l_long_fr*k3+l_long_rl*l_long_rl*k5+l_long_rr*l_long_rr*k7, l_long_fl*k1, 0, l_long_fr*k3, 0, -l_long_rl*k5, 0, -l_long_rr*k7, 0; 
-   0, 0, 0, k1+k2, -k2, 0, 0, 0, 0, 0, 0;
-   0, 0, 0, 0, k2, 0, 0, 0, 0, 0, 0;
-   0, 0, 0, 0, 0, k3+k4, -k4, 0, 0, 0, 0;
-   0, 0, 0, 0, 0, 0, k4, 0, 0, 0, 0;
-   0, 0, 0, 0, 0, 0, 0, k5+k6, -k6, 0, 0;
-   0, 0, 0, 0, 0, 0, 0, 0, k6, 0, 0;
-   0, 0, 0, 0, 0, 0, 0, 0, 0, k7+k8, -k8;
-   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k8];
-    D=K+K.'-diag(diag(K));
+    D = [d1+d3+d5+d7, d1*l_lat_fl-d3*l_lat_fr+d5*l_lat_rl-d7*l_lat_rr, -d1*l_long_fl-d3*l_long_fr+d5*l_long_rl+d7*l_long_rr,  -d1, 0, -d3, 0, -d5, 0, -d7, 0;
+   0, l_lat_fl*l_lat_fl*d1+l_lat_fr*l_lat_fr*d3+l_lat_rl*l_lat_rl*d5+l_lat_rr*l_lat_rr*d7, -l_long_fl*l_lat_fl*d1+l_lat_fr*l_long_fr*d3+l_long_rl*l_lat_rl*d5-l_long_rr*l_lat_rr*d7, -l_lat_fl*d1, 0, l_lat_fr*d3, 0, -l_lat_rl*d5, 0, l_lat_rr*d7, 0;
+   0, 0, l_long_fl*l_long_fl*d1+l_long_fr*l_long_fr*d3+l_long_rl*l_long_rl*d5+l_long_rr*l_long_rr*d7, l_long_fl*d1, 0, l_long_fr*d3, 0, -l_long_rl*d5, 0, -l_long_rr*d7, 0; 
+   0, 0, 0, d1+d2, -d2, 0, 0, 0, 0, 0, 0;
+   0, 0, 0, 0, d2, 0, 0, 0, 0, 0, 0;
+   0, 0, 0, 0, 0, d3+d4, -d4, 0, 0, 0, 0;
+   0, 0, 0, 0, 0, 0, d4, 0, 0, 0, 0;
+   0, 0, 0, 0, 0, 0, 0, d5+d6, -d6, 0, 0;
+   0, 0, 0, 0, 0, 0, 0, 0, d6, 0, 0;
+   0, 0, 0, 0, 0, 0, 0, 0, 0, d7+d8, -d8;
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d8];
+    D=D+D.'-diag(diag(D));
 end
 
 function dk = getdk_dx()

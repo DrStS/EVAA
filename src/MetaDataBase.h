@@ -28,6 +28,11 @@ enum class BoundaryConditionRoad { FIXED, NONFIXED, CIRCULAR, ARBITRARY };
 /** Solver for the MBD system. */
 enum class MBDSolver { EXPLICIT_EULER, RUNGE_KUTTA_4, BROYDEN_EULER, BROYDEN_CN, BROYDEN_BDF2 };
 
+/** Solver for the ALE system */
+enum class ALESolver {
+    IMPLICIT_EULER, BDF2
+};
+
 /** Singleton handling input data parsing from XML files. */
 template <class T>
 class MetaDataBase {
@@ -166,6 +171,21 @@ public:
                                    ". Must be one of: "
                                    "explicit_Euler, RK4, Broyden_Euler, Broyden_CN, Broyden_BDF2");
         }
+
+        solver = simulation.LinearALEXML().Method();
+        if (solver == "IMPLICIT_EULER") {
+            _ALE_solver = ALESolver::IMPLICIT_EULER;
+        }
+        else if (solver == "BDF2") {
+            _ALE_solver = ALESolver::BDF2;
+        }
+        else {
+            throw std::logic_error("Wrong ALE-solver in XML: " + solver +
+                                   ". Must be one of: "
+                                   "IMPLICIT_EULER, BDF2");
+        }
+        _maxNewtonIterations = simulation.LinearALEXML().MaximumNumNewtonIterations();
+        _newtonTolerance = simulation.LinearALEXML().Tolerance();
     }
 
     /**
@@ -367,6 +387,12 @@ public:
     bool getFlagInitialLeg() const { return _initial_leg_flag; }
 
     bool getUseInterpolation() const { return _interpolation; }
+
+    ALESolver getALESolver() const { return _ALE_solver; }
+
+    T getNewtonTolerance() const { return _newtonTolerance; }
+
+    int getMaxNewtonIterations() const { return _maxNewtonIterations; }
 
     MBDSolver getUsedSolverForMBD() const { return _MBD_solver; }
 
@@ -575,6 +601,9 @@ private:
     T _timestep;
     int _num_time_iter;
     int _solution_dim;
+    ALESolver _ALE_solver;
+    T _newtonTolerance;
+    int _maxNewtonIterations;
 
     ArbitraryTrajectory<T>* _trajectory = nullptr;
 

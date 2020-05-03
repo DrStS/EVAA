@@ -38,7 +38,7 @@
                   <xs:element name="horizontalProfile">
                     <xs:complexType>
                       <xs:sequence>
-                        <xs:element name="wayPoint" minOccurs="2" maxOccurs="unbounded">
+                        <xs:element name="wayPoint" minOccurs="4" maxOccurs="unbounded">
                           <xs:complexType>
                             <xs:attribute name="X" type="xs:double" use="required" />
                             <xs:attribute name="Y" type="xs:double" use="required" />

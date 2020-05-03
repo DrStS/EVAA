@@ -31,6 +31,9 @@ protected:
     /** solution in next timestep */
     T _h;
 
+    T tolerance;
+    int maxNewtonIteration;
+
     // solution in next timestep
     T* u_n_p_1;
 
@@ -190,6 +193,8 @@ public:
         dddl = Math::calloc<T>(2 * Constants::NUM_LEGS);
         residual = Math::malloc<T>(Constants::DOF);
 #endif
+        tolerance = MetaDataBase<T>::getDataBase().getNewtonTolerance();
+        maxNewtonIteration = MetaDataBase<T>::getDataBase().getMaxNewtonIterations();
         _h = MetaDataBase<T>::getDataBase().getTimeStepSize();
         factor_h = 1 / _h;
 
@@ -244,7 +249,7 @@ public:
         Math::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force, u_n_p_1, Constants::DOF);
         constructAMatrix();
 #ifdef INTERPOLATION
-        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
+        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration);
 #endif
         // solutio = solution[t_n] = u_n_p_1
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, solution, 1);
@@ -313,8 +318,61 @@ public:
      */
     void constructFixedJacobian() {
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
-            Math::copy<T>(Constants::DOF, M_h2 + (4 + 2 * i) * Constants::DOF, 1, J + (4 + 2 * i) * Constants::DOF, 1);
+            setJacobianTyreLineToFixed(i);
         }
+    }
+
+    /**
+     * \brief set a line in the jacobian according to a tyre to the fixed version
+     *
+     * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
+     */
+    void setJacobianTyreLineToFixed(int tyreNumber) {
+        Math::copy<T>(Constants::DOF, M_h2 + (4 + 2 * tyreNumber) * Constants::DOF, 1, J + (4 + 2 * tyreNumber) * Constants::DOF, 1);
+    }
+
+    /**
+     * \brief construct Jacobian for that one time step when the tyre hits the road
+     *
+     * J = 1/h (D + dD/dx (x[n+1]-x[n]) for the tyre positions
+     */
+    void constructTransitionJacobian(int ) {
+        // Mat_temp = D
+        Math::copy(Constants::DOFDOF, D, 1, Mat_temp, 1);
+        // Jacobian has already been called -> dDdxx wit (x[n+1]-x[n]) can be directly accessed
+        // Mat_temp = D + dD/dx (x[n+1]-x[n])
+        Math::axpy(Constants::DOFDOF, 1, dDdxx, 1, Mat_temp, 1);
+        // Mat_temp /= h
+        Math::scal(Constants::DOFDOF, fact_h, Mat_temp, 1);
+        for (auto i = 0; i < Constants::NUM_LEGS; i++) {
+            setJacobianTyreLineToTransition(i, M_temp);
+        }
+    }
+
+    /**
+     * \brief set a line in the jacobian according to a tyre to the transition versino
+     *
+     * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
+     */
+    void setJacobianTyreLineToTransition(int tyreNumber) {
+        // Mat_temp = D
+        Math::copy(Constants::DOFDOF, D, 1, Mat_temp, 1);
+        // Jacobian has already been called -> dDdxx wit (x[n+1]-x[n]) can be directly accessed
+        // Mat_temp = D + dD/dx (x[n+1]-x[n])
+        Math::axpy(Constants::DOFDOF, 1, dDdxx, 1, Mat_temp, 1);
+        // Mat_temp /= h
+        Math::scal(Constants::DOFDOF, fact_h, Mat_temp, 1);
+        // write line into Jacobien
+        setJacobianTyreLineToFixed(tyreNumber, Mat_temp);
+    }
+    /**
+     * \brief set a line in the jacobian according to a tyre to the transition versino
+     *
+     * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
+     * \param[in] JNew precalculated Jacobian
+     */
+    void setJacobianTyreLineToTransition(int tyreNumber, T* JNew) {
+        Math::copy<T>(Constants::DOF, JNew + (4 + 2 * tyreNumber) * Constants::DOF, 1, J + (4 + 2 * tyreNumber) * Constants::DOF, 1);
     }
 
     /**
@@ -759,7 +817,7 @@ public:
         // cblas_dscal(DOF,0, force, 1);
         getInitialGuess(force);
 #ifdef INTERPOLATION
-        Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp);
+        Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1, temp, &tolerance, &maxNewtonIteration);
 #endif
         /*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF,
         num_tyre); apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set,
@@ -834,6 +892,31 @@ public:
         // J += 1/_h * dDdxx
         Math::axpy<T>(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
     }
+
+    /**
+     * \brief construct Jacobian for fixed to road
+     *
+     * add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h D
+     * - K + 1/h dDdx * x[n]] therefore J = M_h2 for the tyre positions
+     */
+    void constructFixedJacobian() {
+        for (auto i = 0; i < Constants::NUM_LEGS; i++) {
+            setJacobianTyreLineToFixed(i);
+        }
+    }
+
+    /**
+     * \brief set a line in the jacobian according to a tyre to the fixed version
+     *
+     * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
+     */
+    void setJacobianTyreLineToFixed(int tyreNumber) {
+        // J = M_h2
+        Math::copy<T>(Constants::DOF, M_h2 + (4 + 2 * tyreNumber) * Constants::DOF, 1, J + (4 + 2 * tyreNumber) * Constants::DOF, 1);
+        // J = 9/4 M_h2
+        Math::scal<T>(Constants::DOF, 2.25, J + (4 + 2 * tyreNumber) * Constants::DOF, 1);
+    }
+
     /*
     Destructor
     */
