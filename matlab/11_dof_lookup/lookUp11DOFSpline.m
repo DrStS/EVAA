@@ -298,6 +298,7 @@ for i = 1: length(t)
         getdk_dx();
         dKdx_x = eval(dKdx_x_symb);
         % here i reuse the big formula for the derivative
+        setxforDBE(u_n_p_1,u_n);
         getdd_dx();
         dDdx_x = eval(dKdx_x_symb);
         if euler
@@ -526,4 +527,20 @@ global x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11
         x9 = 3/2 * u(9) - 2 * y(i-1,9) + 1/2 * y(i-2,9);
         x10 = 3/2 * u(10) - 2 * y(i-1,10) + 1/2 * y(i-2,10);
         x11 = 3/2 * u(11) - 2 * y(i-1,11) + 1/2 * y(i-2,11);
+end
+
+function dd = setxforDBE(u, u_n)
+global x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11
+% update values
+        x1 = u(1) - u_n(1);
+        x2 = u(2) - u_n(2);
+        x3 = u(3) - u_n(3);
+        x4 = u(4) - u_n(4);
+        x5 = u(5) - u_n(5);
+        x6 = u(6) - u_n(6);
+        x7 = u(7) - u_n(7);
+        x8 = u(8) - u_n(8);
+        x9 = u(9) - u_n(9);
+        x10 = u(10) - u_n(10);
+        x11 = u(11) - u_n(11);
 end
