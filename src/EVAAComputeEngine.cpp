@@ -712,11 +712,11 @@ void EVAAComputeEngine::computeALE(void) {
 
     ale->print_final_results();
 
+	delete TwoTrackModel_obj;
     delete car;
     delete loadModule;
     delete lagrangeProfile;
 	delete eulerProfile;
-    delete TwoTrackModel_obj;
     delete ale;
 
     Math::free<Constants::floatEVAA>(sol);

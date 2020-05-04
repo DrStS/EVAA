@@ -722,7 +722,7 @@ public:
 
     ~Car() {
         // TODO: consider removing after checking performance.
-        mkl_free_buffers();
+      //  mkl_free_buffers();
 
         Math::free<T>(Position_vec);
         Math::free<T>(Velocity_vec);

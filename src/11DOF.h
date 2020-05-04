@@ -14,6 +14,7 @@
 #include "MathLibrary.h"
 #include "LoadModule.h"
 #include "MetaDataBase.h"
+// #define Damping 1
 
 namespace EVAA {
 
@@ -49,17 +50,21 @@ protected:
     T *M_h2, *K, *D;
     /** used for the constructStiffnesMatrix and constructDampingMatrix. */
     T* Mat_temp;
-    T* Mat_springLength;
 
-    T *kVec, *dVec;
+	T *kVec;
+	T *dVec;
+
     /** used for the constructStiffnesMatrix and constructDampingMatrix as well as for the BE. */
     T* temp;
-    T *springLengths, *springLengthsNormal;
-
-    T *J, *dKdxx, *dDdxx;
+#ifdef INTERPOLATION
+	T *J, *dKdxx;
+#ifdef Damping
+	T *dDdxx, *dddl;
+#endif // Damping
     T* residual;
     T res_norm;
-    T *dkdl, *dddl;
+	T *dkdl; 
+#endif // INTERPOLATION
 
 public:
     /**
@@ -196,9 +201,6 @@ public:
 
         temp = Math::malloc<T>(Constants::DOF);
         Mat_temp = Math::calloc<T>(Constants::DOFDOF);
-        Mat_springLength = Math::calloc<T>(2 * Constants::NUM_LEGS * Constants::DOF);
-        springLengths = Math::malloc<T>(2 * Constants::NUM_LEGS);
-        springLengthsNormal = Math::malloc<T>(2 * Constants::NUM_LEGS);
 #ifdef INTERPOLATION
 		if (loadModuleObj->GetEulerProfileName() == "Fixed") {
 			JacobianAdjustment = &TwoTrackModelBE<T>::constructFixedJacobian;
@@ -251,9 +253,6 @@ public:
         Math::free<T>(D);
         Math::free<T>(temp);
         Math::free<T>(Mat_temp);
-        Math::free<T>(springLengths);
-        Math::free<T>(springLengthsNormal);
-        Math::free<T>(Mat_springLength);
 #ifdef INTERPOLATION
         Math::free<T>(J);
 		Math::free<T>(dkdl);
@@ -817,8 +816,7 @@ public:
         // cblas_daxpy(DOF * DOF,1, dMdxx_trans, 1, dMdxx, 1); // dMdxx = dMdxx + dMdxx'
 
         // add the diagonal to dM
-        Math::allocate_to_diagonal<T>(dMdxx, temp,
-                                      Constants::DOF);  // dMdxx = dMdxx + dMdxx'+ diag(dMdxx)
+        Math::allocate_to_diagonal<T>(dMdxx, temp, Constants::DOF);  // dMdxx = dMdxx + dMdxx'+ diag(dMdxx)
     }
 };
 
@@ -875,8 +873,7 @@ private:
         // temp += - 1/2 * x[n-1]
         Math::axpy<T>(Constants::DOF, -0.5, u_n_m_1, 1, temp, 1);
         // bVec += 1/h * D * temp
-        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DOF, Constants::DOF, factor_h, D,
-                      Constants::DOF, temp, 1, 1, bVec, 1);
+        Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DOF, Constants::DOF, factor_h, D, Constants::DOF, temp, 1, 1, bVec, 1);
     }
 
     /**
