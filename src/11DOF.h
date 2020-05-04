@@ -14,7 +14,7 @@
 #include "MathLibrary.h"
 #include "LoadModule.h"
 #include "MetaDataBase.h"
-// #define Damping 1
+#define Damping 1
 
 namespace EVAA {
 
@@ -359,7 +359,7 @@ public:
      */
     void constructFixedJacobian() {
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
-            Math::copy<T>(Constants::DOF, M_h2 + Constants::TYRE_INDEX_LAGRANGE[i] * Constants::DOF, 1, J + Constants::TYRE_INDEX_LAGRANGE[i] * Constants::DOF, 1);
+            Math::copy<T>(Constants::DOF, M_h2 + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, J + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1);
         }
     }
 

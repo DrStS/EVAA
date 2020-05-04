@@ -165,7 +165,7 @@ void swap_address(T*& a, T*& b) {
  * \return mat the diagonal matrix
  */
 template <typename T>
-void allocate_to_diagonal(T* matrix, T* vector, size_t dim) {
+void CopyToDiagonal(T* matrix, T* vector, size_t dim) {
     Math::copy<T>(dim, vector, 1, matrix, dim + 1);
     /*for (int i = 0; i < dim; ++i) {
             matrix[i*dim + i] = vector[i];
