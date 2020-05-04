@@ -177,7 +177,7 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1e2
+num_iter = 1e3
 delta_t = 1e-3; 
 t = 0:delta_t:(num_iter - 1)*delta_t;
 
@@ -261,25 +261,27 @@ for i = 1: length(t)
     % J += -(K(tidx,tidx)+ D/delta_t  + (dKdx(tidx,tidx) + dDdx(tidx,tidx) /delta_t )*u_n_p_1)
     if fixed
         if euler
-            newForce = K * u_n_p_1 + D *( u_n_p_1 - u_n) /delta_t;
+            newForce = K * u_n_p_1;
+            %+ D *( u_n_p_1 - u_n) /delta_t;
             rhs(5) = newForce(5);
             rhs(7) = newForce(7);
             rhs(9) = newForce(9);
             rhs(11) = newForce(11);
         elseif bdf2
-            vec_rhs = 1/(2*delta_t) * D *(3 * u_n_p_1 - 4 * u_n + u_n_m_1) + K * u_n_p_1;
+            vec_rhs = K * u_n_p_1;
+            %1/(2*delta_t) * D *(3 * u_n_p_1 - 4 * u_n + u_n_m_1);
             rhs(5) = vec_rhs(5);
             rhs(7) = vec_rhs(7);
             rhs(9) = vec_rhs(9);
             rhs(11) = vec_rhs(11);
         end
     end
-    if euler
-        u_n_p_1 = ( M_div_h2 + K + D/delta_t)\ (( 2 * M_div_h2 + D/delta_t ) * u_n - M_div_h2 * u_n_m_1 + rhs);
-    elseif bdf2
-        vec_rhs = B*u_n + C*u_n_m_1 + DMat*u_n_m_2 + E*u_n_m_3 + D*(2*u_n-0.5*u_n_m_1)/delta_t;
-        u_n_p_1 = ((9/4)*M_div_h2 +1.5* D / delta_t + K)\ (vec_rhs + rhs);
-    end
+%     if euler
+%         u_n_p_1 = ( M_div_h2 + K + D/delta_t)\ (( 2 * M_div_h2 + D/delta_t ) * u_n - M_div_h2 * u_n_m_1 + rhs);
+%     elseif bdf2
+%         vec_rhs = B*u_n + C*u_n_m_1 + DMat*u_n_m_2 + E*u_n_m_3 + D*(2*u_n-0.5*u_n_m_1)/delta_t;
+%         u_n_p_1 = ((9/4)*M_div_h2 +1.5* D / delta_t + K)\ (vec_rhs + rhs);
+%     end
     K = get_K();
     D = get_D();
     if euler
@@ -297,14 +299,14 @@ for i = 1: length(t)
         temp = [];
         getdk_dx();
         dKdx_x = eval(dKdx_x_symb);
-        % here i reuse the big formula for the derivative
-        setxforDBE(u_n_p_1,u_n);
         getdd_dx();
-        dDdx_x = eval(dKdx_x_symb);
+        % here i reuse the big formula for the derivative
         if euler
+            setxforDBE(u_n_p_1,u_n);
+            dDdx_x = eval(dKdx_x_symb);
             J = M_div_h2 + K + D/delta_t + dKdx_x + dDdx_x / delta_t;
             if fixed
-               J(idx,:) = M_div_h2(idx,:);
+               J(idx,:) = M_div_h2(idx,:) + D(idx,:)/delta_t + + dDdx_x(idx,:)/ delta_t;
             end
         elseif bdf2 
             setxforDBDF2(u_n_p_1, y, i);
@@ -343,7 +345,8 @@ for i = 1: length(t)
         D = get_D();
         if fixed
             if euler
-            newForce = K * u_n_p_1 + D *( u_n_p_1 - u_n) /delta_t;
+            newForce = K * u_n_p_1;
+            %+ D *( u_n_p_1 - u_n) /delta_t;
             rhs(5) = newForce(5);
             rhs(7) = newForce(7);
             rhs(9) = newForce(9);
