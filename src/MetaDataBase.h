@@ -498,7 +498,7 @@ public:
 #endif // INTERPOLATION
 
     virtual ~MetaDataBase() {
-#ifdef INTERPOLATION
+#ifdef INTERPOLATION        
         delete _lookupDamping;
         delete _lookupStiffness;
 #endif

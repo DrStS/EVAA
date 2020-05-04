@@ -116,9 +116,9 @@ private:
     MKL_INT bc_type = DF_NO_BC; /**< boundary conditions type*/
     MKL_INT ic_type = DF_NO_IC; /**< internal conditions type*/
 
-    T* axis;        /**< array of break points (axis with length values of the grid points)*/
-    T* grid;        /**< function values */
-    T* scoeff;      /**< array of spline coefficients*/
+    T* axis = nullptr;        /**< array of break points (axis with length values of the grid points)*/
+    T* grid = nullptr;        /**< function values */
+    T* scoeff = nullptr;      /**< array of spline coefficients*/
     MKL_INT stype;  /**< spline type: linear = DF_PP_DEFAULT, spline = DF_PP_NATURAL*/
     MKL_INT sorder; /**< spline order: linear = DF_PP_LINEAR, spline = DF_PP_CUBIC*/
     T l_min, l_max; /**< to test wheather its inbound */
@@ -186,13 +186,16 @@ public:
      * free all the allocated space
      */
     ~EVAALookup() {
-        /* Delete Data Fitting task */
-        for (auto i = 0; i < ny; i++) {
-            dfDeleteTask(&task[i]);
-        }
         Math::free<T>(axis);
         Math::free<T>(scoeff);
+
+        /* Delete Data Fitting task */
+        for (auto i = 0; i < ny; i++) {
+            std::cout << " i = " << i << " / " << ny << " \t task[i] = " << &task[i] << " \n";
+            dfDeleteTask(&task[i]);
+        }
         Math::free<DFTaskPtr>(task);
+        
     }
     /**
      * \brief interpolates the ny = k grids ob the lookuptable

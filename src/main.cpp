@@ -50,6 +50,10 @@
  * \version alpha
  */
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #ifdef EVAA_COMMANDLINE_ON
 #include <iostream>
 #include <string>
@@ -110,6 +114,7 @@ int main(int argc, char **argv) {
 	timer1.stop();
     std::cout << "It took " << timer1.getDurationMilliSec()<< " ms to run the solver(computeMBD).\n\n\n" << std::endl;
 
+    std::cout << "Before TwoTrackModelBE";
     timer1.start();
     myComputeEngine->computeMKLTwoTrackModelBE();
     timer1.stop();
@@ -127,4 +132,7 @@ int main(int argc, char **argv) {
 
     EVAAMainWindow(argc, argv);
 #endif  // EVAA_COMMANDLINE_ON
+
+    _CrtDumpMemoryLeaks();
+    return 0;
 }
