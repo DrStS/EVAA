@@ -14,10 +14,10 @@ namespace EVAA {
 template <typename T>
 class LoadModule {
 private:
-    Profile<T>* activeProfile;
-	Lagrange<T>* lagrangianProfile;
-	Euler<T>* eulerianProfile;
-    Car<T>* carObj;
+    Profile<T>* _activeProfile;
+	Lagrange<T>* _lagrangianProfile;
+	Euler<T>* _eulerianProfile;
+    Car<T>* _carObj;
 	bool aleCounter = false;
 
 	void (LoadModule<T>::*_forceComputationModule)(T*, T*);
@@ -40,12 +40,12 @@ private:
     void ComputeInternalTorqueFromLagrangianForceFixed(T* Torque, T* F_vec) {
         // compute torque around X-axis
 		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-            Torque[0] += F_vec[i * (Constants::DIM - 1) + 1] * carObj->currentCIRTwoTrackModel[i];
+            Torque[0] += F_vec[i * (Constants::DIM - 1) + 1] * _carObj->currentCIRTwoTrackModel[i];
         }
 
         // compute torque around Y-axis
 		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-            Torque[1] += F_vec[i * (Constants::DIM - 1) + 0] * carObj->currentCIRTwoTrackModel[i];
+            Torque[1] += F_vec[i * (Constants::DIM - 1) + 0] * _carObj->currentCIRTwoTrackModel[i];
         }
     }
 
@@ -98,10 +98,8 @@ private:
 	}
 
 public:
-    LoadModule(Profile<T>* Profile_type, Car<T>* Car1) {
+    LoadModule(Profile<T>* Profile_type, Car<T>* Car1) : _activeProfile(Profile_type), _carObj(Car1) {
 		throw "Not Implemented";
-        activeProfile = Profile_type;
-        carObj = Car1;
 
         auto& db = MetaDataBase<T>::getDataBase();
 
@@ -112,10 +110,9 @@ public:
 		ReadExternalForce();
     }
 
-	LoadModule(Lagrange<T>* lagrangeProfile, Euler<T>* eulerProfile, Car<T>* Car1) {
-		lagrangianProfile = lagrangeProfile;
-		eulerianProfile = eulerProfile;
-		carObj = Car1;
+	LoadModule(Lagrange<T>* lagrangeProfile, Euler<T>* eulerProfile, Car<T>* Car1) : //
+	_lagrangianProfile(lagrangeProfile), _eulerianProfile(eulerProfile), _carObj(Car1)
+	{		
 		aleCounter = true;
 
 		// read External_force
@@ -143,34 +140,39 @@ public:
     }
 
 	std::string GetEulerProfileName() {
-		return eulerianProfile->GetName();
+		return _eulerianProfile->GetName();
 	}
 
 	std::string GetLagrangianProfileName() {
-		return lagrangianProfile->GetName();
+		return _lagrangianProfile->GetName();
 	}
 
 	void GetLagrangianForce(T _time, T* lagrangeForce) {
-		lagrangianProfile->GetProfileForceLagrangian(carObj, _lagrangianForce, lagrangeForce);
+		_lagrangianProfile->GetProfileForceLagrangian(_carObj, _lagrangianForce, lagrangeForce);
 
 		// add external force
+		// TODO Optimize (Teo)
 		for (auto i = 0; i < Constants::VEC_DIM; ++i) {
 			lagrangeForce[0] += externalForce[i*Constants::DIM];
 			lagrangeForce[1] += externalForce[i*Constants::DIM + 1];
 		}
-
 	}
 
+	/* 
+	* \param[in] _time current time in ALE
+	* \param[out] eulerForce get Eulerian Force
+	*/
 	void GetEulerianForce(T _time, T* eulerForce) {
 		// compute reaction force based on current computed _lagrangianForce always called after GetLagrangian Force otherwise gives wrong result
 		reactionForce[0] = _lagrangianForce[0];
 		reactionForce[1] = _lagrangianForce[1];
+		// TODO Optimize (Teo)
 		for (auto i = 1; i < Constants::VEC_DIM; ++i) {
 			reactionForce[0] += _lagrangianForce[(Constants::DIM - 1)*i];
 			reactionForce[1] += _lagrangianForce[(Constants::DIM - 1)*i + 1];
 		}
 
-		eulerianProfile->GetProfileForceEulerian(carObj, eulerForce);
+		_eulerianProfile->GetProfileForceEulerian(_carObj, eulerForce);
 		// Add reaction component on the tyre
 		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
 			Math::axpy<T>(Constants::DIM, -0.25, reactionForce, Constants::INCX, _lagrangianForce + Constants::TYRE_INDEX_LAGRANGE[i], Constants::INCX);
@@ -183,13 +185,18 @@ public:
 		}
 	}
 
+	/* First Lagrangian, then Eulerian!
+	* /param[in] _time current time in ALE
+	* /param[out] lagrangeForce 2-dim vector (x and y directions)
+	* /param[out] eulerForce 11-dim vector (11 DOF format)
+	*/
 	void ComputeForceALE(T _time, T* lagrangeForce, T* eulerForce) {
 		GetLagrangianForce(_time, lagrangeForce);
 		GetEulerianForce(_time, eulerForce);
 	}
 
 	void GetTorqueLagrange(T _time, T* torque) {
-		lagrangianProfile->GetProfileTorqueLagrangian(carObj, torque);
+		_lagrangianProfile->GetProfileTorqueLagrangian(_carObj, torque);
 	}
 };
 

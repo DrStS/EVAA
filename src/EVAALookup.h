@@ -191,7 +191,6 @@ public:
 
         /* Delete Data Fitting task */
         for (auto i = 0; i < ny; i++) {
-            std::cout << " i = " << i << " / " << ny << " \t task[i] = " << &task[i] << " \n";
             dfDeleteTask(&task[i]);
         }
         Math::free<DFTaskPtr>(task);
