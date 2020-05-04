@@ -223,12 +223,12 @@ public:
 
     // Members from 11 DOF system
 
-    T *kVec, *dVec, *l_lat, *l_long;  // to be TEO
-    size_t* tyre_index_set;           // to be something
+    T *kVec, *dVec, *l_lat, *l_long;  // TODO TEO
+    size_t* tyre_index_set;           // TODO to be something
 
     // Interpolator Members
 
-    T *angle_buffer, *pos_buffer;  // to be removed
+    T *angle_buffer, *pos_buffer;  // TODO to be removed
 
     /* Constructor */
     Car() {
