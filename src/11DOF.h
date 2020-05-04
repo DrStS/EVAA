@@ -12,6 +12,7 @@
 #include "Car.h"
 #include "Constants.h"
 #include "MathLibrary.h"
+#include "LoadModule.h"
 #include "MetaDataBase.h"
 
 namespace EVAA {
@@ -24,6 +25,10 @@ class TwoTrackModelParent {
 protected:
     /** pointer to car instance with all important car parameter */
     Car<T>* _car;
+	LoadModule<T>* loadModuleObj;
+
+	/** Force Vector for the load module*/
+	T* twoTrackModelForce;
 
     // time step related
     /** solution in next timestep */
@@ -56,18 +61,17 @@ protected:
     T *dkdl, *dddl;
 
 public:
-    TwoTrackModelParent() {}
     /**
      * Constructor
      */
-    explicit TwoTrackModelParent(Car<T>* input_car) : _car(input_car) {}
+    TwoTrackModelParent(Car<T>* input_car, LoadModule<T>* loadModel) : _car(input_car), loadModuleObj(loadModel) {}
 
     /**
      * Performs one timestep of the 11DOF solver
      * \param[in] load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      * \oaram[out] solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
-    virtual void update_step(T* force, T* solution) = 0;
+    virtual void update_step(T _time, T* solution) = 0;
 
     /**
      * Destructor
@@ -138,6 +142,18 @@ protected:
         Math::scal<T>(Constants::DOF, 1. / (_h * _h), M_h2, Constants::DOF + 1);
     }
 
+	/**
+	* \breif Compute velocity of the car based on the displacement vectors
+	* 
+	* called inside update_step function
+	*/
+	void UpdateVelocity() {
+		Math::copy<T>(Constants::DOF, u_n_p_1, Constants::INCX, _car->currentVelocityTwoTrackModel, Constants::INCX);
+		Math::axpy<T>(Constants::DOF, -1, u_n, Constants::INCX, _car->currentVelocityTwoTrackModel, Constants::INCX);
+		Math::scal<T>(Constants::DOF, factor_h, _car->currentVelocityTwoTrackModel, Constants::INCX);
+	}
+
+
     /**
      * \brief initialise the vectors u_n, u_n_m_1, u_n_p_1
      *
@@ -160,10 +176,11 @@ public:
     /**
      * \brief Constructor
      */
-    explicit TwoTrackModelBE(Car<T>* input_car) : TwoTrackModelParent(input_car) {
-        u_n_m_1 = Math::malloc<T>(Constants::DOF);         // velocity
-        u_n = Math::malloc<T>(Constants::DOF);             // position
-        u_n_p_1 = _car->currentDisplacementTwoTrackModel;  // position
+    TwoTrackModelBE(Car<T>* input_car, LoadModule<T>* loadModel) : TwoTrackModelParent(input_car, loadModel) {
+        u_n_m_1 = Math::malloc<T>(Constants::DOF);					// velocity
+        u_n = Math::malloc<T>(Constants::DOF);						// position
+        u_n_p_1 = _car->currentDisplacementTwoTrackModel;			// position
+		twoTrackModelForce = Math::malloc<T>(Constants::DOF);		// force
 
         A = Math::malloc<T>(Constants::DOFDOF);
         B = Math::calloc<T>(Constants::DOFDOF);
@@ -213,6 +230,7 @@ public:
         Math::free<T>(C);
         Math::free<T>(u_n);
         Math::free<T>(u_n_m_1);
+		Math::free<T>(twoTrackModelForce);
         Math::free<T>(M_h2);
         Math::free<T>(K);
         Math::free<T>(D);
@@ -235,18 +253,19 @@ public:
      * Performs one timestep of the 11DOF solver
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
-    virtual void update_step(T* force, T* solution) {
+    virtual void update_step(T _time, T* solution) {
         // Math::scal<T>(Constants::DOF, -1, u_n_m_1, Constants::INCX);
-        Math::Solvers<T, TwoTrackModelBE<T>>::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, force,
-                                                                    u_n_p_1, Constants::DOF);
+		// Get the force
+		loadModuleObj->GetEulerianForce(_time, twoTrackModelForce);
+		Math::Solvers<T, TwoTrackModelBE<T> >::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, twoTrackModelForce, u_n_p_1, Constants::DOF);
         constructAMatrix();
 #ifdef INTERPOLATION
-        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1,
-                                                     temp);
+        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, twoTrackModelForce, J, residual, &res_norm, u_n_p_1, temp);
 #endif
-        // solutio = solution[t_n] = u_n_p_1
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, solution, 1);
-        // copy update to car
+        
+		// update two track velocity in car
+		UpdateVelocity();
 
         // u_n_m_1 points to u_n and u_n points to u_n_m_1
         Math::swap_address<T>(u_n, u_n_m_1);
@@ -327,6 +346,7 @@ public:
     void updateSystem() {
         // constructSpringLengths();
         _car->updateLengthsTwoTrackModel();
+		loadModuleObj->GetEulerianForce(_time, twoTrackModelForce);
         constructStiffnessMatrix();
         constructDampingMatrix();
         constructAMatrix();
@@ -760,7 +780,7 @@ private:
     T* bVec;
     T *u_n_m_2, *u_n_m_3;
     size_t time_step_count = 0;
-    void (TwoTrackModelBDF2<T>::*_active_executor)(T*, T*);
+    void (TwoTrackModelBDF2<T>::*_active_executor)(T, T*);
 
     /**
      * \brief construct A
@@ -824,11 +844,25 @@ private:
         constructAMatrix();
     }
 
+	/**
+	* \breif Compute velocity of the car based on the displacement vectors
+	*
+	* called inside update_step function
+	*/
+	void UpdateVelocity() {
+		Math::copy<T>(Constants::DOF, u_n_p_1, Constants::INCX, _car->currentVelocityTwoTrackModel, Constants::INCX);
+		Math::scal<T>(Constants::DOF, 1.5, _car->currentVelocityTwoTrackModel, Constants::INCX);
+		Math::axpy<T>(Constants::DOF, -2, u_n, Constants::INCX, _car->currentVelocityTwoTrackModel, Constants::INCX);
+		Math::axpy<T>(Constants::DOF, 0.5, u_n_m_1, Constants::INCX, _car->currentVelocityTwoTrackModel, Constants::INCX);
+		Math::scal<T>(Constants::DOF, factor_h, _car->currentVelocityTwoTrackModel, Constants::INCX);
+	}
+
+
 public:
     /**
      * Constructor.
      */
-    TwoTrackModelBDF2(Car<T>* input_car) : TwoTrackModelBE<T>(input_car) {
+    TwoTrackModelBDF2(Car<T>* input_car, LoadModule<T>* loadModel) : TwoTrackModelBE<T>(input_car, loadModel) {
         Dmat = Math::calloc<T>(Constants::DOFDOF);
         E = Math::calloc<T>(Constants::DOFDOF);
         u_n_m_2 = Math::malloc<T>(Constants::DOF);
@@ -837,22 +871,22 @@ public:
         _active_executor = &TwoTrackModelBDF2<T>::first_two_steps;
     }
 
-    void first_two_steps(T* force, T* solution) {
+    void first_two_steps(T _time, T* solution) {
         if (time_step_count == 0) {
             Math::copy<T>(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
-            TwoTrackModelBE<T>::update_step(force, solution);
+            TwoTrackModelBE<T>::update_step(_time, solution);
         }
         else {
             Math::copy<T>(Constants::DOF, u_n_m_2, 1, u_n_m_3, 1);
             Math::copy<T>(Constants::DOF, u_n_m_1, 1, u_n_m_2, 1);
-            TwoTrackModelBE<T>::update_step(force, solution);
+            TwoTrackModelBE<T>::update_step(_time, solution);
             // construct A
             constructAMatrix();
             _active_executor = &TwoTrackModelBDF2<T>::update_step_bdf2;
         }
     }
-    virtual void update_step(T* force, T* solution) {
-        (this->*_active_executor)(force, solution);
+    virtual void update_step(T _time, T* solution) {
+        (this->*_active_executor)(_time, solution);
         time_step_count += 1;
     }
 
@@ -861,17 +895,21 @@ public:
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      * \return solution of the following timestep [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
-    void update_step_bdf2(T* force, T* solution) {
+    void update_step_bdf2(T _time, T* solution) {
         // cblas_dscal(DOF,0, force, 1);
-        getInitialGuess(force);
+		// compute Force
+		loadModuleObj->GetEulerianForce(_time, twoTrackModelForce);
+
+        getInitialGuess(twoTrackModelForce);
 #ifdef INTERPOLATION
-        Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, force, J, residual, &res_norm, u_n_p_1,
-                                                       temp);
+        Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, twoTrackModelForce, J, residual, &res_norm, u_n_p_1, temp);
 #endif
-        /*compute_normal_force(K, u_n_p_1, f_n_p_1, tyre_index_set, DOF, num_tyre);
-        apply_normal_force(f_n_p_1, u_n_p_1, tyre_index_set, num_tyre);*/
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, solution, 1);
         // u_n_m_2 points to u_n_m_3 and u_n_m_3 points to u_n_m_2
+
+		// update velocity inside car class
+		UpdateVelocity();
+
         Math::swap_address<T>(u_n_m_2, u_n_m_3);
         // u_n_m_2 points to u_n_m_1 and u_n_m_1 points to u_n_m_3
         Math::swap_address<T>(u_n_m_1, u_n_m_2);
@@ -905,6 +943,7 @@ public:
     void updateSystem() {
         // constructSpringLengths();
         _car->updateLengthsTwoTrackModel();
+		loadModuleObj->GetEulerianForce(_time, twoTrackModelForce);
         constructStiffnessMatrix();
         constructDampingMatrix();
         constructAMatrix();
@@ -957,16 +996,16 @@ public:
  * For testing purposes.
  */
 template <typename T>
-class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
+class TwoTrackModelFull : public TwoTrackModelBE<T> {
 public:
-    TwoTrackModelFull(Car<T>* input_car) : TwoTrackModelBDF2<T>(input_car) {
+    TwoTrackModelFull(Car<T>* input_car, LoadModule<T>* loadModel) : TwoTrackModelBE<T>(input_car, loadModel) {
         auto& db = MetaDataBase<T>::getDataBase();
         tend_ = db.getNumberOfTimeIterations() * _h;
         int sol_size = (floor(tend_ / _h) + 1);
-        f_n_p_1 = Math::malloc<T>(Constants::DOF);
+    //    f_n_p_1 = Math::malloc<T>(Constants::DOF);
         u_sol = Math::calloc<T>((sol_size + 1) * Constants::DOF);
 
-        f_n_p_1[0] = db.getBodyExternalForce()[2];
+    /*    f_n_p_1[0] = db.getBodyExternalForce()[2];
         f_n_p_1[1] = 0;
         f_n_p_1[2] = 0;
         f_n_p_1[3] = db.getWheelExternalForceFrontLeft()[2];
@@ -976,7 +1015,7 @@ public:
         f_n_p_1[7] = db.getWheelExternalForceRearLeft()[2];
         f_n_p_1[8] = db.getTyreExternalForceRearLeft()[2];
         f_n_p_1[9] = db.getWheelExternalForceRearRight()[2];
-        f_n_p_1[10] = db.getTyreExternalForceRearRight()[2];
+        f_n_p_1[10] = db.getTyreExternalForceRearRight()[2];*/
     }
     void apply_boundary_condition(BoundaryConditionRoad s) {
         condition_type = s;
@@ -995,7 +1034,7 @@ public:
         // cblas_dcopy(DOF, _car->u_prev_linear, 1, solution_vect, 1);
         while (std::abs(t - (tend_ + _h)) > eps) {
             // solution_vect = u_sol + iter * (DOF);
-            update_step(f_n_p_1, sol_vect);
+            update_step(t, sol_vect);
             iter++;
             t += _h;
         }
@@ -1028,7 +1067,7 @@ public:
 
     virtual ~TwoTrackModelFull() {
         Math::free<T>(u_sol);
-        Math::free<T>(f_n_p_1);
+        //Math::free<T>(f_n_p_1);
     }
 
 private:

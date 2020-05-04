@@ -104,10 +104,10 @@
         <FrontRight>0.20</FrontRight>
       </BodyXML>
       <TyreXML>
-        <ReerRight>0.2</ReerRight>
-        <ReerLeft>0.2</ReerLeft>
-        <FrontLeft>0.2</FrontLeft>
-        <FrontRight>0.2</FrontRight>
+        <ReerRight>0.20</ReerRight>
+        <ReerLeft>0.20</ReerLeft>
+        <FrontLeft>0.20</FrontLeft>
+        <FrontRight>0.20</FrontRight>
       </TyreXML>
     </SpringElongationXML>
     <VelocitiesXML>

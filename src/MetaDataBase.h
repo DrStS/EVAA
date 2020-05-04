@@ -675,6 +675,7 @@ private:
 
     /** Lookup filename read from the car file. */
     std::string _lookup_filename;
+
 #ifdef INTERPOLATION
 	/** Stiffness lookup from the compute engine. */
 	EVAALookup<Constants::floatEVAA>* _lookupStiffness;

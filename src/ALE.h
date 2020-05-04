@@ -15,63 +15,55 @@ template <class T>
 class ALE {
 private:
     // necessary class objects
-    Car<T>* Car_obj;                 // suppose Interpolation in the Car
-    LoadModule<T>* Load_module_obj;  // needs Profile and Car
-    TwoTrackModelParent<T>* TwoTrackModel_obj;
-    Profile<T>* profile_obj;
+    Car<T>* carObj;                 // suppose Interpolation in the Car
+    LoadModule<T>* loadModuleObj;  // needs Profile and Car
+    TwoTrackModelParent<T>* twoTrackModelObj;
 
     // simulation parameters
     T tend_;
     T h_;
 
     // time and solution vectors
-    T* time_vec;
-    T* u_sol;
+    T* timeArray;
+    T* solutionVector;
 
     // needed to solve the 11DOF system
-    T* force_vector_11dof;
+    T* forceTwoTrackModel;
 
     // Contains the forces in the ordering [GC:XYZ,W1:XYZ,T1:XYZ, ...]
-    T* force_vector;
+    T* combinedForceVector;
 
     // Contains the dx in the spring elongation in Stefan's ordering
-    T* Delta_x_vec;
+    T* springElongation;
 
     // global centripetal forces on the whole car [XYZ]
-    T* centripetal_force;
-    T* new_centripetal_force;
+    T* lagrangianForceVector;
+    T* newLagrangianForceVector;
 
     // global torque on the car [XYZ]
-    T* torque;
-    T* new_torque;
-
-    // global positions, velocities [XY] and angles [Z] of the center of mass of the car
-    T* posXY_vec;
-    T* angleZ;
-    T* velXY_vec;
-    T* ang_velZ;
+    T* lagrangianTorque;
+    T* newLagrangianTorque;
 
     // quantities for the whole car
-    T global_inertia_Z;
+    T momentOfInertiaZ;
 
 public:
     /**
      * Constructor
      */
-    ALE(Car<T>* Car_obj_val, LoadModule<T>* Load_module_val,
-        TwoTrackModelParent<T>* TwoTrackModel_val) {
-        Car_obj = Car_obj_val;
-        Load_module_obj = Load_module_val;
-        TwoTrackModel_obj = TwoTrackModel_val;
+    ALE(Car<T>* Car_obj_val, LoadModule<T>* Load_module_val, TwoTrackModelParent<T>* TwoTrackModel_val) {
+        carObj = Car_obj_val;
+        loadModuleObj = Load_module_val;
+        twoTrackModelObj = TwoTrackModel_val;
 
         h_ = MetaDataBase<T>::getDataBase().getTimeStepSize();
         tend_ = MetaDataBase<T>::getDataBase().getNumberOfTimeIterations() * h_;
 
-        size_t sol_size = (floor(tend_ / h_) + 1);
-        u_sol = Math::malloc<T>(sol_size * (Constants::VEC_DIM * Constants::DIM));
+        size_t solutionVectorSize = (floor(tend_ / h_) + 1);
+        solutionVector = Math::malloc<T>(solutionVectorSize * (Constants::VEC_DIM * Constants::DIM));
     }
 
-    ~ALE() { Math::free<T>(u_sol); }
+    ~ALE() { Math::free<T>(solutionVector); }
 
     /**
      * Applies the Verlet_Stoermer algorithm to update the global XY position of the car and its Z
@@ -81,71 +73,55 @@ public:
      */
     void global_frame_solver(T& t) {
         // 2. Update global X,Y positions of the car
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(
-            Car_obj->currentPositionLagrangian[0], Car_obj->currentVelocityLagrangian[0],
-            centripetal_force[0], h_, Car_obj->massFullCar);
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(
-            Car_obj->currentPositionLagrangian[1], Car_obj->currentVelocityLagrangian[1],
-            centripetal_force[1], h_, Car_obj->massFullCar);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(carObj->currentPositionLagrangian[0], carObj->currentVelocityLagrangian[0], lagrangianForceVector[0], h_, carObj->massFullCar);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(carObj->currentPositionLagrangian[1], carObj->currentVelocityLagrangian[1], lagrangianForceVector[1], h_, carObj->massFullCar);
 
         // 4. Update Z-rotation
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(Car_obj->currentAngleLagrangian,
-                                                        Car_obj->currentAngularVelocityLagrangian,
-                                                        torque[2], h_, global_inertia_Z);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Position(carObj->currentAngleLagrangian, carObj->currentAngularVelocityLagrangian, *lagrangianTorque, h_, momentOfInertiaZ);
 
         // get forces
-        Load_module_obj->update_force(t, force_vector, new_centripetal_force);
-        Load_module_obj->update_torque(t, new_torque, force_vector);
-
-        Math::scal<T>(2, -1, new_centripetal_force, 1);
+        loadModuleObj->GetLagrangianForce(t, newLagrangianForceVector);
+        loadModuleObj->GetTorqueLagrange(t, newLagrangianTorque);
 
         // 1. Update global X,Y velocities
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
-            Car_obj->currentVelocityLagrangian[0], centripetal_force[0], new_centripetal_force[0],
-            h_, Car_obj->massFullCar);
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(
-            Car_obj->currentVelocityLagrangian[1], centripetal_force[1], new_centripetal_force[1],
-            h_, Car_obj->massFullCar);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(carObj->currentVelocityLagrangian[0], lagrangianForceVector[0], newLagrangianForceVector[0], h_, carObj->massFullCar);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(carObj->currentVelocityLagrangian[1], lagrangianForceVector[1], newLagrangianForceVector[1], h_, carObj->massFullCar);
 
         // 3. Update Z-angular velocities
-        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(Car_obj->currentAngularVelocityLagrangian,
-                                                        torque[2], new_torque[2], h_,
-                                                        global_inertia_Z);
+        Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(carObj->currentAngularVelocityLagrangian, *lagrangianTorque, *newLagrangianTorque, h_, momentOfInertiaZ);
 
         /*
          * Idea!! What if we do it at the end, since the displacement is a vector and by triangle
          * rule sum of all should add up force is computed using on
          */
-        Car_obj->apply_ALE_change();
+        carObj->ApplyLagrangeChange(); // Rethink how it can be combined with 11 dof computation
 
-        // update forces and torque
-        centripetal_force[0] = new_centripetal_force[0];
-        centripetal_force[1] = new_centripetal_force[1];
+        // update forces and lagrangianTorque
+        lagrangianForceVector[0] = newLagrangianForceVector[0];
+        lagrangianForceVector[1] = newLagrangianForceVector[1];
 
-        torque[2] = new_torque[2];  // z - component
+        *lagrangianTorque = *newLagrangianTorque;  // z - component
     }
     void solve(T* sol_vect, T* u_sol_param) {
         // initialize solution vector
-        int sol_size = (floor(tend_ / h_) + 1);
-        int centripetal_force_dimensions = Constants::DIM;  // because update force needs it
+        int solutionVectorSize = (floor(tend_ / h_) + 1);
+        int lagrangianForceDimension = Constants::DIM - 1;
 
         // allocate memory
 
-        time_vec = Math::calloc<T>(sol_size);
-        force_vector = Math::calloc<T>(Constants::VEC_DIM * Constants::DIM);
-        force_vector_11dof = Math::calloc<T>(Constants::DOF);
-        centripetal_force = Math::calloc<T>(centripetal_force_dimensions);
+        timeArray = Math::calloc<T>(solutionVectorSize);
+        lagrangianForceVector = Math::calloc<T>(lagrangianForceDimension);
 
         // this was 2 dimensional allocation and update force updates 3 dimension on this
-        new_centripetal_force = Math::calloc<T>(centripetal_force_dimensions);
+        newLagrangianForceVector = Math::calloc<T>(lagrangianForceDimension);
 
-        Delta_x_vec = Math::calloc<T>(2 * Constants::NUM_LEGS);
+        //springElongation = Math::calloc<T>(2 * Constants::NUM_LEGS);
 
-        torque = Math::malloc<T>(Constants::DIM);
-        new_torque = Math::malloc<T>(Constants::DIM);
+        lagrangianTorque = new T;
+        newLagrangianTorque = new T;
 
         // calculate characteristics of the whole car
-        calculate_global_inertia_Z();
+        CalculateGlobalMomentofInertiaZ();
 
         // start time iteration
         T t = h_;
@@ -158,81 +134,67 @@ public:
             // This has to be done at each time step
             //
             // update force vector
-            // Car_obj->compute_dx(Delta_x_vec);
-            Load_module_obj->update_force(t, force_vector, centripetal_force);
-            Load_module_obj->update_torque(t, torque, force_vector);
-            // convert centrifugal force to centripetal (only for x, y direction)
-            Math::scal<T>(centripetal_force_dimensions - 1, -1, centripetal_force, 1);
-            if (iter == 100) Math::write_vector<T>(centripetal_force, centripetal_force_dimensions);
+			loadModuleObj->GetLagrangianForce(t, lagrangianForceVector);
+			loadModuleObj->GetTorqueLagrange(t, lagrangianTorque);
+//            if (iter == 100) Math::write_vector<T>(lagrangianForceVector, lagrangianForceDimension);
             global_frame_solver(t);
 
-            // translate 27 force vector + 3 torques into 11DOF
-            Car_obj->construct_11DOF_vector(force_vector, new_torque, force_vector_11dof);
-
-            TwoTrackModel_obj->update_step(force_vector_11dof,
-                                           Car_obj->currentDisplacementTwoTrackModel);
-            Car_obj->updateLengthsTwoTrackModel();
+            twoTrackModelObj->update_step(t, carObj->currentDisplacementTwoTrackModel);
+            carObj->updateLengthsTwoTrackModel();
             solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
 
             // only call this function at every checkpoint
-            Car_obj->combineEulerianLagrangianVectors(Car_obj->currentPositionLagrangian,
-                                                      Car_obj->currentDisplacementTwoTrackModel,
-                                                      solution_vect);
+            carObj->combineEulerianLagrangianVectors(solution_vect);
 
             t += h_;
             iter++;
         }
 
-        Math::copy<T>(Constants::VEC_DIM * Constants::DIM,
-                      u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect,
-                      1);
-        Car_obj->combine_results();
+        Math::copy<T>(Constants::VEC_DIM * Constants::DIM, u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
+        carObj->combine_results();
 
-        Math::free<T>(time_vec);
+        Math::free<T>(timeArray);
 
-        Math::free<T>(force_vector);
-        Math::free<T>(centripetal_force);
-        Math::free<T>(new_centripetal_force);
-        Math::free<T>(Delta_x_vec);
-        Math::free<T>(force_vector_11dof);
-
-        Math::free<T>(torque);
-        Math::free<T>(new_torque);
+        Math::free<T>(lagrangianForceVector);
+        Math::free<T>(newLagrangianForceVector);
+        Math::free<T>(springElongation);
+        Math::free<T>(lagrangianTorque);
+        Math::free<T>(newLagrangianTorque);
     }
 
     /**
      * Executes the time iteration of the ALE solvers, switches from global position update to
      * solving of the linear 11DOF system
      */
-    void solve(T* sol_vect) { solve(sol_vect, u_sol); }
+    void solve(T* sol_vect) { solve(sol_vect, solutionVector); }
 
     /**
      * Adds the contribution of the wheels and tyres to the inertia moment of the car
      */
-    void calculate_global_inertia_Z() {
+    void CalculateGlobalMomentofInertiaZ() {
         // get the global inertia actiing in Z direction
-        global_inertia_Z = Car_obj->momentOfInertia[8];
-        global_inertia_Z +=
-            (Car_obj->massComponents[1] + Car_obj->massComponents[2]) *
-            (Car_obj->l_lat[0] * Car_obj->l_lat[0] + Car_obj->l_long[0] * Car_obj->l_long[0]);
-        global_inertia_Z +=
-            (Car_obj->massComponents[3] + Car_obj->massComponents[4]) *
-            (Car_obj->l_lat[1] * Car_obj->l_lat[1] + Car_obj->l_long[1] * Car_obj->l_long[1]);
-        global_inertia_Z +=
-            (Car_obj->massComponents[5] + Car_obj->massComponents[6]) *
-            (Car_obj->l_lat[2] * Car_obj->l_lat[2] + Car_obj->l_long[2] * Car_obj->l_long[2]);
-        global_inertia_Z +=
-            (Car_obj->massComponents[7] + Car_obj->massComponents[8]) *
-            (Car_obj->l_lat[3] * Car_obj->l_lat[3] + Car_obj->l_long[3] * Car_obj->l_long[3]);
+        momentOfInertiaZ = carObj->momentOfInertia[8];
+        momentOfInertiaZ +=
+            (carObj->massComponents[1] + carObj->massComponents[2]) *
+            (carObj->l_lat[0] * carObj->l_lat[0] + carObj->l_long[0] * carObj->l_long[0]);
+        momentOfInertiaZ +=
+            (carObj->massComponents[3] + carObj->massComponents[4]) *
+            (carObj->l_lat[1] * carObj->l_lat[1] + carObj->l_long[1] * carObj->l_long[1]);
+        momentOfInertiaZ +=
+            (carObj->massComponents[5] + carObj->massComponents[6]) *
+            (carObj->l_lat[2] * carObj->l_lat[2] + carObj->l_long[2] * carObj->l_long[2]);
+        momentOfInertiaZ +=
+            (carObj->massComponents[7] + carObj->massComponents[8]) *
+            (carObj->l_lat[3] * carObj->l_lat[3] + carObj->l_long[3] * carObj->l_long[3]);
     }
 
     /**
      * Prints all positions and angles in the car object
      */
     void print_final_results() {
-        T* sln = Car_obj->Position_vec;
-        std::cout << "ALE: orientation angles=\n\t[" << Car_obj->angle_CG[0] << "\n\t "
-                  << Car_obj->angle_CG[1] << "\n\t " << Car_obj->angle_CG[2] << "]" << std::endl;
+        T* sln = carObj->Position_vec;
+        std::cout << "ALE: orientation angles=\n\t[" << carObj->angle_CG[0] << "\n\t "
+                  << carObj->angle_CG[1] << "\n\t " << carObj->angle_CG[2] << "]" << std::endl;
         std::cout << "ALE: car body position pc=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t "
                   << sln[2] << "]" << std::endl;
         std::cout << "ALE: rear-right wheel position pw1=\n\t[" << sln[21] << "\n\t " << sln[22]
