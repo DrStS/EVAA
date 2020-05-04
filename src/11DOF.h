@@ -93,7 +93,6 @@ class TwoTrackModelBE : public TwoTrackModelParent<T> {
 private:
 	/** For pperformance benefit we keep it here */
 	void (TwoTrackModelBE<T>::*JacobianAdjustment)();
-	bool printFlag = false;
 
     /**
      * \brief construct A Matrix
@@ -330,9 +329,6 @@ public:
         // first update the derivative
         auto& db = MetaDataBase<T>::getDataBase();
         db.getLookupStiffness().getDerivative(_car->currentSpringsLength, dkdl);
-#ifdef Damping
-        db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
-#endif
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
         // J = A =  M_h2 + D / _h + K
@@ -341,6 +337,7 @@ public:
         Math::axpy<T>(Constants::DOFDOF, 1, dKdxx, 1, J, 1);
 		(this->*JacobianAdjustment)();
 #ifdef Damping
+        db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
 		// temp = x[n+1]
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, temp, 1);
         // temp += -x[n]
@@ -376,13 +373,6 @@ public:
      * only needed in case of lookup Tables
      */
     void updateSystem() {
-        // constructSpringLengths();
-		
-		//for (auto i = 0; i < 8; ++i) {
-		//	if (_car->currentSpringsLength[i] < 0.02) {
-		//		printFlag = true;
-		//	}
-		//}
         _car->updateLengthsTwoTrackModel();
 		loadModuleObj->GetEulerianForce(_currentTime, twoTrackModelForce);
         constructStiffnessMatrix();
@@ -399,16 +389,6 @@ public:
      * before
      */
     void constructStiffnessMatrix() {
-		
-		/*if (printFlag){
-			std::cout << "car global position 11DOF" << std::endl;
-			Math::write_vector(_car->currentPositionTwoTrackModel, 11);
-			std::cout << "car displacement 11DOF" << std::endl;
-			Math::write_vector(_car->currentDisplacementTwoTrackModel, 11);
-			std::cout << "current spring length" << std::endl;
-			Math::write_vector(_car->currentSpringsLength, 8);
-			throw "spring too small";
-		}*/
 #ifdef INTERPOLATION
         MetaDataBase<T>::getDataBase().getLookupStiffness().getInterpolation(_car->currentSpringsLength, kVec);
 #endif
@@ -514,7 +494,7 @@ public:
         // cblas_daxpy(DOF * DOF,1, K_trans, 1, K, 1); // K = K + K'
 
         // add the diagonal to K
-        Math::allocate_to_diagonal<T>(K, temp, Constants::DOF);  // K = K + K'+ diag(K)
+        Math::CopyToDiagonal<T>(K, temp, Constants::DOF);  // K = K + K'+ diag(K)
     }
     /**
      * \brief construct Damping Matrix
@@ -629,7 +609,7 @@ public:
         // cblas_daxpy(DOF * DOF,1, D_trans, 1, D, 1); // D = D + D'
 
         // add the diagonal to K
-        Math::allocate_to_diagonal<T>(D, temp, Constants::DOF);  // D = D + D'+ diag(D)
+        Math::CopyToDiagonal<T>(D, temp, Constants::DOF);  // D = D + D'+ diag(D)
     }
 
     /**
@@ -816,7 +796,7 @@ public:
         // cblas_daxpy(DOF * DOF,1, dMdxx_trans, 1, dMdxx, 1); // dMdxx = dMdxx + dMdxx'
 
         // add the diagonal to dM
-        Math::allocate_to_diagonal<T>(dMdxx, temp, Constants::DOF);  // dMdxx = dMdxx + dMdxx'+ diag(dMdxx)
+        Math::CopyToDiagonal<T>(dMdxx, temp, Constants::DOF);  // dMdxx = dMdxx + dMdxx'+ diag(dMdxx)
     }
 };
 
@@ -1010,16 +990,14 @@ public:
         // first update the derivative
         auto& db = MetaDataBase<T>::getDataBase();
         db.getLookupStiffness().getDerivative(_car->currentSpringsLength, dkdl);
-#ifdef Damping
-        db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
-#endif
-        // construct the derivative (tensor) times a pos vector
-        constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
+        constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
         // J = A
         Math::copy<T>(Constants::DOFDOF, A, 1, J, 1);
         // J += dKdx * x[n+1]
         Math::axpy<T>(Constants::DOFDOF, 1, dKdxx, 1, J, 1);
+
 #ifdef Damping
+        db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
         // temp = x[n+1]
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, temp, 1);
         // temp *= 3/2
@@ -1056,30 +1034,9 @@ public:
         auto& db = MetaDataBase<T>::getDataBase();
         tend_ = db.getNumberOfTimeIterations() * _h;
         int sol_size = (floor(tend_ / _h) + 1);
-    //    f_n_p_1 = Math::malloc<T>(Constants::DOF);
         u_sol = Math::calloc<T>((sol_size + 1) * Constants::DOF);
+    }
 
-    /*    f_n_p_1[0] = db.getBodyExternalForce()[2];
-        f_n_p_1[1] = 0;
-        f_n_p_1[2] = 0;
-        f_n_p_1[3] = db.getWheelExternalForceFrontLeft()[2];
-        f_n_p_1[4] = db.getTyreExternalForceFrontLeft()[2];
-        f_n_p_1[5] = db.getWheelExternalForceFrontRight()[2];
-        f_n_p_1[6] = db.getTyreExternalForceFrontRight()[2];
-        f_n_p_1[7] = db.getWheelExternalForceRearLeft()[2];
-        f_n_p_1[8] = db.getTyreExternalForceRearLeft()[2];
-        f_n_p_1[9] = db.getWheelExternalForceRearRight()[2];
-        f_n_p_1[10] = db.getTyreExternalForceRearRight()[2];*/
-    }
-    void apply_boundary_condition(BoundaryConditionRoad s) {
-        condition_type = s;
-        if (s == BoundaryConditionRoad::NONFIXED) {
-            // don't do anything, proceed as usual (solve full 11DOF system)
-        }
-        else {
-            throw std::logic_error("Incorrect boundary condition");
-        }
-    }
     void solve(T* sol_vect) {
         int iter = 1;
         T t = _h;
@@ -1121,12 +1078,11 @@ public:
 
     virtual ~TwoTrackModelFull() {
         Math::free<T>(u_sol);
-        //Math::free<T>(f_n_p_1);
     }
 
 private:
     T tend_;
-    T *u_sol, *f_n_p_1;
+    T *u_sol;
     BoundaryConditionRoad condition_type;
 };
 
