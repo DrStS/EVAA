@@ -24,6 +24,11 @@ private:
         }
     }
 
+	
+	inline void RotationMatrixSmallAngle(const T arg1, const T arg2, const T arg3, T* arg4) { Math::GetRotationMatrixSmallAnglesXY<T>(arg1, arg2, arg3, arg4); }
+	
+	inline void RotationMatrixGeneral (const T arg1, const T arg2, const T arg3, T* arg4) { Math::get_rotation_matrix<T>(arg1, arg2, arg3, arg4); }
+
     /**
      * \brief compute the positions of the unexciting Euler system in the Euler frame
      */
@@ -85,7 +90,8 @@ private:
      */
     void UpdateCorners11DOF(T* angles, T* rotation_mat_buffer, T* initial_corners, T* updated_corners) {
         // zz, yy, xx
-        Math::get_rotation_matrix<T>(angles[2], angles[1], angles[0], rotation_mat_buffer);
+		(this->*RotationMatrix)(angles[2], angles[1], angles[0], rotation_mat_buffer);
+//        Math::get_rotation_matrix<T>(angles[2], angles[1], angles[0], rotation_mat_buffer);
 
         // do rotation: rotationMat * r
 	    Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DIM, Constants::NUM_LEGS, Constants::DIM, 1, rotation_mat_buffer, Constants::DIM, initial_corners, Constants::NUM_LEGS, 0, updated_corners, Constants::NUM_LEGS);
@@ -113,9 +119,25 @@ private:
         angle_buffer[1] = unexcitedPositionTwoTrackModel[2] + currentDisplacementTwoTrackModel[2];
         angle_buffer[2] = currentAngleLagrangian;
 
+		//std::cout << "car pos_buffer" << std::endl;
+		//Math::write_vector(pos_buffer, 3);
+		//std::cout << "car angle_buffer" << std::endl;
+		//Math::write_vector(angle_buffer, 3);
+		
+		
+
         ConstructCornerRelativeToCG(relativeCornerPositions);
-        UpdateCorners11DOF(angle_buffer, currentRotationMatrix, relativeCornerPositions, currentCornerPositions);
-        CornerAboutCenter(currentCornerPositions, pos_buffer);
+		//std::cout << "car relativeCornerPositions" << std::endl;
+		//Math::write_vector(relativeCornerPositions, 12);
+		UpdateCorners11DOF(angle_buffer, currentRotationMatrix, relativeCornerPositions, currentCornerPositions);
+		//std::cout << "car matrix" << std::endl;
+		//Math::write_matrix(currentRotationMatrix, 3);
+
+		//std::cout << "car currentCornerPositions" << std::endl;
+		//Math::write_vector(currentCornerPositions, 12);
+		CornerAboutCenter(currentCornerPositions, pos_buffer);
+		//std::cout << "car currentCornerPositions" << std::endl;
+		//Math::write_vector(currentCornerPositions, 12);
     }
 
     // TODO: Was ist das? Maybe to Math with name 2D to 3D
@@ -175,6 +197,7 @@ public:
     T* initialAngleGlobal;            // [XYZ]
     T* initialAngularVelocityGlobal;  // [XYZ]
     T* relativeCornerPositions;       // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]
+	bool smallAngleApprox = true;     // Read this from MetaDatabase
 
     // vectors to use in regular iteration
     // For 11DOF
@@ -202,6 +225,8 @@ public:
     T* currentCornerPositions;  // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]         sorry for
                                 // everyone
 
+	void (Car<T>::*RotationMatrix)(const T, const T, const T, T*);
+
     // Members from 11 DOF system
 
     T *kVec, *dVec, *l_lat, *l_long;  // to be TEO
@@ -218,6 +243,13 @@ public:
         // Memory Allocation and matrix formulation
 
         const int positionAllocSize = Constants::DIM * Constants::VEC_DIM;  // 27 dimensions
+
+		if (smallAngleApprox) {
+			RotationMatrix = &Car<T>::RotationMatrixSmallAngle;
+		}
+		else {
+			RotationMatrix = &Car<T>::RotationMatrixGeneral;
+		}
 
         // Params for Global coordinate
 
@@ -449,7 +481,9 @@ public:
 
 #ifdef INTERPOLATION
         db.getLookupStiffness().getInterpolation(currentSpringsLength, kVec);
+#ifdef Damping
         db.getLookupDamping().getInterpolation(currentSpringsLength, dVec);
+#endif
 #else
         kVec[0] = db.getBodyStiffnessFrontLeft();
         kVec[1] = db.getTyreStiffnessFrontLeft();
@@ -582,9 +616,13 @@ public:
         UpdateCorners11DOF();
         // global vector update
         updateGlobalTwoTrackVectors();
-
+	/*	Math::write_vector(unexcitedPositionTwoTrackModel, 11);
+		Math::write_vector(currentDisplacementTwoTrackModel, 11);
+		Math::write_vector(currentPositionTwoTrackModel, 11);*/
         // compute current spring lengths
         computeCurrentSpringLength();
+
+		//Math::write_vector(currentSpringsLength, 8);
 
         // Compute CIR distances
         updateRadiusToCIR();

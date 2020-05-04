@@ -35,6 +35,7 @@ protected:
     T factor_h;
     /** solution in next timestep */
     T _h;
+	T _currentTime;
 
     // solution in next timestep
     T* u_n_p_1;
@@ -85,6 +86,10 @@ public:
 template <typename T>
 class TwoTrackModelBE : public TwoTrackModelParent<T> {
 private:
+	/** For pperformance benefit we keep it here */
+	void (TwoTrackModelBE<T>::*JacobianAdjustment)();
+	bool printFlag = false;
+
     /**
      * \brief construct A Matrix
      *
@@ -195,13 +200,21 @@ public:
         springLengths = Math::malloc<T>(2 * Constants::NUM_LEGS);
         springLengthsNormal = Math::malloc<T>(2 * Constants::NUM_LEGS);
 #ifdef INTERPOLATION
-        // ABuffer = Math::calloc<T>(Constants::DOFDOF);
+		if (loadModuleObj->GetEulerProfileName() == "Fixed") {
+			JacobianAdjustment = &TwoTrackModelBE<T>::constructFixedJacobian;
+		}
+		else if (loadModuleObj->GetEulerProfileName() == "Nonfixed") {
+			JacobianAdjustment = &TwoTrackModelBE<T>::constructNonFixedJacobian;
+		}
         J = Math::calloc<T>(Constants::DOFDOF);
         dKdxx = Math::calloc<T>(Constants::DOFDOF);
-        dDdxx = Math::calloc<T>(Constants::DOFDOF);
-        dkdl = Math::malloc<T>(2 * Constants::NUM_LEGS);
-        dddl = Math::calloc<T>(2 * Constants::NUM_LEGS);
-        residual = Math::malloc<T>(Constants::DOF);
+		dkdl = Math::malloc<T>(2 * Constants::NUM_LEGS);
+        
+#ifdef Damping
+		dddl = Math::calloc<T>(2 * Constants::NUM_LEGS);
+		dDdxx = Math::calloc<T>(Constants::DOFDOF);
+#endif
+		residual = Math::malloc<T>(Constants::DOF);
 #endif
         _h = MetaDataBase<T>::getDataBase().getTimeStepSize();
         factor_h = 1 / _h;
@@ -215,8 +228,10 @@ public:
         initPosVectors();
         constructMassMatrix();
         constructStiffnessMatrix();
+#ifdef Damping
         constructDampingMatrix();
-        constructAMatrix();
+#endif
+		constructAMatrix();
         constructBMatrix();
         constructCMatrix();
     }
@@ -241,10 +256,13 @@ public:
         Math::free<T>(Mat_springLength);
 #ifdef INTERPOLATION
         Math::free<T>(J);
-        Math::free<T>(dkdl);
+		Math::free<T>(dkdl);
+		Math::free<T>(dKdxx);
+#ifdef Damping
+		
         Math::free<T>(dddl);
-        Math::free<T>(dKdxx);
-        Math::free<T>(dDdxx);
+		Math::free<T>(dDdxx);
+#endif
         Math::free<T>(residual);
 #endif
     }
@@ -256,11 +274,15 @@ public:
     virtual void update_step(T _time, T* solution) {
         // Math::scal<T>(Constants::DOF, -1, u_n_m_1, Constants::INCX);
 		// Get the force
+		_currentTime = _time;
 		loadModuleObj->GetEulerianForce(_time, twoTrackModelForce);
 		Math::Solvers<T, TwoTrackModelBE<T> >::Linear_Backward_Euler(A, B, C, u_n, u_n_m_1, twoTrackModelForce, u_n_p_1, Constants::DOF);
-        constructAMatrix();
+        
 #ifdef INTERPOLATION
+		updateSystem();
         Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, twoTrackModelForce, J, residual, &res_norm, u_n_p_1, temp);
+#else
+		constructAMatrix();
 #endif
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, solution, 1);
         
@@ -309,14 +331,18 @@ public:
         // first update the derivative
         auto& db = MetaDataBase<T>::getDataBase();
         db.getLookupStiffness().getDerivative(_car->currentSpringsLength, dkdl);
+#ifdef Damping
         db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
+#endif
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dkdl, u_n_p_1, dKdxx);
         // J = A =  M_h2 + D / _h + K
         Math::copy<T>(Constants::DOFDOF, A, 1, J, 1);
         // J += dKdx * x[n+1]
         Math::axpy<T>(Constants::DOFDOF, 1, dKdxx, 1, J, 1);
-        // temp = x[n+1]
+		(this->*JacobianAdjustment)();
+#ifdef Damping
+		// temp = x[n+1]
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, temp, 1);
         // temp += -x[n]
         Math::axpy<T>(Constants::DOF, -1, u_n, 1, temp, 1);
@@ -324,6 +350,7 @@ public:
         constructLookupDerivativeX(dddl, temp, dDdxx);
         // J += 1/_h * dDdxx
         Math::axpy<T>(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
+#endif
     }
     /**
      * \brief construct Jacobian for fixed to road
@@ -333,10 +360,16 @@ public:
      */
     void constructFixedJacobian() {
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
-            Math::copy<T>(Constants::DOF, M_h2 + (4 + 2 * i) * Constants::DOF, 1,
-                          J + (4 + 2 * i) * Constants::DOF, 1);
+            Math::copy<T>(Constants::DOF, M_h2 + Constants::TYRE_INDEX_LAGRANGE[i] * Constants::DOF, 1, J + Constants::TYRE_INDEX_LAGRANGE[i] * Constants::DOF, 1);
         }
     }
+
+	/**
+	 * \brief construct Jacobian for non-fixed to road
+	 *
+	 * No Modification in the Jacobian*
+	 */
+	void constructNonFixedJacobian() {}
 
     /**
      * \brief update all dependent matrices on the position vector
@@ -345,11 +378,19 @@ public:
      */
     void updateSystem() {
         // constructSpringLengths();
+		
+		//for (auto i = 0; i < 8; ++i) {
+		//	if (_car->currentSpringsLength[i] < 0.02) {
+		//		printFlag = true;
+		//	}
+		//}
         _car->updateLengthsTwoTrackModel();
-		loadModuleObj->GetEulerianForce(_time, twoTrackModelForce);
+		loadModuleObj->GetEulerianForce(_currentTime, twoTrackModelForce);
         constructStiffnessMatrix();
+#ifdef Damping
         constructDampingMatrix();
-        constructAMatrix();
+#endif
+		constructAMatrix();
         constructBMatrix();
     }
     /**
@@ -359,9 +400,18 @@ public:
      * before
      */
     void constructStiffnessMatrix() {
+		
+		/*if (printFlag){
+			std::cout << "car global position 11DOF" << std::endl;
+			Math::write_vector(_car->currentPositionTwoTrackModel, 11);
+			std::cout << "car displacement 11DOF" << std::endl;
+			Math::write_vector(_car->currentDisplacementTwoTrackModel, 11);
+			std::cout << "current spring length" << std::endl;
+			Math::write_vector(_car->currentSpringsLength, 8);
+			throw "spring too small";
+		}*/
 #ifdef INTERPOLATION
-        MetaDataBase<T>::getDataBase().getLookupStiffness().getInterpolation(
-            _car->currentSpringsLength, kVec);
+        MetaDataBase<T>::getDataBase().getLookupStiffness().getInterpolation(_car->currentSpringsLength, kVec);
 #endif
         temp[0] = kVec[0] + kVec[2] + kVec[4] + kVec[6];
         K[1] = kVec[0] * _car->l_lat[0] - kVec[2] * _car->l_lat[1] + kVec[4] * _car->l_lat[2] -
@@ -886,6 +936,7 @@ public:
         }
     }
     virtual void update_step(T _time, T* solution) {
+		_currentTime = _time;
         (this->*_active_executor)(_time, solution);
         time_step_count += 1;
     }
@@ -943,9 +994,11 @@ public:
     void updateSystem() {
         // constructSpringLengths();
         _car->updateLengthsTwoTrackModel();
-		loadModuleObj->GetEulerianForce(_time, twoTrackModelForce);
+		loadModuleObj->GetEulerianForce(_currentTime, twoTrackModelForce);
         constructStiffnessMatrix();
+#ifdef Damping
         constructDampingMatrix();
+#endif
         constructAMatrix();
         constructbVec();
     }
@@ -960,13 +1013,16 @@ public:
         // first update the derivative
         auto& db = MetaDataBase<T>::getDataBase();
         db.getLookupStiffness().getDerivative(_car->currentSpringsLength, dkdl);
+#ifdef Damping
         db.getLookupDamping().getDerivative(_car->currentSpringsLength, dddl);
+#endif
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(dddl, u_n_p_1, dDdxx);
         // J = A
         Math::copy<T>(Constants::DOFDOF, A, 1, J, 1);
         // J += dKdx * x[n+1]
         Math::axpy<T>(Constants::DOFDOF, 1, dKdxx, 1, J, 1);
+#ifdef Damping
         // temp = x[n+1]
         Math::copy<T>(Constants::DOF, u_n_p_1, 1, temp, 1);
         // temp *= 3/2
@@ -979,6 +1035,7 @@ public:
         constructLookupDerivativeX(dddl, temp, dDdxx);
         // J += 1/_h * dDdxx
         Math::axpy<T>(Constants::DOFDOF, factor_h, dDdxx, 1, J, 1);
+#endif
     }
     /*
     Destructor

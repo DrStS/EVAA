@@ -33,9 +33,6 @@ private:
     // Contains the forces in the ordering [GC:XYZ,W1:XYZ,T1:XYZ, ...]
     T* combinedForceVector;
 
-    // Contains the dx in the spring elongation in Stefan's ordering
-    T* springElongation;
-
     // global centripetal forces on the whole car [XYZ]
     T* lagrangianForceVector;
     T* newLagrangianForceVector;
@@ -71,7 +68,7 @@ public:
      * Store the global coordinates in the VelocityXY and PositionXY from the car object
      * \param t current simulation time
      */
-    void global_frame_solver(T& t) {
+    void LagrangianUpdate(T& t) {
         // 2. Update global X,Y positions of the car
         Math::Solvers<T, ALE>::Stoermer_Verlet_Position(carObj->currentPositionLagrangian[0], carObj->currentVelocityLagrangian[0], lagrangianForceVector[0], h_, carObj->massFullCar);
         Math::Solvers<T, ALE>::Stoermer_Verlet_Position(carObj->currentPositionLagrangian[1], carObj->currentVelocityLagrangian[1], lagrangianForceVector[1], h_, carObj->massFullCar);
@@ -89,8 +86,7 @@ public:
 
         // 3. Update Z-angular velocities
         Math::Solvers<T, ALE>::Stoermer_Verlet_Velocity(carObj->currentAngularVelocityLagrangian, *lagrangianTorque, *newLagrangianTorque, h_, momentOfInertiaZ);
-
-        /*
+		/*
          * Idea!! What if we do it at the end, since the displacement is a vector and by triangle
          * rule sum of all should add up force is computed using on
          */
@@ -136,8 +132,7 @@ public:
             // update force vector
 			loadModuleObj->GetLagrangianForce(t, lagrangianForceVector);
 			loadModuleObj->GetTorqueLagrange(t, lagrangianTorque);
-//            if (iter == 100) Math::write_vector<T>(lagrangianForceVector, lagrangianForceDimension);
-            global_frame_solver(t);
+		    LagrangianUpdate(t);
 
             twoTrackModelObj->update_step(t, carObj->currentDisplacementTwoTrackModel);
             carObj->updateLengthsTwoTrackModel();
@@ -157,9 +152,8 @@ public:
 
         Math::free<T>(lagrangianForceVector);
         Math::free<T>(newLagrangianForceVector);
-        Math::free<T>(springElongation);
-        Math::free<T>(lagrangianTorque);
-        Math::free<T>(newLagrangianTorque);
+        delete lagrangianTorque;
+		delete newLagrangianTorque;
     }
 
     /**
@@ -193,6 +187,8 @@ public:
      */
     void print_final_results() {
         T* sln = carObj->Position_vec;
+		std::cout << std::scientific;
+		std::cout << std::setprecision(15);
         std::cout << "ALE: orientation angles=\n\t[" << carObj->angle_CG[0] << "\n\t "
                   << carObj->angle_CG[1] << "\n\t " << carObj->angle_CG[2] << "]" << std::endl;
         std::cout << "ALE: car body position pc=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t "

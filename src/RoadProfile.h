@@ -31,6 +31,8 @@ public:
 	 */
 	virtual void ApplyProfileInitialCondition(Car<T>* carObj) = 0;
 
+	std::string GetName() { return Name; }
+
     virtual ~Profile(){		
 		Math::free<T>(massOfComponents);
 	};
@@ -81,7 +83,7 @@ public:
 	 * \param Car
 	 * \return externalTorque torque acting on the car system [GC: Z]
 	 */
-	virtual void GetProfileTorqueLagrangian(Car<T> carObj, T* externalTorque) = 0;
+	virtual void GetProfileTorqueLagrangian(Car<T>* carObj, T* externalTorque) = 0;
 	virtual ~Lagrange() {}
 };
 
@@ -150,7 +152,7 @@ public:
 		
 	}
 
-	virtual void GetProfileTorqueLagrangian(Car<T> carObj, T* externalTorque){
+	virtual void GetProfileTorqueLagrangian(Car<T>* carObj, T* externalTorque){
 		*externalTorque = 0;
 	}
 
@@ -216,7 +218,7 @@ public:
 	 */
 	virtual void ApplyProfileInitialCondition(Car<T>* carObj) {}
 
-	virtual void GetProfileTorqueLagrangian(Car<T> carObj, T* externalTorque) {
+	virtual void GetProfileTorqueLagrangian(Car<T>* carObj, T* externalTorque) {
 		*externalTorque = 0;
 	}
 

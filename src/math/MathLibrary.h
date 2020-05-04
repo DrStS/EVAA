@@ -280,6 +280,23 @@ void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R) {
 }
 
 /**
+ * Computes the rotation matrix out of 3 angle representation
+ * \result R rotation matrix
+ */
+template <typename T>
+void GetRotationMatrixSmallAnglesXY(const T yaw, const T pitch, const T roll, T* R) {
+	R[0] = (std::cos(yaw));
+	R[1] = ((std::cos(yaw)) * (pitch) * (roll) - (std::sin(yaw)));
+	R[2] = ((std::cos(yaw)) * (pitch) + (std::sin(yaw)) * (roll));
+	R[3] = (std::sin(yaw));
+	R[4] = ((std::sin(yaw)) * (pitch) * (roll) + (std::cos(yaw)));
+	R[5] = ((std::sin(yaw)) * (pitch) - (std::cos(yaw)) * (roll));
+	R[6] = -(pitch);
+	R[7] = (roll);
+	R[8] = 1;
+}
+
+/**
  * Computes the angle between two vectors
  * \param v1 first vector
  * \param v2 second vector

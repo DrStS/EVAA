@@ -102,31 +102,18 @@ int main(int argc, char **argv) {
 #endif
 
     timer1.start();
-    // myComputeEngine->computeMKLTwoTrackModel();
-    timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec()<< " ms to run the solver(computeMKLlinear11dof).\n\n\n"<< std::endl;
-    timer1.start();
-    // myComputeEngine->computeALE();
+    myComputeEngine->computeALE();
     timer1.stop();
     std::cout << "It took " << timer1.getDurationMilliSec()<< " ms to run the solver(computeALE).\n\n\n" << std::endl;
     timer1.start();
-    //myComputeEngine->computeMBD();
+    myComputeEngine->computeMBD();
 	timer1.stop();
     std::cout << "It took " << timer1.getDurationMilliSec()<< " ms to run the solver(computeMBD).\n\n\n" << std::endl;
-    timer1.start();
-    // myComputeEngine->compare_ALE_MBD();
-    timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver(Compare).\n\n\n" << std::endl;
 
     timer1.start();
     myComputeEngine->computeMKLTwoTrackModelBE();
     timer1.stop();
     std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
-
-	timer1.start();
-	myComputeEngine->Roadtest();
-	timer1.stop();
-	std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver Roadtest.\n\n\n" << std::endl;
 
     delete myComputeEngine;
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
