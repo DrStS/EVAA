@@ -626,7 +626,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 		LoadModule<Constants::floatEVAA>* load = new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
         TwoTrackModelFull<Constants::floatEVAA> solver(car, load);
 		euler->ApplyProfileInitialCondition(car);
-        solver.solve(sol);
+        solver.Solve(sol);
 
         solver.PrintFinalResults(sol);
 
@@ -647,7 +647,7 @@ void EVAAComputeEngine::computeMBD(void) {
     Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(solution_dim);
     MBDMethod<Constants::floatEVAA> solver;
 
-    solver.solve(sol);
+    solver.Solve(sol);
     //solver.print_final_result(sol);
     Math::free<Constants::floatEVAA>(sol);
 }
@@ -669,7 +669,7 @@ void EVAAComputeEngine::computeALE(void) {
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
     Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(solutionDim);
 
-    ale->solve(sol);
+    ale->Solve(sol);
 
     ale->PrintFinalResults();
 

@@ -524,7 +524,7 @@ private:
     /** Functions needed for compute_f */
 
     /**
-     * Memory allocation of all the variables required in the solve function
+     * Memory allocation of all the variables required in the Solve function
      * To increase performance by removing repeting memory allocations
      * The same locations are overwritten at each timestep
      */
@@ -1534,7 +1534,7 @@ public:
     /**
      * Initializes the time iteration and handles the numerical scheme
      */
-    void solve(T* solution_vector) {
+    void Solve(T* solution_vector) {
         // From the formulation we have 61 dimensions in the solution vector
         auto& db = MetaDatabase<T>::getDatabase();
         size_t solution_size = (this->num_iter + 1) * this->solution_dim;
