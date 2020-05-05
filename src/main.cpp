@@ -102,8 +102,7 @@ int main(int argc, char **argv) {
 #endif
     const size_t numIterations = 1;
 
-    double timeMBD = 0.;
-    /*
+    double timeMBD = 0.;    
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
         myComputeEngine->computeMBD();
@@ -111,7 +110,7 @@ int main(int argc, char **argv) {
         timeMBD += timer1.getDurationMilliSec();
     }
     std::cout << "It took " << timeMBD / numIterations << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
-    */
+    
     double time11DOF = 0.;
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
