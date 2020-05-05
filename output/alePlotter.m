@@ -1,4 +1,4 @@
-close all
+clc; clear; close all
 aleSolution_filename = "aleSolution.txt";
 aleSolution = [];
 parameters = [];

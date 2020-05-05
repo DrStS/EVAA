@@ -13,7 +13,8 @@
 #include "MathLibrary.h"
 #include "LoadModule.h"
 #include "MetaDatabase.h"
-//#define Damping 1
+
+#define DAMPING 1
 
 namespace EVAA {
 
