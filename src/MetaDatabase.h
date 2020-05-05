@@ -35,21 +35,21 @@ enum class ALESolver {
 
 /** Singleton handling input data parsing from XML files. */
 template <class T>
-class MetaDataBase {
+class MetaDatabase {
 public:
     /**
      * \return The singleton instance.
      */
-    static MetaDataBase& getDataBase() {
-        static MetaDataBase database;
+    static MetaDatabase& getDatabase() {
+        static MetaDatabase database;
         return database;
     }
 
     /** Deleted copy constructor. */
-    MetaDataBase(MetaDataBase const&) = delete;
+    MetaDatabase(MetaDatabase const&) = delete;
 
     /** Deleted copy operator. */
-    void operator=(MetaDataBase const&) = delete;
+    void operator=(MetaDatabase const&) = delete;
 
     /*
     Checks if the xml has correct format with resect to compiler flag
@@ -83,7 +83,7 @@ public:
      * Reads the car, initial and simulation parameters from an XML file.
      * \param[in] filename The XML file.
      */
-    void MetaDataBase::readParameters(const std::string& filename) {
+    void MetaDatabase::readParameters(const std::string& filename) {
         // Load car parameters
 
         const auto settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
@@ -157,19 +157,19 @@ public:
         else if (solver == "RK4") {
             _MBD_solver = MBDSolver::RUNGE_KUTTA_4;
         }
-        else if (solver == "Broyden_Euler") {
+        else if (solver == "BroydenEuler") {
             _MBD_solver = MBDSolver::BROYDEN_EULER;
         }
-        else if (solver == "Broyden_CN") {
+        else if (solver == "BroydenCN") {
             _MBD_solver = MBDSolver::BROYDEN_CN;
         }
-        else if (solver == "Broyden_BDF2") {
+        else if (solver == "BroydenBDF2") {
             _MBD_solver = MBDSolver::BROYDEN_BDF2;
         }
         else {
             throw std::logic_error("Wrong MBD-solver in XML: " + solver +
                                    ". Must be one of: "
-                                   "explicit_Euler, RK4, Broyden_Euler, Broyden_CN, Broyden_BDF2");
+                                   "explicit_Euler, RK4, BroydenEuler, BroydenCN, BroydenBDF2");
         }
 
         solver = simulation.LinearALEXML().Method();
@@ -434,7 +434,7 @@ public:
     const void* getLookupDamping() const { return NULL; }
 #endif  // INTERPOLATION
 
-    virtual ~MetaDataBase() {
+    virtual ~MetaDatabase() {
 #ifdef INTERPOLATION        
         delete _lookupDamping;
         delete _lookupStiffness;
@@ -444,7 +444,7 @@ public:
 
 private:
     /** Private constructor for the singleton instance. */
-    MetaDataBase() : _lookup_filename("") {}
+    MetaDatabase() : _lookup_filename("") {}
     /**
      * Reads the lookup table parameters from an XML file.
      * \param[in] filename The XML file.
@@ -475,13 +475,22 @@ private:
 
             readLegs(_k_body, lookupTable.Magnitude().Body());
             readLegs(_k_tyre, lookupTable.Magnitude().Tyre());
-            a[0] = _k_body[2];
+            // TODO What were these indices???
+            /*a[0] = _k_body[2];
             a[1] = _k_tyre[0];
             a[2] = _k_body[3];
             a[3] = _k_tyre[1];
             a[4] = _k_body[0];
             a[5] = _k_tyre[2];
             a[6] = _k_body[1];
+            a[7] = _k_tyre[3];*/
+            a[0] = _k_body[0];
+            a[1] = _k_tyre[0];
+            a[2] = _k_body[1];
+            a[3] = _k_tyre[1];
+            a[4] = _k_body[2];
+            a[5] = _k_tyre[2];
+            a[6] = _k_body[3];
             a[7] = _k_tyre[3];
 
             _lookupStiffness = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);

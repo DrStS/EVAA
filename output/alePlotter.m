@@ -55,5 +55,4 @@ end
 
 % visualize
 vis_fig = figure(1);
-% visualizer3D(vis_fig, adaptedSolution, transpose(traj_rr), transpose(traj_rl), plot_traj, delta_t, vel_norms);
-visualizer3D(vis_fig, adaptedSolution, transpose(traj_rr), transpose(traj_rl), false, delta_t, vel_norms);
+visualizer3D(vis_fig, adaptedSolution, traj_rr, traj_rl, plot_traj, delta_t, vel_norms);
