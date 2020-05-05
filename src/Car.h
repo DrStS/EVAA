@@ -647,7 +647,7 @@ public:
      * function above
      */
     void combine_results() {
-        Math::copy<T>(Constants::VEC_DIM * Constants::DIM, initialPositionGlobal, 1, Position_vec, 1);
+        // Math::copy<T>(Constants::VEC_DIM * Constants::DIM, initialPositionGlobal, 1, Position_vec, 1);
         ConvertALEToGlobal(currentPositionLagrangian, Position_vec);
         Convert11DOFToGlobal(currentPositionTwoTrackModel, Position_vec);
 

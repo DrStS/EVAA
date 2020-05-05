@@ -127,9 +127,9 @@ public:
         IO::MyFile<T> solutionCSV("C:\\software\\repos\\EVAA\\output\\aleSolution.txt");
         IO::MyFile<T> parametersCSV("C:\\software\\repos\\EVAA\\output\\simulationParameters.txt");
         parametersCSV.writeParameters();
-        T* angleVecCSV = Math::malloc<T>(sol_size * Constants::DIM);
-        T* posVecCSV = Math::malloc<T>(sol_size * Constants::DIM * Constants::VEC_DIM);
-        T* velVecCSV = Math::malloc<T>(sol_size * (Constants::DIM - 1) * Constants::VEC_DIM);
+        T* angleVecCSV = Math::malloc<T>(solutionVectorSize * Constants::DIM);
+        T* posVecCSV = Math::malloc<T>(solutionVectorSize * Constants::DIM * Constants::VEC_DIM);
+        T* velVecCSV = Math::malloc<T>(solutionVectorSize * (Constants::DIM - 1) * Constants::VEC_DIM);
 #endif // WRITECSV
 
         T* solution_vect;
@@ -153,11 +153,10 @@ public:
             carObj->combineEulerianLagrangianVectors(solution_vect);
 
 #ifdef WRITECSV
-            Car_obj->update_angleCG();
-            Car_obj->combine_results();            
-            Math::copy(Constants::VEC_DIM * Constants::DIM, Car_obj->Position_vec, 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
-            Math::copy(Constants::DIM, Car_obj->angle_CG, 1, angleVecCSV + iter * Constants::DIM, 1);
-            Math::copy(Constants::DIM, Car_obj->currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
+            carObj->combine_results();            
+            Math::copy(Constants::VEC_DIM * Constants::DIM, solution_vect, 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
+            Math::copy(Constants::DIM, carObj->angle_CG, 1, angleVecCSV + iter * Constants::DIM, 1);
+            Math::copy(Constants::DIM, carObj->currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
 #endif // WRITECSV
 
             t += h_;
@@ -165,7 +164,7 @@ public:
         }
 
 #ifdef WRITECSV
-        solutionCSV.writeSolutionMatrix(posVecCSV, velVecCSV, angleVecCSV, sol_size);
+        solutionCSV.writeSolutionMatrix(posVecCSV, velVecCSV, angleVecCSV, solutionVectorSize);
         Math::free(angleVecCSV);
         Math::free(velVecCSV);
         Math::free(posVecCSV);
@@ -214,8 +213,8 @@ public:
      * Prints all positions and angles in the car object
      */
     void print_final_results() {
-        T* sln = Car_obj->Position_vec;
-        std::cout << "ALE: orientation angles=\n\t[" << Car_obj->angle_CG[0] << "\n\t " << Car_obj->angle_CG[1] << "\n\t " << Car_obj->angle_CG[2] << "]" << std::endl;
+        T* sln = carObj->Position_vec;
+        std::cout << "ALE: orientation angles=\n\t[" << carObj->angle_CG[0] << "\n\t " << carObj->angle_CG[1] << "\n\t " << carObj->angle_CG[2] << "]" << std::endl;
         std::cout << "ALE: car body position pc=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
         std::cout << "ALE: rear-right wheel position pw1=\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
         std::cout << "ALE: rear-left wheel position pw2=\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
