@@ -225,9 +225,9 @@ public:
 #endif
 		_residual = Math::malloc<T>(Constants::DOF);
 #endif
-        _tolerance = MetaDatabase<T>::getDataBase().getNewtonTolerance();
-        _maxNewtonIteration = MetaDatabase<T>::getDataBase().getMaxNewtonIterations();
-        _h = MetaDatabase<T>::getDataBase().getTimeStepSize();
+        _tolerance = MetaDatabase<T>::getDatabase().getNewtonTolerance();
+        _maxNewtonIteration = MetaDatabase<T>::getDatabase().getMaxNewtonIterations();
+        _h = MetaDatabase<T>::getDatabase().getTimeStepSize();
         _factor_h = 1 / _h;
 
         // if interpolation is used we need all the lengths to interpolate
@@ -334,7 +334,7 @@ public:
      */
     void constructJacobian() {
         // first update the derivative
-        auto& db = MetaDatabase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDatabase();
         db.getLookupStiffness().getDerivative(_car->_currentSpringsLength, _dkdl);
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
@@ -450,7 +450,7 @@ public:
      */
     void constructStiffnessMatrix() {
 #ifdef INTERPOLATION
-        MetaDatabase<T>::getDataBase().getLookupStiffness().getInterpolation(_car->_currentSpringsLength, _kVec);
+        MetaDatabase<T>::getDatabase().getLookupStiffness().getInterpolation(_car->_currentSpringsLength, _kVec);
 #endif
         _temp[0] = _kVec[0] + _kVec[2] + _kVec[4] + _kVec[6];
         _K[1] = _kVec[0] * _car->_lenLat[0] - _kVec[2] * _car->_lenLat[1] + _kVec[4] * _car->_lenLat[2] - _kVec[6] * _car->_lenLat[3];
@@ -552,7 +552,7 @@ public:
      */
     void constructDampingMatrix() {
 #ifdef INTERPOLATION
-        MetaDatabase<T>::getDataBase().getLookupDamping().getInterpolation(_car->_currentSpringsLength, _dVec);
+        MetaDatabase<T>::getDatabase().getLookupDamping().getInterpolation(_car->_currentSpringsLength, _dVec);
 #endif
         _temp[0] = _dVec[0] + _dVec[2] + _dVec[4] + _dVec[6];
         _D[1] = _dVec[0] * _car->_lenLat[0] - _dVec[2] * _car->_lenLat[1] + _dVec[4] * _car->_lenLat[2] - _dVec[6] * _car->_lenLat[3];
@@ -949,7 +949,7 @@ public:
      */
     void constructJacobian() {
         // first update the derivative
-        auto& db = MetaDatabase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDatabase();
         db.getLookupStiffness().getDerivative(_car->_currentSpringsLength, _dkdl);
         constructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
         // _J = _A
@@ -1017,7 +1017,7 @@ template <typename T>
 class TwoTrackModelFull : public TwoTrackModelBE<T> {
 public:
     TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBE<T>(inputCar, loadModel) {
-        auto& db = MetaDatabase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDatabase();
         _tend = db.getNumberOfTimeIterations() * _h;
         int sol_size = (floor(_tend / _h) + 1);
         _uSolution = Math::calloc<T>((sol_size + 1) * Constants::DOF);

@@ -45,8 +45,8 @@ public:
      */
     ALE(Car<T>* carObjVal, LoadModule<T>* loadModuleVal, TwoTrackModelParent<T>* twoTrackModelVal) : //
         _carObj(carObjVal), _loadModuleObj(loadModuleVal), _twoTrackModelObj(twoTrackModelVal) {        
-        _h = MetaDatabase<T>::getDataBase().getTimeStepSize();
-        _tend = MetaDatabase<T>::getDataBase().getNumberOfTimeIterations() * _h;
+        _h = MetaDatabase<T>::getDatabase().getTimeStepSize();
+        _tend = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations() * _h;
 
         _solutionVectorSize = (floor(_tend / _h) + 1);
         _solutionVector = Math::malloc<T>(_solutionVectorSize * (Constants::VEC_DIM * Constants::DIM));

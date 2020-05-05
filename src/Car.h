@@ -289,7 +289,7 @@ public:
         _currentVelocityLagrangian = Math::malloc<T>((Constants::DIM - 1) * Constants::VEC_DIM);
 
         // Extract Data from parser
-        auto& db = MetaDatabase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDatabase();
 
         Math::copy<T>(Constants::NUM_LEGS, db.getLongitudalLegPositionVector(), 1, _lenLong, 1);
 

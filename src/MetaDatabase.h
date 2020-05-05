@@ -40,7 +40,7 @@ public:
     /**
      * \return The singleton instance.
      */
-    static MetaDatabase& getDataBase() {
+    static MetaDatabase& getDatabase() {
         static MetaDatabase database;
         return database;
     }

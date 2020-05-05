@@ -281,27 +281,27 @@ public:
     
 
     void writeParameters() { 
-        writeSingleValue(MetaDatabase<T>::getDataBase().getTimeStepSize());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTimeStepSize());
 
-        writeSingleValue(-MetaDatabase<T>::getDataBase().getLongitudalLegPositionRearRight());
-        writeSingleValue(-MetaDatabase<T>::getDataBase().getLongitudalLegPositionRearLeft());
-        writeSingleValue(MetaDatabase<T>::getDataBase().getLongitudalLegPositionFrontLeft());
-        writeSingleValue(MetaDatabase<T>::getDataBase().getLongitudalLegPositionFrontRight());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLongitudalLegPositionRearRight());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLongitudalLegPositionRearLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLongitudalLegPositionFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLongitudalLegPositionFrontRight());
 
-        writeSingleValue(MetaDatabase<T>::getDataBase().getLatidudalLegPositionRearRight());
-        writeSingleValue(-MetaDatabase<T>::getDataBase().getLatidudalLegPositionRearLeft());
-        writeSingleValue(-MetaDatabase<T>::getDataBase().getLatidudalLegPositionFrontLeft());
-        writeSingleValue(MetaDatabase<T>::getDataBase().getLatidudalLegPositionFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLatidudalLegPositionRearRight());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLatidudalLegPositionRearLeft());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLatidudalLegPositionFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLatidudalLegPositionFrontRight());
 
-        writeSingleValue(MetaDatabase<T>::getDataBase().getBodySpringLengthRearRight());
-        writeSingleValue(MetaDatabase<T>::getDataBase().getBodySpringLengthRearLeft());
-        writeSingleValue(MetaDatabase<T>::getDataBase().getBodySpringLengthFrontLeft());
-        writeSingleValue(MetaDatabase<T>::getDataBase().getBodySpringLengthFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthRearRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthRearLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthFrontRight());
 
-        writeSingleValue(MetaDatabase<T>::getDataBase().getTyreSpringLengthRearRight());
-        writeSingleValue(MetaDatabase<T>::getDataBase().getTyreSpringLengthRearLeft());
-        writeSingleValue(MetaDatabase<T>::getDataBase().getTyreSpringLengthFrontLeft());
-        writeSingleValue(MetaDatabase<T>::getDataBase().getTyreSpringLengthFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthRearRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthRearLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthFrontRight());
 
     }
 

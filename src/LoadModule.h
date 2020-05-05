@@ -58,7 +58,7 @@ private:
 	void ComputeInternalTorqueFromLagrangianForceNonFixed(T* Torque, T* F_vec) {}
 
 	void ReadExternalForce() {
-		auto& db = MetaDatabase<T>::getDataBase();
+		auto& db = MetaDatabase<T>::getDatabase();
 		// copy the center of mass position
 		Math::copy<T>(Constants::DIM, db.getBodyExternalForce(), 1, externalForce, 1);
 

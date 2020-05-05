@@ -18,8 +18,8 @@ namespace EVAA {
 template <class T>
 class MBDMethod {
 private:
-    // Simulation Parameters
 
+    // Simulation Parameters
     T h;
     size_t num_iter;
     int max_iter;
@@ -114,7 +114,7 @@ private:
          * 8. pt_fl = pw_fl
          * 9. pt_fl	= pt_fl + lower_length(_fl)*global_z;
          */
-        auto& db = MetaDatabase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDatabase();
         const T* initial_upper_spring_length = db.getBodySpringInitialLengthVector();
         const T* initial_lower_spring_length = db.getTyreSpringInitialLengthVector();
 
@@ -254,7 +254,7 @@ private:
 
     void ReadFromXML() {
         // Simulation Parameters
-        auto& db = MetaDatabase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDatabase();
 
         h = db.getTimeStepSize();
         num_iter = db.getNumberOfTimeIterations();
@@ -352,7 +352,7 @@ private:
      * body
      */
     void circular_path_initialization(T* vc, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr, T* vt_fl, T* vt_fr, T* vt_rl, T* vt_rr, T* omega, T* pcc, T* pt_fl, T* pt_fr, T* pt_rl, T* pt_rr) {
-        auto& db = MetaDatabase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDatabase();
 
         // only consider circular motion in the XY-plane
         vc[2] = 0;
@@ -505,7 +505,7 @@ private:
      * \brief set the road forces to the one from the trajectory
      */
     void getArbitraryRoadForces(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr, size_t i) {
-        auto& db = MetaDatabase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDatabase();
 
         db.getArbitraryTrajectory()->getLagrangianForcesFrontLeft(i, db.getTyreMassFrontLeft(), Fr_fl);
         Fr_fl[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesFrontLeft(i, db.getTyreMassFrontLeft());
@@ -805,7 +805,7 @@ private:
         current_spring_lengths[6] = norm_r_up_rr;
         current_spring_lengths[7] = norm_r_low_rr;
         // calculate the new stiffnesses
-        MetaDatabase<T>::getDataBase().getLookupStiffness().getInterpolation(current_spring_lengths, stiffness_vector);
+        MetaDatabase<T>::getDatabase().getLookupStiffness().getInterpolation(current_spring_lengths, stiffness_vector);
 
         // overwrite stiffness values
         Math::copy(Constants::NUM_LEGS, stiffness_vector, 2, upper_spring_stiffness, 1);
@@ -1536,7 +1536,7 @@ public:
      */
     void solve(T* solution_vector) {
         // From the formulation we have 61 dimensions in the solution vector
-        auto& db = MetaDatabase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDatabase();
         size_t solution_size = (this->num_iter + 1) * this->solution_dim;
         T* complete_vector = Math::calloc<T>(solution_size);
         x_vector = Math::calloc<T>(solution_dim);
@@ -1544,9 +1544,6 @@ public:
         Math::GetTilda<T>(r_fr, r_fr_tilda);
         Math::GetTilda<T>(r_rl, r_rl_tilda);
         Math::GetTilda<T>(r_rr, r_rr_tilda);
-
-
-
 
         /*
          * Preparing x_vector in the form of
@@ -1577,7 +1574,7 @@ public:
 
         // qc
         qc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
-        Math::copy<T>(Constants::NUM_LEGS, MetaDatabase<T>::getDataBase().getBodyInitialOrientation(), 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
+        Math::copy<T>(Constants::NUM_LEGS, MetaDatabase<T>::getDatabase().getBodyInitialOrientation(), 1, x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS), 1);
         j++;
         // pcc
         pcc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
@@ -1775,7 +1772,7 @@ public:
             get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
         else if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) {
-            auto& db = MetaDatabase<T>::getDataBase();
+            auto& db = MetaDatabase<T>::getDatabase();
             get_circular_road_force(cf_local_FR_fl, vt_fl_, db.getTyreMassFrontLeft(), pt_fl_);
             get_circular_road_force(cf_local_FR_fr, vt_fr_, db.getTyreMassFrontRight(), pt_fr_);
             get_circular_road_force(cf_local_FR_rl, vt_rl_, db.getTyreMassRearLeft(), pt_rl_);
