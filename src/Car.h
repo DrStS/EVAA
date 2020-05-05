@@ -335,45 +335,45 @@ public:
 
         // Remaining position initialization
 
-        const T* xml_start;
+        const T* _xmlStart;
         T* position_start;
-        if (db.getFlagInitialLeg()) {  // DEBUG to  be removed
+        if (db.getFlagInitialLeg()) {  // TODO DEBUG to  be removed
             // if prescribed initial position (add a check for consistency with spring lengths)
             // W1 = W_fl
-            xml_start = db.getWheelInitialPositionFrontLeft();
+            _xmlStart = db.getWheelInitialPositionFrontLeft();
             position_start = _initialPositionGlobal + 3;  //(end at 5)
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
+            Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start, 1);
             // W2 = W_fr
-            xml_start = db.getWheelInitialPositionFrontRight();
-            position_start += 6;  // skip 3 for tyre (end at 11)
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
+            _xmlStart = db.getWheelInitialPositionFrontRight();
+            position_start += 2 * Constants::DIM;  // skip 3 for tyre (end at 11)
+            Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start, 1);
             // W3 = W_rl
-            xml_start = db.getWheelInitialPositionRearLeft();
-            position_start += 6;  // skip 3 for tyre (end at 17)
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
+            _xmlStart = db.getWheelInitialPositionRearLeft();
+            position_start += 2 * Constants::DIM;  // skip 3 for tyre (end at 17)
+            Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start, 1);
             // W2 = W_rr
-            xml_start = db.getWheelInitialPositionRearRight();
-            position_start += 6;  // skip 3 for tyre (end at 23)
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);
+            _xmlStart = db.getWheelInitialPositionRearRight();
+            position_start += 2 * Constants::DIM;  // skip 3 for tyre (end at 23)
+            Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start, 1);
 
             // T1 = T_fl
-            xml_start = db.getTyreInitialPositionFrontLeft();
+            _xmlStart = db.getTyreInitialPositionFrontLeft();
             position_start = _initialPositionGlobal + 6;  // skip 3 for center of mass and 3 for the wheel
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 8)
+            Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start, 1);  // (end at 8)
             // T2 = T_fr
-            xml_start = db.getTyreInitialPositionFrontRight();
-            position_start += 6;  // skip 3 for the wheel
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+            _xmlStart = db.getTyreInitialPositionFrontRight();
+            position_start += 2 * Constants::DIM;  // skip 3 for the wheel
+            Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start,
                           1);  // (end at 14)
             // T3 = T_rl
-            xml_start = db.getTyreInitialPositionRearLeft();
-            position_start += 6;  // skip 3 for the wheel
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+            _xmlStart = db.getTyreInitialPositionRearLeft();
+            position_start += 2 * Constants::DIM;  // skip 3 for the wheel
+            Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start,
                           1);  // (end at 20)
             // T4 = T_rr
-            xml_start = db.getTyreInitialPositionRearRight();
-            position_start += 6;                                             // skip 3 for the wheel
-            Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 26)
+            _xmlStart = db.getTyreInitialPositionRearRight();
+            position_start += 2 * Constants::DIM;                                             // skip 3 for the wheel
+            Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start, 1);  // (end at 26)
             Math::copy<T>(Constants::DIM * Constants::VEC_DIM, _initialPositionGlobal, 1, _PositionVector, 1);
         }
         else {
@@ -393,46 +393,46 @@ public:
         // Initial Velocity (Reuse the pointers)
         Math::copy<T>(Constants::DIM, db.getBodyInitialVelocity(), 1, _initialVelocityGlobal, 1);
         // W1 = W_fl
-        xml_start = db.getWheelInitialVelocityFrontLeft();
+        _xmlStart = db.getWheelInitialVelocityFrontLeft();
         position_start = _initialVelocityGlobal + 3;
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+        Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start,
                       1);  // (end at 5)
         // W2 = W_fr
-        xml_start = db.getWheelInitialVelocityFrontRight();
-        position_start += 6;  // skip 3 for tyre
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+        _xmlStart = db.getWheelInitialVelocityFrontRight();
+        position_start += 2 * Constants::DIM;  // skip 3 for tyre
+        Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start,
                       1);  // (end at 11)
         // W3 = W_rl
-        xml_start = db.getWheelInitialVelocityRearLeft();
-        position_start += 6;  // skip 3 for tyre
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+        _xmlStart = db.getWheelInitialVelocityRearLeft();
+        position_start += 2 * Constants::DIM;  // skip 3 for tyre
+        Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start,
                       1);  // (end at 17)
         // W2 = W_rr
-        xml_start = db.getWheelInitialVelocityRearRight();
-        position_start += 6;  // skip 3 for tyre
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+        _xmlStart = db.getWheelInitialVelocityRearRight();
+        position_start += 2 * Constants::DIM;  // skip 3 for tyre
+        Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start,
                       1);  // (end at 23)
 
         // T1 = T_fl
-        xml_start = db.getTyreInitialVelocityFrontLeft();
+        _xmlStart = db.getTyreInitialVelocityFrontLeft();
         position_start = _initialVelocityGlobal + 6;  // skip 3 for center of mass and 3 for the wheel
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start, 1);  // (end at 8)
+        Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start, 1);  // (end at 8)
 
         // T2 = T_fr
-        xml_start = db.getTyreInitialVelocityFrontRight();
-        position_start += 6;  // skip 3 for the Tyre
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+        _xmlStart = db.getTyreInitialVelocityFrontRight();
+        position_start += 2 * Constants::DIM;  // skip 3 for the Tyre
+        Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start,
                       1);  // (end at 14)
         // T3 = T_rl
-        xml_start = db.getTyreInitialVelocityRearLeft();
-        position_start += 6;  // skip 3 for the wheel
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+        _xmlStart = db.getTyreInitialVelocityRearLeft();
+        position_start += 2 * Constants::DIM;  // skip 3 for the wheel
+        Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start,
                       1);  // (end at 20)
 
         // T4 = T_rr
-        xml_start = db.getTyreInitialVelocityRearRight();
-        position_start += 6;  // skip 3 for the wheel
-        Math::copy<T>(Constants::DIM, xml_start, 1, position_start,
+        _xmlStart = db.getTyreInitialVelocityRearRight();
+        position_start += 2 * Constants::DIM;  // skip 3 for the wheel
+        Math::copy<T>(Constants::DIM, _xmlStart, 1, position_start,
                       1);  // (end at 26)
 
         // copy the initial position to the position vector
