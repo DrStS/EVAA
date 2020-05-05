@@ -678,6 +678,7 @@ void EVAAComputeEngine::computeALE(void) {
         break;
     }*/
 	lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
+    //lagrangeProfile = new Straight<Constants::floatEVAA>();
 	eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
 	lagrangeProfile->ApplyProfileInitialCondition(car);
 	eulerProfile->ApplyProfileInitialCondition(car);

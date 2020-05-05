@@ -475,13 +475,13 @@ private:
 
             readLegs(_k_body, lookupTable.Magnitude().Body());
             readLegs(_k_tyre, lookupTable.Magnitude().Tyre());
-            a[0] = _k_body[2];
+            a[0] = _k_body[0];
             a[1] = _k_tyre[0];
-            a[2] = _k_body[3];
+            a[2] = _k_body[1];
             a[3] = _k_tyre[1];
-            a[4] = _k_body[0];
+            a[4] = _k_body[2];
             a[5] = _k_tyre[2];
-            a[6] = _k_body[1];
+            a[6] = _k_body[3];
             a[7] = _k_tyre[3];
 
             _lookupStiffness = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);

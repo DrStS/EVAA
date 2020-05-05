@@ -118,50 +118,50 @@
       </angularBodyXML>
       <BodyXML>
         <x>0</x>
-        <y>3</y>
+        <y>15</y>
         <z>0</z>
       </BodyXML>
       <UnsprungMassXML>
         <ReerRight>
           <x>0</x>
-          <y>3</y>
+          <y>15</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
           <x>0</x>
-          <y>3</y>
+          <y>15</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
           <x>0</x>
-          <y>3</y>
+          <y>15</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
           <x>0</x>
-          <y>3</y>
+          <y>15</y>
           <z>0</z>
         </FrontRight>
       </UnsprungMassXML>
       <TyreXML>
         <ReerRight>
           <x>0</x>
-          <y>3</y>
+          <y>15</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
           <x>0</x>
-          <y>3</y>
+          <y>15</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
           <x>0</x>
-          <y>3</y>
+          <y>15</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
           <x>0</x>
-          <y>3</y>
+          <y>15</y>
           <z>0</z>
         </FrontRight>
       </TyreXML>
