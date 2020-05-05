@@ -90,7 +90,6 @@ public:
          * Idea!! What if we do it at the end, since the displacement is a vector and by triangle
          * rule sum of all should add up force is computed using on
          */
-        carObj->ApplyLagrangeChange(); // Rethink how it can be combined with 11 dof computation
 
         // update forces and lagrangianTorque
         lagrangianForceVector[0] = newLagrangianForceVector[0];
@@ -147,16 +146,17 @@ public:
 
             twoTrackModelObj->update_step(t, carObj->currentDisplacementTwoTrackModel);
             carObj->updateLengthsTwoTrackModel();
+            carObj->ApplyLagrangeChange();
             solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
-
-            // only call this function at every checkpoint
-            carObj->combineEulerianLagrangianVectors(solution_vect);
 
 #ifdef WRITECSV
             carObj->combine_results();            
-            Math::copy(Constants::VEC_DIM * Constants::DIM, solution_vect, 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
+            Math::copy(Constants::VEC_DIM * Constants::DIM, carObj->Position_vec, 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
             Math::copy(Constants::DIM, carObj->angle_CG, 1, angleVecCSV + iter * Constants::DIM, 1);
             Math::copy(Constants::DIM, carObj->currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
+#else
+             // only call this function at every checkpoint
+            carObj->combineEulerianLagrangianVectors(solution_vect);
 #endif // WRITECSV
 
             t += h_;
