@@ -16,10 +16,20 @@ function y_return = calculateCorners(y, r1, r2, r3, r4)
         C_Nc = C_cos_transf(eye(3), basis_c);
        
         % positions of the tyre connections
-        pc1 = C_Nc * r1 + pcc;
-        pc2 = C_Nc * r2 + pcc;
-        pc3 = C_Nc * r3 + pcc;
-        pc4 = C_Nc * r4 + pcc;
+%         pc1 = C_Nc * r1 + pcc;
+%         pc2 = C_Nc * r2 + pcc;
+%         pc3 = C_Nc * r3 + pcc;
+%         pc4 = C_Nc * r4 + pcc;
+        angles = zeros(3,1);
+        angles(1) = y(i,31);
+        angles(2) = y(i,33);
+        angles(3) = y(i,32);
+        rotMat = smallAngleApproxMatrix(angles);
+        
+        pc1 = rotMat * r1 + pcc;
+        pc2 = rotMat * r2 + pcc;
+        pc3 = rotMat * r3 + pcc;
+        pc4 = rotMat * r4 + pcc;
 
         pw1 = y(i,38:40);
         pw2 = y(i,41:43);

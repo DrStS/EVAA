@@ -701,24 +701,18 @@ public:
 	* new previous will be updated and following will be obselete which
 	*/
     void ApplyLagrangeChange() {
-        
-        // Suggestion: reuse the values from the corners (cheaper)
-
-        T c = std::cos(currentAngleLagrangian);
-        T s = std::sin(currentAngleLagrangian);
-
         // get the XY positions of all legs taking leg  = CG + R * r
-        currentPositionLagrangian[2] = currentPositionLagrangian[0] + l_long[0] * c - l_lat[0] * s;  // fl
-        currentPositionLagrangian[3] = currentPositionLagrangian[1] + l_lat[0] * c + l_long[0] * s;  // fl
+        currentPositionLagrangian[2] = currentCornerPositions[0];  // fl
+        currentPositionLagrangian[3] = currentCornerPositions[4];  // fl
 
-        currentPositionLagrangian[6] = currentPositionLagrangian[0] + l_long[1] * c + l_lat[1] * s;  // fr
-        currentPositionLagrangian[7] = currentPositionLagrangian[1] - l_lat[1] * c + l_long[1] * s;  // fr
+        currentPositionLagrangian[6] = currentCornerPositions[1];  // fr
+        currentPositionLagrangian[7] = currentCornerPositions[5];  // fr
 
-        currentPositionLagrangian[10] = currentPositionLagrangian[0] - l_long[2] * c - l_lat[2] * s;  // rl
-        currentPositionLagrangian[11] = currentPositionLagrangian[1] + l_lat[2] * c - l_long[2] * s;  // rl
+        currentPositionLagrangian[10] = currentCornerPositions[2];  // rl
+        currentPositionLagrangian[11] = currentCornerPositions[6];  // rl
 
-        currentPositionLagrangian[14] = currentPositionLagrangian[0] - l_long[3] * c + l_lat[3] * s;  // rr
-        currentPositionLagrangian[15] = currentPositionLagrangian[1] - l_lat[3] * c - l_long[3] * s;  // rr
+        currentPositionLagrangian[14] = currentCornerPositions[3];  // rr
+        currentPositionLagrangian[15] = currentCornerPositions[7];  // rr
 
         // copy all position value from the wheels to the tyres
         Math::copy<T>(Constants::NUM_LEGS, currentPositionLagrangian + 2, 4, currentPositionLagrangian + 4, 4);
