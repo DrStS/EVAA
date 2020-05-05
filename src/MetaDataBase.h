@@ -157,19 +157,19 @@ public:
         else if (solver == "RK4") {
             _MBD_solver = MBDSolver::RUNGE_KUTTA_4;
         }
-        else if (solver == "Broyden_Euler") {
+        else if (solver == "BroydenEuler") {
             _MBD_solver = MBDSolver::BROYDEN_EULER;
         }
-        else if (solver == "Broyden_CN") {
+        else if (solver == "BroydenCN") {
             _MBD_solver = MBDSolver::BROYDEN_CN;
         }
-        else if (solver == "Broyden_BDF2") {
+        else if (solver == "BroydenBDF2") {
             _MBD_solver = MBDSolver::BROYDEN_BDF2;
         }
         else {
             throw std::logic_error("Wrong MBD-solver in XML: " + solver +
                                    ". Must be one of: "
-                                   "explicit_Euler, RK4, Broyden_Euler, Broyden_CN, Broyden_BDF2");
+                                   "explicit_Euler, RK4, BroydenEuler, BroydenCN, BroydenBDF2");
         }
 
         solver = simulation.LinearALEXML().Method();

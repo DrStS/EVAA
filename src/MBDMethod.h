@@ -95,7 +95,7 @@ private:
          * implemented in following fashion: Original steps for computation of
          * one component:
          * 1. qc = qc/norm(qc);
-         * 2. C_Nc = get_basis(qc);
+         * 2. C_Nc = GetBasis(qc);
          * 3. global_z = C_Nc(:,2);
          * 4. global_z = -global_z / norm(global_z);
          * 5. global_r_fl = pcc + C_Nc*r_fl;
@@ -105,7 +105,7 @@ private:
          * 9. pt_fl = pw_fl + lower_global_spring__fl;
          * Modified steps for computation of one component:
          * 1. qc = qc/norm(qc);
-         * 2. C_Nc = get_basis(qc);
+         * 2. C_Nc = GetBasis(qc);
          * 3. global_z = C_Nc(:,2);
          * 4. global_z = global_z / norm(global_z);
          * 5. pw_fl = pcc;
@@ -125,8 +125,8 @@ private:
         T nrm = Math::nrm2<T>(Constants::NUM_LEGS, initial_orientation_, 1);
         Math::scal<T>(Constants::NUM_LEGS, 1. / nrm, initial_orientation_, 1);
 
-        // 2. C_Nc = get_basis(qc);
-        Math::get_basis<T>(initial_orientation_, C_Nc);
+        // 2. C_Nc = GetBasis(qc);
+        Math::GetBasis<T>(initial_orientation_, C_Nc);
 
         // 3. global_z = C_Nc(:,2);
         Math::copy<T>(Constants::DIM, C_Nc + 2, Constants::DIM, global_z, 1);
@@ -392,7 +392,7 @@ private:
         Math::scal<T>(Constants::DIM, inv_radius, radial_vector, Constants::INCX);
 
         // calculate the direction of the motion
-        Math::crossProduct<T>(radial_vector, perpendicular_dir, tangential_dir);
+        Math::CrossProduct<T>(radial_vector, perpendicular_dir, tangential_dir);
 
         // calculate the velocity magnitude
         T magnitude = Math::dot<T>(Constants::DIM, vc, Constants::INCX, tangential_dir, Constants::INCX);
@@ -406,14 +406,14 @@ private:
         Math::scal<T>(Constants::DIM, radius, radial_vector, Constants::INCX);
 
         // calculate the angular velocity of the car
-        Math::crossProduct<T>(radial_vector, vc, omega);
+        Math::CrossProduct<T>(radial_vector, vc, omega);
         Math::scal<T>(Constants::DIM, inv_radius * inv_radius, omega, 1);
 
         // calculate the velocity in all legs
-        Math::crossProduct<T>(omega, pt_fl, vt_fl);
-        Math::crossProduct<T>(omega, pt_fr, vt_fr);
-        Math::crossProduct<T>(omega, pt_rl, vt_rl);
-        Math::crossProduct<T>(omega, pt_rr, vt_rr);
+        Math::CrossProduct<T>(omega, pt_fl, vt_fl);
+        Math::CrossProduct<T>(omega, pt_fr, vt_fr);
+        Math::CrossProduct<T>(omega, pt_rl, vt_rl);
+        Math::CrossProduct<T>(omega, pt_rr, vt_rr);
 
         Math::copy<T>(Constants::DIM, vt_fl, 1, vw_fl, 1);
         Math::copy<T>(Constants::DIM, vt_fr, 1, vw_fr, 1);
@@ -487,7 +487,7 @@ private:
         unit_z_vector[2] = 1;
 
         // get normalized direction of motion
-        Math::crossProduct<T>(Fr, unit_z_vector, velocity_direction_tyre);
+        Math::CrossProduct<T>(Fr, unit_z_vector, velocity_direction_tyre);
 
         // get the physical velocity
         velocity_magnitude_tyre = Math::dot<T>(Constants::DIM, v, Constants::INCX, velocity_direction_tyre, Constants::INCX);
@@ -786,9 +786,9 @@ private:
         // Basis //
         get cosine transforms (C_Nc means r_N = C_Nc * r_c)
         compute local base vectors
-        basis_c = get_basis(qc);
+        basis_c = GetBasis(qc);
         */
-        Math::get_basis<T>(qc_, cf_C_cN);
+        Math::GetBasis<T>(qc_, cf_C_cN);
     }
 
     /**
@@ -816,29 +816,29 @@ private:
         /*
         get angle and normal vectors at the legs
 
-        [~, upper_angle1, upper_normal1] = get_quaternion(r_up1, C_cN(2,:)');
-        [~, upper_angle2, upper_normal2] = get_quaternion(r_up2, C_cN(2,:)');
-        [~, upper_angle3, upper_normal3] = get_quaternion(r_up3, C_cN(2,:)');
-        [~, upper_angle4, upper_normal4] = get_quaternion(r_up4, C_cN(2,:)');
+        [~, upper_angle1, upper_normal1] = GetQuaternion(r_up1, C_cN(2,:)');
+        [~, upper_angle2, upper_normal2] = GetQuaternion(r_up2, C_cN(2,:)');
+        [~, upper_angle3, upper_normal3] = GetQuaternion(r_up3, C_cN(2,:)');
+        [~, upper_angle4, upper_normal4] = GetQuaternion(r_up4, C_cN(2,:)');
 
-        [~, lower_angle1, lower_normal1] = get_quaternion(r_low1, r_up1);
-        [~, lower_angle2, lower_normal2] = get_quaternion(r_low2, r_up2);
-        [~, lower_angle3, lower_normal3] = get_quaternion(r_low3, r_up3);
-        [~, lower_angle4, lower_normal4] = get_quaternion(r_low4, r_up4);
+        [~, lower_angle1, lower_normal1] = GetQuaternion(r_low1, r_up1);
+        [~, lower_angle2, lower_normal2] = GetQuaternion(r_low2, r_up2);
+        [~, lower_angle3, lower_normal3] = GetQuaternion(r_low3, r_up3);
+        [~, lower_angle4, lower_normal4] = GetQuaternion(r_low4, r_up4);
 
         */
 
         Math::copy<T>(Constants::DIM, cf_C_cN + 2, Constants::DIM, cf_col_dat, 1);
 
-        Math::get_quaternion<T>(cf_r_up_fl, cf_col_dat, cf_upper_angle_fl, cf_upper_normal_fl);
-        Math::get_quaternion<T>(cf_r_up_fr, cf_col_dat, cf_upper_angle_fr, cf_upper_normal_fr);
-        Math::get_quaternion<T>(cf_r_up_rl, cf_col_dat, cf_upper_angle_rl, cf_upper_normal_rl);
-        Math::get_quaternion<T>(cf_r_up_rr, cf_col_dat, cf_upper_angle_rr, cf_upper_normal_rr);
+        Math::GetQuaternion<T>(cf_r_up_fl, cf_col_dat, cf_upper_angle_fl, cf_upper_normal_fl);
+        Math::GetQuaternion<T>(cf_r_up_fr, cf_col_dat, cf_upper_angle_fr, cf_upper_normal_fr);
+        Math::GetQuaternion<T>(cf_r_up_rl, cf_col_dat, cf_upper_angle_rl, cf_upper_normal_rl);
+        Math::GetQuaternion<T>(cf_r_up_rr, cf_col_dat, cf_upper_angle_rr, cf_upper_normal_rr);
 
-        Math::get_quaternion<T>(cf_r_low_fl, cf_r_up_fl, cf_lower_angle_fl, cf_lower_normal_fl);
-        Math::get_quaternion<T>(cf_r_low_fr, cf_r_up_fr, cf_lower_angle_fr, cf_lower_normal_fr);
-        Math::get_quaternion<T>(cf_r_low_rl, cf_r_up_rl, cf_lower_angle_rl, cf_lower_normal_rl);
-        Math::get_quaternion<T>(cf_r_low_rr, cf_r_up_rr, cf_lower_angle_rr, cf_lower_normal_rr);
+        Math::GetQuaternion<T>(cf_r_low_fl, cf_r_up_fl, cf_lower_angle_fl, cf_lower_normal_fl);
+        Math::GetQuaternion<T>(cf_r_low_fr, cf_r_up_fr, cf_lower_angle_fr, cf_lower_normal_fr);
+        Math::GetQuaternion<T>(cf_r_low_rl, cf_r_up_rl, cf_lower_angle_rl, cf_lower_normal_rl);
+        Math::GetQuaternion<T>(cf_r_low_rr, cf_r_up_rr, cf_lower_angle_rr, cf_lower_normal_rr);
     }
 
     void compute_elongational_forces() {
@@ -1152,32 +1152,32 @@ lower_normal4;
         // lower_rot_force1 = -cross( lower_S1, r_low1) / (r_low1'*r_low1);
         scale = -1. / Math::dot<T>(Constants::DIM, cf_r_low_fl, Constants::INCX, cf_r_low_fl, Constants::INCX);
         // scale = -1. / Math::dot_product<T>(r_low1, r_low1, Constants::DIM);
-        Math::crossProduct<T>(cf_lower_S_fl, cf_r_low_fl, cf_lower_rot_force_fl);
+        Math::CrossProduct<T>(cf_lower_S_fl, cf_r_low_fl, cf_lower_rot_force_fl);
         Math::scal<T>(Constants::DIM, scale, cf_lower_rot_force_fl, 1);
 
         // lower_rot_force2 = -cross( lower_S2, r_low2) / (r_low2'*r_low2);
         scale = -1. / Math::dot<T>(Constants::DIM, cf_r_low_fr, Constants::INCX, cf_r_low_fr, Constants::INCX);
         // scale = -1. / Math::dot_product<T>(r_low_fr, r_low_fr,
         // Constants::DIM);
-        Math::crossProduct<T>(cf_lower_S_fr, cf_r_low_fr, cf_lower_rot_force_fr);
+        Math::CrossProduct<T>(cf_lower_S_fr, cf_r_low_fr, cf_lower_rot_force_fr);
         Math::scal<T>(Constants::DIM, scale, cf_lower_rot_force_fr, 1);
 
         // lower_rot_force3 = -cross( lower_S3, r_low3) / (r_low3'*r_low3);
         scale = -1. / Math::dot<T>(Constants::DIM, cf_r_low_rl, Constants::INCX, cf_r_low_rl, Constants::INCX);
         // scale = -1. / Math::dot_product<T>(r_low3, r_low3, Constants::DIM);
-        Math::crossProduct<T>(cf_lower_S_rl, cf_r_low_rl, cf_lower_rot_force_rl);
+        Math::CrossProduct<T>(cf_lower_S_rl, cf_r_low_rl, cf_lower_rot_force_rl);
         Math::scal<T>(Constants::DIM, scale, cf_lower_rot_force_rl, 1);
 
         // lower_rot_force4 = -cross( lower_S4, r_low4) / (r_low4'*r_low4);
         scale = -1. / Math::dot<T>(Constants::DIM, cf_r_low_rr, Constants::INCX, cf_r_low_rr, Constants::INCX);
         // scale = -1. / Math::dot_product<T>(r_low4, r_low4, Constants::DIM);
-        Math::crossProduct<T>(cf_lower_S_rr, cf_r_low_rr, cf_lower_rot_force_rr);
+        Math::CrossProduct<T>(cf_lower_S_rr, cf_r_low_rr, cf_lower_rot_force_rr);
         Math::scal<T>(Constants::DIM, scale, cf_lower_rot_force_rr, 1);
 
         // upper_rot_force1 = -cross( upper_S1, r_up1) / (r_up1'*r_up1);
         scale_u_fl = -1. / Math::dot<T>(Constants::DIM, cf_r_up_fl, Constants::INCX, cf_r_up_fl, Constants::INCX);
         // scale_u1 = -1. / Math::dot_product<T>(r_up1, r_up1, Constants::DIM);
-        Math::crossProduct<T>(cf_upper_S_fl, cf_r_up_fl, cf_upper_rot_force_fl);
+        Math::CrossProduct<T>(cf_upper_S_fl, cf_r_up_fl, cf_upper_rot_force_fl);
         Math::scal<T>(Constants::DIM, scale_u_fl, cf_upper_rot_force_fl, 1);
 
         // upper_rot_force_fr = -cross( upper_S_fr, r_up_fr) /
@@ -1185,35 +1185,35 @@ lower_normal4;
         scale_u_fr = -1. / Math::dot<T>(Constants::DIM, cf_r_up_fr, Constants::INCX, cf_r_up_fr, Constants::INCX);
         // scale_u_fr = -1. / Math::dot_product<T>(r_up_fr, r_up_fr,
         // Constants::DIM);
-        Math::crossProduct<T>(cf_upper_S_fr, cf_r_up_fr, cf_upper_rot_force_fr);
+        Math::CrossProduct<T>(cf_upper_S_fr, cf_r_up_fr, cf_upper_rot_force_fr);
         Math::scal<T>(Constants::DIM, scale_u_fr, cf_upper_rot_force_fr, 1);
 
         // upper_rot_force3 = -cross( upper_S3, r_up3) / (r_up3'*r_up3);
         scale_u_rl = -1. / Math::dot<T>(Constants::DIM, cf_r_up_rl, Constants::INCX, cf_r_up_rl, Constants::INCX);
         // scale_u3 = -1. / Math::dot_product<T>(r_up3, r_up3, Constants::DIM);
-        Math::crossProduct<T>(cf_upper_S_rl, cf_r_up_rl, cf_upper_rot_force_rl);
+        Math::CrossProduct<T>(cf_upper_S_rl, cf_r_up_rl, cf_upper_rot_force_rl);
         Math::scal<T>(Constants::DIM, scale_u_rl, cf_upper_rot_force_rl, 1);
 
         // upper_rot_force4 = -cross( upper_S4, r_up4) / (r_up4'*r_up4);
         scale_u_rr = -1. / Math::dot<T>(Constants::DIM, cf_r_up_rr, Constants::INCX, cf_r_up_rr, Constants::INCX);
         // scale_u4 = -1. / Math::dot_product<T>(r_up4, r_up4, Constants::DIM);
-        Math::crossProduct<T>(cf_upper_S_rr, cf_r_up_rr, cf_upper_rot_force_rr);
+        Math::CrossProduct<T>(cf_upper_S_rr, cf_r_up_rr, cf_upper_rot_force_rr);
         Math::scal<T>(Constants::DIM, scale_u_rr, cf_upper_rot_force_rr, 1);
 
         // car_rot_force1 = -cross( lower_S1, r_up1) / (r_up1'*r_up1);
-        Math::crossProduct<T>(cf_lower_S_fl, cf_r_up_fl, cf_car_rot_force_fl);
+        Math::CrossProduct<T>(cf_lower_S_fl, cf_r_up_fl, cf_car_rot_force_fl);
         Math::scal<T>(Constants::DIM, scale_u_fl, cf_car_rot_force_fl, 1);
 
         // car_rot_force_fr = -cross( lower_S2, r_up2) / (r_up2'*r_up2);
-        Math::crossProduct<T>(cf_lower_S_fr, cf_r_up_fr, cf_car_rot_force_fr);
+        Math::CrossProduct<T>(cf_lower_S_fr, cf_r_up_fr, cf_car_rot_force_fr);
         Math::scal<T>(Constants::DIM, scale_u_fr, cf_car_rot_force_fr, 1);
 
         // car_rot_force3 = -cross( lower_S3, r_up3) / (r_up3'*r_up3);
-        Math::crossProduct<T>(cf_lower_S_rl, cf_r_up_rl, cf_car_rot_force_rl);
+        Math::CrossProduct<T>(cf_lower_S_rl, cf_r_up_rl, cf_car_rot_force_rl);
         Math::scal<T>(Constants::DIM, scale_u_rl, cf_car_rot_force_rl, 1);
 
         // car_rot_force4 = -cross( lower_S4, r_up4) / (r_up4'*r_up4);
-        Math::crossProduct<T>(cf_lower_S_rr, cf_r_up_rr, cf_car_rot_force_rr);
+        Math::CrossProduct<T>(cf_lower_S_rr, cf_r_up_rr, cf_car_rot_force_rr);
         Math::scal<T>(Constants::DIM, scale_u_rr, cf_car_rot_force_rr, 1);
     }
 
@@ -1312,13 +1312,13 @@ lower_normal4;
          * ... r3_tilda * (C_cN * sum_car_force3) + ... r_rr_tilda * (C_cN *
          * sum_car_force4) + ... -C_cN * upper_S1 - C_cN * upper_S2 - C_cN *
          * upper_S3 - C_cN * upper_S4 + ... % ??from the rotational spring
-         * -get_tilda(wc) * Hc + Tc;
+         * -GetTilda(wc) * Hc + Tc;
          *    % from angular momentum and external torques
          */
 
         // Hc = A(1:3, 1:3) * wc;
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, this->Ic, Constants::DIM, wc_, 1, 0, cf_Hc, 1);
-        Math::get_tilda<T>(wc_, cf_wc_tilda);
+        Math::GetTilda<T>(wc_, cf_wc_tilda);
         Math::copy<T>(Constants::DIM, cf_Hc, 1, cf_temp, 1);
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1, cf_wc_tilda, Constants::DIM, cf_temp, 1, 0, cf_Hc, 1);
 
@@ -1540,10 +1540,10 @@ public:
         size_t solution_size = (this->num_iter + 1) * this->solution_dim;
         T* complete_vector = Math::calloc<T>(solution_size);
         x_vector = Math::calloc<T>(solution_dim);
-        Math::get_tilda<T>(r_fl, r_fl_tilda);
-        Math::get_tilda<T>(r_fr, r_fr_tilda);
-        Math::get_tilda<T>(r_rl, r_rl_tilda);
-        Math::get_tilda<T>(r_rr, r_rr_tilda);
+        Math::GetTilda<T>(r_fl, r_fl_tilda);
+        Math::GetTilda<T>(r_fr, r_fr_tilda);
+        Math::GetTilda<T>(r_rl, r_rl_tilda);
+        Math::GetTilda<T>(r_rr, r_rr_tilda);
 
 
 
@@ -1681,16 +1681,16 @@ public:
 
 
         if (used_solver == MBDSolver::BROYDEN_CN) {
-            Math::Solvers<T, MBDMethod>::Broyden_CN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+            Math::Solvers<T, MBDMethod>::BroydenCN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == MBDSolver::RUNGE_KUTTA_4) {
             Math::Solvers<T, MBDMethod>::RK4(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == MBDSolver::BROYDEN_BDF2) {
-            Math::Solvers<T, MBDMethod>::Broyden_PDF2(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+            Math::Solvers<T, MBDMethod>::BroydenBDF2(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == MBDSolver::BROYDEN_EULER) {
-            Math::Solvers<T, MBDMethod>::Broyden_Euler(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
+            Math::Solvers<T, MBDMethod>::BroydenEuler(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
         }
         else if (used_solver == MBDSolver::EXPLICIT_EULER) {
             std::cout << "Explicit solver hasn't been implemented, you don't "

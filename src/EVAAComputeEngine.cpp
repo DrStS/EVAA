@@ -56,7 +56,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
 }
 
 void EVAAComputeEngine::printInfo(void) {
-    Math::printMKLInfo();
+    Math::PrintMKLInfo();
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
     std::cout << "\n\nCalculate the solution after " << db.getNumberOfTimeIterations() * db.getTimeStepSize() << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations() << " iterations\n\n\n";
 }
@@ -516,30 +516,30 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
     /// Build dynamic stiffness matrix
     // gets written in rear vector
     // K' <- (1./(h*h))*M + K
-    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(M.data(),
+    //	Math::ComputeDenseVectorAddition<Constants::floatEVAA>(M.data(),
     // K.data(), (1. / (h*h)), 9);
     Math::axpy<Constants::floatEVAA>(121, (1. / (h * h)), M, 1, K, 1);
     // K <- (1./h)*D + K'
-    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(D.data(),
+    //	Math::ComputeDenseVectorAddition<Constants::floatEVAA>(D.data(),
     // K.data(), (1. / h), 121);
     Math::axpy<Constants::floatEVAA>(121, (1. / h), D, 1, K, 1);
     /// K holds now dynamic stiffness matrix  for BE integrator
     /// Build rhs for BE integrator
     // B' <-(2.0 / (h*h))*M + B
-    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(M.data(),
+    //	Math::ComputeDenseVectorAddition<Constants::floatEVAA>(M.data(),
     // B.data(), (2.0 / (h*h)),
     // 121);
     Math::axpy<Constants::floatEVAA>(Constants::DOFDOF, (2.0 / (h * h)), M, 1, B, 1);
 
     // B <-(1. / (h))*D + B'
-    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(D.data(),
+    //	Math::ComputeDenseVectorAddition<Constants::floatEVAA>(D.data(),
     // B.data(), (1. / h), 121);
     Math::axpy<Constants::floatEVAA>(Constants::DOFDOF, (1. / h), D, 1, B, 1);
     // A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE
 
     std::vector<int> pivot(Constants::DOF);
     // LU Decomposition
-    //	Math::computeDenseSymLUFactorisation<Constants::floatEVAA>(11, K,
+    //	Math::ComputeDenseSymLUFactorisation<Constants::floatEVAA>(11, K,
     // pivot);
     Math::getrf(LAPACK_ROW_MAJOR, Constants::DOF, Constants::DOF, K, Constants::DOF, pivot.data());
 
@@ -580,13 +580,13 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
         myDGEMMKernel(jitter, M, u_n_m_1, tmp);
 #endif
         // u_n_p_1 <- 1. tmp + u_n_p_1
-        //		Math::computeDenseVectorAddition<Constants::floatEVAA>(tmp.data(),
+        //		Math::ComputeDenseVectorAddition<Constants::floatEVAA>(tmp.data(),
         // u_n_p_1.data(),1,
         // 11); void cblas_daxpy (const MKL_INT n, const double a, const double
         // *x, const MKL_INT incx, double *y, const MKL_INT incy);
         Math::axpy<Constants::floatEVAA>(Constants::DOF, 1, tmp, 1, u_n_p_1, 1);
         // Solve system
-        //		Math::computeDenseSymSolution<Constants::floatEVAA>(11,
+        //		Math::ComputeDenseSymSolution<Constants::floatEVAA>(11,
         // K, pivot, u_n_p_1);
         // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans ,
         // lapack_int n , lapack_int nrhs , const double * a , lapack_int lda ,
@@ -628,7 +628,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 		euler->ApplyProfileInitialCondition(car);
         solver.solve(sol);
 
-        //solver.print_final_results(sol);
+        //solver.PrintFinalResults(sol);
 
         Math::free<Constants::floatEVAA>(sol);
         delete car;
@@ -690,7 +690,7 @@ void EVAAComputeEngine::computeALE(void) {
 
     ale->solve(sol);
 
-    //ale->print_final_results();
+    //ale->PrintFinalResults();
 
 	delete TwoTrackModel_obj;
     delete car;

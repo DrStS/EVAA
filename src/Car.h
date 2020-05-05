@@ -27,7 +27,7 @@ private:
 	
 	inline void RotationMatrixSmallAngle(const T arg1, const T arg2, const T arg3, T* arg4) { Math::GetRotationMatrixSmallAnglesXY<T>(arg1, arg2, arg3, arg4); }
 	
-	inline void RotationMatrixGeneral (const T arg1, const T arg2, const T arg3, T* arg4) { Math::get_rotation_matrix<T>(arg1, arg2, arg3, arg4); }
+	inline void RotationMatrixGeneral (const T arg1, const T arg2, const T arg3, T* arg4) { Math::GetRotationMatrix<T>(arg1, arg2, arg3, arg4); }
 
     /**
      * \brief compute the positions of the unexciting Euler system in the Euler
@@ -92,7 +92,7 @@ private:
     void UpdateCorners11DOF(T* angles, T* rotation_mat_buffer, T* initial_corners, T* updated_corners) {
         // zz, yy, xx
 		(this->*RotationMatrix)(angles[2], angles[1], angles[0], rotation_mat_buffer);
-//        Math::get_rotation_matrix<T>(angles[2], angles[1], angles[0], rotation_mat_buffer);
+//        Math::GetRotationMatrix<T>(angles[2], angles[1], angles[0], rotation_mat_buffer);
 
         // do rotation: rotationMat * r
 	    Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DIM, Constants::NUM_LEGS, Constants::DIM, 1, rotation_mat_buffer, Constants::DIM, initial_corners, Constants::NUM_LEGS, 0, updated_corners, Constants::NUM_LEGS);
