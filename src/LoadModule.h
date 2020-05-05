@@ -6,7 +6,7 @@
 #include "Car.h"
 #include "Constants.h"
 #include "Math.h"
-#include "MetaDataBase.h"
+#include "MetaDatabase.h"
 #include "RoadProfile.h"
 
 namespace EVAA {
@@ -58,7 +58,7 @@ private:
 	void ComputeInternalTorqueFromLagrangianForceNonFixed(T* Torque, T* F_vec) {}
 
 	void ReadExternalForce() {
-		auto& db = MetaDataBase<T>::getDataBase();
+		auto& db = MetaDatabase<T>::getDataBase();
 		// copy the center of mass position
 		Math::copy<T>(Constants::DIM, db.getBodyExternalForce(), 1, externalForce, 1);
 

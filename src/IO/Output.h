@@ -8,7 +8,7 @@
 #include <limits>
 #include <string>
 
-#include "MetaDataBase.h"
+#include "MetaDatabase.h"
 
 namespace EVAA {
 
@@ -281,27 +281,27 @@ public:
     
 
     void writeParameters() { 
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTimeStepSize());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getTimeStepSize());
 
-        writeSingleValue(-MetaDataBase<T>::getDataBase().getLongitudalLegPositionRearRight());
-        writeSingleValue(-MetaDataBase<T>::getDataBase().getLongitudalLegPositionRearLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getLongitudalLegPositionFrontLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getLongitudalLegPositionFrontRight());
+        writeSingleValue(-MetaDatabase<T>::getDataBase().getLongitudalLegPositionRearRight());
+        writeSingleValue(-MetaDatabase<T>::getDataBase().getLongitudalLegPositionRearLeft());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getLongitudalLegPositionFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getLongitudalLegPositionFrontRight());
 
-        writeSingleValue(MetaDataBase<T>::getDataBase().getLatidudalLegPositionRearRight());
-        writeSingleValue(-MetaDataBase<T>::getDataBase().getLatidudalLegPositionRearLeft());
-        writeSingleValue(-MetaDataBase<T>::getDataBase().getLatidudalLegPositionFrontLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getLatidudalLegPositionFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getLatidudalLegPositionRearRight());
+        writeSingleValue(-MetaDatabase<T>::getDataBase().getLatidudalLegPositionRearLeft());
+        writeSingleValue(-MetaDatabase<T>::getDataBase().getLatidudalLegPositionFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getLatidudalLegPositionFrontRight());
 
-        writeSingleValue(MetaDataBase<T>::getDataBase().getBodySpringLengthRearRight());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getBodySpringLengthRearLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getBodySpringLengthFrontLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getBodySpringLengthFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getBodySpringLengthRearRight());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getBodySpringLengthRearLeft());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getBodySpringLengthFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getBodySpringLengthFrontRight());
 
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTyreSpringLengthRearRight());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTyreSpringLengthRearLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTyreSpringLengthFrontLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTyreSpringLengthFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getTyreSpringLengthRearRight());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getTyreSpringLengthRearLeft());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getTyreSpringLengthFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDataBase().getTyreSpringLengthFrontRight());
 
     }
 

@@ -35,21 +35,21 @@ enum class ALESolver {
 
 /** Singleton handling input data parsing from XML files. */
 template <class T>
-class MetaDataBase {
+class MetaDatabase {
 public:
     /**
      * \return The singleton instance.
      */
-    static MetaDataBase& getDataBase() {
-        static MetaDataBase database;
+    static MetaDatabase& getDataBase() {
+        static MetaDatabase database;
         return database;
     }
 
     /** Deleted copy constructor. */
-    MetaDataBase(MetaDataBase const&) = delete;
+    MetaDatabase(MetaDatabase const&) = delete;
 
     /** Deleted copy operator. */
-    void operator=(MetaDataBase const&) = delete;
+    void operator=(MetaDatabase const&) = delete;
 
     /*
     Checks if the xml has correct format with resect to compiler flag
@@ -83,7 +83,7 @@ public:
      * Reads the car, initial and simulation parameters from an XML file.
      * \param[in] filename The XML file.
      */
-    void MetaDataBase::readParameters(const std::string& filename) {
+    void MetaDatabase::readParameters(const std::string& filename) {
         // Load car parameters
 
         const auto settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
@@ -434,7 +434,7 @@ public:
     const void* getLookupDamping() const { return NULL; }
 #endif  // INTERPOLATION
 
-    virtual ~MetaDataBase() {
+    virtual ~MetaDatabase() {
 #ifdef INTERPOLATION        
         delete _lookupDamping;
         delete _lookupStiffness;
@@ -444,7 +444,7 @@ public:
 
 private:
     /** Private constructor for the singleton instance. */
-    MetaDataBase() : _lookup_filename("") {}
+    MetaDatabase() : _lookup_filename("") {}
     /**
      * Reads the lookup table parameters from an XML file.
      * \param[in] filename The XML file.

@@ -6,7 +6,7 @@
 
 #include "Constants.h"
 #include "MathLibrary.h"
-#include "MetaDataBase.h"
+#include "MetaDatabase.h"
 
 #define Damping 1  // TODO remove
 
@@ -289,7 +289,7 @@ public:
         _currentVelocityLagrangian = Math::malloc<T>((Constants::DIM - 1) * Constants::VEC_DIM);
 
         // Extract Data from parser
-        auto& db = MetaDataBase<T>::getDataBase();
+        auto& db = MetaDatabase<T>::getDataBase();
 
         Math::copy<T>(Constants::NUM_LEGS, db.getLongitudalLegPositionVector(), 1, _lenLong, 1);
 

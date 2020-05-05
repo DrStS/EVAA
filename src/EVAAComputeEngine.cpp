@@ -31,7 +31,7 @@
 #include "Constants.h"
 #include "LoadModule.h"
 #include "MathLibrary.h"
-#include "MetaDataBase.h"
+#include "MetaDatabase.h"
 #include "Output.h"
 
 #ifdef USE_EIGEN
@@ -51,18 +51,18 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
     IO::checkFileExists(xmlCarFileName);
     IO::checkFileExists(xmlLoadFileName);
 
-    MetaDataBase<Constants::floatEVAA>::getDataBase().readParameters(xmlCarFileName);
-    MetaDataBase<Constants::floatEVAA>::getDataBase().readLoadParameters(xmlLoadFileName);
+    MetaDatabase<Constants::floatEVAA>::getDataBase().readParameters(xmlCarFileName);
+    MetaDatabase<Constants::floatEVAA>::getDataBase().readLoadParameters(xmlLoadFileName);
 }
 
 void EVAAComputeEngine::printInfo(void) {
     Math::PrintMKLInfo();
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDataBase();
     std::cout << "\n\nCalculate the solution after " << db.getNumberOfTimeIterations() * db.getTimeStepSize() << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations() << " iterations\n\n\n";
 }
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDataBase();
 
     // K stiffness
     Constants::floatEVAA k_11 = db.getBodyStiffnessFrontLeft();
@@ -191,7 +191,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     using blaze::rowMajor;
     using blaze::SymmetricMatrix;
 
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDataBase();
 
     // K stiffness
     Constants::floatEVAA k_11 = db.getBodyStiffnessFrontLeft();
@@ -365,7 +365,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 
 void EVAAComputeEngine::computeMKL11DOF(void) {
 #if TODO_TEMPLATE_JIT_DONE
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDataBase();
 
     // K stiffness
     Constants::floatEVAA k_11 = db.getBodyStiffnessFrontLeft();
@@ -617,7 +617,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 }
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDataBase();
     if (true) {
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
@@ -642,8 +642,8 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 }
 
 void EVAAComputeEngine::computeMBD(void) {
-    size_t num_iter = MetaDataBase<Constants::floatEVAA>::getDataBase().getNumberOfTimeIterations();
-    size_t solution_dim = MetaDataBase<Constants::floatEVAA>::getDataBase().getSolutionVectorSize();
+    size_t num_iter = MetaDatabase<Constants::floatEVAA>::getDataBase().getNumberOfTimeIterations();
+    size_t solution_dim = MetaDatabase<Constants::floatEVAA>::getDataBase().getSolutionVectorSize();
     Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(solution_dim);
     MBDMethod<Constants::floatEVAA> solver;
 
@@ -657,7 +657,7 @@ void EVAAComputeEngine::computeALE(void) {
 	Euler<Constants::floatEVAA>* eulerProfile;
 	Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDataBase();
 	lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
 	eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
 	lagrangeProfile->ApplyProfileInitialCondition(car);
