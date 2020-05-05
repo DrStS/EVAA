@@ -373,7 +373,7 @@ public:
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
     void setJacobianTyreLineToFixed(int tyreNumber) {
-        Math::copy<T>(Constants::DOF, M_h2 + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, J + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1);
+        Math::copy<T>(Constants::DOF, M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1);
     }
 
     /**
