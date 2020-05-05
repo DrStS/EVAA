@@ -258,6 +258,8 @@ void GetRotationMatrix(const T yaw, const T pitch, const T roll, T* R) {
 
 /**
  * Computes the rotation matrix out of 3 angle representation
+ *
+ * angles z y x
  * \result R rotation matrix
  */
 template <typename T>

@@ -40,12 +40,12 @@ private:
     void ComputeInternalTorqueFromLagrangianForceFixed(T* Torque, T* F_vec) {
         // compute torque around X-axis
 		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-            Torque[0] += F_vec[i * (Constants::DIM - 1) + 1] * _carObj->getCurrentCIRTwoTrackModel()[i];
+            Torque[0] -= F_vec[i * (Constants::DIM - 1) + 1] * _carObj->getCurrentCIRTwoTrackModel()[i];
         }
 
         // compute torque around Y-axis
 		for (int i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-            Torque[1] += F_vec[i * (Constants::DIM - 1) + 0] * _carObj->getCurrentCIRTwoTrackModel()[i];
+            Torque[1] -= F_vec[i * (Constants::DIM - 1) + 0] * _carObj->getCurrentCIRTwoTrackModel()[i];
         }
     }
 
@@ -154,6 +154,8 @@ public:
 			lagrangeForce[0] += externalForce[i*Constants::DIM];
 			lagrangeForce[1] += externalForce[i*Constants::DIM + 1];
 		}
+		Math::axpy<T>(Constants::VEC_DIM, 1, externalForce, 3,  _lagrangianForce, 2);
+		Math::axpy<T>(Constants::VEC_DIM, 1, externalForce+1, 3,  _lagrangianForce+1, 2);
 	}
 
 	/* 

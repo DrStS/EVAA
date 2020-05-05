@@ -174,8 +174,8 @@ public:
         myfile << 0 << ",";  // 29 vt4[z]
         myfile << lagVelVec[4 * (Constants::DIM - 1) + 1] << ",";  // 30 vt4[y]
         myfile << angVec[0] << ",";  // 31 qc[0] // here x
-        myfile << angVec[2] << ",";  // 32 qc[1] // here z
-        myfile << angVec[1] << ",";  // 33 qc[2] // here y
+        myfile << angVec[1] << ",";  // 32 qc[1] // here y
+        myfile << angVec[2] << ",";  // 33 qc[2] // here z
         myfile << 0 << ",";  // 34 qc[3]
         myfile << solVec[0] << ",";  // 35 pcc[x]
         myfile << solVec[2] << ",";  // 36 pcc[z]

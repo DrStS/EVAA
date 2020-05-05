@@ -141,8 +141,8 @@ public:
 		Math::scal<T>(Constants::DIM - 1, nrm, radiusVector, Constants::INCX);
 
 		// Compute the tangential direction of the velocity to compute angular velocity
-		tangentialVelocityDirection[0] = radiusVector[1];
-		tangentialVelocityDirection[1] = - radiusVector[0];
+		tangentialVelocityDirection[0] = - radiusVector[1];
+		tangentialVelocityDirection[1] =  radiusVector[0];
 
 		// Compute Angular velocity using w = v * sin(theta) / r = dot_product(v, tangential_unit_vector) / r 
 		carObj->_currentAngularVelocityLagrangian = Math::dot<T>(Constants::DIM - 1, tangentialVelocityDirection, Constants::INCX, carObj->getCurrentVelocityLagrangian(), Constants::INCX);
