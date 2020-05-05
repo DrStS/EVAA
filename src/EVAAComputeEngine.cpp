@@ -628,7 +628,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 		euler->ApplyProfileInitialCondition(car);
         solver.solve(sol);
 
-        solver.print_final_results(sol);
+        //solver.print_final_results(sol);
 
         Math::free<Constants::floatEVAA>(sol);
         delete car;
@@ -648,7 +648,7 @@ void EVAAComputeEngine::computeMBD(void) {
     MBDMethod<Constants::floatEVAA> solver;
 
     solver.solve(sol);
-    solver.print_final_result(sol);
+    //solver.print_final_result(sol);
     Math::free<Constants::floatEVAA>(sol);
 }
 
@@ -690,7 +690,7 @@ void EVAAComputeEngine::computeALE(void) {
 
     ale->solve(sol);
 
-    ale->print_final_results();
+    //ale->print_final_results();
 
 	delete TwoTrackModel_obj;
     delete car;

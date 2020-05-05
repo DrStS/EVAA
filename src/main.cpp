@@ -100,21 +100,39 @@ int main(int argc, char **argv) {
     timer1.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
 #endif
-	//for (auto i = 0; i<100; ++i){
-    timer1.start();
-    myComputeEngine->computeALE();
-    timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec()<< " ms to run the solver(computeALE).\n\n\n" << std::endl;
-    timer1.start();
-    myComputeEngine->computeMBD();
-	timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec()<< " ms to run the solver(computeMBD).\n\n\n" << std::endl;
-    timer1.start();
-    myComputeEngine->computeMKLTwoTrackModelBE();
-    timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
-	//}
+
+    const size_t numIterations = 1;
+
+    double timeMBD = 0.;
+    for (auto i = 0; i < numIterations; ++i) {
+        timer1.start();
+        myComputeEngine->computeMBD();
+        timer1.stop();
+        timeMBD += timer1.getDurationMilliSec();
+    }
+    std::cout << "It took " << timeMBD / numIterations << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
+
+    double time11DOF = 0.;
+    for (auto i = 0; i < numIterations; ++i) {
+        timer1.start();
+        myComputeEngine->computeMKLTwoTrackModelBE();
+        timer1.stop();
+        time11DOF += timer1.getDurationMilliSec();
+    }   
+    std::cout << "It took " << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
+    
+    double timeALE = 0.;
+    for (auto i = 0; i < numIterations; ++i) {
+        timer1.start();
+        myComputeEngine->computeALE();
+        timer1.stop();
+        timeALE += timer1.getDurationMilliSec();
+    }
+    std::cout << "It took " << timeALE / numIterations << " ms to run the solver(computeALE).\n\n\n" << std::endl;
+
+
     delete myComputeEngine;
+
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
 #endif  // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON
