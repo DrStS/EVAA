@@ -18,8 +18,8 @@ namespace EVAA {
 template <class T>
 class MBDMethod {
 private:
-    // Simulation Parameters
 
+    // Simulation Parameters
     T h;
     size_t num_iter;
     int max_iter;
@@ -1544,9 +1544,6 @@ public:
         Math::GetTilda<T>(r_fr, r_fr_tilda);
         Math::GetTilda<T>(r_rl, r_rl_tilda);
         Math::GetTilda<T>(r_rr, r_rr_tilda);
-
-
-
 
         /*
          * Preparing x_vector in the form of
