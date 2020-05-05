@@ -35,19 +35,16 @@ void printMKLInfo() {
 #endif
 }
 
-void computeDenseSymLUFactorisation(const int nElements, std::vector<double> &A,
-                                    std::vector<int> &pivots) {
+void computeDenseSymLUFactorisation(const int nElements, std::vector<double> &A, std::vector<int> &pivots) {
 #ifdef USE_INTEL_MKL
     LAPACKE_dgetrf(LAPACK_COL_MAJOR, nElements, nElements, A.data(), nElements, pivots.data());
 #endif
 }
 
-void computeDenseSymSolution(const int nElements, std::vector<double> &A, std::vector<int> &pivots,
-                             std::vector<double> &rhs) {
+void computeDenseSymSolution(const int nElements, std::vector<double> &A, std::vector<int> &pivots, std::vector<double> &rhs) {
 #ifdef USE_INTEL_MKL
     mkl_set_num_threads(EVAA::AuxiliaryParameters::denseVectorMatrixThreads);
-    LAPACKE_dgetrs(LAPACK_COL_MAJOR, 'N', nElements, 1, A.data(), nElements, pivots.data(),
-                   rhs.data(), nElements);
+    LAPACKE_dgetrs(LAPACK_COL_MAJOR, 'N', nElements, 1, A.data(), nElements, pivots.data(), rhs.data(), nElements);
 #endif
 }
 

@@ -62,8 +62,7 @@ public:
     void resetModelSelection();
     void addModelFromFile(const QUrl &modelPath);
 
-    void translateModel(CommandModelTranslate::TranslateParams_t &translateData,
-                        const bool inTransition);
+    void translateModel(CommandModelTranslate::TranslateParams_t &translateData, const bool inTransition);
 
     // Camera related functions
     void wheelEvent(QWheelEvent *e) override;

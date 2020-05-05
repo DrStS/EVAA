@@ -42,10 +42,8 @@ class EVAAMainWindow : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool showFileDialog MEMBER m_showFileDialog NOTIFY showFileDialogChanged)
     Q_PROPERTY(bool isModelSelected READ getIsModelSelected NOTIFY isModelSelectedChanged)
-    Q_PROPERTY(
-        double modelPositionX READ getSelectedModelPositionX NOTIFY selectedModelPositionXChanged)
-    Q_PROPERTY(
-        double modelPositionY READ getSelectedModelPositionY NOTIFY selectedModelPositionYChanged)
+    Q_PROPERTY(double modelPositionX READ getSelectedModelPositionX NOTIFY selectedModelPositionXChanged)
+    Q_PROPERTY(double modelPositionY READ getSelectedModelPositionY NOTIFY selectedModelPositionYChanged)
 
 public:
     /**

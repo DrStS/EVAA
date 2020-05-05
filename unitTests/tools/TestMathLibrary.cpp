@@ -54,7 +54,7 @@ TEST_F(TestMathLibrary, solverLU3x3a){
 	// LU Decomposition
 	EVAA::Math::computeDenseSymLUFactorisation(3, myK3x3, pivot);
 	// Solve system
-	EVAA::Math::computeDenseSymSolution(3, myK3x3, pivot, myRhs3);
+    EVAA::Math::computeDenseSymSolution(3, myK3x3, pivot, myRhs3);
 
 	std::vector<double> resultReference = { 2.,5. / 2.,1. / 3. };
 	double absError = fabs(resultReference[0] - myRhs3[0]) + fabs(resultReference[1] - myRhs3[1]) + fabs(resultReference[2] - myRhs3[2]);
@@ -82,9 +82,9 @@ TEST_F(TestMathLibrary, solverLU3x3b) {
 	myRhs3[2] = 2.0;
 	std::vector<int> pivot(3);
 	// LU Decomposition
-	EVAA::Math::computeDenseSymLUFactorisation(3, myK3x3, pivot);
+    EVAA::Math::computeDenseSymLUFactorisation(3, myK3x3, pivot);
 	// Solve system
-	EVAA::Math::computeDenseSymSolution(3, myK3x3, pivot, myRhs3);
+    EVAA::Math::computeDenseSymSolution(3, myK3x3, pivot, myRhs3);
 
 	std::vector<double> resultReference = { 2.,5. / 2.,1. / 3. };
 	double absError = fabs(2.0*resultReference[0] - myRhs3[0]) + fabs(2.0*resultReference[1] - myRhs3[1]) + fabs(2.0*resultReference[2] - myRhs3[2]);

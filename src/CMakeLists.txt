@@ -22,14 +22,18 @@ IF (${EVAA_COMMANDLINE})
    LIST(REMOVE_ITEM EVAA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/EVAAMainWindow.cpp)
 ENDIF()
 add_library(EVAALibStatic STATIC ${EVAA_SOURCES})
-IF (CMAKE_SYSTEM_NAME MATCHES "Windows") 
-set_property(TARGET EVAALibStatic PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+#MultiThreaded Compile with -MT 
+#MultiThreadedDLL Compile with -MD
+set_property(TARGET EVAALibStatic PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
 ENDIF()
 #------------------------------------------------------------------------------------#
+#MultiThreaded Compile with -MT 
+#MultiThreadedDLL Compile with -MD
 IF (CMAKE_SYSTEM_NAME MATCHES "Windows") 
 # WIN32
    add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp resources.qrc winResources.rc)
-   set_property(TARGET EVAA PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+   set_property(TARGET EVAA PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
 ENDIF()
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
    add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp  resources.qrc)
@@ -39,7 +43,8 @@ IF (${USE_QT5})
    qt5_use_modules(EVAALibStatic Core Gui Widgets Qml Quick QuickControls2)
 ENDIF()
 IF (${USE_HDF5})
-target_link_libraries(EVAA EVAALibStatic ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES_DEBUG} optimized ${HDF5_LIBRARIES})
+message(status "HDF5 debug ${HDFS_LIBRARIES_DEBUG}-----${HDF5_LIBRARIES}")
+target_link_libraries(EVAA EVAALibStatic ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES_DEBUG} optimized ${HDF5_LIBRARIES} )
 ELSE()
 target_link_libraries(EVAA EVAALibStatic ${EVAA_3rd_LIBS})
 ENDIF()

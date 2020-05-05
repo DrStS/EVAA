@@ -36,7 +36,7 @@ l_lat_rl=2*0.84;
 l_lat_rr=2*0.84;
 mass_Body=1936;
 I_body_xx=6400;
-I_body_yy=5000;
+I_body_yy=4800;
 I_body_zz=4800;
 mass_wheel_fl=145/2;
 mass_tyre_fl=30;
@@ -102,7 +102,7 @@ visualize = false;
 % force parameters
 g = 0;               % there is no gravity in outer space! 
 
-FC = [0; 4e3-mass*g; 0];    % external forces in y_direction
+FC = [0; -mass*g; 0];    % external forces in y_direction
 
 FT1 = [0; -mass_tyre(1)*g; 0];
 FT2 = [0; -mass_tyre(2)*g; 0];
@@ -115,10 +115,10 @@ FW3 = [0; -mass_wheel(3)*g; 0];
 FW4 = [0; -mass_wheel(4)*g; 0];
 
 % simulation specifications 
-num_iter = 1000;     % LENGTH OF THE SIMULATION
+num_iter = 10000;     % LENGTH OF THE SIMULATION
 delta_t = 1e-3;       % PLAY AROUND
 tol = 1e-7;           % !!!! PLAY AROUND !!!!
-max_iter = 1000000;     % for Broyden´
+max_iter = 1000000;   % for Broyden´
  
 % road forces in y direction (as functions of time)
 %fancy road forces (do not work right now)
@@ -129,10 +129,10 @@ d = -0.5;
 %FR4 = @(t, y, pcc, vt, vb, F) flying_car_road_forces(y, vt, mass_tyre(4), F, d, delta_t);
 
 %the car is flying away 
-FR1 = @(t, y, pcc, vt, vb, F) F;        
-FR2 = @(t, y, pcc, vt, vb, F) F;
-FR3 = @(t, y, pcc, vt, vb, F) F;
-FR4 = @(t, y, pcc, vt, vb, F) F;
+%FR1 = @(t, y, pcc, vt, vb, F) F;        
+%FR2 = @(t, y, pcc, vt, vb, F) F;
+%FR3 = @(t, y, pcc, vt, vb, F) F;
+%FR4 = @(t, y, pcc, vt, vb, F) F;
 
 %fix the car on the ground (initial velocities very small) -> MOST SIMULATIONS WITH THIS 
 % FR1 = @(t, y, pcc, vt, vb, F) zeros(3,1);
@@ -140,10 +140,10 @@ FR4 = @(t, y, pcc, vt, vb, F) F;
 % FR3 = @(t, y, pcc, vt, vb, F) zeros(3,1);
 % FR4 = @(t, y, pcc, vt, vb, F) zeros(3,1);
 
-% FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
-% FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
-% FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
-% FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
+FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
+FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
+FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
+FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
 
 %PLAY AROUND; expect RK4 and BCN to work fine
 % Explicit solvers 

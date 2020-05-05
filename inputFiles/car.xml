@@ -90,7 +90,7 @@
         <YZ>0</YZ>
         <ZX>0</ZX>
         <ZY>0</ZY>
-        <ZZ>5000</ZZ>
+        <ZZ>4800</ZZ>
       </InertiaXML>
     </TwoTrackModelXML>
   </VehicleXML>
@@ -98,10 +98,10 @@
   <InitialConditionsXML>
     <SpringElongationXML>
       <BodyXML>
-        <ReerRight>0.20</ReerRight>
-        <ReerLeft>0.20</ReerLeft>
-        <FrontLeft>0.20</FrontLeft>
-        <FrontRight>0.20</FrontRight>
+        <ReerRight>0.2</ReerRight>
+        <ReerLeft>0.2</ReerLeft>
+        <FrontLeft>0.2</FrontLeft>
+        <FrontRight>0.2</FrontRight>
       </BodyXML>
       <TyreXML>
         <ReerRight>0.20</ReerRight>
@@ -168,8 +168,8 @@
     </VelocitiesXML>
     <OrientationXML>
 	    <x>0</x>
-		<y>0</y>
-		<z>0</z>
+		  <y>0</y>
+		  <z>0</z>
 	    <w>1</w>
     </OrientationXML>
 	<PositionXML>
@@ -242,7 +242,9 @@
       <SolutionDimensionXML>61</SolutionDimensionXML>
     </MultyBodyDynamicsXML>
     <LinearALEXML>
-      <DOFXML>11</DOFXML>
+      <Method>IMPLICIT_EULER</Method>
+	  <Tolerance>1e-7</Tolerance>
+	  <MaximumNumNewtonIterations>10</MaximumNumNewtonIterations>
     </LinearALEXML>
   </SimulationParametersXML>
 </EVAA_settings>

@@ -44,8 +44,8 @@ class EVAAComputeEngine {
 public:
     /**
      * \brief Reads parameters from XML files.
-     * \param[in] file name of xml file to call singelton constructor of metadatabase
-     * \author Stefan Sicklinger
+     * \param[in] file name of xml file to call singelton constructor of
+     * metadatabase \author Stefan Sicklinger
      */
     EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName);
 

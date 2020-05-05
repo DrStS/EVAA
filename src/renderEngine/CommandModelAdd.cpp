@@ -27,12 +27,7 @@
 
 namespace EVAA {
 
-CommandModelAdd::CommandModelAdd(QVTKFramebufferObjectRenderer *vtkFboRenderer,
-                                 std::shared_ptr<ProcessingEngine> processingEngine,
-                                 QUrl modelPath) :
-    m_processingEngine{processingEngine}, m_modelPath{modelPath} {
-    m_vtkFboRenderer = vtkFboRenderer;
-}
+CommandModelAdd::CommandModelAdd(QVTKFramebufferObjectRenderer *vtkFboRenderer, std::shared_ptr<ProcessingEngine> processingEngine, QUrl modelPath) : m_processingEngine{processingEngine}, m_modelPath{modelPath} { m_vtkFboRenderer = vtkFboRenderer; }
 
 void CommandModelAdd::run() {
     qDebug() << "CommandModelAdd::run()";

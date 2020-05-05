@@ -65,25 +65,19 @@ public:
      * \author Stefan Sicklinger
      */
 
-    auto getDurationMilliSec(void) {
-        return std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count();
-    }
+    auto getDurationMilliSec(void) { return std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count(); }
 
     /**
      * \brief get duration in mico sec
      * \author Stefan Sicklinger
      */
-    auto getDurationMicroSec(void) {
-        return std::chrono::duration_cast<std::chrono::microseconds>(stopTime - startTime).count();
-    }
+    auto getDurationMicroSec(void) { return std::chrono::duration_cast<std::chrono::microseconds>(stopTime - startTime).count(); }
 
     /**
      * \brief get duration in sec
      * \author Stefan Sicklinger
      */
-    auto getDurationSec(void) {
-        return std::chrono::duration_cast<std::chrono::seconds>(stopTime - startTime).count();
-    }
+    auto getDurationSec(void) { return std::chrono::duration_cast<std::chrono::seconds>(stopTime - startTime).count(); }
 
 private:
     std::chrono::high_resolution_clock::time_point startTime;
