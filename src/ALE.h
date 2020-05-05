@@ -82,7 +82,7 @@ public:
          * Idea!! What if we do it at the end, since the displacement is a vector and by triangle
          * rule sum of all should add up force is computed using on
          */
-        _carObj->ApplyLagrangeChange(); // Rethink how it can be combined with 11 dof computation
+        //_carObj->ApplyLagrangeChange(); // Rethink how it can be combined with 11 dof computation
 
         // update forces and _lagrangianTorque
         _lagrangianForceVector[0] = _newLagrangianForceVector[0];

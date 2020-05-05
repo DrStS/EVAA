@@ -40,11 +40,12 @@ lower_spring_length = [parameters(14); parameters(15); parameters(16); parameter
 angles = aleSolution(:,31:33);
 
 % calculate quaternion out of angle representation
-q = calculateQuaternions(angles, numIterations);
-aleSolution(:,31:34) = q;
+%q = calculateQuaternions(angles, numIterations);
+%aleSolution(:,31:34) = q;
 
 % rearrange vectors and tyre position
 adaptedSolution = calculateCorners(aleSolution, r1, r2, r3, r4);
+
 
 % calculate velocity norms
 vel_norms = zeros(1, numIterations);
