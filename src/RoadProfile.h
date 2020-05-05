@@ -135,8 +135,8 @@ public:
 
 		T nrm;
 		// Compute Radius Vector based on the position of origin of euler frame
-		radiusVector[0] = carObj->currentPositionLagrangian[0] - centerOfCircle[0];
-		radiusVector[1] = carObj->currentPositionLagrangian[1] - centerOfCircle[1];
+		radiusVector[0] = carObj->_currentPositionLagrangian[0] - centerOfCircle[0];
+		radiusVector[1] = carObj->_currentPositionLagrangian[1] - centerOfCircle[1];
 		nrm = 1.0/Math::nrm2<T>(Constants::DIM - 1, radiusVector, Constants::INCX);
 		Math::scal<T>(Constants::DIM - 1, nrm, radiusVector, Constants::INCX);
 
@@ -145,10 +145,10 @@ public:
 		tangentialVelocityDirection[1] = - radiusVector[0];
 
 		// Compute Angular velocity using w = v * sin(theta) / r = dot_product(v, tangential_unit_vector) / r 
-		carObj->currentAngularVelocityLagrangian = Math::dot<T>(Constants::DIM - 1, tangentialVelocityDirection, Constants::INCX, carObj->currentVelocityLagrangian, Constants::INCX);
-		carObj->currentAngularVelocityLagrangian = carObj->currentAngularVelocityLagrangian * nrm;
+		carObj->_currentAngularVelocityLagrangian = Math::dot<T>(Constants::DIM - 1, tangentialVelocityDirection, Constants::INCX, carObj->_currentVelocityLagrangian, Constants::INCX);
+		carObj->_currentAngularVelocityLagrangian = carObj->_currentAngularVelocityLagrangian * nrm;
 		// Copy this to initial vector too
-		carObj->initialAngularVelocityGlobal[2] = carObj->currentAngularVelocityLagrangian;
+		carObj->_initialAngularVelocityGlobal[2] = carObj->_currentAngularVelocityLagrangian;
 		
 	}
 
@@ -187,7 +187,7 @@ public:
 		
 		carObj->ComputeDisplacementToPointLagrangian(centerOfCircle, radiusVector);
 		// compute centrifugal force on each component
-		ComputeCentrifugalForceLagrangian(radiusVector, carObj->currentVelocityLagrangian, carObj->massComponents, profileInducedForce);
+		ComputeCentrifugalForceLagrangian(radiusVector, carObj->_currentVelocityLagrangian, carObj->_massComponents, profileInducedForce);
 
 		// Compute the reaction on tyre due to centrifugal force
 		reactionOnTyre[0] = -profileInducedForce[0];
@@ -247,8 +247,8 @@ public:
 	virtual void GetProfileForceEulerian(Car<T>* carObj, T* profileInducedForce) {
 		Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
 		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
-			profileInducedForce[Constants::TYRE_INDEX_EULER[i]] = carObj->kVec[2 * i + 1] * (carObj->currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] - carObj->currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1]) 
-				+ carObj->dVec[2 * i + 1] * (carObj->currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] - carObj->currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1]);
+			profileInducedForce[Constants::TYRE_INDEX_EULER[i]] = carObj->_kVec[2 * i + 1] * (carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] - carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1]) 
+				+ carObj->_dVec[2 * i + 1] * (carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] - carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1]);
 		}
 	}
 
@@ -256,12 +256,12 @@ public:
 		
 		// The car has to start with fixed condition Velocity = 0; displacement = 0;
 		for (auto i=0; i<Constants::NUM_LEGS; ++i){
-			carObj->currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] = 0;
+			carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] = 0;
 		}
 		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
-			carObj->currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] = 0;
+			carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] = 0;
 		}
-		carObj->updateLengthsTwoTrackModel();
+		carObj->UpdateLengthsTwoTrackModel();
 	}
 
 };

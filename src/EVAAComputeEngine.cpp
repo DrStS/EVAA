@@ -658,25 +658,6 @@ void EVAAComputeEngine::computeALE(void) {
 	Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 
     auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
-    /*switch (db.getRoadConditions()) {
-    case BoundaryConditionRoad::CIRCULAR:
-        roadProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
-        break;
-    case BoundaryConditionRoad::NONFIXED:
-        roadProfile = new Nonfixed<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
-        break;
-    case BoundaryConditionRoad::FIXED:
-        roadProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[1]);
-        roadProfile->set_fixed_index(car->tyre_index_set);
-        break;
-    case BoundaryConditionRoad::ARBITRARY:
-        // TODO 
-        return;
-        break;
-    default:
-        throw std::logic_error("MetaDataBase not read? It should throw on invalid file content.");
-        break;
-    }*/
 	lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
 	eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
 	lagrangeProfile->ApplyProfileInitialCondition(car);
