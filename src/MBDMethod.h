@@ -1523,7 +1523,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_fl, 1, cf_local_FR_fl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_fl, 1, cf_local_FR_fl, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_fl, 1, cf_local_FR_fl, 1);
-        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
+//        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_fl, 1, cf_local_FR_fl, 1);
 
         // local_FR2 = lower_force2 + lower_dampf2 + local_FT2 + local_FR2 + lower_rot_force2; ...
@@ -1531,7 +1531,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_fr, 1, cf_local_FR_fr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_fr, 1, cf_local_FR_fr, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_fr, 1, cf_local_FR_fr, 1);
-        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
+//        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_fr, 1, cf_local_FR_fr, 1);
 
         // local_FR3 = lower_force3 + lower_dampf3 + local_FT3 + local_FR3 + lower_rot_force3; ...
@@ -1539,7 +1539,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_rl, 1, cf_local_FR_rl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_rl, 1, cf_local_FR_rl, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_rl, 1, cf_local_FR_rl, 1);
-        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
+//        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_rl, 1, cf_local_FR_rl, 1);
 
         // local_FR4 = lower_force4 + lower_dampf4 + local_FT4 + local_FR4 + lower_rot_force4];
@@ -1547,7 +1547,7 @@ lower_S4 = lower_rotational_stiffness(4) * lower_angle4 * lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_rr, 1, cf_local_FR_rr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_rr, 1, cf_local_FR_rr, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_rr, 1, cf_local_FR_rr, 1);
-        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
+//        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_rr, 1, cf_local_FR_rr, 1);
     }
 
@@ -1843,7 +1843,7 @@ public:
         pcc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
         Math::copy<T>(Constants::DIM, pcc, 1, pcc_, 1);
         i++;
-        std::cout << "zoodle" << std::endl;
+       // std::cout << "zoodle" << std::endl;
         // pw1
         pw_fl_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
         i++;

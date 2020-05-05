@@ -236,8 +236,8 @@
       </GravityXML>
     </GeneralSettingsXML>
     <MultyBodyDynamicsXML>
-      <SolverXML>RK4</SolverXML>
-      <MaximalIterationNumberXML>10000</MaximalIterationNumberXML>
+      <SolverXML>Broyden_Euler</SolverXML>
+      <MaximalIterationNumberXML>100</MaximalIterationNumberXML>
       <ToleranceXML>1e-7</ToleranceXML>
       <SolutionDimensionXML>61</SolutionDimensionXML>
     </MultyBodyDynamicsXML>

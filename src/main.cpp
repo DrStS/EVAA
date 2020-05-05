@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
               << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
 #endif
-
+	//for (auto i = 0; i<100; ++i){
     timer1.start();
     myComputeEngine->computeALE();
     timer1.stop();
@@ -113,13 +113,11 @@ int main(int argc, char **argv) {
     myComputeEngine->computeMBD();
 	timer1.stop();
     std::cout << "It took " << timer1.getDurationMilliSec()<< " ms to run the solver(computeMBD).\n\n\n" << std::endl;
-
-    std::cout << "Before TwoTrackModelBE";
     timer1.start();
     myComputeEngine->computeMKLTwoTrackModelBE();
     timer1.stop();
     std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
-
+	//}
     delete myComputeEngine;
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
 #endif  // EVAA_COMMANDLINE_ON
