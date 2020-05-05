@@ -82,7 +82,7 @@ public:
          * Idea!! What if we do it at the end, since the displacement is a vector and by triangle
          * rule sum of all should add up force is computed using on
          */
-        //_carObj->ApplyLagrangeChange(); // TODO (maybe just delete?!) Rethink how it can be combined with 11 dof computation
+        _carObj->ApplyLagrangeChange(); // TODO Rethink how it can be combined with 11 dof computation
 
         // update forces and _lagrangianTorque
         _lagrangianForceVector[0] = _newLagrangianForceVector[0];
@@ -146,8 +146,8 @@ public:
 
 #ifdef WRITECSV
             _carObj->CombineResults();            
-            Math::copy(Constants::VEC_DIM * Constants::DIM, _carObj->_PositionVector, 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
-            Math::copy(Constants::DIM, _carObj->_angleCG, 1, angleVecCSV + iter * Constants::DIM, 1);
+            Math::copy(Constants::VEC_DIM * Constants::DIM, _carObj->getPositionVector(), 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
+            Math::copy(Constants::DIM, _carObj->getAngleCG(), 1, angleVecCSV + iter * Constants::DIM, 1);
             Math::copy(Constants::DIM, _carObj->_currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
 #endif // WRITECSV
 
@@ -205,7 +205,7 @@ public:
      * Prints all positions and angles in the car object
      */
     void PrintFinalResults() {
-        T* sln = _carObj->getPositionVector();
+        const T* sln = _carObj->getPositionVector();
         std::cout << "ALE: orientation angles=\n\t[" << _carObj->getAngleCG()[0] << "\n\t " << _carObj->getAngleCG()[1] << "\n\t " << _carObj->getAngleCG()[2] << "]" << std::endl;
         std::cout << "ALE: car body position pc=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
         std::cout << "ALE: rear-right wheel position pw1=\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;

@@ -140,8 +140,8 @@ private:
     void Convert11DOFToGlobal(T* vector, T* globalVector) {
         globalVector[2] = vector[0];
 #pragma loop(ivdep)
-        for (size_t i = 0; i < 2 * Constants::NUM_LEGS; ++i) {
-            globalVector[Constants::DIM * i + 2] = vector[Constants::DIM + i];
+        for (size_t i = 1; i < Constants::VEC_DIM; ++i) {
+            globalVector[Constants::DIM * i + 2] = vector[(Constants::DIM - 1) + i];
         }
     }
 
