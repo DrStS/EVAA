@@ -8,7 +8,7 @@
 #include "MathLibrary.h"
 #include "MetaDatabase.h"
 
-#define Damping 1  // TODO remove
+#define DAMPING 1  // TODO remove
 
 namespace EVAA {
 
@@ -570,7 +570,7 @@ public:
 
 #ifdef INTERPOLATION
         db.getLookupStiffness().getInterpolation(_currentSpringsLengths, _kVec);
-#ifdef Damping
+#ifdef DAMPING
         db.getLookupDamping().getInterpolation(_currentSpringsLengths, _dVec);
 #endif
 #else

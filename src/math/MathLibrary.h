@@ -995,11 +995,11 @@ public:
         *count = 0;
         T delta_norm = 1, delta_norm2 = 0;
         lapack_int status;
-        obj->calcResidual(force);
+        obj->CalculateResidual(force);
 
         do {
             *count= *count + 1;
-            obj->constructJacobian();
+            obj->ConstructJacobian();
 
             // get J=LL^T
             status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
@@ -1011,9 +1011,9 @@ public:
             delta_norm = Math::nrm2<T>(Constants::DOF, res, 1);
 
             // update all the matrices
-            obj->updateSystem();
+            obj->UpdateSystem();
             // calculate the newton function
-            obj->calcResidual(force);
+            obj->CalculateResidual(force);
             // copy the new residual to a temp to check if newton has converged
             // without losing residual
             Math::copy<T>(Constants::DOF, res, 1, temp, 1);

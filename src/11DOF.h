@@ -13,7 +13,7 @@
 #include "MathLibrary.h"
 #include "LoadModule.h"
 #include "MetaDatabase.h"
-#define Damping 1 // TODO remove
+#define DAMPING 1 // TODO remove
 
 namespace EVAA {
 
@@ -53,19 +53,19 @@ protected:
     T *_A, *_B, *_C; /* pointers to matrices used for the backward euler */
     T *_M_h2, *_K, *_D;
     
-    /** used for the constructStiffnesMatrix and constructDampingMatrix. */
+    /** used for the constructStiffnesMatrix and ConstructDampingMatrix. */
     T* _matrixTmp;
 	T *_kVec;
 	T *_dVec;
 
-    /** used for the constructStiffnesMatrix and constructDampingMatrix as well as for the BE. */
+    /** used for the constructStiffnesMatrix and ConstructDampingMatrix as well as for the BE. */
     T* _temp;
 
 #ifdef INTERPOLATION
 	T *_J, *_dKdxx;
-#ifdef Damping
+#ifdef DAMPING
 	T *_dDdxx, *_dddl;
-#endif // Damping
+#endif // DAMPING
     T* _residual;
     T _residualNorm;
 	T *_dkdl; 
@@ -83,7 +83,7 @@ public:
      * \oaram[out] solution of the following timestep
      * [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
-    virtual void update_step(T time, T* solution) = 0;
+    virtual void UpdateStep(T time, T* solution) = 0;
 
     /**
      * Destructor
@@ -105,14 +105,14 @@ private:
      * \brief construct _A Matrix
      *
      * this has to be called every time step for interpolation
-     * _A = 1/h^2 * M + 1/h * _D + _K
+     * A = 1/h^2 * M + 1/h * D + K
      */
-    void constructAMatrix() {
-        // _A = M/h^2 (also acts as initialization of _A)
+    void ConstructAMatrix() {
+        // A = M/h^2 (also acts as initialization of A)
         Math::copy<T>(Constants::DOFDOF, _M_h2, 1, _A, 1);
-        // _A += 1/h * _D => _A = 1/h^2 * M + 1/h * _D
+        // A += 1/h * _D => A = 1/h^2 * M + 1/h * D
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _D, 1, _A, 1);
-        // _A += _K => _A = 1/h^2 * M + 1/h * _D + _K
+        // A += K => A = 1/h^2 * M + 1/h * D + K
         Math::axpy<T>(Constants::DOFDOF, 1, _K, 1, _A, 1);
     }
     /**
@@ -121,7 +121,7 @@ private:
      * this has to be called every time step for interpolation
      * _B = 2/(h*h) * M + 1/h * _D
      */
-    void constructBMatrix() {
+    void ConstructBMatrix() {
         Math::scal<T>(Constants::DOFDOF, 0, _B, 1);
         Math::axpy<T>(Constants::DOFDOF, 2, _M_h2, 1, _B, 1);
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _D, 1, _B, 1);
@@ -132,7 +132,7 @@ private:
      * this has to be called only once
      * _C = -1/h^2 M
      */
-    void constructCMatrix() {
+    void ConstructCMatrix() {
         Math::copy<T>(Constants::DOFDOF, _M_h2, 1, _C, 1);
         Math::scal<T>(Constants::DOFDOF, -1, _C, 1);
     }
@@ -144,7 +144,7 @@ protected:
      * this is only done once. Therefore, there is no need to store Mass_vec or
      * I_CG
      */
-    void constructMassMatrix() {
+    void ConstructMassMatrix() {
         // get values from MetaDatabase
         const T* Mass_vec = _car->getMassComponents();
         // construct M
@@ -161,7 +161,7 @@ protected:
 	/**
 	* \breif Compute velocity of the car based on the displacement vectors
 	* 
-	* called inside update_step function
+	* called inside UpdateStep function
 	*/
 	void UpdateVelocity() {
 		Math::copy<T>(Constants::DOF, _u_n_p_1, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
@@ -179,7 +179,7 @@ protected:
      * _u_n_p_1 = _u_n
      * tempVector is used for velocity
      */
-    void initPosVectors() {
+    void InitPosVectors() {
         // _u_n
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, _u_n, 1);
         // _u_n_m_1 = _u_n - _h * velocity
@@ -209,16 +209,16 @@ public:
         _matrixTmp = Math::calloc<T>(Constants::DOFDOF);
 #ifdef INTERPOLATION
 		if (_loadModuleObj->GetEulerProfileName() == "Fixed") {
-			_JacobianAdjustment = &TwoTrackModelBE<T>::constructFixedJacobian;
+			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructFixedJacobian;
 		}
 		else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed") {
-			_JacobianAdjustment = &TwoTrackModelBE<T>::constructNonFixedJacobian;
+			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructNonFixedJacobian;
 		}
         _J = Math::calloc<T>(Constants::DOFDOF);
         _dKdxx = Math::calloc<T>(Constants::DOFDOF);
 		_dkdl = Math::malloc<T>(2 * Constants::NUM_LEGS);
         
-#ifdef Damping
+#ifdef DAMPING
 		_dddl = Math::calloc<T>(2 * Constants::NUM_LEGS);
 		_dDdxx = Math::calloc<T>(Constants::DOFDOF);
 #endif
@@ -230,20 +230,20 @@ public:
         _factor_h = 1 / _h;
 
         // if interpolation is used we need all the lengths to interpolate
-        // damping and stiffness if not we have to define them populate _kVec
+        // damping and stiffness if not we have to define them populate kVec
         _kVec = _car->getkVec();
         // populate _dVec
         _dVec = _car->getdVec();
 
-        initPosVectors();
-        constructMassMatrix();
-        constructStiffnessMatrix();
-#ifdef Damping
-        constructDampingMatrix();
+        InitPosVectors();
+        ConstructMassMatrix();
+        ConstructStiffnessMatrix();
+#ifdef DAMPING
+        ConstructDampingMatrix();
 #endif
-		constructAMatrix();
-        constructBMatrix();
-        constructCMatrix();
+		ConstructAMatrix();
+        ConstructBMatrix();
+        ConstructCMatrix();
     }
 
     /**
@@ -265,7 +265,7 @@ public:
         Math::free<T>(_J);
 		Math::free<T>(_dkdl);
 		Math::free<T>(_dKdxx);
-#ifdef Damping
+#ifdef DAMPING
 		
         Math::free<T>(_dddl);
 		Math::free<T>(_dDdxx);
@@ -278,7 +278,7 @@ public:
      * Performs one timestep of the 11DOF solver
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
-    virtual void update_step(T time, T* solution) {
+    virtual void UpdateStep(T time, T* solution) {
         // Math::scal<T>(Constants::DOF, -1, _u_n_m_1, Constants::INCX);
 		// Get the force
 		_currentTime = time;
@@ -286,10 +286,10 @@ public:
 		Math::Solvers<T, TwoTrackModelBE<T> >::LinearBackwardEuler(_A, _B, _C, _u_n, _u_n_m_1, _twoTrackModelForce, _u_n_p_1, Constants::DOF);
         
 #ifdef INTERPOLATION
-		updateSystem();
+		UpdateSystem();
 		Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
 #else
-		constructAMatrix();
+		ConstructAMatrix();
 #endif
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
         
@@ -312,7 +312,7 @@ public:
      * _residualNorm = norm(_residual)
      * \param pointer to forces vector size of DOF
      */
-    void calcResidual(T* force) {
+    void CalculateResidual(T* force) {
         // _residual = _A*x[n+1]
         Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1, _A, Constants::DOF, _u_n_p_1, 1, 0, _residual, 1);
         // _residual -= _B*x[n]
@@ -329,27 +329,27 @@ public:
      * \brief construct Jacobian for non fixed case
      *
      * this has to be called every newton iteraton
-     * _J = _M_h2 + _D / _h + _K + dKdx*x[n+1] + 1/h_ * dDdx ( x[n+1] - x[n] )
+     * J = M_h2 + D / h + K + dKdx*x[n+1] + 1/h * dDdx ( x[n+1] - x[n] )
      */
-    void constructJacobian() {
+    void ConstructJacobian() {
         // first update the derivative
         auto& db = MetaDatabase<T>::getDatabase();
         db.getLookupStiffness().getDerivative(_car->getCurrentSpringsLengths(), _dkdl);
         // construct the derivative (tensor) times a pos vector
-        constructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
-        // _J = _A =  _M_h2 + _D / _h + _K
+        ConstructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
+        // J = A = M_h2 + D / h + K
         Math::copy<T>(Constants::DOFDOF, _A, 1, _J, 1);
         // _J += dKdx * x[n+1]
         Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
 		(this->*_JacobianAdjustment)();
-#ifdef Damping
+#ifdef DAMPING
                 db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
 		// temp = x[n+1]
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, _temp, 1);
         // temp += -x[n]
         Math::axpy<T>(Constants::DOF, -1, _u_n, 1, _temp, 1);
         // calc _dDdxx with (x[n+1] - x[n])
-        constructLookupDerivativeX(_dddl, _temp, _dDdxx);
+        ConstructLookupDerivativeX(_dddl, _temp, _dDdxx);
         // _J += 1/_h * _dDdxx
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _dDdxx, 1, _J, 1);
 #endif
@@ -357,12 +357,12 @@ public:
     /**
      * \brief construct Jacobian for fixed to road
      *
-     * add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h _D
-     * - _K + 1/h dDdx * x[n]] therefore _J = _M_h2 for the tyre positions
+     * add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h D - K + 1/h dDdx * x[n]] 
+     * therefore J = M_h2 for the tyre positions
      */
-    void constructFixedJacobian() {
+    void ConstructFixedJacobian() {
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
-            setJacobianTyreLineToFixed(i);
+            SetJacobianTyreLineToFixed(i);
         }
     }
 
@@ -371,7 +371,7 @@ public:
      *
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
-    void setJacobianTyreLineToFixed(int tyreNumber) {
+    void SetJacobianTyreLineToFixed(int tyreNumber) {
         Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1);
     }
 
@@ -380,7 +380,7 @@ public:
      *
      * _J = 1/h (_D + dD/dx (x[n+1]-x[n]) for the tyre positions
      */
-    void constructTransitionJacobian() {
+    void ConstructTransitionJacobian() {
         // _matrixTmp = _D
         Math::copy(Constants::DOFDOF, _D, 1, _matrixTmp, 1);
         // Jacobian has already been called -> _dDdxx wit (x[n+1]-x[n]) can be directly accessed
@@ -389,7 +389,7 @@ public:
         // _matrixTmp /= h
         Math::scal(Constants::DOFDOF, fact_h, _matrixTmp, 1);
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
-            setJacobianTyreLineToTransition(i, M_temp);
+            SetJacobianTyreLineToTransition(i, M_temp);
         }
     }
 
@@ -398,7 +398,7 @@ public:
      *
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
-    void setJacobianTyreLineToTransition(int tyreNumber) {
+    void SetJacobianTyreLineToTransition(int tyreNumber) {
         // _matrixTmp = _D
         Math::copy(Constants::DOFDOF, _D, 1, _matrixTmp, 1);
         // Jacobian has already been called -> _dDdxx wit (x[n+1]-x[n]) can be directly accessed
@@ -407,7 +407,7 @@ public:
         // _matrixTmp /= h
         Math::scal(Constants::DOFDOF, fact_h, _matrixTmp, 1);
         // write line into Jacobien
-		setJacobianTyreLineToTransition(tyreNumber, _matrixTmp);
+		SetJacobianTyreLineToTransition(tyreNumber, _matrixTmp);
     }
     /**
      * \brief set a line in the jacobian according to a tyre to the transition versino
@@ -415,7 +415,7 @@ public:
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      * \param[in] JNew precalculated Jacobian
      */
-    void setJacobianTyreLineToTransition(int tyreNumber, T* JNew) {
+    void SetJacobianTyreLineToTransition(int tyreNumber, T* JNew) {
         Math::copy<T>(Constants::DOF, JNew + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1);
     }
 
@@ -424,22 +424,22 @@ public:
 	 *
 	 * No Modification in the Jacobian*
 	 */
-	void constructNonFixedJacobian() {}
+	void ConstructNonFixedJacobian() {}
 
     /**
      * \brief update all dependent matrices on the position vector
      *
      * only needed in case of lookup Tables
      */
-    void updateSystem() {
+    void UpdateSystem() {
         _car->UpdateLengthsTwoTrackModel();
 		_loadModuleObj->GetEulerianForce(_currentTime, _twoTrackModelForce);
-        constructStiffnessMatrix();
-#ifdef Damping
-        constructDampingMatrix();
+        ConstructStiffnessMatrix();
+#ifdef DAMPING
+        ConstructDampingMatrix();
 #endif
-		constructAMatrix();
-        constructBMatrix();
+		ConstructAMatrix();
+        ConstructBMatrix();
     }
     /**
      * \brief construct Stiffness Matrix
@@ -447,7 +447,7 @@ public:
      * this has to be called every newton iteraton and the spring lengtvector
      * has to be updated before
      */
-    void constructStiffnessMatrix() {
+    void ConstructStiffnessMatrix() {
 #ifdef INTERPOLATION
         MetaDatabase<T>::getDatabase().getLookupStiffness().getInterpolation(_car->getCurrentSpringsLengths(), _kVec);
 #endif
@@ -549,7 +549,7 @@ public:
      * this has to be called every newton iteraton and the spring lengtvector
      * has to be updated before
      */
-    void constructDampingMatrix() {
+    void ConstructDampingMatrix() {
 #ifdef INTERPOLATION
         MetaDatabase<T>::getDatabase().getLookupDamping().getInterpolation(_car->getCurrentSpringsLengths(), _dVec);
 #endif
@@ -657,7 +657,7 @@ public:
      * \param[out] dMdxx pointer to matrix in which de derivative of the lookup
      * times a position vec is stored of size DOF * DOF.
      */
-    void constructLookupDerivativeX(T* der, T* x, T* dMdxx) {
+    void ConstructLookupDerivativeX(T* der, T* x, T* dMdxx) {
         _temp[0] = x[0] * (der[0] + der[2] + der[4] + der[6]) - der[2] * x[5] - der[4] * x[7] - der[6] * x[9] - der[0] * x[3] + x[1] * (der[0] * _car->_lenLat[0] - der[2] * _car->_lenLat[1] + der[4] * _car->_lenLat[2] - der[6] * _car->_lenLat[3]) - x[2] * (der[0] * _car->_lenLong[0] + der[2] * _car->_lenLong[1] - der[4] * _car->_lenLong[2] - der[6] * _car->_lenLong[3]);
         dMdxx[1] = der[2] * _car->_lenLat[1] * _car->_lenLat[1] * x[1] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * x[1] + der[6] * _car->_lenLat[3] * _car->_lenLat[3] * x[1] + der[0] * _car->_lenLat[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) - der[2] * _car->_lenLat[1] * x[0] + der[2] * _car->_lenLat[1] * x[5] + der[4] * _car->_lenLat[2] * x[0] - der[4] * _car->_lenLat[2] * x[7] - der[6] * _car->_lenLat[3] * x[0] + der[6] * _car->_lenLat[3] * x[9] - der[0] * _car->_lenLat[0] * _car->_lenLong[0] * x[2] + der[2] * _car->_lenLat[1] * _car->_lenLong[1] * x[2] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[2] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[2];
         dMdxx[2] = der[0] * _car->_lenLong[0] * _car->_lenLong[0] * x[2] + der[4] * _car->_lenLong[2] * _car->_lenLong[2] * x[2] + der[6] * _car->_lenLong[3] * _car->_lenLong[3] * x[2] - der[0] * _car->_lenLong[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) + der[2] * _car->_lenLong[1] * (x[5] - x[0] + _car->_lenLat[1] * x[1] + _car->_lenLong[1] * x[2]) + der[4] * _car->_lenLong[2] * x[0] - der[4] * _car->_lenLong[2] * x[7] + der[6] * _car->_lenLong[3] * x[0] - der[6] * _car->_lenLong[3] * x[9] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[1] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[1];
@@ -769,7 +769,7 @@ private:
      *
      * _A = 9/4h^2 * M + 3/2h * _D + _K
      */
-    void constructAMatrix() {
+    void ConstructAMatrix() {
         // _A = M/h^2
         Math::copy<T>(Constants::DOFDOF, _M_h2, 1, _A, 1);
         // _A *= 9/4
@@ -787,7 +787,7 @@ private:
      * * x[n-2] - 1/4 * x[n-3]) + 1/h
      * * _D * (2 * x[n] - 1/2 * x[n-1])
      */
-    void constructbVec() {
+    void ConstructbVec() {
         // temp = x[n]
         Math::copy<T>(Constants::DOF, _u_n, 1, _temp, 1);
         // temp *= 6
@@ -813,8 +813,8 @@ private:
     /**
      * \brief calculates a first guess for x[n+1]
      */
-    void getInitialGuess(T* forces) {
-        constructbVec();
+    void GetInitialGuess(T* forces) {
+        ConstructbVec();
         lapack_int status;
         status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, _A, Constants::DOF);
         Math::potrfCheckStatus(status);
@@ -822,7 +822,7 @@ private:
         // _u_n_p_1=_A\(b+f)
         Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, _A, Constants::DOF, _u_n_p_1, 1);
         // reconstruct _A
-        constructAMatrix();
+        ConstructAMatrix();
     }
 
 	/**
@@ -855,24 +855,24 @@ public:
         _u_n_m_2 = Math::malloc<T>(Constants::DOF);
         _u_n_m_3 = Math::malloc<T>(Constants::DOF);
         _bVec = Math::malloc<T>(Constants::DOF);
-        _activeExecutor = &TwoTrackModelBDF2<T>::first_two_steps;
+        _activeExecutor = &TwoTrackModelBDF2<T>::FirstTwoSteps;
     }
 
-    void first_two_steps(T time, T* solution) {
+    void FirstTwoSteps(T time, T* solution) {
         if (_timeStepCount == 0) {
             Math::copy<T>(Constants::DOF, _u_n_m_1, 1, _u_n_m_2, 1);
-            TwoTrackModelBE<T>::update_step(time, solution);
+            TwoTrackModelBE<T>::UpdateStep(time, solution);
         }
         else {
             Math::copy<T>(Constants::DOF, _u_n_m_2, 1, _u_n_m_3, 1);
             Math::copy<T>(Constants::DOF, _u_n_m_1, 1, _u_n_m_2, 1);
-            TwoTrackModelBE<T>::update_step(time, solution);
+            TwoTrackModelBE<T>::UpdateStep(time, solution);
             // construct _A
-            constructAMatrix();
-            _activeExecutor = &TwoTrackModelBDF2<T>::update_step_bdf2;
+            ConstructAMatrix();
+            _activeExecutor = &TwoTrackModelBDF2<T>::UpdateStepBDF2;
         }
     }
-    virtual void update_step(T time, T* solution) {
+    virtual void UpdateStep(T time, T* solution) {
 		_currentTime = time;
         (this->*_activeExecutor)(time, solution);
         _timeStepCount += 1;
@@ -884,12 +884,12 @@ public:
      * \return solution of the following timestep
      * [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
-    void update_step_bdf2(T time, T* solution) {
+    void UpdateStepBDF2(T time, T* solution) {
         // cblas_dscal(DOF,0, force, 1);
 		// compute Force
 		_loadModuleObj->GetEulerianForce(time, _twoTrackModelForce);
 
-        getInitialGuess(_twoTrackModelForce);
+        GetInitialGuess(_twoTrackModelForce);
 #ifdef INTERPOLATION
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
 #endif
@@ -913,7 +913,7 @@ public:
      * _residualNorm = norm(_residual)
      * \param force pointer to forces vector size of DOF
      */
-    void calcResidual(T* force) {
+    void CalculateResidual(T* force) {
         // _residual = _A*x[n+1]
         Math::gemm<T>(CblasRowMajor, CblasNoTrans, CblasNoTrans, Constants::DOF, 1, Constants::DOF, 1, _A, Constants::DOF, _u_n_p_1, 1, 0, _residual, 1);
         // _residual -= _bVec
@@ -928,16 +928,16 @@ public:
      *
      * only needed in case of lookup Tables
      */
-    void updateSystem() {
+    void UpdateSystem() {
         // constructSpringLengths();
         _car->UpdateLengthsTwoTrackModel();
 		_loadModuleObj->GetEulerianForce(_currentTime, _twoTrackModelForce);
-        constructStiffnessMatrix();
-#ifdef Damping
-        constructDampingMatrix();
+        ConstructStiffnessMatrix();
+#ifdef DAMPING
+        ConstructDampingMatrix();
 #endif
-        constructAMatrix();
-        constructbVec();
+        ConstructAMatrix();
+        ConstructbVec();
     }
     /**
      * \brief construct Jacobian
@@ -946,17 +946,17 @@ public:
      * _J = 9/4 * _M_h2 + 3/2h * _D + _K + dKdx*x[n+1] + 1/h * dDdx * (3/2 * x[n+1]
      * - 2 * x[n] + 1/2 * x[n-1])
      */
-    void constructJacobian() {
+    void ConstructJacobian() {
         // first update the derivative
         auto& db = MetaDatabase<T>::getDatabase();
         db.getLookupStiffness().getDerivative(_car->getCurrentSpringsLengths(), _dkdl);
-        constructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
+        ConstructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
         // _J = _A
         Math::copy<T>(Constants::DOFDOF, _A, 1, _J, 1);
         // _J += dKdx * x[n+1]
         Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
 
-#ifdef Damping
+#ifdef DAMPING
         db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
         // temp = x[n+1]
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, _temp, 1);
@@ -967,7 +967,7 @@ public:
         // temp += 1/2 * x[n-1]
         Math::axpy<T>(Constants::DOF, 0.5, _u_n_m_1, 1, _temp, 1);
         // calc _dDdxx with (3/2 * x[n+1] - 2 * x[n] + 1/2 * x[n-1])
-        constructLookupDerivativeX(_dddl, temp, _dDdxx);
+        ConstructLookupDerivativeX(_dddl, temp, _dDdxx);
         // _J += 1/_h * _dDdxx
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _dDdxx, 1, _J, 1);
 #endif
@@ -979,9 +979,9 @@ public:
      * add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h _D
      * - _K + 1/h dDdx * x[n]] therefore _J = _M_h2 for the tyre positions
      */
-    void constructFixedJacobian() {
+    void ConstructFixedJacobian() {
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
-            setJacobianTyreLineToFixed(i);
+            SetJacobianTyreLineToFixed(i);
         }
     }
 
@@ -990,7 +990,7 @@ public:
      *
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
-    void setJacobianTyreLineToFixed(int tyreNumber) {
+    void SetJacobianTyreLineToFixed(int tyreNumber) {
         // _J = _M_h2
         Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, _J + (4 + 2 * tyreNumber) * Constants::DOF, 1);
         // _J = 9/4 _M_h2
@@ -1022,7 +1022,7 @@ public:
         _uSolution = Math::calloc<T>((sol_size + 1) * Constants::DOF);
     }
 
-    void solve(T* sol_vect) {
+    void Solve(T* sol_vect) {
 #ifdef WRITECSV
     IO::MyFile<T> newtonFile("_C:\\software\\repos\\EVAA\\output\\newtonOutput.txt");
 #endif
@@ -1033,7 +1033,7 @@ public:
        
         while (std::abs(t - (_tend + _h)) > eps) {
             // solution_vect = _uSolution + iter * (DOF);
-            update_step(t, sol_vect);
+            UpdateStep(t, sol_vect);
 #ifdef WRITECSV
         newtonFile.writeSingleValue(_newtonIteration);
         newtonFile.writeSingleValue(_residualNorm);

@@ -91,7 +91,7 @@ public:
         *_lagrangianTorque = *_newLagrangianTorque;  // z - component
     }
 
-    void solve(T* sol_vect, T* u_sol_param) {
+    void Solve(T* sol_vect, T* u_sol_param) {
         // initialize solution vector
         const int lagrangianForceDimension = Constants::DIM - 1;
 
@@ -136,7 +136,7 @@ public:
 			//if (iter == 1000) IO::writeVector(_lagrangianForceVector, lagrangianForceDimension); 
 		    LagrangianUpdate(t);
 
-            _twoTrackModelObj->update_step(t, _carObj->_currentDisplacementTwoTrackModel);
+            _twoTrackModelObj->UpdateStep(t, _carObj->_currentDisplacementTwoTrackModel);
             _carObj->UpdateLengthsTwoTrackModel();
             solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
 
@@ -177,7 +177,7 @@ public:
      * Executes the time iteration of the ALE solvers, switches from global
      * position update to solving of the linear 11DOF system
      */
-    void solve(T* sol_vect) { solve(sol_vect, _solutionVector); }
+    void Solve(T* sol_vect) { Solve(sol_vect, _solutionVector); }
 
     /**
      * Adds the contribution of the wheels and tyres to the inertia moment of
