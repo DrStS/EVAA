@@ -138,6 +138,7 @@ public:
 
             _twoTrackModelObj->update_step(t, _carObj->_currentDisplacementTwoTrackModel);
             _carObj->UpdateLengthsTwoTrackModel();
+            _carObj->ApplyLagrangeChange();
             solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
 
             // only call this function at every checkpoint
@@ -145,7 +146,7 @@ public:
 
 #ifdef WRITECSV
             _carObj->CombineResults();            
-            Math::copy(Constants::VEC_DIM * Constants::DIM, solution_vect, 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
+            Math::copy(Constants::VEC_DIM * Constants::DIM, _carObj->_PositionVector, 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
             Math::copy(Constants::DIM, _carObj->_angleCG, 1, angleVecCSV + iter * Constants::DIM, 1);
             Math::copy(Constants::DIM, _carObj->_currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
 #endif // WRITECSV
