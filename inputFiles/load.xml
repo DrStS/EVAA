@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <EVAA_load_module>
-  <!--roadProfile>
+  <roadProfile>
     <fixedTyre></fixedTyre>
-  </roadProfile-->
+  </roadProfile>
   <!--roadProfile>
     <detachedTyre></detachedTyre>
   </roadProfile-->
@@ -16,7 +16,7 @@
       </center>
     </circularRoadProfile>
   </roadProfile-->
-  <roadProfile>
+  <!--roadProfile>
     <arbitraryRoadProfile>
       <horizontalProfile>
         <wayPoint X="0"   Y="0"   time="0"/>
@@ -38,12 +38,12 @@
         </sinusoidalProfile>
       </verticalProfile>
     </arbitraryRoadProfile>
-  </roadProfile>
+  </roadProfile-->
   <forces>
     <forceBody>
       <x>0</x>
       <y>0</y>
-      <z>1.1</z>
+      <z>0</z>
     </forceBody>
     <forceWheel>
       <ReerRight>

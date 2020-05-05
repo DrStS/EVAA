@@ -149,6 +149,11 @@ public:
         T* angleVecCSV = Math::malloc<T>(sol_size * Constants::DIM);
         T* posVecCSV = Math::malloc<T>(sol_size * Constants::DIM * Constants::VEC_DIM);
         T* velVecCSV = Math::malloc<T>(sol_size * (Constants::DIM - 1) * Constants::VEC_DIM);
+        Car_obj->update_angleCG();
+        Car_obj->combine_results();
+        Math::copy(Constants::VEC_DIM * Constants::DIM, Car_obj->Position_vec, 1, posVecCSV, 1);
+        Math::copy(Constants::DIM, Car_obj->angle_CG, 1, angleVecCSV, 1);
+        Math::copy(Constants::DIM, Car_obj->currentVelocityLagrangian, 1, velVecCSV, 1);
 #endif // WRITECSV
 
         T* solution_vect;

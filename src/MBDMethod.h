@@ -265,9 +265,10 @@ private:
         boundary_conditions = db.getRoadConditions();
 
         // Car Definition
-
-        T g = db.getGravityField()[2];
-
+        T gx = db.getGravityField()[0];
+        T gy = db.getGravityField()[1];
+        T gz = db.getGravityField()[2];
+    
         // Fill up vectors
         Math::copy(Constants::NUM_LEGS, db.getBodyStiffnessVector(), 1, upper_spring_stiffness, 1);
         Math::copy(Constants::NUM_LEGS, db.getTyreStiffnessVector(), 1, lower_spring_stiffness, 1);
@@ -314,27 +315,45 @@ private:
         r_fr[i] = db.getLongitudalLegPositionFrontRight();
         r_rl[i] = -db.getLongitudalLegPositionRearLeft();
         r_rr[i] = -db.getLongitudalLegPositionRearRight();
+        FC[i] += db.getBodyMass() * gx;
+        FT_fl[i] += db.getTyreMassFrontLeft() * gx;
+        FT_fr[i] += db.getTyreMassFrontRight() * gx;
+        FT_rl[i] += db.getTyreMassRearLeft() * gx;
+        FT_rr[i] += db.getTyreMassRearRight() * gx;
+        FW_fl[i] += db.getWheelMassFrontLeft() * gx;
+        FW_fr[i] += db.getWheelMassFrontRight() * gx;
+        FW_rl[i] += db.getWheelMassRearLeft() * gx;
+        FW_rr[i] += db.getWheelMassRearRight() * gx;
 
         i = 1;
         r_fl[i] = -db.getLatidudalLegPositionFrontLeft();
         r_fr[i] = db.getLatidudalLegPositionFrontRight();
         r_rl[i] = -db.getLatidudalLegPositionRearLeft();
         r_rr[i] = db.getLatidudalLegPositionRearRight();
+        FC[i] += db.getBodyMass() * gy;
+        FT_fl[i] += db.getTyreMassFrontLeft() * gy;
+        FT_fr[i] += db.getTyreMassFrontRight() * gy;
+        FT_rl[i] += db.getTyreMassRearLeft() * gy;
+        FT_rr[i] += db.getTyreMassRearRight() * gy;
+        FW_fl[i] += db.getWheelMassFrontLeft() * gy;
+        FW_fr[i] += db.getWheelMassFrontRight() * gy;
+        FW_rl[i] += db.getWheelMassRearLeft() * gy;
+        FW_rr[i] += db.getWheelMassRearRight() * gy;
 
         i = 2;
         r_fl[i] = 0;
         r_fr[i] = 0;
         r_rl[i] = 0;
         r_rr[i] = 0;
-        FC[i] -= db.getBodyMass() * g;
-        FT_fl[i] -= db.getTyreMassFrontLeft() * g;
-        FT_fr[i] -= db.getTyreMassFrontRight() * g;
-        FT_rl[i] -= db.getTyreMassRearLeft() * g;
-        FT_rr[i] -= db.getTyreMassRearRight() * g;
-        FW_fl[i] -= db.getWheelMassFrontLeft() * g;
-        FW_fr[i] -= db.getWheelMassFrontRight() * g;
-        FW_rl[i] -= db.getWheelMassRearLeft() * g;
-        FW_rr[i] -= db.getWheelMassRearRight() * g;
+        FC[i] += db.getBodyMass() * gz;
+        FT_fl[i] += db.getTyreMassFrontLeft() * gz;
+        FT_fr[i] += db.getTyreMassFrontRight() * gz;
+        FT_rl[i] += db.getTyreMassRearLeft() * gz;
+        FT_rr[i] += db.getTyreMassRearRight() * gz;
+        FW_fl[i] += db.getWheelMassFrontLeft() * gz;
+        FW_fr[i] += db.getWheelMassFrontRight() * gz;
+        FW_rl[i] += db.getWheelMassRearLeft() * gz;
+        FW_rr[i] += db.getWheelMassRearRight() * gz;
     }
 
     void getCholeskyDecomposition() {

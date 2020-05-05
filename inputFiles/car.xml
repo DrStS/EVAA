@@ -21,20 +21,20 @@
           <z>-0.3</z>
         </RelativeCenterOfInstanteneousRotation>
         <SuspensionSpringsXML>
-          <ReerRight>0.2</ReerRight>
-          <ReerLeft>0.2</ReerLeft>
-          <FrontLeft>0.2</FrontLeft>
-          <FrontRight>0.2</FrontRight>
+          <ReerRight>1</ReerRight>
+          <ReerLeft>1</ReerLeft>
+          <FrontLeft>1</FrontLeft>
+          <FrontRight>1</FrontRight>
         </SuspensionSpringsXML>
         <TyreSpringsXML>
-          <ReerRight>0.2</ReerRight>
-          <ReerLeft>0.2</ReerLeft>
-          <FrontLeft>0.2</FrontLeft>
-          <FrontRight>0.2</FrontRight>
+          <ReerRight>1</ReerRight>
+          <ReerLeft>1</ReerLeft>
+          <FrontLeft>1</FrontLeft>
+          <FrontRight>1</FrontRight>
         </TyreSpringsXML>
       </GeometryXML>
       <StiffnessXML>
-        <!--ConstantXML>
+        <ConstantXML>
           <TyreXML>
             <ReerRight>260e3</ReerRight>
             <ReerLeft>260e3</ReerLeft>
@@ -47,23 +47,23 @@
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
           </BodyXML>
-        </ConstantXML-->
-        <LookupTableXML>
+        </ConstantXML>
+        <!--LookupTableXML>
           <FilePathXML>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePathXML>
-        </LookupTableXML>
+        </LookupTableXML-->
       </StiffnessXML>
       <DampingCoefficientsXML>
         <TyreXML>
-          <ReerRight>0</ReerRight>
-          <ReerLeft>0</ReerLeft>
-          <FrontLeft>0</FrontLeft>
-          <FrontRight>0</FrontRight>
+          <ReerRight>100</ReerRight>
+          <ReerLeft>100</ReerLeft>
+          <FrontLeft>100</FrontLeft>
+          <FrontRight>100</FrontRight>
         </TyreXML>
         <BodyXML>
-          <ReerRight>0</ReerRight>
-          <ReerLeft>0</ReerLeft>
-          <FrontLeft>0</FrontLeft>
-          <FrontRight>0</FrontRight>
+          <ReerRight>100</ReerRight>
+          <ReerLeft>100</ReerLeft>
+          <FrontLeft>100</FrontLeft>
+          <FrontRight>100</FrontRight>
         </BodyXML>
       </DampingCoefficientsXML>
       <MassXML>
@@ -98,16 +98,16 @@
   <InitialConditionsXML>
     <SpringElongationXML>
       <BodyXML>
-        <ReerRight>0.2</ReerRight>
-        <ReerLeft>0.2</ReerLeft>
-        <FrontLeft>0.2</FrontLeft>
-        <FrontRight>0.2</FrontRight>
+        <ReerRight>0.73</ReerRight>
+        <ReerLeft>0.73</ReerLeft>
+        <FrontLeft>0.73</FrontLeft>
+        <FrontRight>0.73</FrontRight>
       </BodyXML>
       <TyreXML>
-        <ReerRight>0.2</ReerRight>
-        <ReerLeft>0.2</ReerLeft>
-        <FrontLeft>0.2</FrontLeft>
-        <FrontRight>0.2</FrontRight>
+        <ReerRight>0.95</ReerRight>
+        <ReerLeft>0.95</ReerLeft>
+        <FrontLeft>0.95</FrontLeft>
+        <FrontRight>0.95</FrontRight>
       </TyreXML>
     </SpringElongationXML>
     <VelocitiesXML>
@@ -118,50 +118,50 @@
       </angularBodyXML>
       <BodyXML>
         <x>0</x>
-        <y>3</y>
+        <y>0</y>
         <z>0</z>
       </BodyXML>
       <UnsprungMassXML>
         <ReerRight>
           <x>0</x>
-          <y>3</y>
+          <y>0</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
           <x>0</x>
-          <y>3</y>
+          <y>0</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
           <x>0</x>
-          <y>3</y>
+          <y>0</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
           <x>0</x>
-          <y>3</y>
+          <y>0</y>
           <z>0</z>
         </FrontRight>
       </UnsprungMassXML>
       <TyreXML>
         <ReerRight>
           <x>0</x>
-          <y>3</y>
+          <y>0</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
           <x>0</x>
-          <y>3</y>
+          <y>0</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
           <x>0</x>
-          <y>3</y>
+          <y>0</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
           <x>0</x>
-          <y>3</y>
+          <y>0</y>
           <z>0</z>
         </FrontRight>
       </TyreXML>
@@ -228,11 +228,11 @@
   <SimulationParametersXML>
     <GeneralSettingsXML>
       <TimestepSizeXML>1e-3</TimestepSizeXML>
-      <NumberOfIterationsXML>10000</NumberOfIterationsXML>
+      <NumberOfIterationsXML>100000</NumberOfIterationsXML>
       <GravityXML>
         <x>0</x>
         <y>0</y>
-        <z>0</z>
+        <z>-9.81</z>
       </GravityXML>
     </GeneralSettingsXML>
     <MultyBodyDynamicsXML>
