@@ -62,19 +62,19 @@ public:
      */
     void LagrangianUpdate(T& t) {
         // 2. Update global X,Y positions of the car
-        Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentPositionLagrangian[0], _carObj->_currentVelocityLagrangian[0], _lagrangianForceVector[0], _h, _carObj->_massFullCar);
-        Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentPositionLagrangian[1], _carObj->_currentVelocityLagrangian[1], _lagrangianForceVector[1], _h, _carObj->_massFullCar);
+        Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentPositionLagrangian[0], _carObj->getCurrentVelocityLagrangian()[0], _lagrangianForceVector[0], _h, _carObj->getMassCarFull());
+        Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentPositionLagrangian[1], _carObj->getCurrentVelocityLagrangian()[1], _lagrangianForceVector[1], _h, _carObj->getMassCarFull());
 
         // 4. Update Z-rotation
-        Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentAngleLagrangian, _carObj->_currentAngularVelocityLagrangian, *_lagrangianTorque, _h, _momentOfInertiaZ);
+        Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentAngleLagrangian, _carObj->getCurrentAngularVelocityLagrangian(), *_lagrangianTorque, _h, _momentOfInertiaZ);
 
         // get forces
         _loadModuleObj->GetLagrangianForce(t, _newLagrangianForceVector);
         _loadModuleObj->GetTorqueLagrange(t, _newLagrangianTorque);
 
         // 1. Update global X,Y velocities
-        Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentVelocityLagrangian[0], _lagrangianForceVector[0], _newLagrangianForceVector[0], _h, _carObj->_massFullCar);
-        Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentVelocityLagrangian[1], _lagrangianForceVector[1], _newLagrangianForceVector[1], _h, _carObj->_massFullCar);
+        Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentVelocityLagrangian[0], _lagrangianForceVector[0], _newLagrangianForceVector[0], _h, _carObj->getMassCarFull());
+        Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentVelocityLagrangian[1], _lagrangianForceVector[1], _newLagrangianForceVector[1], _h, _carObj->getMassCarFull());
 
         // 3. Update Z-angular velocities
         Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentAngularVelocityLagrangian, *_lagrangianTorque, *_newLagrangianTorque, _h, _momentOfInertiaZ);
@@ -146,8 +146,8 @@ public:
 #ifdef WRITECSV
             _carObj->CombineResults();            
             Math::copy(Constants::VEC_DIM * Constants::DIM, solution_vect, 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
-            Math::copy(Constants::DIM, _carObj->_angleCG, 1, angleVecCSV + iter * Constants::DIM, 1);
-            Math::copy(Constants::DIM, _carObj->_currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
+            Math::copy(Constants::DIM, _carObj->getAngleCG(), 1, angleVecCSV + iter * Constants::DIM, 1);
+            Math::copy(Constants::DIM, _carObj->getCurrentVelocityLagrangian(), 1, velVecCSV + iter * (Constants::DIM - 1) * Constants::VEC_DIM, 1);
 #endif // WRITECSV
 
             t += _h;
@@ -185,18 +185,18 @@ public:
      */
     void CalculateGlobalMomentofInertiaZ() {
         // get the global inertia actiing in Z direction
-        _momentOfInertiaZ = _carObj->_momentOfInertia[8];
+        _momentOfInertiaZ = _carObj->getMomentOfInertia()[8];
         _momentOfInertiaZ +=
-            (_carObj->_massComponents[1] + _carObj->_massComponents[2]) *
+            (_carObj->getMassComponents()[1] + _carObj->getMassComponents()[2]) *
             (_carObj->_lenLat[0] * _carObj->_lenLat[0] + _carObj->_lenLong[0] * _carObj->_lenLong[0]);
         _momentOfInertiaZ +=
-            (_carObj->_massComponents[3] + _carObj->_massComponents[4]) *
+            (_carObj->getMassComponents()[3] + _carObj->getMassComponents()[4]) *
             (_carObj->_lenLat[1] * _carObj->_lenLat[1] + _carObj->_lenLong[1] * _carObj->_lenLong[1]);
         _momentOfInertiaZ +=
-            (_carObj->_massComponents[5] + _carObj->_massComponents[6]) *
+            (_carObj->getMassComponents()[5] + _carObj->getMassComponents()[6]) *
             (_carObj->_lenLat[2] * _carObj->_lenLat[2] + _carObj->_lenLong[2] * _carObj->_lenLong[2]);
         _momentOfInertiaZ +=
-            (_carObj->_massComponents[7] + _carObj->_massComponents[8]) *
+            (_carObj->getMassComponents()[7] + _carObj->getMassComponents()[8]) *
             (_carObj->_lenLat[3] * _carObj->_lenLat[3] + _carObj->_lenLong[3] * _carObj->_lenLong[3]);
     }
 
@@ -204,8 +204,8 @@ public:
      * Prints all positions and angles in the car object
      */
     void PrintFinalResults() {
-        T* sln = _carObj->_PositionVector;
-        std::cout << "ALE: orientation angles=\n\t[" << _carObj->_angleCG[0] << "\n\t " << _carObj->_angleCG[1] << "\n\t " << _carObj->_angleCG[2] << "]" << std::endl;
+        T* sln = _carObj->getPositionVector();
+        std::cout << "ALE: orientation angles=\n\t[" << _carObj->getAngleCG()[0] << "\n\t " << _carObj->getAngleCG()[1] << "\n\t " << _carObj->getAngleCG()[2] << "]" << std::endl;
         std::cout << "ALE: car body position pc=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
         std::cout << "ALE: rear-right wheel position pw1=\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
         std::cout << "ALE: rear-left wheel position pw2=\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;

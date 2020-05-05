@@ -146,12 +146,11 @@ protected:
      */
     void constructMassMatrix() {
         // get values from MetaDatabase
-        T* Mass_vec = _car->_massComponents;
-        T* I_CG = _car->_momentOfInertia;
+        const T* Mass_vec = _car->getMassComponents();
         // construct M
         _M_h2[0] = Mass_vec[0];
-        _M_h2[Constants::DOF + 1] = I_CG[0];
-        _M_h2[2 * Constants::DOF + 2] = I_CG[4];
+        _M_h2[Constants::DOF + 1] = _car->getMomentOfInertia()[0];
+        _M_h2[2 * Constants::DOF + 2] = _car->getMomentOfInertia()[4];
         // _M_h2 = M
         Math::copy<T>(Constants::DOF - 3, Mass_vec + 1, 1, _M_h2 + 3 * (Constants::DOF + 1),
                       Constants::DOF + 1);  // _M_h2 = diagonal matrix
@@ -196,7 +195,7 @@ public:
     TwoTrackModelBE(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelParent(inputCar, loadModel) {
         _u_n_m_1 = Math::malloc<T>(Constants::DOF);					// velocity
         _u_n = Math::malloc<T>(Constants::DOF);						// position
-        _u_n_p_1 = _car->_currentDisplacementTwoTrackModel;			// position
+        _u_n_p_1 = _car->getCurrentDisplacementTwoTrackModel();		// position
 		_twoTrackModelForce = Math::malloc<T>(Constants::DOF);		// force
 
         _A = Math::malloc<T>(Constants::DOFDOF);
@@ -232,9 +231,9 @@ public:
 
         // if interpolation is used we need all the lengths to interpolate
         // damping and stiffness if not we have to define them populate _kVec
-        _kVec = _car->_kVec;
+        _kVec = _car->getkVec();
         // populate _dVec
-        _dVec = _car->_dVec;
+        _dVec = _car->getdVec();
 
         initPosVectors();
         constructMassMatrix();
@@ -335,7 +334,7 @@ public:
     void constructJacobian() {
         // first update the derivative
         auto& db = MetaDatabase<T>::getDatabase();
-        db.getLookupStiffness().getDerivative(_car->_currentSpringsLength, _dkdl);
+        db.getLookupStiffness().getDerivative(_car->getCurrentSpringsLengths(), _dkdl);
         // construct the derivative (tensor) times a pos vector
         constructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
         // _J = _A =  _M_h2 + _D / _h + _K
@@ -344,7 +343,7 @@ public:
         Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
 		(this->*_JacobianAdjustment)();
 #ifdef Damping
-        db.getLookupDamping().getDerivative(_car->_currentSpringsLength, _dddl);
+                db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
 		// temp = x[n+1]
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, _temp, 1);
         // temp += -x[n]
@@ -450,7 +449,7 @@ public:
      */
     void constructStiffnessMatrix() {
 #ifdef INTERPOLATION
-        MetaDatabase<T>::getDatabase().getLookupStiffness().getInterpolation(_car->_currentSpringsLength, _kVec);
+        MetaDatabase<T>::getDatabase().getLookupStiffness().getInterpolation(_car->getCurrentSpringsLengths(), _kVec);
 #endif
         _temp[0] = _kVec[0] + _kVec[2] + _kVec[4] + _kVec[6];
         _K[1] = _kVec[0] * _car->_lenLat[0] - _kVec[2] * _car->_lenLat[1] + _kVec[4] * _car->_lenLat[2] - _kVec[6] * _car->_lenLat[3];
@@ -552,7 +551,7 @@ public:
      */
     void constructDampingMatrix() {
 #ifdef INTERPOLATION
-        MetaDatabase<T>::getDatabase().getLookupDamping().getInterpolation(_car->_currentSpringsLength, _dVec);
+        MetaDatabase<T>::getDatabase().getLookupDamping().getInterpolation(_car->getCurrentSpringsLengths(), _dVec);
 #endif
         _temp[0] = _dVec[0] + _dVec[2] + _dVec[4] + _dVec[6];
         _D[1] = _dVec[0] * _car->_lenLat[0] - _dVec[2] * _car->_lenLat[1] + _dVec[4] * _car->_lenLat[2] - _dVec[6] * _car->_lenLat[3];
@@ -950,7 +949,7 @@ public:
     void constructJacobian() {
         // first update the derivative
         auto& db = MetaDatabase<T>::getDatabase();
-        db.getLookupStiffness().getDerivative(_car->_currentSpringsLength, _dkdl);
+        db.getLookupStiffness().getDerivative(_car->getCurrentSpringsLengths(), _dkdl);
         constructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
         // _J = _A
         Math::copy<T>(Constants::DOFDOF, _A, 1, _J, 1);
@@ -958,7 +957,7 @@ public:
         Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
 
 #ifdef Damping
-        db.getLookupDamping().getDerivative(_car->_currentSpringsLength, _dddl);
+        db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
         // temp = x[n+1]
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, _temp, 1);
         // temp *= 3/2
