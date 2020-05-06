@@ -55,6 +55,17 @@ public:
 	}
 
 	/**
+	Add Gravity force in the z direction
+	*/
+	void AddGravity(Car<T>* carObj, T* profileInducedForce) {
+		profileInducedForce[0] += carObj->_massComponents[0] * g;
+	#pragma loop(ivdep)
+		for (auto i = Constants::DIM; i < Constants::DOF; ++i) {
+			profileInducedForce[i] += carObj->_massComponents[i] * g;
+		}
+	}
+
+	/**
 	 * Get external force acting on the car system in the Eulerian Frame
 	 * \param Car
 	 * \return profileInducedForce forces and torque acting on each component [GC: Z, GC(Torque):XY, W1: Z, T1: Z, ...]
@@ -247,6 +258,7 @@ public:
 	virtual void GetProfileForceEulerian(Car<T>* carObj, T* profileInducedForce) {
 		// TODO optimize it
 		Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+		AddGravity(carObj, profileInducedForce);
 		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
 			profileInducedForce[Constants::TYRE_INDEX_EULER[i]] = //
                 carObj->getkVec()[2 * i + 1] * (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] - carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1])  //
@@ -277,7 +289,10 @@ public:
 		Name = "Nonfixed";
 	}
 	virtual ~Nonfixed() {}
-	virtual void GetProfileForceEulerian(Car<T>* carObj, T* profileInducedForce) { Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX); }
+	virtual void GetProfileForceEulerian(Car<T>* carObj, T* profileInducedForce) { 
+		Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+		AddGravity(carObj, profileInducedForce);
+	}
 	virtual void ApplyProfileInitialCondition(Car<T>* carObj) {}
 };
 }  // namespace EVAA
