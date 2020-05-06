@@ -26,7 +26,7 @@
 namespace EVAA {
 namespace Math {
 
-void printMKLInfo() {
+void PrintMKLInfo() {
 #ifdef USE_INTEL_MKL
     int len = 198;
     char buf[198];
@@ -35,20 +35,20 @@ void printMKLInfo() {
 #endif
 }
 
-void computeDenseSymLUFactorisation(const int nElements, std::vector<double> &A, std::vector<int> &pivots) {
+void ComputeDenseSymLUFactorisation(const int nElements, std::vector<double> &A, std::vector<int> &pivots) {
 #ifdef USE_INTEL_MKL
     LAPACKE_dgetrf(LAPACK_COL_MAJOR, nElements, nElements, A.data(), nElements, pivots.data());
 #endif
 }
 
-void computeDenseSymSolution(const int nElements, std::vector<double> &A, std::vector<int> &pivots, std::vector<double> &rhs) {
+void ComputeDenseSymSolution(const int nElements, std::vector<double> &A, std::vector<int> &pivots, std::vector<double> &rhs) {
 #ifdef USE_INTEL_MKL
     mkl_set_num_threads(EVAA::AuxiliaryParameters::denseVectorMatrixThreads);
     LAPACKE_dgetrs(LAPACK_COL_MAJOR, 'N', nElements, 1, A.data(), nElements, pivots.data(), rhs.data(), nElements);
 #endif
 }
 
-void computeDenseVectorAddition(double *vec1, double *vec2, const double a, const int elements) {
+void ComputeDenseVectorAddition(double *vec1, double *vec2, const double a, const int elements) {
 #ifdef USE_INTEL_MKL
     mkl_set_num_threads(EVAA::AuxiliaryParameters::denseVectorMatrixThreads);
     cblas_daxpy(elements, a, vec1, 1, vec2, 1);

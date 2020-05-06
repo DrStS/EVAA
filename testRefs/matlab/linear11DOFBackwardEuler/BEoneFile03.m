@@ -136,13 +136,14 @@ eigFreq=sqrt(eig(Kred,Mred))/2/pi;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Time loop
 j=2;
-idx = [1,2,3,4,6,8,10];
+idx = [5,7,9,11];
 tic
 for i = h:h:tend
     rhs = (B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
     u_n_p_1 = A\rhs;
     u_n_p_1_red=Ared\(Bred*u_n_red-((1/(h*h))*Mred)*u_n_m_1_red+f_n_p_1_red);
    % Get solution
+  % f_n_p_1(idx) = K(idx, :)* u_n_p_1;
     t(j)=i;   
     u_sol(j,:)=u_n_p_1;
     u_n_m_1=u_n;

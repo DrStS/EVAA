@@ -3,10 +3,10 @@
   <!--roadProfile>
     <fixedTyre></fixedTyre>
   </roadProfile-->
-  <roadProfile>
-    <detachedTyre></detachedTyre>
-  </roadProfile>
   <!--roadProfile>
+    <detachedTyre></detachedTyre>
+  </roadProfile-->
+  <roadProfile>
     <circularRoadProfile>
       <radius>50</radius>
       <center>
@@ -15,21 +15,26 @@
         <z>0</z>
       </center>
     </circularRoadProfile>
-  </roadProfile-->
+  </roadProfile>
   <!--roadProfile>
     <arbitraryRoadProfile>
       <horizontalProfile>
         <wayPoint X="0"   Y="0"   time="0"/>
-        <wayPoint X="10"  Y="0"   time="1"/>
-        <wayPoint X="12"  Y="5"   time="2"/>
-        <wayPoint X="12"  Y="10"   time="3"/>
-        <wayPoint X="10"  Y="15"   time="4"/>
-        <wayPoint X="0"  Y="15"   time="5"/>
+        <wayPoint X="5"  Y="0"   time="1"/>
+        <wayPoint X="12"  Y="1"   time="2"/>
+        <wayPoint X="20"  Y="3"   time="3"/>
+        <wayPoint X="35"   Y="6"   time="4"/>
+        <wayPoint X="55"   Y="10"   time="5"/>
+        <wayPoint X="80"   Y="15"   time="6"/>
+        <wayPoint X="105"   Y="22"   time="7"/>
+        <wayPoint X="130"   Y="30"   time="8"/>
+        <wayPoint X="155"   Y="39"   time="9"/>
+        <wayPoint X="180"  Y="50"   time="10"/>
       </horizontalProfile>
       <verticalProfile>
         <sinusoidalProfile>
-          <rightTyre amplitude="0.2" period="2" shift="0"/>
-          <leftTyre amplitude="0.2" period="2" shift="1"/>
+          <rightTyre amplitude="0" period="2" shift="0"/>
+          <leftTyre amplitude="0" period="2" shift="1"/>
         </sinusoidalProfile>
       </verticalProfile>
     </arbitraryRoadProfile>
@@ -38,7 +43,7 @@
     <forceBody>
       <x>0</x>
       <y>0</y>
-      <z>4.4e3</z>
+      <z>0</z>
     </forceBody>
     <forceWheel>
       <ReerRight>

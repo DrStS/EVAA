@@ -98,16 +98,16 @@
   <InitialConditionsXML>
     <SpringElongationXML>
       <BodyXML>
-        <ReerRight>0.25</ReerRight>
-        <ReerLeft>0.25</ReerLeft>
-        <FrontLeft>0.25</FrontLeft>
-        <FrontRight>0.25</FrontRight>
+        <ReerRight>0.2</ReerRight>
+        <ReerLeft>0.2</ReerLeft>
+        <FrontLeft>0.2</FrontLeft>
+        <FrontRight>0.2</FrontRight>
       </BodyXML>
       <TyreXML>
-        <ReerRight>0.15</ReerRight>
-        <ReerLeft>0.15</ReerLeft>
-        <FrontLeft>0.15</FrontLeft>
-        <FrontRight>0.15</FrontRight>
+        <ReerRight>0.20</ReerRight>
+        <ReerLeft>0.20</ReerLeft>
+        <FrontLeft>0.20</FrontLeft>
+        <FrontRight>0.20</FrontRight>
       </TyreXML>
     </SpringElongationXML>
     <VelocitiesXML>
@@ -236,13 +236,15 @@
       </GravityXML>
     </GeneralSettingsXML>
     <MultyBodyDynamicsXML>
-      <SolverXML>RK4</SolverXML>
+      <SolverXML>BroydenCN</SolverXML>
       <MaximalIterationNumberXML>10000</MaximalIterationNumberXML>
       <ToleranceXML>1e-7</ToleranceXML>
       <SolutionDimensionXML>61</SolutionDimensionXML>
     </MultyBodyDynamicsXML>
     <LinearALEXML>
-      <DOFXML>11</DOFXML>
+      <Method>IMPLICIT_EULER</Method>
+	  <Tolerance>1e-7</Tolerance>
+	  <MaximumNumNewtonIterations>10</MaximumNumNewtonIterations>
     </LinearALEXML>
   </SimulationParametersXML>
 </EVAA_settings>

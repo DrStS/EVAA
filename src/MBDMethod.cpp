@@ -18,7 +18,7 @@ void create_basis_car(floatEVAA* qc, floatEVAA* basis_c) {
     basis_c[8] = 1 - q_norm_inv * (qc[0] * qc[0] + qc[1] * qc[1]);
 }
 
-void get_tilda(floatEVAA* x, floatEVAA* x_tilda) {
+void GetTilda(floatEVAA* x, floatEVAA* x_tilda) {
     // x - vector 3 elems (floatEVAA* x); x - tilda matrix 3x3 (floatEVAA*
     // x_tilda) given y: x_tilda*y=cross(x,y) (Stoneking, page 3 bottom)
     x_tilda[0] = 0;

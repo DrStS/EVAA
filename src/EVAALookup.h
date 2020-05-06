@@ -111,14 +111,11 @@ private:
     MKL_INT bc_type = DF_NO_BC; /**< boundary conditions type*/
     MKL_INT ic_type = DF_NO_IC; /**< internal conditions type*/
 
-    T* axis;       /**< array of break points (axis with length values of the grid
-                      points)*/
-    T* grid;       /**< function values */
-    T* scoeff;     /**< array of spline coefficients*/
-    MKL_INT stype; /**< spline type: linear = DF_PP_DEFAULT, spline =
-                      DF_PP_NATURAL*/
-    MKL_INT
-    sorder;         /**< spline order: linear = DF_PP_LINEAR, spline = DF_PP_CUBIC*/
+    T* axis = nullptr;        /**< array of break points (axis with length values of the grid points)*/
+    T* grid = nullptr;        /**< function values */
+    T* scoeff = nullptr;      /**< array of spline coefficients*/
+    MKL_INT stype;  /**< spline type: linear = DF_PP_DEFAULT, spline = DF_PP_NATURAL*/
+    MKL_INT sorder; /**< spline order: linear = DF_PP_LINEAR, spline = DF_PP_CUBIC*/
     T l_min, l_max; /**< to test wheather its inbound */
 
 public:
@@ -169,7 +166,9 @@ public:
         }
 
         // for debugging purposes
+#ifdef WRITECSV
         generateLookupOutputFile(l_min, l_max, a[0]);
+#endif // WRITECSV
 
         Math::free<T>(grid);
     }
@@ -180,13 +179,15 @@ public:
      * free all the allocated space
      */
     ~EVAALookup() {
+        Math::free<T>(axis);
+        Math::free<T>(scoeff);
+
         /* Delete Data Fitting task */
         for (auto i = 0; i < ny; i++) {
             dfDeleteTask(&task[i]);
         }
-        Math::free<T>(axis);
-        Math::free<T>(scoeff);
         Math::free<DFTaskPtr>(task);
+        
     }
     /**
      * \brief interpolates the ny = k grids ob the lookuptable
@@ -194,15 +195,11 @@ public:
      * The lookup table has been generated in the initialisation of the object
      * this function uses the calculated coefficients to interpolate certain
      * values
+     * \param[in] length  pointer to array of size k with length values of springs
+     * \param[out] inter pointer to array of size k to store interpolation values
      */
-    void getInterpolation(T* length /**< [in] pointer to array of size k with
-                                       length values of springs*/
-                          ,
-                          T* inter /**< [out] pointer to array of size k to
-                                      store interpolation values*/
-    ) const {
-        // size of array describing derivative (dorder), which is definde two
-        // lines below
+    void getInterpolation(const T* length, T* inter) const {
+        // size of array describing derivative (dorder), which is definde two lines below
         const MKL_INT ndorder = 1;
         const MKL_INT dorder[1] = {1};  // only the values are computed
 
@@ -222,13 +219,10 @@ public:
      * The lookup table has been generated in the initialisation of the object
      * this function uses the calculated coefficients to interpolate certain
      * values
+     * \param[in] length pointer to array of size k with length values of springs
+     * \param[out] deriv pointer to array of size k to store values of the derivative
      */
-    void getDerivative(T* length /**< [in] pointer to array of size k with
-                                    lenght values of springs*/
-                       ,
-                       T* deriv /**< [out] pointer to array of size k to store
-                                   values of the derivative*/
-    ) const {
+    void getDerivative(const T* length, T* deriv) const {
         // size of array describing derivative (dorder), which is defined two
         // lines below
         const MKL_INT ndorder = 2;
@@ -255,8 +249,9 @@ public:
             Math::dfInterpolate1D<T>(task[0], DF_INTERP, DF_METHOD_PP, 1, &interpolationPoints[i], DF_NO_HINT, ndorder, dorder, nullptr, &interpolation[i], rhint, 0);
         }
 
-        IO::writeLookUpGridPlusInterpolateValues<T>(axis, grid, nx, interpolationPoints, interpolation, 2 * nx - 1, "LookupTablePlusInterpolation" + std::to_string(add) + ".txt");
+        IO::writeLookUpGridPlusInterpolateValues<T>(axis, grid, nx, interpolationPoints, interpolation, 2 * nx - 1, "C:\\software\\repos\\EVAA\\output\\LookupTablePlusInterpolation" + std::to_string(add) + ".txt");
         Math::free<T>(interpolation);
+        Math::free<T>(interpolationPoints);
     }
 };
 

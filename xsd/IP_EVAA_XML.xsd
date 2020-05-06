@@ -165,7 +165,9 @@
             <xs:element name="LinearALEXML">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="DOFXML" type="xs:int" />
+                  <xs:element name="Method" type="xs:string" />
+				  <xs:element name="Tolerance" type="xs:double" />
+				  <xs:element name="MaximumNumNewtonIterations" type="xs:int" />
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
