@@ -631,7 +631,6 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
         solver.PrintFinalResults(sol);
 
         Math::free<Constants::floatEVAA>(sol);
-        Math::free(sol);
         delete car;
         delete lagrange;
         delete euler;
