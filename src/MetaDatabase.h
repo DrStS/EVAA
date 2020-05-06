@@ -442,8 +442,6 @@ public:
 
     inline T getNumberOfTimeIterations() const { return _num_time_iter; }
 
-    inline T getSolutionVectorSize() const { return _solution_dim; }
-
     inline T* getBodyExternalForce() { return _external_force_body; }
 
     inline T* getWheelExternalForceFrontLeft() { return _external_force_wheel + Constants::DIM * Constants::FRONT_LEFT; }
@@ -642,7 +640,6 @@ private:
     T _tolerance;
     T _timestep;
     int _num_time_iter;
-    int _solution_dim;
     ALESolver _ALE_solver;
     T _newtonTolerance;
     int _maxNewtonIterations;

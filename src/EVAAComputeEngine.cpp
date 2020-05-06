@@ -646,8 +646,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 
 void EVAAComputeEngine::computeMBD(void) {
     size_t num_iter = MetaDatabase<Constants::floatEVAA>::getDatabase().getNumberOfTimeIterations();
-    size_t solution_dim = MetaDatabase<Constants::floatEVAA>::getDatabase().getSolutionVectorSize();
-    Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(solution_dim);
+    Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(Constants::MBD_SOLUTION_SIZE);
     MBDMethod<Constants::floatEVAA> solver;
 
     solver.Solve(sol);

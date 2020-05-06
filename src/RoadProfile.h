@@ -159,8 +159,7 @@ public:
         carObj->setInitialAngularVelocityGlobalZ(carObj->getCurrentAngularVelocityLagrangian());
 
 		// apply angle condition on z angle
-
-
+		carObj->setInitialAngleGlobalZ(carObj->_currentAngleLagrangian = std::atan2(carObj->_currentVelocityLagrangian[1], carObj->_currentVelocityLagrangian[0]));
 	}
 
 	virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj, T* externalTorque){

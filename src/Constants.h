@@ -7,6 +7,9 @@ namespace Constants {
 /** alignment for mkl malloc */
 constexpr size_t ALIGNMENT = 64;
 
+/** MBD solution vector size */
+constexpr size_t MBD_SOLUTION_SIZE = 61;
+
 // consider Constants::DIM = 4 for efficiency!!!
 // 10 Constants::DIMensions because of torque of the body
 /** dimension of solution space */

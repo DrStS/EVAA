@@ -288,6 +288,7 @@ public:
     inline const T* getPositionVector() const { return _PositionVector; }
     inline const T* getAngleCG() const { return _angleCG; }
     void setInitialAngularVelocityGlobalZ(T AngularVelocityLagrangian) { _initialAngularVelocityGlobal[2] = AngularVelocityLagrangian; }
+	void setInitialAngleGlobalZ(T AngleLagrangian) { _initialAngleGlobal[2] = AngleLagrangian; }
     inline const T* getCurrentVelocityTwoTrackModel() const { return _currentVelocityTwoTrackModel; }
     inline T* getCurrentDisplacementTwoTrackModel() const { return _currentDisplacementTwoTrackModel; } // TODO consider friend
     inline const T* getCurrentCIRTwoTrackModel() const { return _currentCIRTwoTrackModel; }

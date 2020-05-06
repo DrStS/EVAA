@@ -23,7 +23,6 @@ private:
     size_t num_iter;
     int max_iter;
     T tol;
-    size_t solution_dim;  /// this is by the formulation
     std::string solver_name;
     MBDSolver used_solver;
 
@@ -258,7 +257,6 @@ private:
         num_iter = db.getNumberOfTimeIterations();
         max_iter = db.getMaxNumberOfBroydenIterationForMBD();
         tol = db.getToleranceBroydenIterationForMBD();
-        solution_dim = db.getSolutionVectorSize();  /// this is by the formulation
         used_solver = db.getUsedSolverForMBD();
         lagrangian_boundary_conditions = db.getLagrangianRoadConditions();
         eulerian_boundary_conditions = db.getEulerianRoadConditions();
@@ -1543,9 +1541,9 @@ public:
     void Solve(T* solution_vector) {
         // From the formulation we have 61 dimensions in the solution vector
         auto& db = MetaDatabase<T>::getDatabase();
-        size_t solution_size = (this->num_iter + 1) * this->solution_dim;
+        size_t solution_size = (this->num_iter + 1) * Constants::MBD_SOLUTION_SIZE;
         T* complete_vector = Math::calloc<T>(solution_size);
-        x_vector = Math::calloc<T>(solution_dim);
+        x_vector = Math::calloc<T>(Constants::MBD_SOLUTION_SIZE);
         Math::GetTilda<T>(r_fl, r_fl_tilda);
         Math::GetTilda<T>(r_fr, r_fr_tilda);
         Math::GetTilda<T>(r_rl, r_rl_tilda);
@@ -1712,8 +1710,8 @@ public:
         solutionCSV.writeSolutionMatrixMBD(complete_vector, this->num_iter + 1);
 #endif  // WRITECSV
 
-        T* start = complete_vector + (this->num_iter) * this->solution_dim;
-        Math::copy<T>(this->solution_dim, start, 1, solution_vector, 1);
+        T* start = complete_vector + (this->num_iter) * Constants::MBD_SOLUTION_SIZE;
+        Math::copy<T>(Constants::MBD_SOLUTION_SIZE, start, 1, solution_vector, 1);
         //	std::cout << "Solution copied!\n" << std::endl;
         Math::free<T>(complete_vector);
         Math::free<T>(x_vector);
@@ -1801,10 +1799,8 @@ public:
         construct_f_vector(f_);
     }
 
-    /**
-     * Returns the dimension of the solution vector (=61)
-     */
-    size_t get_solution_dimension() { return this->solution_dim; }
+	size_t get_solution_dimension() { return Constants::MBD_SOLUTION_SIZE; }
+   
 
     /**
      * Beatiful output of the result
