@@ -8,7 +8,7 @@
 #include "MathLibrary.h"
 #include "MetaDatabase.h"
 
-#define DAMPING 1  // TODO remove
+//#define DAMPING 1  // TODO remove
 
 namespace EVAA {
 

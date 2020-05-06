@@ -1802,7 +1802,7 @@ public:
      * Beatiful output of the result
      * \param sln solution vector
      */
-    void print_final_result(T* sln) {
+    void PrintFinalResult(T* sln) {
         std::cout << std::scientific;
         std::cout << std::setprecision(15);
 

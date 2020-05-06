@@ -78,11 +78,6 @@ public:
 
         // 3. Update Z-angular velocities
         Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentAngularVelocityLagrangian, *_lagrangianTorque, *_newLagrangianTorque, _h, _momentOfInertiaZ);
-		/*
-         * Idea!! What if we do it at the end, since the displacement is a vector and by triangle
-         * rule sum of all should add up force is computed using on
-         */
-        _carObj->ApplyLagrangeChange(); // TODO Rethink how it can be combined with 11 dof computation
 
         // update forces and _lagrangianTorque
         _lagrangianForceVector[0] = _newLagrangianForceVector[0];
@@ -141,15 +136,16 @@ public:
             _carObj->ApplyLagrangeChange();
             solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
 
-            // only call this function at every checkpoint
-            _carObj->CombineEulerianLagrangianVectors(solution_vect);
-
 #ifdef WRITECSV
             _carObj->CombineResults();            
             Math::copy(Constants::VEC_DIM * Constants::DIM, _carObj->getPositionVector(), 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
             Math::copy(Constants::DIM, _carObj->getAngleCG(), 1, angleVecCSV + iter * Constants::DIM, 1);
             Math::copy(Constants::DIM, _carObj->_currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
 #endif // WRITECSV
+
+            // only call this function at every checkpoint
+            _carObj->CombineEulerianLagrangianVectors(solution_vect);
+
             t += _h;
             iter++;
         }
