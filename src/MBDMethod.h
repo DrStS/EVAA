@@ -29,10 +29,9 @@ private:
 
     // Environment conditions
     LagrangianBoundaryConditionRoad lagrangian_boundary_conditions;
-    LagrangianBoundaryConditionRoad eulerian_boundary_conditions;
+    EulerianBoundaryConditionRoad eulerian_boundary_conditions;
 
     // Car Definition
-
     T* Ic;
     T *upper_spring_length, *lower_spring_length;
     T *upper_spring_stiffness, *lower_spring_stiffness, *upper_spring_damping, *lower_spring_damping;
@@ -393,18 +392,6 @@ private:
 
         // vector out of the XY-plane (unit Z direction)
         perpendicular_dir[2] = 1;
-
-        if (abs(radius - db.getCircularRoadRadius()) > 0.1)
-            std::cout << "Warning! the initial position of the car is not on the "
-                         "trajectory "
-                         "provided in the circular path. \n The expected radius is "
-                      << db.getCircularRoadRadius() << ", but the car is at an initial distance of " << radius
-                      << " from the center of the circle.\n The execution procedes "
-                         "with the "
-                         "current spatial configuration and with the current "
-                         "distance to the "
-                         "center of the circle."
-                      << std::endl;
 
         T inv_radius = 1. / radius;
 
@@ -1626,8 +1613,8 @@ public:
         get_initial_length(qc_, r_fl, r_fr, r_rl, r_rr, pcc, pw_fl_, pw_fr_, pw_rl_, pw_rr_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
 
         // overwrites the initial velocity values
-        if (larangian_boundary_conditions == BoundaryConditionRoad::CIRCULAR) circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
-        if (boundary_conditions == BoundaryConditionRoad::ARBITRARY) {
+        if (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::CIRCULAR) circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
+        if (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::ARBITRARY) {
             T angle[3];
             db.getArbitraryTrajectory()->updateInitialConditions(angle, initial_angular_velocity, pcc_, vc, pt_fl_, pt_fr_, pt_rl_, pt_rr_, pw_fl_, pw_fr_, pw_rl_, pw_rr_, vt_fl, vt_fr, vt_rl, vt_rr, vw_fl, vw_fr, vw_rl, vw_rr);
             // update quaternion
@@ -1638,6 +1625,7 @@ public:
         }
         i = 0;
         j = 0;
+
         // wc
         wc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
         Math::copy<T>(Constants::DIM, initial_angular_velocity, 1, wc_, 1);
@@ -1778,21 +1766,28 @@ public:
 
         compute_external_forces();
         // TODO change this if else shit to something nice (function pointers maybe)
-        if (boundary_conditions == BoundaryConditionRoad::FIXED) {
+        if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::FIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::STRAIGHT)){
             get_fixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
-        else if (boundary_conditions == BoundaryConditionRoad::NONFIXED) {
+        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::NONFIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::STRAIGHT)){
             get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
-        else if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) {
+        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::FIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::CIRCULAR)){
             auto& db = MetaDatabase<T>::getDatabase();
             get_circular_road_force(cf_local_FR_fl, vt_fl_, db.getTyreMassFrontLeft(), pt_fl_);
             get_circular_road_force(cf_local_FR_fr, vt_fr_, db.getTyreMassFrontRight(), pt_fr_);
             get_circular_road_force(cf_local_FR_rl, vt_rl_, db.getTyreMassRearLeft(), pt_rl_);
             get_circular_road_force(cf_local_FR_rr, vt_rr_, db.getTyreMassRearRight(), pt_rr_);
         }
-        else if (boundary_conditions == BoundaryConditionRoad::ARBITRARY) {
+        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::SINUSOIDAL) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::ARBITRARY)) {
             getArbitraryRoadForces(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr, iteration);
+        }
+        else {
+            throw std::logic_error("The MBD simulation currently only supports following combinations of road conditions: \n"
+                "   - fixed / circular \n"
+                "   - fixed / straight\n"
+                "   - detached / straight\n"
+                "   - sinusoidal / arbitrary");
         }
 
         compute_car_body_total_torque();

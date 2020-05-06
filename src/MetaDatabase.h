@@ -185,8 +185,6 @@ public:
         //--------------------------------------------------
         const auto load_data = EVAA_load_module(loadFilename, xml_schema::flags::dont_validate);
 
-        readVector(_gravity, simulation.GeneralSettingsXML().GravityXML());
-
         if (load_data->eulerianRoadProfile().fixedTyre().present()) {
             _eulerianBoundaryCondition = EulerianBoundaryConditionRoad::FIXED;
             std::cout << "Run the simulation with fixed tyres" << std::endl;
@@ -199,9 +197,9 @@ public:
             _eulerianBoundaryCondition = EulerianBoundaryConditionRoad::SINUSOIDAL;
             std::cout << "Run the simulation with a sinusoidal tyre profile" << std::endl;
 
-            const auto sinusoidalProfile = load_data->eulerianRoadProfile().sinusoidalProfile();
+            const auto sinusoidalProfile = load_data->eulerianRoadProfile().sinusoidalProfile().get();
             _trajectory = new ArbitraryTrajectory<T>(_num_time_iter, _timestep);
-            _trajectory->initializeVerticalProfile(sinusoidalProfile.get().rightTyre().amplitude(), sinusoidalProfile.get().leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(), sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(), sinusoidalProfile.leftTyre().shift(), _initial_upper_spring_length, _initial_lower_spring_length, _l_lat, _l_long);
+            _trajectory->initializeVerticalProfile(sinusoidalProfile.rightTyre().amplitude(), sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(), sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(), sinusoidalProfile.leftTyre().shift(), _initial_upper_spring_length, _initial_lower_spring_length, _l_lat, _l_long);
             _trajectory->calculateTyreShifts();
             _trajectory->calculateVerticalPositionsLegs();
             _trajectory->calculateVerticalAccelerations();
@@ -252,10 +250,10 @@ public:
             readVector(_initial_vel_tyre + 2 * Constants::DIM, circularProfile.initialVelocity());
             readVector(_initial_vel_tyre + 3 * Constants::DIM, circularProfile.initialVelocity());
 
-            if (circularProfile.directionRotation == "clockwise") {
+            if (circularProfile.directionRotation() == "clockwise") {
                 _rotationCircularRoad = DirectionCircularRoad::CLOCKWISE;
             }
-            else if (circularProfile.directionRotation == "counterClockwise") {
+            else if (circularProfile.directionRotation() == "counterClockwise") {
                 _rotationCircularRoad = DirectionCircularRoad::COUNTERCLOCKWISE;
             } else {
                 throw std::logic_error(
@@ -293,9 +291,11 @@ public:
                 "nonfixed.");
         }
 
-        readVectorLegs(_external_force_tyre, load_data->forces().forceTyre());
-        readVectorLegs(_external_force_wheel, load_data->forces().forceWheel());
-        readVector(_external_force_body, load_data->forces().forceBody());
+        readVectorLegs(_external_force_tyre, load_data->externalForces().forceTyre());
+        readVectorLegs(_external_force_wheel, load_data->externalForces().forceWheel());
+        readVector(_external_force_body, load_data->externalForces().forceBody());
+
+        readVector(_gravity, load_data->GravityField());
     }
 
     /* Getters. TODO: make all "T *get<X>" return const ref, mark the getter as
