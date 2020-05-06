@@ -6,7 +6,7 @@
 #include "H5PredType.h"
 
 template <typename T>
-void writeVectorToFile(const std::string& fileName, const std::string& vectorName, T* vector,
+void writeVectorToFile(const std::string& fileName, const std::string& datasetName, T* vector,
                        size_t size) {
     /*
      * Create a new file using H5F_ACC_TRUNC access,
@@ -32,7 +32,7 @@ void writeVectorToFile(const std::string& fileName, const std::string& vectorNam
      * Create a new dataset within the file using defined dataspace and
      * datatype and default dataset creation properties.
      */
-    H5::DataSet dataset = file.createDataSet(vectorName, datatype, dataspace);
+    H5::DataSet dataset = file.createDataSet(datasetName, datatype, dataspace);
     /*
      * Write the data to the dataset using default memory space, file
      * space, and transfer properties.
@@ -41,13 +41,13 @@ void writeVectorToFile(const std::string& fileName, const std::string& vectorNam
 }
 
 template <typename T>
-void readVectorFromFile(const std::string& fileName, const std::string& vectorName, T* vector,
+void readVectorFromFile(const std::string& fileName, const std::string& datasetName, T* vector,
                         size_t size) {
     /*
      * Open the specified file and the specified dataset in the file.
      */
     H5::H5File file(fileName, H5F_ACC_RDONLY);
-    H5::DataSet dataset = file.openDataSet(vectorName);
+    H5::DataSet dataset = file.openDataSet(datasetName);
     /*
      * Read data from hyperslab in the file into the hyperslab in
      * memory and display the data.
