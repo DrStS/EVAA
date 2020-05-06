@@ -177,7 +177,7 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1e2
+num_iter = 1e4
 delta_t = 1e-3; 
 t = 0:delta_t:(num_iter - 1)*delta_t;
 
@@ -280,6 +280,7 @@ for i = 1: length(t)
         vec_rhs = B*u_n + C*u_n_m_1 + DMat*u_n_m_2 + E*u_n_m_3 + D*(2*u_n-0.5*u_n_m_1)/delta_t;
         u_n_p_1 = ((9/4)*M_div_h2 +1.5* D / delta_t + K)\ (vec_rhs + rhs);
     end
+    u_n_p_1(idx) = 0;
     K = get_K();
     D = get_D();
     if euler
