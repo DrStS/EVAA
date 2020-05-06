@@ -618,7 +618,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
-    if (true) {
+    if (true) { // TODO remove this
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 		Lagrange<Constants::floatEVAA>* lagrange = new Straight<Constants::floatEVAA>();
@@ -631,7 +631,11 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
         solver.PrintFinalResults(sol);
 
         Math::free<Constants::floatEVAA>(sol);
+        Math::free(sol);
         delete car;
+        delete lagrange;
+        delete euler;
+        delete load;
     }
     else {
         std::cout << "Linear11dof solver will only work with NONFIXED boundary "

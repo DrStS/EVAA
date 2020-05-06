@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     for (std::vector<std::string>::iterator it = allArgs.begin(); it != allArgs.end(); ++it) {
         std::cout << *it << std::endl;
     }
-    // allArgs[0] = "EVAA.exe"
+    // allArgs[0] = "EVAA.exe" TODO : Do we need this?
     if (allArgs.size() > 2) {
         EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
     }
