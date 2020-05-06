@@ -261,12 +261,11 @@ private:
         lagrangian_boundary_conditions = db.getLagrangianRoadConditions();
         eulerian_boundary_conditions = db.getEulerianRoadConditions();
 
-
         // Car Definition
         T gx = db.getGravityField()[0];
         T gy = db.getGravityField()[1];
         T gz = db.getGravityField()[2];
-    
+
         // Fill up vectors
         Math::copy(Constants::NUM_LEGS, db.getBodyStiffnessVector(), 1, upper_spring_stiffness, 1);
         Math::copy(Constants::NUM_LEGS, db.getTyreStiffnessVector(), 1, lower_spring_stiffness, 1);
@@ -361,6 +360,27 @@ private:
     }
 
     /* Road Profile and Load module */
+
+    void circular_path_initialization_quaternion(T* vcc, T* q) {
+        T* unit_x_vector = Math::calloc<T>(Constants::DIM);
+        T* normal_quaternion_vector = Math::calloc<T>(Constants::DIM);
+        T quaternion_angle = 0;
+
+        // unit x vector
+        unit_x_vector[0] = 1;
+        unit_x_vector[1] = 0;
+        unit_x_vector[2] = 0;
+
+        // calculate quaternion
+        Math::GetQuaternion<T>(unit_x_vector, vcc, &quaternion_angle, normal_quaternion_vector);
+        q[0] = normal_quaternion_vector[0] * std::sin(0.5 * quaternion_angle);
+        q[1] = normal_quaternion_vector[1] * std::sin(0.5 * quaternion_angle);
+        q[2] = normal_quaternion_vector[2] * std::sin(0.5 * quaternion_angle);
+        q[3] = std::cos(0.5 * quaternion_angle);
+
+        Math::free<T>(normal_quaternion_vector);
+        Math::free<T>(unit_x_vector);
+    }
 
     /** Updates the velocity of the 4 wheels and tyres as well as the angular
      * velocity, such that the car is already in the trajectory of the circle
@@ -471,10 +491,9 @@ private:
         unit_z_vector = Math::calloc<T>(Constants::DIM);
         velocity_direction_tyre = Math::calloc<T>(Constants::DIM);
 
-        // the force is in the same direction as the position vector
-        // TODO: take care of situation when the center of the circle is not at
-        // the origin!! ///// RAFFI
+        // the direction vector from the center to the car in Fr
         Math::copy<T>(Constants::DIM, p, 1, Fr, 1);
+        Math::axpy<T>(Constants::DIM, -1, MetaDatabase<T>::getDatabase().getCircularRoadCenter(), 1, Fr, 1);
 
         Fr[2] = 0;  // path only in XZ-plane
 
@@ -745,6 +764,7 @@ private:
         pt_fr_ = x + 52;
         pt_rl_ = x + 55;
         pt_rr_ = x + 58;
+//        std::cout << "wc: " << wc_[0] << ", " << wc_[1] << ", " << wc_[2] << std::endl;
     }
 
     void compute_spring_lengths(T* pcc_, T* pw_, T* pt_, T* cf_r_up_, T* cf_r_low_, T* r_, T& norm_r_up, T& inv_norm_r_up, T& norm_r_low, T& inv_norm_r_low) {
@@ -933,11 +953,13 @@ private:
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, this->r_fl_tilda, Constants::DIM, wc_, 1, 0, cf_temp, 1);
         Math::copy<T>(Constants::DIM, vc_, 1, cf_upper_dampf_fl, 1);
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN, Constants::DIM, cf_temp, 1, 1, cf_upper_dampf_fl, 1);
+
         // dot((vc - C_cN' * (r1_tilda * wc)), r_up1)
         // std::cout << Math::dot<T>(Constants::DIM, upper_dampf1, 1, r_up1, 1)
         // << std::endl; std::cout << Math::dot_product<T>(upper_dampf1, r_up1,
         // Constants::DIM) << std::endl;
         scale = Math::dot<T>(Constants::DIM, cf_upper_dampf_fl, Constants::INCX, cf_r_up_fl, Constants::INCX);
+
         // scale = Math::dot_product<T>(upper_dampf1, r_up1, Constants::DIM);
 
         // dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1)
@@ -947,6 +969,7 @@ private:
         // inv_norm_r_up1 * inv_norm_r_up1
         scale = scale * inv_norm_r_up_fl * inv_norm_r_up_fl * this->upper_spring_damping[0];
         Math::copy<T>(Constants::DIM, cf_r_up_fl, 1, cf_upper_dampf_fl, 1);
+
         Math::scal<T>(Constants::DIM, scale, cf_upper_dampf_fl, 1);
 
         //// upper_dampf_fr
@@ -1426,6 +1449,7 @@ lower_normal4;
         Math::axpy<T>(Constants::DIM, -1, cf_car_rot_force_rr, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, -1, cf_lower_rot_force_rr, 1, brem_start, 1);
 
+
         // local_FR1; ...					  %vt1_dot
         brem_start += Constants::DIM;
         Math::copy<T>(Constants::DIM, cf_local_FR_fl, 1, brem_start, 1);
@@ -1608,6 +1632,9 @@ public:
         // pt_rr
         pt_rr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 
+        // compute correct quaternion
+        if (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::CIRCULAR) circular_path_initialization_quaternion(vc, qc_);
+
         get_initial_length(qc_, r_fl, r_fr, r_rl, r_rr, pcc, pw_fl_, pw_fr_, pw_rl_, pw_rr_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
 
         // overwrites the initial velocity values
@@ -1764,13 +1791,13 @@ public:
 
         compute_external_forces();
         // TODO change this if else shit to something nice (function pointers maybe)
-        if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::FIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::STRAIGHT)){
+        if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::FIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::STRAIGHT)) {
             get_fixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
-        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::NONFIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::STRAIGHT)){
+        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::NONFIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::STRAIGHT)) {
             get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
-        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::FIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::CIRCULAR)){
+        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::FIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::CIRCULAR)) {
             auto& db = MetaDatabase<T>::getDatabase();
             get_circular_road_force(cf_local_FR_fl, vt_fl_, db.getTyreMassFrontLeft(), pt_fl_);
             get_circular_road_force(cf_local_FR_fr, vt_fr_, db.getTyreMassFrontRight(), pt_fr_);
@@ -1781,7 +1808,8 @@ public:
             getArbitraryRoadForces(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr, iteration);
         }
         else {
-            throw std::logic_error("The MBD simulation currently only supports following combinations of road conditions: \n"
+            throw std::logic_error(
+                "The MBD simulation currently only supports following combinations of road conditions: \n"
                 "   - fixed / circular \n"
                 "   - fixed / straight\n"
                 "   - detached / straight\n"
@@ -1799,8 +1827,7 @@ public:
         construct_f_vector(f_);
     }
 
-	size_t get_solution_dimension() { return Constants::MBD_SOLUTION_SIZE; }
-   
+    size_t get_solution_dimension() { return Constants::MBD_SOLUTION_SIZE; }
 
     /**
      * Beatiful output of the result

@@ -637,9 +637,9 @@ public:
         pw_rr[1] = _legPointsY_rr[0];
 
         pw_fl[2] = _initialUpperSpringLength_fl + _legPointsZ_fl[0];
-        pw_fl[2] = _initialUpperSpringLength_fr + _legPointsZ_fr[0];
-        pw_fl[2] = _initialUpperSpringLength_rl + _legPointsZ_rl[0];
-        pw_fl[2] = _initialUpperSpringLength_rr + _legPointsZ_rr[0];
+        pw_fr[2] = _initialUpperSpringLength_fr + _legPointsZ_fr[0];
+        pw_rl[2] = _initialUpperSpringLength_rl + _legPointsZ_rl[0];
+        pw_rr[2] = _initialUpperSpringLength_rr + _legPointsZ_rr[0];
 
         // tyre positions
         pt_fl[0] = _legPointsX_fl[0];
