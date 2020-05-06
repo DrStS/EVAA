@@ -60,7 +60,7 @@ public:
      * VelocityXY and PositionXY from the car object \param t current simulation
      * time
      */
-    void LagrangianUpdate(T& t) {
+    void LagrangianUpdate(const size_t iter) {
         // 2. Update global X,Y positions of the car
         Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentPositionLagrangian[0], _carObj->getCurrentVelocityLagrangian()[0], _lagrangianForceVector[0], _h, _carObj->getMassCarFull());
         Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentPositionLagrangian[1], _carObj->getCurrentVelocityLagrangian()[1], _lagrangianForceVector[1], _h, _carObj->getMassCarFull());
@@ -69,8 +69,8 @@ public:
         Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentAngleLagrangian, _carObj->getCurrentAngularVelocityLagrangian(), *_lagrangianTorque, _h, _momentOfInertiaZ);
 
         // get forces
-        _loadModuleObj->GetLagrangianForce(t, _newLagrangianForceVector);
-        _loadModuleObj->GetTorqueLagrange(t, _newLagrangianTorque);
+        _loadModuleObj->GetLagrangianForce(iter, _newLagrangianForceVector);
+        _loadModuleObj->GetTorqueLagrange(iter, _newLagrangianTorque);
 
         // 1. Update global X,Y velocities
         Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentVelocityLagrangian[0], _lagrangianForceVector[0], _newLagrangianForceVector[0], _h, _carObj->getMassCarFull());
@@ -124,12 +124,12 @@ public:
             // This has to be done at each time step
             //
             // update force vector
-			_loadModuleObj->GetLagrangianForce(t, _lagrangianForceVector);
-			_loadModuleObj->GetTorqueLagrange(t, _lagrangianTorque);
+			_loadModuleObj->GetLagrangianForce(iter, _lagrangianForceVector);
+			_loadModuleObj->GetTorqueLagrange(iter, _lagrangianTorque);
 			//if (iter == 1000) IO::writeVector(_lagrangianForceVector, lagrangianForceDimension); 
 		    LagrangianUpdate(t);
 
-            _twoTrackModelObj->UpdateStep(t, _carObj->_currentDisplacementTwoTrackModel);
+            _twoTrackModelObj->UpdateStep(iter, _carObj->_currentDisplacementTwoTrackModel);
             _carObj->UpdateLengthsTwoTrackModel();
             _carObj->ApplyLagrangeChange();
             solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);

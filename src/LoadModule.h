@@ -146,8 +146,8 @@ public:
 		return _lagrangianProfile->GetName();
 	}
 
-	void GetLagrangianForce(T _time, T* lagrangeForce) {
-		_lagrangianProfile->GetProfileForceLagrangian(_carObj, _lagrangianForce, lagrangeForce);
+	void GetLagrangianForce(const size_t& _iterationCount, T* lagrangeForce) {
+		_lagrangianProfile->GetProfileForceLagrangian(_iterationCount, _carObj, _lagrangianForce, lagrangeForce);
 
 		// add external force
 #pragma loop(ivdep)
@@ -164,7 +164,7 @@ public:
 	* \param[in] _time current time in ALE
 	* \param[out] eulerForce get Eulerian Force
 	*/
-	void GetEulerianForce(T _time, T* eulerForce) {
+	void GetEulerianForce(const size_t& _iterationCount, T* eulerForce) {
 		// compute reaction force based on current computed _lagrangianForce always called after GetLagrangian Force otherwise gives wrong result
 		reactionForce[0] = _lagrangianForce[0];
 		reactionForce[1] = _lagrangianForce[1];
@@ -174,7 +174,7 @@ public:
 			reactionForce[1] += _lagrangianForce[(Constants::DIM - 1)*i + 1];
 		}
 
-		_eulerianProfile->GetProfileForceEulerian(_carObj, eulerForce);
+		_eulerianProfile->GetProfileForceEulerian(_iterationCount, _carObj, eulerForce);
 		// Add reaction component on the tyre
 		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
 			Math::axpy<T>(Constants::DIM, -0.25, reactionForce, Constants::INCX, _lagrangianForce + Constants::TYRE_INDEX_LAGRANGE[i], Constants::INCX);
@@ -192,13 +192,13 @@ public:
 	* /param[out] lagrangeForce 2-dim vector (x and y directions)
 	* /param[out] eulerForce 11-dim vector (11 DOF format)
 	*/
-	void ComputeForceALE(T _time, T* lagrangeForce, T* eulerForce) {
-		GetLagrangianForce(_time, lagrangeForce);
-		GetEulerianForce(_time, eulerForce);
+	void ComputeForceALE(const size_t& _iterationCount, T* lagrangeForce, T* eulerForce) {
+		GetLagrangianForce(_iterationCount, lagrangeForce);
+		GetEulerianForce(_iterationCount, eulerForce);
 	}
 
-	void GetTorqueLagrange(T _time, T* torque) {
-		_lagrangianProfile->GetProfileTorqueLagrangian(_carObj, torque);
+	void GetTorqueLagrange(const size_t& _iterationCount, T* torque) {
+		_lagrangianProfile->GetProfileTorqueLagrangian(_iterationCount, _carObj, torque);
 	}
 };
 

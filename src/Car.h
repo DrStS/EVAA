@@ -298,6 +298,7 @@ public:
     inline T* getkVec() const { return _kVec; } // TODO consider friend
     inline T* getdVec() const { return _dVec; } // TODO consider friend
 
+
 public:
     /*
     * Convention:
