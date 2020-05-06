@@ -632,6 +632,9 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 
         Math::free<Constants::floatEVAA>(sol);
         delete car;
+        delete lagrange;
+        delete euler;
+        delete load;
     }
     else {
         std::cout << "Linear11dof solver will only work with NONFIXED boundary "
