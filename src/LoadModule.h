@@ -150,11 +150,12 @@ public:
 		_lagrangianProfile->GetProfileForceLagrangian(_carObj, _lagrangianForce, lagrangeForce);
 
 		// add external force
-		// TODO Optimize (Teo)
+#pragma loop(ivdep)
 		for (auto i = 0; i < Constants::VEC_DIM; ++i) {
 			lagrangeForce[0] += externalForce[i*Constants::DIM];
 			lagrangeForce[1] += externalForce[i*Constants::DIM + 1];
 		}
+
 		Math::axpy<T>(Constants::VEC_DIM, 1, externalForce, 3,  _lagrangianForce, 2);
 		Math::axpy<T>(Constants::VEC_DIM, 1, externalForce+1, 3,  _lagrangianForce+1, 2);
 	}
@@ -167,7 +168,7 @@ public:
 		// compute reaction force based on current computed _lagrangianForce always called after GetLagrangian Force otherwise gives wrong result
 		reactionForce[0] = _lagrangianForce[0];
 		reactionForce[1] = _lagrangianForce[1];
-		// TODO Optimize (Teo)
+#pragma loop(ivdep)
 		for (auto i = 1; i < Constants::VEC_DIM; ++i) {
 			reactionForce[0] += _lagrangianForce[(Constants::DIM - 1)*i];
 			reactionForce[1] += _lagrangianForce[(Constants::DIM - 1)*i + 1];

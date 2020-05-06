@@ -245,8 +245,8 @@ public:
 	virtual ~Fixed(){}
 
 	virtual void GetProfileForceEulerian(Car<T>* carObj, T* profileInducedForce) {
-		// TODO optimize it
 		Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+#pragma loop(ivdep)
 		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
 			profileInducedForce[Constants::TYRE_INDEX_EULER[i]] = //
                 carObj->getkVec()[2 * i + 1] * (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] - carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1])  //

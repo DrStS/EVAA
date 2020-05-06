@@ -326,6 +326,7 @@ TEMPLATE_FLOAT_TYPE
 inline lapack_int lacpy(int matrix_layout, char uplo, lapack_int m, lapack_int n, const T* a, lapack_int lda, T* b, lapack_int ldb) { return invokeFD(LAPACKE_slacpy, LAPACKE_dlacpy, matrix_layout, uplo, m, n, a, lda, b, ldb); }
 
 // Vectorized Ops
+// TODO: Include mode (High/Low Accuracy or Enhanced Performance) (see https://software.intel.com/en-us/mkl-developer-reference-c-vm-data-types-accuracy-modes-and-performance-tips)
 
 /** Wraps vsAdd and vdAdd. */
 TEMPLATE_FLOAT_TYPE
