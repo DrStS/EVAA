@@ -25,16 +25,16 @@ private:
     size_t _solutionVectorSize;
 
     // time and solution vectors
-    T* _timeArray;
-    T* _solutionVector;
+    T* _timeArray = nullptr;
+    T* _solutionVector = nullptr;
 
     // global centripetal forces on the whole car [XYZ]
-    T* _lagrangianForceVector;
-    T* _newLagrangianForceVector;
+    T* _lagrangianForceVector = nullptr;
+    T* _newLagrangianForceVector = nullptr;
 
     // global torque on the car [XYZ]
-    T* _lagrangianTorque;
-    T* _newLagrangianTorque;
+    T* _lagrangianTorque = nullptr;
+    T* _newLagrangianTorque = nullptr;
 
     // quantities for the whole car
     T _momentOfInertiaZ;
@@ -97,8 +97,6 @@ public:
 
         // this was 2 dimensional allocation and update force updates 3 dimension on this
         _newLagrangianForceVector = Math::calloc<T>(lagrangianForceDimension);
-
-        //springElongation = Math::calloc<T>(2 * Constants::NUM_LEGS);
 
         _lagrangianTorque = new T;
         _newLagrangianTorque = new T;

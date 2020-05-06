@@ -30,7 +30,7 @@ protected:
 	LoadModule<T>* _loadModuleObj;
 
 	/** Force Vector for the load module*/
-	T* _twoTrackModelForce;
+	T* _twoTrackModelForce = nullptr;
 
     // time step related
     /** solution in next timestep */
@@ -44,32 +44,40 @@ protected:
     int _newtonIteration;
 
     // solution in next timestep
-    T* _u_n_p_1;
+    T* _u_n_p_1 = nullptr;
 
     // solution in previous timestep
-    T* _u_n_m_1;
+    T* _u_n_m_1 = nullptr;
 
     // solution in current timestep
-    T* _u_n;
-    T *_A, *_B, *_C; /* pointers to matrices used for the backward euler */
-    T *_M_h2, *_K, *_D;
+    /* pointers to matrices used for the backward euler */
+    T* _u_n = nullptr;
+    T* _A = nullptr;
+    T* _B = nullptr;
+    T* _C = nullptr; 
+    
+    T* _M_h2 = nullptr;
+    T* _K = nullptr;
+    T* _D = nullptr;
     
     /** used for the constructStiffnesMatrix and ConstructDampingMatrix. */
-    T* _matrixTmp;
-	T *_kVec;
-	T *_dVec;
+    T* _matrixTmp = nullptr;
+    T* _kVec = nullptr;
+    T* _dVec = nullptr;
 
     /** used for the constructStiffnesMatrix and ConstructDampingMatrix as well as for the BE. */
-    T* _temp;
+    T* _temp = nullptr;
 
 #ifdef INTERPOLATION
-	T *_J, *_dKdxx;
+    T* _J = nullptr;
+    T* _dKdxx = nullptr;
 #ifdef DAMPING
-	T *_dDdxx, *_dddl;
+    T* _dDdxx = nullptr;
+    T* _dddl = nullptr;
 #endif // DAMPING
-    T* _residual;
+    T* _residual = nullptr;
     T _residualNorm;
-	T *_dkdl; 
+    T* _dkdl = nullptr;
 #endif // INTERPOLATION
 
 public:

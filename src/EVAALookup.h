@@ -251,6 +251,7 @@ public:
 
         IO::writeLookUpGridPlusInterpolateValues<T>(axis, grid, nx, interpolationPoints, interpolation, 2 * nx - 1, "C:\\software\\repos\\EVAA\\output\\LookupTablePlusInterpolation" + std::to_string(add) + ".txt");
         Math::free<T>(interpolation);
+        Math::free<T>(interpolationPoints);
     }
 };
 
