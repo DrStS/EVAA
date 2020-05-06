@@ -37,7 +37,7 @@ protected:
     T _factor_h;
     /** solution in next timestep */
     T _h;
-	T _currentTime;
+	size_t _currentIter;
 
     T _tolerance;
     int _maxNewtonIteration;
@@ -92,7 +92,7 @@ public:
      * \oaram[out] solution of the following timestep
      * [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
-    virtual void UpdateStep(T time, T* solution) = 0;
+    virtual void UpdateStep(size_t currentIter, T* solution) = 0;
 
     /**
      * Destructor
@@ -287,11 +287,11 @@ public:
      * Performs one timestep of the 11DOF solver
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
-    virtual void UpdateStep(T time, T* solution) {
+    virtual void UpdateStep(size_t currentIter, T* solution) {
         // Math::scal<T>(Constants::DOF, -1, _u_n_m_1, Constants::INCX);
 		// Get the force
-		_currentTime = time;
-		_loadModuleObj->GetEulerianForce(time, _twoTrackModelForce);
+		_currentIter = currentIter;
+		_loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
 		Math::Solvers<T, TwoTrackModelBE<T> >::LinearBackwardEuler(_A, _B, _C, _u_n, _u_n_m_1, _twoTrackModelForce, _u_n_p_1, Constants::DOF);
         
 #ifdef INTERPOLATION
@@ -442,7 +442,7 @@ public:
      */
     void UpdateSystem() {
         _car->UpdateLengthsTwoTrackModel();
-		_loadModuleObj->GetEulerianForce(_currentTime, _twoTrackModelForce);
+		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructStiffnessMatrix();
 #ifdef DAMPING
         ConstructDampingMatrix();
@@ -867,23 +867,24 @@ public:
         _activeExecutor = &TwoTrackModelBDF2<T>::FirstTwoSteps;
     }
 
-    void FirstTwoSteps(T time, T* solution) {
+    void FirstTwoSteps(size_t currentIter, T* solution) {
         if (_timeStepCount == 0) {
             Math::copy<T>(Constants::DOF, _u_n_m_1, 1, _u_n_m_2, 1);
-            TwoTrackModelBE<T>::UpdateStep(time, solution);
+            TwoTrackModelBE<T>::UpdateStep(currentIter, solution);
         }
         else {
             Math::copy<T>(Constants::DOF, _u_n_m_2, 1, _u_n_m_3, 1);
             Math::copy<T>(Constants::DOF, _u_n_m_1, 1, _u_n_m_2, 1);
-            TwoTrackModelBE<T>::UpdateStep(time, solution);
+            TwoTrackModelBE<T>::UpdateStep(currentIter, solution);
             // construct _A
+            ConstructAMatrix();
             ConstructAMatrix();
             _activeExecutor = &TwoTrackModelBDF2<T>::UpdateStepBDF2;
         }
     }
-    virtual void UpdateStep(T time, T* solution) {
-		_currentTime = time;
-        (this->*_activeExecutor)(time, solution);
+    virtual void UpdateStep(size_t currentIter, T* solution) {
+		_currentIter = currentIter;
+        (this->*_activeExecutor)(_currentIter, solution);
         _timeStepCount += 1;
     }
 
@@ -893,10 +894,10 @@ public:
      * \return solution of the following timestep
      * [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
-    void UpdateStepBDF2(T time, T* solution) {
+    void UpdateStepBDF2(size_t currentIter, T* solution) {
         // cblas_dscal(DOF,0, force, 1);
 		// compute Force
-		_loadModuleObj->GetEulerianForce(time, _twoTrackModelForce);
+		_loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
 
         GetInitialGuess(_twoTrackModelForce);
 #ifdef INTERPOLATION
@@ -940,7 +941,7 @@ public:
     void UpdateSystem() {
         // constructSpringLengths();
         _car->UpdateLengthsTwoTrackModel();
-		_loadModuleObj->GetEulerianForce(_currentTime, _twoTrackModelForce);
+		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructStiffnessMatrix();
 #ifdef DAMPING
         ConstructDampingMatrix();
@@ -1042,7 +1043,7 @@ public:
        
         while (std::abs(t - (_tend + _h)) > eps) {
             // solution_vect = _uSolution + iter * (DOF);
-            UpdateStep(t, sol_vect);
+            UpdateStep(iter, sol_vect);
 #ifdef WRITECSV
         newtonFile.writeSingleValue(_newtonIteration);
         newtonFile.writeSingleValue(_residualNorm);
