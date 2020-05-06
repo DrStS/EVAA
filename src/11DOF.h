@@ -1037,7 +1037,7 @@ public:
             UpdateStep(t, sol_vect);
 #ifdef WRITECSV
         newtonFile.writeSingleValue(_newtonIteration);
-        newtonFile.writeSingleValue(_residualNorm);
+        //newtonFile.writeSingleValue(_residualNorm);
         newtonFile.newLine();
 #endif // WRITECSV
             iter++;

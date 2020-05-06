@@ -272,6 +272,7 @@ public:
         myfile << solVec[49 + 1 * Constants::DIM + 0] << ",";      // 59 pt_fr[x]
         myfile << solVec[49 + 1 * Constants::DIM + 2] << ",";      // 60 pt_fr[z]
         myfile << solVec[49 + 1 * Constants::DIM + 1] << "\n";      // 61 pt_fr[y]
+
     }
 
     void writeSingleValue(T value) { myfile << value << ","; }
@@ -288,10 +289,10 @@ public:
         writeSingleValue(MetaDatabase<T>::getDatabase().getLongitudalLegPositionFrontLeft());
         writeSingleValue(MetaDatabase<T>::getDatabase().getLongitudalLegPositionFrontRight());
 
-        writeSingleValue(-MetaDatabase<T>::getDatabase().getLatidudalLegPositionRearRight());
-        writeSingleValue(MetaDatabase<T>::getDatabase().getLatidudalLegPositionRearLeft());
-        writeSingleValue(MetaDatabase<T>::getDatabase().getLatidudalLegPositionFrontLeft());
-        writeSingleValue(-MetaDatabase<T>::getDatabase().getLatidudalLegPositionFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLatidudalLegPositionRearRight());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLatidudalLegPositionRearLeft());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLatidudalLegPositionFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLatidudalLegPositionFrontRight());
 
         writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthRearRight());
         writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthRearLeft());

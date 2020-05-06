@@ -399,7 +399,7 @@ public:
 
     int getMaxNumberOfBroydenIterationForMBD() const { return _max_num_iter; }
 
-    int getToleranceBroydenIterationForMBD() const { return _tolerance; }
+    T getToleranceBroydenIterationForMBD() const { return _tolerance; }
 
     inline T getTimeStepSize() const { return _timestep; }
 

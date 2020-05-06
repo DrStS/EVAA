@@ -6,9 +6,9 @@
 #include <string>
 
 #include "Constants.h"
+#include "IO/Output.h"
 #include "MathLibrary.h"
 #include "MetaDatabase.h"
-#include "IO/Output.h"
 
 namespace EVAA {
 
@@ -18,7 +18,6 @@ namespace EVAA {
 template <class T>
 class MBDMethod {
 private:
-
     // Simulation Parameters
     T h;
     size_t num_iter;
@@ -518,7 +517,6 @@ private:
 
         db.getArbitraryTrajectory()->getLagrangianForcesRearRight(i, db.getTyreMassRearRight(), Fr_rr);
         Fr_rr[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesRearRight(i, db.getTyreMassRearRight());
-
     }
 
     /** Functions needed for compute_f */
@@ -741,6 +739,10 @@ private:
         pt_fr_ = x + 52;
         pt_rl_ = x + 55;
         pt_rr_ = x + 58;
+ //       std::cout << "pw_fl: " << pw_fl_[0] << ", " << pw_fl_[1] << ", " << pw_fl_[2] << std::endl; 
+  //      std::cout << "pw_fr: " << pw_fr_[0] << ", " << pw_fr_[1] << ", " << pw_rl_[2] << std::endl;
+   //     std::cout << "pw_rl: " << pw_rl_[0] << ", " << pw_rl_[1] << ", " << pw_fr_[2] << std::endl;
+    //    std::cout << "pw_rr: " << pw_rr_[0] << ", " << pw_rr_[1] << ", " << pw_rr_[2] << std::endl;
     }
 
     void compute_spring_lengths(T* pcc_, T* pw_, T* pt_, T* cf_r_up_, T* cf_r_low_, T* r_, T& norm_r_up, T& inv_norm_r_up, T& norm_r_low, T& inv_norm_r_low) {
@@ -1269,7 +1271,7 @@ lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_fl, 1, cf_local_FR_fl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_fl, 1, cf_local_FR_fl, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_fl, 1, cf_local_FR_fl, 1);
-//        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
+        //        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fl, 1, cf_local_FR_fl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_fl, 1, cf_local_FR_fl, 1);
 
         // local_FR2 = lower_force2 + lower_dampf2 + local_FT2 + local_FR2 +
@@ -1277,7 +1279,7 @@ lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_fr, 1, cf_local_FR_fr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_fr, 1, cf_local_FR_fr, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_fr, 1, cf_local_FR_fr, 1);
-//        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
+        //        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_fr, 1, cf_local_FR_fr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_fr, 1, cf_local_FR_fr, 1);
 
         // local_FR3 = lower_force3 + lower_dampf3 + local_FT3 + local_FR3 +
@@ -1285,7 +1287,7 @@ lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_rl, 1, cf_local_FR_rl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_rl, 1, cf_local_FR_rl, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_rl, 1, cf_local_FR_rl, 1);
-//        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
+        //        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rl, 1, cf_local_FR_rl, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_rl, 1, cf_local_FR_rl, 1);
 
         // local_FR4 = lower_force4 + lower_dampf4 + local_FT4 + local_FR4 +
@@ -1293,7 +1295,7 @@ lower_normal4;
         Math::copy<T>(Constants::DIM, cf_lower_force_rr, 1, cf_local_FR_rr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_dampf_rr, 1, cf_local_FR_rr, 1);
         Math::axpy<T>(Constants::DIM, 1, FT_rr, 1, cf_local_FR_rr, 1);
-//        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
+        //        Math::axpy<T>(Constants::DIM, 1, cf_local_FR_rr, 1, cf_local_FR_rr, 1);
         Math::axpy<T>(Constants::DIM, 1, cf_lower_rot_force_rr, 1, cf_local_FR_rr, 1);
     }
 
@@ -1676,7 +1678,6 @@ public:
         parametersCSV.writeParameters();
 #endif  // WRITECSV
 
-
         if (used_solver == MBDSolver::BROYDEN_CN) {
             Math::Solvers<T, MBDMethod>::BroydenCN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
         }
@@ -1706,7 +1707,6 @@ public:
         solutionCSV.writeSolutionMatrixMBD(complete_vector, this->num_iter + 1);
 #endif  // WRITECSV
 
-
         T* start = complete_vector + (this->num_iter) * this->solution_dim;
         Math::copy<T>(this->solution_dim, start, 1, solution_vector, 1);
         //	std::cout << "Solution copied!\n" << std::endl;
@@ -1714,14 +1714,10 @@ public:
         Math::free<T>(x_vector);
     }
 
-
     /**
-    * \brief here comes everything which has to be done at the end of one time iteration
-    */
-    void postprocessingTimeIteration(size_t iteration) {
-        
-    }
-
+     * \brief here comes everything which has to be done at the end of one time iteration
+     */
+    void postprocessingTimeIteration(size_t iteration) {}
 
     /**
      * Solver which is called at each time step
@@ -1764,7 +1760,7 @@ public:
         compute_car_body_forces();
 
         compute_external_forces();
-		// TODO change this if else shit to something nice (function pointers maybe)
+        // TODO change this if else shit to something nice (function pointers maybe)
         if (boundary_conditions == BoundaryConditionRoad::FIXED) {
             get_fixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }

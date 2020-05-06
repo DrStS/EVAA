@@ -854,7 +854,7 @@ public:
         T *it_start, *curr_time_start_pos;
         T* x_new = Math::malloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
-        T eps = 1e-4;
+        T eps = 1e-3;
         double nrm = 0.01;
         T t = 0;
         T val = 0;
@@ -912,7 +912,6 @@ public:
                 if (Math::nrm2<T>(x_len, F, 1) < tol) {
                     break;
                 }
-
                 // x(i+1) = x(i) - J^(-1)*g(x(i))
                 Math::copy<T>(x_len * x_len, J, 1, J_tmp, 1);
                 Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);

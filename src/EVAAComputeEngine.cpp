@@ -648,7 +648,7 @@ void EVAAComputeEngine::computeMBD(void) {
     MBDMethod<Constants::floatEVAA> solver;
 
     solver.Solve(sol);
-    //solver.PrintFinalResult(sol);
+    solver.PrintFinalResult(sol);
     Math::free<Constants::floatEVAA>(sol);
 }
 
