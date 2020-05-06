@@ -51,7 +51,7 @@ namespace Math {
  * \param[in] _pivot elements
  * \author Stefan Sicklinger
  */
-void computeDenseSymLUFactorisation(const int _nElements, std::vector<double>& _A, std::vector<int>& _pivots);
+void ComputeDenseSymLUFactorisation(const int _nElements, std::vector<double>& _A, std::vector<int>& _pivots);
 
 /**
  * \brief Compute backward/forward substitution
@@ -60,7 +60,7 @@ void computeDenseSymLUFactorisation(const int _nElements, std::vector<double>& _
  * \param[in] _pivot elements
  * \author Stefan Sicklinger
  */
-void computeDenseSymSolution(const int _nElements, std::vector<double>& _A, std::vector<int>& _pivots, std::vector<double>& _rhs);
+void ComputeDenseSymSolution(const int _nElements, std::vector<double>& _A, std::vector<int>& _pivots, std::vector<double>& _rhs);
 
 /**
  * \brief Computes a vector-scalar product and adds the result to a vector. vec2
@@ -68,13 +68,13 @@ void computeDenseSymSolution(const int _nElements, std::vector<double>& _A, std:
  * vector \param[in] _alpha   scalar \param[in] _nElements number of elements in
  * vec1 \author Stefan Sicklinger
  */
-void computeDenseVectorAddition(double* vec1, double* vec2, const double _alpha, const int _nElements);
+void ComputeDenseVectorAddition(double* vec1, double* vec2, const double _alpha, const int _nElements);
 
 /**
  * \brief Print info of the Intel MKL
  * \author Stefan Sicklinger
  */
-void printMKLInfo(void);
+void PrintMKLInfo(void);
 
 /**
  * Replaces all values in an array which are below a threshold to a value
@@ -85,7 +85,7 @@ void printMKLInfo(void);
  * \param tol threshold
  */
 template <typename T>
-void transmutate_elements(T* arr, size_t start, size_t end, T value, T tol) {
+void TransmutateElements(T* arr, size_t start, size_t end, T value, T tol) {
 #pragma loop(ivdep)
     for (size_t i = start; i < end; ++i) {
         if (arr[i] * arr[i] < tol * tol) {
@@ -102,7 +102,7 @@ void transmutate_elements(T* arr, size_t start, size_t end, T value, T tol) {
  * \return result vector
  */
 template <typename T>
-void vector_elem_wise_product(T* v1, T* v2, T* result, size_t dim) {
+void VectorElementwiseProduct(T* v1, T* v2, T* result, size_t dim) {
 #pragma loop(ivdep)
     for (size_t i = 0; i < dim; i++) {
         result[i] = v1[i] * v2[i];
@@ -116,7 +116,7 @@ void vector_elem_wise_product(T* v1, T* v2, T* result, size_t dim) {
  * \return mat the diagonal matrix
  */
 template <typename T>
-void diagonal_matrix(T* mat, size_t dim, T val) {
+void ConstructDiagonalMatrix(T* mat, size_t dim, T val) {
 #pragma loop(ivdep)
     for (size_t i = 0; i < dim; ++i) {
         mat[i * dim + i] = val;
@@ -131,7 +131,7 @@ void diagonal_matrix(T* mat, size_t dim, T val) {
  * Swaps the adresses of the elements a and b
  */
 template <typename T>
-void swap_address(T*& a, T*& b) {
+void SwapAddress(T*& a, T*& b) {
     T* c = a;
     a = b;
     b = c;
@@ -143,7 +143,7 @@ void swap_address(T*& a, T*& b) {
  * vector to be written to all diagonal entries \return mat the diagonal matrix
  */
 template <typename T>
-void allocate_to_diagonal(T* matrix, T* vector, size_t dim) {
+void CopyToDiagonal(T* matrix, T* vector, size_t dim) {
     Math::copy<T>(dim, vector, 1, matrix, dim + 1);
     /*for (int i = 0; i < dim; ++i) {
             matrix[i*dim + i] = vector[i];
@@ -157,7 +157,7 @@ void allocate_to_diagonal(T* matrix, T* vector, size_t dim) {
  * \return cross_P vect_A x vect_B
  */
 template <typename T>
-void crossProduct(const T* vect_A, const T* vect_B, T* cross_P)
+void CrossProduct(const T* vect_A, const T* vect_B, T* cross_P)
 
 {
     cross_P[0] = vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1];
@@ -170,8 +170,9 @@ void crossProduct(const T* vect_A, const T* vect_B, T* cross_P)
  * \param vect_A first vector; A = [x, y, z]
  * \return cross_P = vect_A x [0, 0, 1] = [y, -x, 0]
  */
+// TODO: not called
 template <typename T>
-void crossProduct_unitvecZ(const T* vect_A, T* cross_P)
+void CrossProductUnitVectorZ(const T* vect_A, T* cross_P)
 
 {
     cross_P[0] = vect_A[1];
@@ -185,8 +186,9 @@ void crossProduct_unitvecZ(const T* vect_A, T* cross_P)
  * \param vect_A first vector; A = [x, y, z]
  * \return cross_P = vect_A x [0, 0, 1] = [y, -x, 0] i.e. [y,-x]
  */
+// TODO: not called
 template <typename T>
-void crossProduct_unitvecZ2D(const T* vect_A, T* cross_P)
+void CrossProductUnitVectorZ2D(const T* vect_A, T* cross_P)
 
 {
     cross_P[0] = vect_A[1];
@@ -199,8 +201,9 @@ void crossProduct_unitvecZ2D(const T* vect_A, T* cross_P)
  * vector; B = [xB, yB, 0] \return cross_P = vect_A x vect_B = [0, 0, xA * yB -
  * xB * yA]
  */
+// TODO: not called
 template <typename T>
-void crossProduct_unitvecXY(const T* vect_A, const T* vect_B, T* cross_P)
+void CrossProductUnitVectorXY(const T* vect_A, const T* vect_B, T* cross_P)
 
 {
     cross_P[0] = 0;
@@ -241,7 +244,7 @@ void ToEulerAngles(const T* q, T* E) {
  * \result R rotation matrix
  */
 template <typename T>
-void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R) {
+void GetRotationMatrix(const T yaw, const T pitch, const T roll, T* R) {
     R[0] = (std::cos(yaw)) * (std::cos(pitch));
     R[1] = ((std::cos(yaw)) * (std::sin(pitch)) * (std::sin(roll)) - (std::sin(yaw)) * (std::cos(roll)));
     R[2] = ((std::cos(yaw)) * (std::sin(pitch)) * (std::cos(roll)) + (std::sin(yaw)) * (std::sin(roll)));
@@ -254,6 +257,25 @@ void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R) {
 }
 
 /**
+ * Computes the rotation matrix out of 3 angle representation
+ *
+ * angles z y x
+ * \result R rotation matrix
+ */
+template <typename T>
+void GetRotationMatrixSmallAnglesXY(const T yaw, const T pitch, const T roll, T* R) {
+	R[0] = (std::cos(yaw));
+	R[1] = ((std::cos(yaw)) * (pitch) * (roll) - (std::sin(yaw)));
+	R[2] = ((std::cos(yaw)) * (pitch) + (std::sin(yaw)) * (roll));
+	R[3] = (std::sin(yaw));
+	R[4] = ((std::sin(yaw)) * (pitch) * (roll) + (std::cos(yaw)));
+	R[5] = ((std::sin(yaw)) * (pitch) - (std::cos(yaw)) * (roll));
+	R[6] = -(pitch);
+	R[7] = (roll);
+	R[8] = 1;
+}
+
+/**
  * Computes the angle between two vectors
  * \param v1 first vector
  * \param v2 second vector
@@ -261,7 +283,7 @@ void get_rotation_matrix(const T yaw, const T pitch, const T roll, T* R) {
  * \return angle in radians
  */
 template <typename T>
-T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim) {
+T ComputeAngleUsingDotProduct(const T* v1, const T* v2, size_t dim) {
     T angle;
     T nrm_v1, nrm_v2;
     nrm_v1 = Math::nrm2<T>(dim, v1, 1);
@@ -282,13 +304,13 @@ T compute_angle_using_dot_product(const T* v1, const T* v2, size_t dim) {
  * \return rotation_axis unit axis
  */
 template <typename T>
-void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis) {
+void GetQuaternion(const T* v1, const T* v2, T* angle, T* rotation_axis) {
     T nrm_v1, nrm_v2, ra_nrm, q_nrm;
     nrm_v1 = Math::nrm2<T>(Constants::DIM, v1, 1);
     nrm_v2 = Math::nrm2<T>(Constants::DIM, v2, 1);
-    crossProduct(v1, v2, rotation_axis);
+    CrossProduct(v1, v2, rotation_axis);
     Math::scal<T>(Constants::DIM, 1. / (nrm_v1 * nrm_v2), rotation_axis, 1);
-    *angle = compute_angle_using_dot_product<T>(v1, v2, Constants::DIM);
+    *angle = ComputeAngleUsingDotProduct<T>(v1, v2, Constants::DIM);
     ra_nrm = Math::nrm2<T>(Constants::DIM, rotation_axis, 1);
     T eps = 1e-8;
     if (ra_nrm < eps) {
@@ -327,8 +349,8 @@ void get_quaternion(const T* v1, const T* v2, T* angle, T* rotation_axis) {
  * \return q the quaternion
  */
 template <typename T>
-void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis) {
-    get_quaternion(v1, v2, angle, rotation_axis);
+void GetQuaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis) {
+    GetQuaternion(v1, v2, angle, rotation_axis);
     q[0] = rotation_axis[0] * std::sin(*angle / 2.0);
     q[1] = rotation_axis[1] * std::sin(*angle / 2.0);
     q[2] = rotation_axis[2] * std::sin(*angle / 2.0);
@@ -343,7 +365,7 @@ void get_quaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis) 
  * \return transformed_basis the basis vectors in matrix form
  */
 template <typename T>
-void get_basis(const T* initial_orientation, T* transfrormed_basis) {
+void GetBasis(const T* initial_orientation, T* transfrormed_basis) {
     // quaternion initial_orientation yields basis(calculates basically the
     // matrix rotation the euclidian basis to the local basis)
 
@@ -391,7 +413,7 @@ void get_basis(const T* initial_orientation, T* transfrormed_basis) {
  * \return tilda the matrix a_tilda
  */
 template <typename T>
-void get_tilda(const T* input_vector, T* tilda_output) {
+void GetTilda(const T* input_vector, T* tilda_output) {
     /*
     This function is only suitable for a 3 dimensional system and renders
     unusable, might throw exceptions when used with other dimensions. given y:
@@ -426,7 +448,7 @@ public:
      *  \param x_previous previous solution
      *  \return new solution
      */
-    static void Broyden_Euler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+    static void BroydenEuler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
         T* f_old = Math::malloc<T>(x_len);
         T* f_new = Math::malloc<T>(x_len);
@@ -460,7 +482,7 @@ public:
             // in case the velocity is 0 add nuggets to avoid singular matrices
             // (slow check for improvement) f_old(abs(f_old) < 0.01) = 0.01;
             val = eps * (2 * (1 + rand() % 2) - 3);
-            transmutate_elements(f_old, 0, x_len, val, eps);
+            TransmutateElements(f_old, 0, x_len, val, eps);
 
             // 2. Initial guess from Explicit Euler
             // x = x_previous + dt * f_old';
@@ -481,7 +503,7 @@ public:
             // approximate J(x_0)
             // J = eye(length(df)) - delta_t*((1./dx)'*df)';
             Math::scal<T>(x_len * x_len, 0, J, 1);
-            diagonal_matrix<T>(J, x_len, 1);
+            ConstructDiagonalMatrix<T>(J, x_len, 1);
             Math::copy<T>(x_len, dx, 1, dx_inv, 1);
             Math::vInv<T>(x_len, dx_inv, dx_inv);
             Math::ger<T>(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
@@ -534,9 +556,9 @@ public:
                 Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
                 // F = F_new; interchanging pointers to avoid copy
-                swap_address(F, F_new);
+                SwapAddress(F, F_new);
                 // x = x_new; interchanging pointers to avoid copy
-                swap_address(x, x_new);
+                SwapAddress(x, x_new);
             }
             // x_vector_new(n,:) = x;
             // start position of new time step
@@ -568,7 +590,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void Broyden_PDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+    static void BroydenBDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
         T* f_old = Math::malloc<T>(x_len);
         T* f_new = Math::malloc<T>(x_len);
@@ -603,7 +625,7 @@ public:
         // in case the velocity is 0 add nuggets to avoid singular matrices
         // (slow check for improvement) f_old(abs(f_old) < 0.01) = 0.01;
         val = eps * (2 * (1 + rand() % 2) - 3);
-        transmutate_elements(f_old, 0, x_len, val, eps);
+        TransmutateElements(f_old, 0, x_len, val, eps);
 
         // 2. Initial guess from Explicit Euler
         // x = x_previous + dt * f_old';
@@ -624,7 +646,7 @@ public:
         // approximate J(x_0)
         // J = eye(length(df)) - delta_t*((1./dx)'*df)';
         Math::scal<T>(x_len * x_len, 0, J, 1);
-        diagonal_matrix<T>(J, x_len, 1);
+        ConstructDiagonalMatrix<T>(J, x_len, 1);
         Math::copy<T>(x_len, dx, 1, dx_inv, 1);
         Math::vInv<T>(x_len, dx_inv, dx_inv);
         Math::ger<T>(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
@@ -676,9 +698,9 @@ public:
             Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
             // F = F_new; interchanging pointers to avoid copy
-            swap_address(F, F_new);
+            SwapAddress(F, F_new);
             // x = x_new; interchanging pointers to avoid copy
-            swap_address(x, x_new);
+            SwapAddress(x, x_new);
         }
         // x_vector_new(n,:) = x;
         // start position of new time step
@@ -686,7 +708,7 @@ public:
         Math::copy<T>(x_len, x, 1, curr_time_start_pos, 1);
 
         if (num_time_iter >= 2) {
-            // PDF 2 Method
+            // BDF 2 Method
             for (size_t i = 2; i <= num_time_iter; ++i) {
                 it_start = x_vector_new + (i - 1) * x_len;
                 prev_prev_pos = x_vector_new + (i - 2) * x_len;
@@ -698,7 +720,7 @@ public:
                 // matrices (slow check for improvement) f_old(abs(f_old) <
                 // 0.01) = 0.01;
                 val = eps * (2 * (1 + rand() % 2) - 3);
-                transmutate_elements(f_old, 0, x_len, val, eps);
+                TransmutateElements(f_old, 0, x_len, val, eps);
 
                 // 2. Initial guess from Explicit Euler
                 // x = x_previous + dt * f_old';
@@ -719,7 +741,7 @@ public:
                 // approximate J(x_0)
                 // J = eye(length(df)) - delta_t*((1./dx)'*df)';
                 Math::scal<T>(x_len * x_len, 0, J, 1);
-                diagonal_matrix<T>(J, x_len, 1);
+                ConstructDiagonalMatrix<T>(J, x_len, 1);
                 Math::copy<T>(x_len, dx, 1, dx_inv, 1);
                 Math::vInv<T>(x_len, dx_inv, dx_inv);
                 Math::ger<T>(CblasRowMajor, x_len, x_len, -dt, df, 1, dx_inv, 1, J, x_len);
@@ -778,9 +800,9 @@ public:
                     Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
                     // F = F_new; interchanging pointers to avoid copy
-                    swap_address(F, F_new);
+                    SwapAddress(F, F_new);
                     // x = x_new; interchanging pointers to avoid copy
-                    swap_address(x, x_new);
+                    SwapAddress(x, x_new);
                 }
                 // x_vector_new(n,:) = x;
                 // start position of new time step
@@ -812,7 +834,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void Broyden_CN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+    static void BroydenCN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         // std::cout << "Broyden started!\n" << std::endl;
 
         size_t x_len = obj->get_solution_dimension();
@@ -832,7 +854,7 @@ public:
         T *it_start, *curr_time_start_pos;
         T* x_new = Math::malloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
-        T eps = 1e-4;
+        T eps = 1e-3;
         double nrm = 0.01;
         T t = 0;
         T val = 0;
@@ -849,7 +871,7 @@ public:
             // in case the velocity is 0 add nuggets to avoid singular matrices
             // (slow check for improvement) f_old(abs(f_old) < 0.001) = 0.001;
             val = eps * (2 * (1 + rand() % 2) - 3);
-            transmutate_elements(f_old, 0, x_len, val, eps);
+            TransmutateElements(f_old, 0, x_len, val, eps);
 
             // 2. Initial guess from Explicit Euler
             // x = x_previous + dt * f_old';
@@ -871,7 +893,7 @@ public:
             // approximate J(x_0)
             // J = eye(length(df)) - delta_t*0.5 *((1./dx)'*df)';
             Math::scal<T>(x_len * x_len, 0, J, 1);
-            diagonal_matrix<T>(J, x_len, 1);
+            ConstructDiagonalMatrix<T>(J, x_len, 1);
             Math::copy<T>(x_len, dx, 1, dx_inv, 1);
             Math::vInv<T>(x_len, dx_inv, dx_inv);
             // writeVector(dx_inv, x_len);
@@ -890,7 +912,6 @@ public:
                 if (Math::nrm2<T>(x_len, F, 1) < tol) {
                     break;
                 }
-
                 // x(i+1) = x(i) - J^(-1)*g(x(i))
                 Math::copy<T>(x_len * x_len, J, 1, J_tmp, 1);
                 Math::getrf<T>(LAPACK_ROW_MAJOR, x_len, x_len, J_tmp, x_len, piv);
@@ -929,10 +950,10 @@ public:
                 Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
                 // F = F_new; interchanging pointers to avoid copy
-                swap_address(F, F_new);
+                SwapAddress(F, F_new);
 
                 // x = x_new; interchanging pointers to avoid copy
-                swap_address(x, x_new);
+                SwapAddress(x, x_new);
             }
             // x_vector_new(n,:) = x;
             // start position of new time step
@@ -975,11 +996,11 @@ public:
         *count = 0;
         T delta_norm = 1, delta_norm2 = 0;
         lapack_int status;
-        obj->calcResidual(force);
+        obj->CalculateResidual(force);
 
         do {
             *count= *count + 1;
-            obj->constructJacobian();
+            obj->ConstructJacobian();
 
             // get J=LL^T
             status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
@@ -991,9 +1012,9 @@ public:
             delta_norm = Math::nrm2<T>(Constants::DOF, res, 1);
 
             // update all the matrices
-            obj->updateSystem();
+            obj->UpdateSystem();
             // calculate the newton function
-            obj->calcResidual(force);
+            obj->CalculateResidual(force);
             // copy the new residual to a temp to check if newton has converged
             // without losing residual
             Math::copy<T>(Constants::DOF, res, 1, temp, 1);
@@ -1081,7 +1102,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void Linear_Backward_Euler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
+    static void LinearBackwardEuler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix
          * A would be overwritten and results stored in x computes the backward
@@ -1108,7 +1129,7 @@ public:
      * vector \param num_time_iter number of time steps to perform \param dt
      * timestep \param x_previous previous solution \return new solution
      */
-    static void Linear_Backward_Euler_diag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
+    static void LinearBackwardEulerDiag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix
          * A would be overwritten and results stored in x computes the backward
@@ -1143,7 +1164,7 @@ public:
      * \param[in] delta_t timestep
      * \param[in] mass mass
      */
-    static void Stoermer_Verlet_Position(T& x, const T v, const T F, const T delta_t, const T mass) { x += delta_t * v + delta_t * delta_t / (2 * mass) * F; }
+    static void StoermerVerletPosition(T& x, const T v, const T F, const T delta_t, const T mass) { x += delta_t * v + delta_t * delta_t / (2 * mass) * F; }
 
     /**
      * 2nd order Stoermer-Verlet algorithm to update the velocity of one scalar
@@ -1153,9 +1174,9 @@ public:
      * \param[in] delta_t timestep
      * \param[in] mass mass
      */
-    static void Stoermer_Verlet_Velocity(T& v, const T F, const T F_new, const T delta_t, const T mass) { v += delta_t / (2 * mass) * (F + F_new); }
+    static void StoermerVerletVelocity(T& v, const T F, const T F_new, const T delta_t, const T mass) { v += delta_t / (2 * mass) * (F + F_new); }
 
-    static void Linear_BDF2(T* A, T* B, T* C, T* D, T* E, T* x_n, T* x_n_m_1, T* x_n_m_2, T* x_n_m_3, T* b, T* x_n_p_1, size_t dim) {
+    static void LinearBDF2(T* A, T* B, T* C, T* D, T* E, T* x_n, T* x_n_m_1, T* x_n_m_2, T* x_n_m_3, T* b, T* x_n_p_1, size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix
          * A would be overwritten and results stored in x computes the backward

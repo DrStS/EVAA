@@ -31,3 +31,4 @@ src/tmwtypes.h
 proposed_xml/*
 main.cpp
 dump/*
+/enc_temp_folder

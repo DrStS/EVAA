@@ -52,6 +52,10 @@
  * \version alpha
  */
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #ifdef EVAA_COMMANDLINE_ON
 #include <iostream>
 #include <string>
@@ -66,10 +70,6 @@
 #include "EVAAMainWindow.h"
 #endif  // EVAA_COMMANDLINE_ON
 
-#ifdef USE_HDF5
-#include "OutputHDF5.h"
-#endif  // USE_HDF5
-
 int main(int argc, char **argv) {
 #ifdef EVAA_COMMANDLINE_ON
     std::cout << "Hello EVAA is fired up!" << std::endl;
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     for (std::vector<std::string>::iterator it = allArgs.begin(); it != allArgs.end(); ++it) {
         std::cout << *it << std::endl;
     }
-    // allArgs[0] = "EVAA.exe"
+    // allArgs[0] = "EVAA.exe" TODO : Do we need this?
     if (allArgs.size() > 2) {
         EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
     }
@@ -100,40 +100,38 @@ int main(int argc, char **argv) {
     timer1.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
 #endif
+    const size_t numIterations = 1;
 
-    timer1.start();
-    // myComputeEngine->computeMKLTwoTrackModel();
-    timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver(computeMKLlinear11dof).\n\n\n" << std::endl;
-    timer1.start();
-    //myComputeEngine->computeALE();
-    timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver(computeALE).\n\n\n" << std::endl;
-    timer1.start();
-    myComputeEngine->computeMBD();
-    timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
-    timer1.start();
-    // myComputeEngine->compare_ALE_MBD();
-    timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver(Compare).\n\n\n" << std::endl;
+    double timeMBD = 0.;    
+    for (auto i = 0; i < numIterations; ++i) {
+        timer1.start();
+        myComputeEngine->computeMBD();
+        timer1.stop();
+        timeMBD += timer1.getDurationMilliSec();
+    }
+    std::cout << "It took " << timeMBD / numIterations << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
+    
+    double time11DOF = 0.;
+    for (auto i = 0; i < numIterations; ++i) {
+        timer1.start();
+        myComputeEngine->computeMKLTwoTrackModelBE();
+        timer1.stop();
+        time11DOF += timer1.getDurationMilliSec();
+    }
+    std::cout << "It took " << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
 
-    timer1.start();
-    myComputeEngine->computeMKLTwoTrackModelBE();
-    timer1.stop();
-    std::cout << "It took " << timer1.getDurationMilliSec() << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
+    double timeALE = 0.;
+    for (auto i = 0; i < numIterations; ++i) {
+        timer1.start();
+        myComputeEngine->computeALE();
+        timer1.stop();
+        timeALE += timer1.getDurationMilliSec();
+    }
+    std::cout << "It took " << timeALE / numIterations << " ms to run the solver(computeALE).\n\n\n" << std::endl;
 
     delete myComputeEngine;
+
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
-
-    // Here is the call to HDF5 component from writeVectorToFile (in outputhdf5.h)
-#ifdef USE_HDF5
-    double *d = (double *)calloc(10, sizeof(double));
-    writeVectorToFile<double>("file1", "name1", d, 10);
-    free(d);
-    d = nullptr;
-#endif  // USE_HDF5
-
 #endif  // EVAA_COMMANDLINE_ON
 #ifndef EVAA_COMMANDLINE_ON
 #ifdef __linux
@@ -144,4 +142,7 @@ int main(int argc, char **argv) {
 
     EVAAMainWindow(argc, argv);
 #endif  // EVAA_COMMANDLINE_ON
+
+    _CrtDumpMemoryLeaks();
+    return 0;
 }

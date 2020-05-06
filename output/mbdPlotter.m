@@ -38,7 +38,7 @@ upper_spring_length = [parameters(10); parameters(11); parameters(12); parameter
 lower_spring_length = [parameters(14); parameters(15); parameters(16); parameters(17)];
 
 % rearrange vectors and tyre position
-adaptedSolution = calculateCorners(mdbSolution, r1, r2, r3, r4);
+adaptedSolution = calculateCornersMBD(mdbSolution, r1, r2, r3, r4);
 
 % calculate velocity norms
 vel_norms = zeros(1, numIterations);

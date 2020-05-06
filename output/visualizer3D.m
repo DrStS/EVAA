@@ -115,7 +115,7 @@ for i = 1 : vis_step : num_iter
     zlabel('Z')
     timestring=['time=',num2str(floor(delta_t*i/60)),'min',num2str(mod(delta_t*i,60),4),'sec'];
     title(timestring)
-%     view(0,0)
+     %view(0,0)
     hold off
 
     %% axis
@@ -290,7 +290,7 @@ for i = 1 : vis_step : num_iter
                 traj_2(2,road_vis_range),...
                 traj_2(3,road_vis_range), 'b')
     end
-    
+    %view(0,0)
     hold off
 
     axis([y(i,5) - 2.5, y(i,5) + 2.5, ...

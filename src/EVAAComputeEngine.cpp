@@ -31,7 +31,7 @@
 #include "Constants.h"
 #include "LoadModule.h"
 #include "MathLibrary.h"
-#include "MetaDataBase.h"
+#include "MetaDatabase.h"
 #include "Output.h"
 
 #ifdef USE_EIGEN
@@ -51,18 +51,18 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
     IO::checkFileExists(xmlCarFileName);
     IO::checkFileExists(xmlLoadFileName);
 
-    MetaDataBase<Constants::floatEVAA>::getDataBase().readParameters(xmlCarFileName);
-    MetaDataBase<Constants::floatEVAA>::getDataBase().readLoadParameters(xmlLoadFileName);
+    MetaDatabase<Constants::floatEVAA>::getDatabase().readParameters(xmlCarFileName);
+    MetaDatabase<Constants::floatEVAA>::getDatabase().readLoadParameters(xmlLoadFileName);
 }
 
 void EVAAComputeEngine::printInfo(void) {
-    Math::printMKLInfo();
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    Math::PrintMKLInfo();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
     std::cout << "\n\nCalculate the solution after " << db.getNumberOfTimeIterations() * db.getTimeStepSize() << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations() << " iterations\n\n\n";
 }
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
 
     // K stiffness
     Constants::floatEVAA k_11 = db.getBodyStiffnessFrontLeft();
@@ -191,7 +191,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     using blaze::rowMajor;
     using blaze::SymmetricMatrix;
 
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
 
     // K stiffness
     Constants::floatEVAA k_11 = db.getBodyStiffnessFrontLeft();
@@ -365,7 +365,7 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
 
 void EVAAComputeEngine::computeMKL11DOF(void) {
 #if TODO_TEMPLATE_JIT_DONE
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
 
     // K stiffness
     Constants::floatEVAA k_11 = db.getBodyStiffnessFrontLeft();
@@ -516,30 +516,30 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
     /// Build dynamic stiffness matrix
     // gets written in rear vector
     // K' <- (1./(h*h))*M + K
-    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(M.data(),
+    //	Math::ComputeDenseVectorAddition<Constants::floatEVAA>(M.data(),
     // K.data(), (1. / (h*h)), 9);
     Math::axpy<Constants::floatEVAA>(121, (1. / (h * h)), M, 1, K, 1);
     // K <- (1./h)*D + K'
-    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(D.data(),
+    //	Math::ComputeDenseVectorAddition<Constants::floatEVAA>(D.data(),
     // K.data(), (1. / h), 121);
     Math::axpy<Constants::floatEVAA>(121, (1. / h), D, 1, K, 1);
     /// K holds now dynamic stiffness matrix  for BE integrator
     /// Build rhs for BE integrator
     // B' <-(2.0 / (h*h))*M + B
-    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(M.data(),
+    //	Math::ComputeDenseVectorAddition<Constants::floatEVAA>(M.data(),
     // B.data(), (2.0 / (h*h)),
     // 121);
     Math::axpy<Constants::floatEVAA>(Constants::DOFDOF, (2.0 / (h * h)), M, 1, B, 1);
 
     // B <-(1. / (h))*D + B'
-    //	Math::computeDenseVectorAddition<Constants::floatEVAA>(D.data(),
+    //	Math::ComputeDenseVectorAddition<Constants::floatEVAA>(D.data(),
     // B.data(), (1. / h), 121);
     Math::axpy<Constants::floatEVAA>(Constants::DOFDOF, (1. / h), D, 1, B, 1);
     // A*u_n_p_1=B*u_n+C*u_n_m_1+f_n_p_1 <== BE
 
     std::vector<int> pivot(Constants::DOF);
     // LU Decomposition
-    //	Math::computeDenseSymLUFactorisation<Constants::floatEVAA>(11, K,
+    //	Math::ComputeDenseSymLUFactorisation<Constants::floatEVAA>(11, K,
     // pivot);
     Math::getrf(LAPACK_ROW_MAJOR, Constants::DOF, Constants::DOF, K, Constants::DOF, pivot.data());
 
@@ -580,13 +580,13 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
         myDGEMMKernel(jitter, M, u_n_m_1, tmp);
 #endif
         // u_n_p_1 <- 1. tmp + u_n_p_1
-        //		Math::computeDenseVectorAddition<Constants::floatEVAA>(tmp.data(),
+        //		Math::ComputeDenseVectorAddition<Constants::floatEVAA>(tmp.data(),
         // u_n_p_1.data(),1,
         // 11); void cblas_daxpy (const MKL_INT n, const double a, const double
         // *x, const MKL_INT incx, double *y, const MKL_INT incy);
         Math::axpy<Constants::floatEVAA>(Constants::DOF, 1, tmp, 1, u_n_p_1, 1);
         // Solve system
-        //		Math::computeDenseSymSolution<Constants::floatEVAA>(11,
+        //		Math::ComputeDenseSymSolution<Constants::floatEVAA>(11,
         // K, pivot, u_n_p_1);
         // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans ,
         // lapack_int n , lapack_int nrhs , const double * a , lapack_int lda ,
@@ -617,19 +617,24 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 }
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
-    if (true) {
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
+    if (true) { // TODO remove this
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
-        TwoTrackModelFull<Constants::floatEVAA> solver(car);
-        // solver.apply_boundary_condition(db.getRoadConditions());
+		Lagrange<Constants::floatEVAA>* lagrange = new Straight<Constants::floatEVAA>();
+		Euler<Constants::floatEVAA>* euler = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
+		LoadModule<Constants::floatEVAA>* load = new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
+        TwoTrackModelFull<Constants::floatEVAA> solver(car, load);
+		euler->ApplyProfileInitialCondition(car);
+        solver.Solve(sol);
 
-        solver.solve(sol);
-
-        solver.print_final_results(sol);
+        solver.PrintFinalResults(sol);
 
         Math::free<Constants::floatEVAA>(sol);
         delete car;
+        delete lagrange;
+        delete euler;
+        delete load;
     }
     else {
         std::cout << "Linear11dof solver will only work with NONFIXED boundary "
@@ -639,173 +644,46 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     }
 }
 
-#if MIGHT_BE_USEFUL
-void EVAAComputeEngine::computeMKLTwoTrackModel() {
-    if (MetaDataBase::getDataBase().getRoadConditions() == NONFIXED) {
-        Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(Constants::DOF);
-        Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
-        TwoTrackModelFull<Constants::floatEVAA, TwoTrackModelBDF2<Constants::floatEVAA>> solver(car);
-        solver.apply_boundary_condition(MetaDataBase::getDataBase().getRoadConditions());
-        solver.solve(sol);
-
-        solver.print_final_results(sol);
-
-        Math::free<Constants::floatEVAA>(sol);
-        delete car;
-    }
-    else {
-        std::cout << "TwoTrackModel solver will only work with NONFIXED "
-                     "boundary conditions, "
-                     "computation skipped "
-                  << std::endl;
-    }
-}
-#endif
-
 void EVAAComputeEngine::computeMBD(void) {
-    size_t num_iter = MetaDataBase<Constants::floatEVAA>::getDataBase().getNumberOfTimeIterations();
-    size_t solution_dim = MetaDataBase<Constants::floatEVAA>::getDataBase().getSolutionVectorSize();
+    size_t num_iter = MetaDatabase<Constants::floatEVAA>::getDatabase().getNumberOfTimeIterations();
+    size_t solution_dim = MetaDatabase<Constants::floatEVAA>::getDatabase().getSolutionVectorSize();
     Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(solution_dim);
     MBDMethod<Constants::floatEVAA> solver;
 
-    solver.solve(sol);
-    solver.print_final_result(sol);
+    solver.Solve(sol);
+    solver.PrintFinalResult(sol);
     Math::free<Constants::floatEVAA>(sol);
 }
 
 void EVAAComputeEngine::computeALE(void) {
-    Profile<Constants::floatEVAA>* roadProfile;
-    Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
+    Lagrange<Constants::floatEVAA>* lagrangeProfile;
+	Euler<Constants::floatEVAA>* eulerProfile;
+	Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
-    switch (db.getRoadConditions()) {
-    case BoundaryConditionRoad::CIRCULAR:
-        roadProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
-        break;
-    case BoundaryConditionRoad::NONFIXED:
-        roadProfile = new Nonfixed<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
-        break;
-    case BoundaryConditionRoad::FIXED:
-        roadProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[1]);
-        roadProfile->set_fixed_index(car->tyre_index_set);
-        break;
-    case BoundaryConditionRoad::ARBITRARY:
-        // TODO 
-        return;
-        break;
-    default:
-        throw std::logic_error("MetaDataBase not read? It should throw on invalid file content.");
-        break;
-    }
-
-    roadProfile->update_initial_condition(car);
-    LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(roadProfile, car);
-    TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj;
-    ALESolver solver = db.getALESolver();
-    if (solver == ALESolver::IMPLICIT_EULER) {
-        TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car);
-    }
-    else if (solver == ALESolver::BDF2) {
-        TwoTrackModel_obj = new TwoTrackModelBDF2<Constants::floatEVAA>(car);
-    } // Metadatabase already checked if a non valid solver was seleceted
+    auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
+	lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
+    //lagrangeProfile = new Straight<Constants::floatEVAA>();
+	eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
+	lagrangeProfile->ApplyProfileInitialCondition(car);
+	eulerProfile->ApplyProfileInitialCondition(car);
+	LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
+    TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car, loadModule);
     ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
 
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
     Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(solutionDim);
 
-    ale->solve(sol);
+    ale->Solve(sol);
 
-    ale->print_final_results();
+    ale->PrintFinalResults();
 
+	delete TwoTrackModel_obj;
     delete car;
     delete loadModule;
-    delete roadProfile;
-    delete TwoTrackModel_obj;
+    delete lagrangeProfile;
+	delete eulerProfile;
     delete ale;
 
     Math::free<Constants::floatEVAA>(sol);
 }
-
-void EVAAComputeEngine::computeALEtest(void) {
-    auto& db = MetaDataBase<Constants::floatEVAA>::getDataBase();
-
-    size_t num_iter = db.getNumberOfTimeIterations();
-    size_t solution_dim = db.getSolutionVectorSize();
-    Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
-    Profile<Constants::floatEVAA>* roadProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
-    roadProfile->update_initial_condition(car);
-    LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(roadProfile, car);
-    std::cout << "Load module initialized!\n";
-    delete loadModule;
-    delete roadProfile;
-    delete car;
-}
-
-void EVAAComputeEngine::compare_ALE_MBD(void) {
-#if MIGHT_BE_USEFUL
-    // MBD Call
-    size_t num_iter = _parameters.num_time_iter;
-    size_t solution_dim = _parameters.solution_dim;
-    Constants::floatEVAA* soln = Math::calloc<Constants::floatEVAA>(solution_dim);
-    MBDMethod<Constants::floatEVAA> solver(_parameters);
-    size_t solution_size = (num_iter + 1) * solution_dim;
-    Constants::floatEVAA* complete_soln = Math::malloc<Constants::floatEVAA>(solution_size);
-    solver.solve(soln, complete_soln);
-    solver.print_final_result(soln);
-    std::cout << "(num_iter + 1) = " << (num_iter + 1) << "solution_dim = " << solution_dim << std::endl;
-#ifdef IO
-    IO::writeMatrix("MBD_result.dat", complete_soln, (num_iter + 1), solution_dim);
-#endif
-    // IO
-    Math::scal<Constants::floatEVAA>(solution_dim, 0, soln, 1);
-    Math::free<Constants::floatEVAA>(complete_soln);
-    // ALE call
-
-    Profile* Road_Profile;
-
-    Car<Constants::floatEVAA>* Car1 = new Car<Constants::floatEVAA>(_parameters, _lookupStiffness);
-
-    if (_loadModuleParameter.boundary_condition_road == CIRCULAR) {
-        Road_Profile = new Circular(_loadModuleParameter.profile_center, _loadModuleParameter.profile_radius);
-    }
-    else if (_loadModuleParameter.boundary_condition_road == NONFIXED) {
-        Road_Profile = new Nonfixed(_loadModuleParameter.profile_center, _loadModuleParameter.profile_radius);
-    }
-    else if (_loadModuleParameter.boundary_condition_road == FIXED) {
-        Road_Profile = new Fixed(_parameters.gravity[2], _loadModuleParameter);
-        Road_Profile->set_fixed_index(Car1->tyre_index_set);
-    }
-    else {
-        throw std::logic_error("MetaDataBase not read? It should throw on invalid file content.");
-    }
-
-    solution_dim = Constants::DIM * Constants::VEC_DIM;
-    solution_size = (num_iter + 1) * solution_dim;
-    Constants::floatEVAA* complete_soln2 = Math::calloc<Constants::floatEVAA>(solution_size);
-#ifdef IO
-    IO::writeMatrix("initial_car_pos_vec.dat", Car1->Position_vec, 1, solution_dim);
-#endif  // IO
-    Road_Profile->update_initial_condition(Car1);
-
-    Load_module* Load_module1 = new Load_module(Road_Profile, Car1, _loadModuleParameter);
-    TwoTrackModel<Constants::floatEVAA>* TwoTrackModel_sys = new TwoTrackModel<Constants::floatEVAA>(Car1);
-    ALE<Constants::floatEVAA>* Ale_sys = new ALE<Constants::floatEVAA>(Car1, Load_module1, TwoTrackModel_sys, _lookupStiffness, _parameters);
-
-    Ale_sys->solve(soln, complete_soln2);
-
-    Ale_sys->print_final_results();
-#ifdef IO
-    IO::writeMatrix("ALE_result.dat", complete_soln2, (num_iter + 1), solution_dim);
-#endif  // IO
-    delete Car1;
-    delete Load_module1;
-    delete Road_Profile;
-    delete TwoTrackModel_sys;
-    delete Ale_sys;
-
-    Math::free<Constants::floatEVAA>(soln);
-    Math::free<Constants::floatEVAA>(complete_soln2);
-#endif
-}
-
 }  // namespace EVAA
