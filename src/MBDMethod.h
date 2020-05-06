@@ -739,10 +739,6 @@ private:
         pt_fr_ = x + 52;
         pt_rl_ = x + 55;
         pt_rr_ = x + 58;
- //       std::cout << "pw_fl: " << pw_fl_[0] << ", " << pw_fl_[1] << ", " << pw_fl_[2] << std::endl; 
-  //      std::cout << "pw_fr: " << pw_fr_[0] << ", " << pw_fr_[1] << ", " << pw_rl_[2] << std::endl;
-   //     std::cout << "pw_rl: " << pw_rl_[0] << ", " << pw_rl_[1] << ", " << pw_fr_[2] << std::endl;
-    //    std::cout << "pw_rr: " << pw_rr_[0] << ", " << pw_rr_[1] << ", " << pw_rr_[2] << std::endl;
     }
 
     void compute_spring_lengths(T* pcc_, T* pw_, T* pt_, T* cf_r_up_, T* cf_r_low_, T* r_, T& norm_r_up, T& inv_norm_r_up, T& norm_r_low, T& inv_norm_r_low) {
