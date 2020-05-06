@@ -7,7 +7,7 @@ MACRO_APPEND_GLOBAL_VARIABLE(EVAA_BenchTest_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR
 #------------------------------------------------------------------------------------#
 FILE(GLOB EVAA_src_subdirectories "*")
 FOREACH(f ${EVAA_src_subdirectories})
-	IF(NOT f MATCHES "\\.txt" AND IS_DIRECTORY ${f} )
+	IF(NOT f MATCHES "\\.txt" AND IS_DIRECTORY ${f} AND NOT f MATCHES "out")
 		add_subdirectory(${f})
 	ENDIF()
 ENDFOREACH()

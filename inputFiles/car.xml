@@ -34,7 +34,7 @@
         </TyreSpringsXML>
       </GeometryXML>
       <StiffnessXML>
-        <!--ConstantXML>
+        <ConstantXML>
           <TyreXML>
             <ReerRight>260e3</ReerRight>
             <ReerLeft>260e3</ReerLeft>
@@ -47,10 +47,10 @@
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
           </BodyXML>
-        </ConstantXML-->
-        <LookupTableXML>
+        </ConstantXML>
+        <!--LookupTableXML>
           <FilePathXML>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePathXML>
-        </LookupTableXML>
+        </LookupTableXML-->
       </StiffnessXML>
       <DampingCoefficientsXML>
         <TyreXML>
@@ -104,10 +104,10 @@
         <FrontRight>0.2</FrontRight>
       </BodyXML>
       <TyreXML>
-        <ReerRight>0.2</ReerRight>
-        <ReerLeft>0.2</ReerLeft>
-        <FrontLeft>0.2</FrontLeft>
-        <FrontRight>0.2</FrontRight>
+        <ReerRight>0.20</ReerRight>
+        <ReerLeft>0.20</ReerLeft>
+        <FrontLeft>0.20</FrontLeft>
+        <FrontRight>0.20</FrontRight>
       </TyreXML>
     </SpringElongationXML>
     <VelocitiesXML>
@@ -236,7 +236,7 @@
       </GravityXML>
     </GeneralSettingsXML>
     <MultyBodyDynamicsXML>
-      <SolverXML>RK4</SolverXML>
+      <SolverXML>BroydenCN</SolverXML>
       <MaximalIterationNumberXML>10000</MaximalIterationNumberXML>
       <ToleranceXML>1e-7</ToleranceXML>
       <SolutionDimensionXML>61</SolutionDimensionXML>

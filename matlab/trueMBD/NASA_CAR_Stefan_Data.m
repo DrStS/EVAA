@@ -47,7 +47,6 @@ mass_tyre_rl=30;
 mass_wheel_rr=135/2;
 mass_tyre_rr=30;
 global iscircular 
-iscircular = false;
 % Dimensions of the main car body (the center of rotation is at the origin)
 r1 = [-l_long_rr; 0  ;  l_lat_rr];
 r2 = [-l_long_rl; 0  ; -l_lat_rl];
@@ -144,15 +143,16 @@ FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't
 FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
 FR3 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
 FR4 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
+iscircular = true;
 
 %PLAY AROUND; expect RK4 and BCN to work fine
 % Explicit solvers 
 % solver = @(f, t, x) explicit_solver(f, t, x);
-solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+% bsolver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
-% solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
+solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol, metrics] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 

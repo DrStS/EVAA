@@ -1,4 +1,4 @@
-close all
+clc; clear; close all
 aleSolution_filename = "aleSolution.txt";
 aleSolution = [];
 parameters = [];
@@ -29,10 +29,10 @@ delta_t = parameters(1);
 numIterations = size(aleSolution, 1);
 
 % car parameters
-r1 = [parameters(2); 0; parameters(6)];
-r2 = [parameters(3); 0; parameters(7)];
-r3 = [parameters(4); 0; parameters(8)];
-r4 = [parameters(5); 0; parameters(9)];
+r1 = [parameters(2); 0; -parameters(6)];
+r2 = [parameters(3); 0; -parameters(7)];
+r3 = [parameters(4); 0; -parameters(8)];
+r4 = [parameters(5); 0; -parameters(9)];
 
 upper_spring_length = [parameters(10); parameters(11); parameters(12); parameters(13)];
 lower_spring_length = [parameters(14); parameters(15); parameters(16); parameters(17)];
@@ -40,11 +40,12 @@ lower_spring_length = [parameters(14); parameters(15); parameters(16); parameter
 angles = aleSolution(:,31:33);
 
 % calculate quaternion out of angle representation
-q = calculateQuaternions(angles, numIterations);
-aleSolution(:,31:34) = q;
+%q = calculateQuaternions(angles, numIterations);
+%aleSolution(:,31:34) = q;
 
 % rearrange vectors and tyre position
 adaptedSolution = calculateCorners(aleSolution, r1, r2, r3, r4);
+
 
 % calculate velocity norms
 vel_norms = zeros(1, numIterations);
@@ -54,4 +55,4 @@ end
 
 % visualize
 vis_fig = figure(1);
-visualizer3D(vis_fig, adaptedSolution, traj_rr, traj_rl, plot_traj, delta_t, vel_norms);
+visualizer3D(vis_fig, adaptedSolution, transpose(traj_rr), transpose(traj_rl), false, delta_t, vel_norms);

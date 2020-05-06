@@ -8,7 +8,7 @@
 #include <limits>
 #include <string>
 
-#include "MetaDataBase.h"
+#include "MetaDatabase.h"
 
 namespace EVAA {
 
@@ -174,36 +174,36 @@ public:
         myfile << 0 << ",";  // 29 vt4[z]
         myfile << lagVelVec[4 * (Constants::DIM - 1) + 1] << ",";  // 30 vt4[y]
         myfile << angVec[0] << ",";  // 31 qc[0] // here x
-        myfile << angVec[2] << ",";  // 32 qc[1] // here z
-        myfile << angVec[1] << ",";  // 33 qc[2] // here y
+        myfile << angVec[1] << ",";  // 32 qc[1] // here y
+        myfile << angVec[2] << ",";  // 33 qc[2] // here z
         myfile << 0 << ",";  // 34 qc[3]
         myfile << solVec[0] << ",";  // 35 pcc[x]
         myfile << solVec[2] << ",";  // 36 pcc[z]
         myfile << solVec[1] << ",";  // 37 pcc[y]
-        myfile << solVec[5 * Constants::DIM + 0] << ",";  // 38 pw_rr[x]
-        myfile << solVec[5 * Constants::DIM + 2] << ",";  // 39 pw_rr[z]
-        myfile << solVec[5 * Constants::DIM + 1] << ",";  // 40 pw_rr[y]
-        myfile << solVec[7 * Constants::DIM + 0] << ",";  // 41 pw_rl[x]
-        myfile << solVec[7 * Constants::DIM + 2] << ",";  // 42 pw_rl[z]
-        myfile << solVec[7 * Constants::DIM + 1] << ",";  // 43 pw_rl[y]
-        myfile << solVec[3 * Constants::DIM + 0] << ",";  // 44 pw_fl[x]
-        myfile << solVec[3 * Constants::DIM + 2] << ",";  // 45 pw_fl[z]
-        myfile << solVec[3 * Constants::DIM + 1] << ",";  // 46 pw_fl[y]
-        myfile << solVec[1 * Constants::DIM + 0] << ",";  // 47 pw_fr[x]
-        myfile << solVec[1 * Constants::DIM + 2] << ",";  // 48 pw_fr[z]
-        myfile << solVec[1 * Constants::DIM + 1] << ",";  // 49 pw_fr[y]
-        myfile << solVec[6 * Constants::DIM + 0] << ",";  // 50 pt_rr[x]
-        myfile << solVec[6 * Constants::DIM + 2] << ",";  // 51 pt_rr[z]
-        myfile << solVec[6 * Constants::DIM + 1] << ",";  // 52 pt_rr[y]
-        myfile << solVec[8 * Constants::DIM + 0] << ",";  // 53 pt_rl[x]
-        myfile << solVec[8 * Constants::DIM + 2] << ",";  // 54 pt_rl[z]
-        myfile << solVec[8 * Constants::DIM + 1] << ",";  // 55 pt_rl[y]
-        myfile << solVec[4 * Constants::DIM + 0] << ",";  // 56 pt_fl[x]
-        myfile << solVec[4 * Constants::DIM + 2] << ",";  // 57 pt_fl[z]
-        myfile << solVec[4 * Constants::DIM + 1] << ",";  // 58 pt_fl[y]
-        myfile << solVec[2 * Constants::DIM + 0] << ",";  // 59 pt_fr[x]
-        myfile << solVec[2 * Constants::DIM + 2] << ",";  // 60 pt_fr[z]
-        myfile << solVec[2 * Constants::DIM + 1] << "\n";  // 61 pt_fr[y]
+        myfile << solVec[7 * Constants::DIM + 0] << ",";  // 38 pw_rr[x]
+        myfile << solVec[7 * Constants::DIM + 2] << ",";  // 39 pw_rr[z]
+        myfile << solVec[7 * Constants::DIM + 1] << ",";  // 40 pw_rr[y]
+        myfile << solVec[5 * Constants::DIM + 0] << ",";  // 41 pw_rl[x]
+        myfile << solVec[5 * Constants::DIM + 2] << ",";  // 42 pw_rl[z]
+        myfile << solVec[5 * Constants::DIM + 1] << ",";  // 43 pw_rl[y]
+        myfile << solVec[1 * Constants::DIM + 0] << ",";  // 44 pw_fl[x]
+        myfile << solVec[1 * Constants::DIM + 2] << ",";  // 45 pw_fl[z]
+        myfile << solVec[1 * Constants::DIM + 1] << ",";  // 46 pw_fl[y]
+        myfile << solVec[3 * Constants::DIM + 0] << ",";  // 47 pw_fr[x]
+        myfile << solVec[3 * Constants::DIM + 2] << ",";  // 48 pw_fr[z]
+        myfile << solVec[3 * Constants::DIM + 1] << ",";  // 49 pw_fr[y]
+        myfile << solVec[8 * Constants::DIM + 0] << ",";  // 50 pt_rr[x]
+        myfile << solVec[8 * Constants::DIM + 2] << ",";  // 51 pt_rr[z]
+        myfile << solVec[8 * Constants::DIM + 1] << ",";  // 52 pt_rr[y]
+        myfile << solVec[6 * Constants::DIM + 0] << ",";  // 53 pt_rl[x]
+        myfile << solVec[6 * Constants::DIM + 2] << ",";  // 54 pt_rl[z]
+        myfile << solVec[6 * Constants::DIM + 1] << ",";  // 55 pt_rl[y]
+        myfile << solVec[2 * Constants::DIM + 0] << ",";  // 56 pt_fl[x]
+        myfile << solVec[2 * Constants::DIM + 2] << ",";  // 57 pt_fl[z]
+        myfile << solVec[2 * Constants::DIM + 1] << ",";  // 58 pt_fl[y]
+        myfile << solVec[4 * Constants::DIM + 0] << ",";  // 59 pt_fr[x]
+        myfile << solVec[4 * Constants::DIM + 2] << ",";  // 60 pt_fr[z]
+        myfile << solVec[4 * Constants::DIM + 1] << "\n";  // 61 pt_fr[y]
     };
 
     /**
@@ -272,6 +272,7 @@ public:
         myfile << solVec[49 + 1 * Constants::DIM + 0] << ",";      // 59 pt_fr[x]
         myfile << solVec[49 + 1 * Constants::DIM + 2] << ",";      // 60 pt_fr[z]
         myfile << solVec[49 + 1 * Constants::DIM + 1] << "\n";      // 61 pt_fr[y]
+
     }
 
     void writeSingleValue(T value) { myfile << value << ","; }
@@ -281,27 +282,27 @@ public:
     
 
     void writeParameters() { 
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTimeStepSize());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTimeStepSize());
 
-        writeSingleValue(-MetaDataBase<T>::getDataBase().getLongitudalLegPositionRearRight());
-        writeSingleValue(-MetaDataBase<T>::getDataBase().getLongitudalLegPositionRearLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getLongitudalLegPositionFrontLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getLongitudalLegPositionFrontRight());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLongitudalLegPositionRearRight());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLongitudalLegPositionRearLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLongitudalLegPositionFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLongitudalLegPositionFrontRight());
 
-        writeSingleValue(MetaDataBase<T>::getDataBase().getLatidudalLegPositionRearRight());
-        writeSingleValue(-MetaDataBase<T>::getDataBase().getLatidudalLegPositionRearLeft());
-        writeSingleValue(-MetaDataBase<T>::getDataBase().getLatidudalLegPositionFrontLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getLatidudalLegPositionFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLatidudalLegPositionRearRight());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLatidudalLegPositionRearLeft());
+        writeSingleValue(-MetaDatabase<T>::getDatabase().getLatidudalLegPositionFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getLatidudalLegPositionFrontRight());
 
-        writeSingleValue(MetaDataBase<T>::getDataBase().getBodySpringLengthRearRight());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getBodySpringLengthRearLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getBodySpringLengthFrontLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getBodySpringLengthFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthRearRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthRearLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getBodySpringLengthFrontRight());
 
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTyreSpringLengthRearRight());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTyreSpringLengthRearLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTyreSpringLengthFrontLeft());
-        writeSingleValue(MetaDataBase<T>::getDataBase().getTyreSpringLengthFrontRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthRearRight());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthRearLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthFrontLeft());
+        writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthFrontRight());
 
     }
 
