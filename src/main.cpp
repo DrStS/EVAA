@@ -82,7 +82,12 @@ int main(int argc, char **argv) {
     if (allArgs.size() > 2) {
         EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
     }
-    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
+    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", 
+        "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml");
+//    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", 
+//        "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
+//    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", 
+//        "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml");
     myComputeEngine->printInfo();
 
     auto &timer1 = EVAA::anaysisTimer01;

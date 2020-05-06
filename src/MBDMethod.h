@@ -28,8 +28,8 @@ private:
     MBDSolver used_solver;
 
     // Environment conditions
-
-    BoundaryConditionRoad boundary_conditions;
+    LagrangianBoundaryConditionRoad lagrangian_boundary_conditions;
+    LagrangianBoundaryConditionRoad eulerian_boundary_conditions;
 
     // Car Definition
 
@@ -261,7 +261,9 @@ private:
         tol = db.getToleranceBroydenIterationForMBD();
         solution_dim = db.getSolutionVectorSize();  /// this is by the formulation
         used_solver = db.getUsedSolverForMBD();
-        boundary_conditions = db.getRoadConditions();
+        lagrangian_boundary_conditions = db.getLagrangianRoadConditions();
+        eulerian_boundary_conditions = db.getEulerianRoadConditions();
+
 
         // Car Definition
         T gx = db.getGravityField()[0];
@@ -1624,7 +1626,7 @@ public:
         get_initial_length(qc_, r_fl, r_fr, r_rl, r_rr, pcc, pw_fl_, pw_fr_, pw_rl_, pw_rr_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
 
         // overwrites the initial velocity values
-        if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
+        if (larangian_boundary_conditions == BoundaryConditionRoad::CIRCULAR) circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
         if (boundary_conditions == BoundaryConditionRoad::ARBITRARY) {
             T angle[3];
             db.getArbitraryTrajectory()->updateInitialConditions(angle, initial_angular_velocity, pcc_, vc, pt_fl_, pt_fr_, pt_rl_, pt_rr_, pw_fl_, pw_fr_, pw_rl_, pw_rr_, vt_fl, vt_fr, vt_rl, vt_rr, vw_fl, vw_fr, vw_rl, vw_rr);

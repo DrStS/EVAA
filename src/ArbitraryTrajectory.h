@@ -22,7 +22,51 @@ public:
     /**
      * \brief Constructor
      */
-    ArbitraryTrajectory(size_t numIterations, T delta_t, T amplitude_right, T amplitude_left, T period_right, T period_left, T shift_right, T shift_left, T* initialUpperSpringLengths, T* initialLowerSpringLengths, T* latitudes, T* longitudes) : _numIterations(numIterations), _delta_t(delta_t) {
+    ArbitraryTrajectory(size_t numIterations, T delta_t) : _numIterations(numIterations), _delta_t(delta_t) {
+
+        // allocate memory
+        _roadPointsX = Math::malloc<T>(numIterations + 1);
+        _roadPointsY = Math::malloc<T>(numIterations + 1);
+
+        _roadAngles = Math::malloc<T>(numIterations);
+        _roadAngularAcceleration = Math::malloc<T>(numIterations);
+        _normedDistance = Math::malloc<T>(numIterations);
+
+        _roadAccelerationX = Math::malloc<T>(numIterations);
+        _roadAccelerationY = Math::malloc<T>(numIterations);
+
+        _tyreAccelerationsX_fl = Math::malloc<T>(numIterations);
+        _tyreAccelerationsX_fr = Math::malloc<T>(numIterations);
+        _tyreAccelerationsX_rl = Math::malloc<T>(numIterations);
+        _tyreAccelerationsX_rr = Math::malloc<T>(numIterations);
+
+        _tyreAccelerationsY_fl = Math::malloc<T>(numIterations);
+        _tyreAccelerationsY_fr = Math::malloc<T>(numIterations);
+        _tyreAccelerationsY_rl = Math::malloc<T>(numIterations);
+        _tyreAccelerationsY_rr = Math::malloc<T>(numIterations);
+
+        _tyreAccelerationsZ_fl = Math::malloc<T>(numIterations);
+        _tyreAccelerationsZ_fr = Math::malloc<T>(numIterations);
+        _tyreAccelerationsZ_rl = Math::malloc<T>(numIterations);
+        _tyreAccelerationsZ_rr = Math::malloc<T>(numIterations);
+
+        _legPointsX_fl = Math::malloc<T>(numIterations + 1);
+        _legPointsX_fr = Math::malloc<T>(numIterations + 1);
+        _legPointsX_rl = Math::malloc<T>(_numIterations + 1);
+        _legPointsX_rr = Math::malloc<T>(_numIterations + 1);
+
+        _legPointsY_fl = Math::malloc<T>(_numIterations + 1);
+        _legPointsY_fr = Math::malloc<T>(_numIterations + 1);
+        _legPointsY_rl = Math::malloc<T>(_numIterations + 1);
+        _legPointsY_rr = Math::malloc<T>(_numIterations + 1);
+
+        _legPointsZ_fl = Math::malloc<T>(_numIterations + 1);
+        _legPointsZ_fr = Math::malloc<T>(_numIterations + 1);
+        _legPointsZ_rl = Math::malloc<T>(_numIterations + 1);
+        _legPointsZ_rr = Math::malloc<T>(_numIterations + 1);
+    }
+
+    void initializeVerticalProfile(T amplitude_right, T amplitude_left, T period_right, T period_left, T shift_right, T shift_left, T* initialUpperSpringLengths, T* initialLowerSpringLengths, T* latitudes, T* longitudes) {
         // Read Eulerian force parameters
         _frequencyRight = (period_right == 0) ? 0 : 2 * Constants::PI / period_right;
         _frequencyLeft = (period_left == 0) ? 0 : 2 * Constants::PI / period_left;
@@ -56,46 +100,30 @@ public:
         _l_long_rl = longitudes[Constants::REAR_LEFT];
         _l_long_rr = longitudes[Constants::REAR_RIGHT];
 
-        // allocate memory
-        _roadPointsX = Math::malloc<T>(numIterations + 1);
-        _roadPointsY = Math::malloc<T>(numIterations + 1);
+    }
 
-        _roadAngles = Math::malloc<T>(numIterations);
-        _roadAngularAcceleration = Math::malloc<T>(numIterations);
-        _normedDistance = Math::malloc<T>(numIterations);
+    void initializeHorizontalProfile(T* initialUpperSpringLengths, T* initialLowerSpringLengths, T* latitudes, T* longitudes) {
+        // Read simulation parameters
+        _initialUpperSpringLength_fl = initialUpperSpringLengths[Constants::FRONT_LEFT];
+        _initialUpperSpringLength_fr = initialUpperSpringLengths[Constants::FRONT_RIGHT];
+        _initialUpperSpringLength_rl = initialUpperSpringLengths[Constants::REAR_LEFT];
+        _initialUpperSpringLength_rr = initialUpperSpringLengths[Constants::REAR_RIGHT];
 
-        _roadAccelerationX = Math::malloc<T>(numIterations);
-        _roadAccelerationY = Math::malloc<T>(numIterations);
+        _initialLowerSpringLength_fl = initialLowerSpringLengths[Constants::FRONT_LEFT];
+        _initialLowerSpringLength_fr = initialLowerSpringLengths[Constants::FRONT_RIGHT];
+        _initialLowerSpringLength_rl = initialLowerSpringLengths[Constants::REAR_LEFT];
+        _initialLowerSpringLength_rr = initialLowerSpringLengths[Constants::REAR_RIGHT];
 
-        _tyreAccelerationsX_fl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsX_fr = Math::malloc<T>(numIterations);
-        _tyreAccelerationsX_rl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsX_rr = Math::malloc<T>(numIterations);
+        _l_lat_fl = latitudes[Constants::FRONT_LEFT];
+        _l_lat_fr = latitudes[Constants::FRONT_RIGHT];
+        _l_lat_rl = latitudes[Constants::REAR_LEFT];
+        _l_lat_rr = latitudes[Constants::REAR_RIGHT];
 
-        _tyreAccelerationsY_fl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsY_fr = Math::malloc<T>(numIterations);
-        _tyreAccelerationsY_rl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsY_rr = Math::malloc<T>(numIterations);
+        _l_long_fl = longitudes[Constants::FRONT_LEFT];
+        _l_long_fr = longitudes[Constants::FRONT_RIGHT];
+        _l_long_rl = longitudes[Constants::REAR_LEFT];
+        _l_long_rr = longitudes[Constants::REAR_RIGHT];
 
-        _tyreAccelerationsZ_fl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsZ_fr = Math::malloc<T>(numIterations);
-        _tyreAccelerationsZ_rl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsZ_rr = Math::malloc<T>(numIterations);
-
-        _legPointsX_fl = Math::malloc<T>(_numIterations + 1);
-        _legPointsX_fr = Math::malloc<T>(_numIterations + 1);
-        _legPointsX_rl = Math::malloc<T>(_numIterations + 1);
-        _legPointsX_rr = Math::malloc<T>(_numIterations + 1);
-
-        _legPointsY_fl = Math::malloc<T>(_numIterations + 1);
-        _legPointsY_fr = Math::malloc<T>(_numIterations + 1);
-        _legPointsY_rl = Math::malloc<T>(_numIterations + 1);
-        _legPointsY_rr = Math::malloc<T>(_numIterations + 1);
-
-        _legPointsZ_fl = Math::malloc<T>(_numIterations + 1);
-        _legPointsZ_fr = Math::malloc<T>(_numIterations + 1);
-        _legPointsZ_rl = Math::malloc<T>(_numIterations + 1);
-        _legPointsZ_rr = Math::malloc<T>(_numIterations + 1);
     }
 
     /**

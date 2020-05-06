@@ -16,7 +16,7 @@
       </center>
     </circularRoadProfile>
   </roadProfile>
-  <!--roadProfile>
+  <roadProfile>
     <arbitraryRoadProfile>
       <horizontalProfile>
         <wayPoint X="0"   Y="0"   time="0"/>
@@ -38,56 +38,5 @@
         </sinusoidalProfile>
       </verticalProfile>
     </arbitraryRoadProfile>
-  </roadProfile-->
-  <forces>
-    <forceBody>
-      <x>0</x>
-      <y>0</y>
-      <z>0</z>
-    </forceBody>
-    <forceWheel>
-      <ReerRight>
-        <x>0</x>
-        <y>0</y>
-        <z>0</z>
-      </ReerRight>
-      <ReerLeft>
-        <x>0</x>
-        <y>0</y>
-        <z>0</z>
-      </ReerLeft>
-      <FrontLeft>
-        <x>0</x>
-        <y>0</y>
-        <z>0</z>
-      </FrontLeft>
-      <FrontRight>
-        <x>0</x>
-        <y>0</y>
-        <z>0</z>
-      </FrontRight>
-    </forceWheel>
-    <forceTyre>
-      <ReerRight>
-        <x>0</x>
-        <y>0</y>
-        <z>0</z>
-      </ReerRight>
-      <ReerLeft>
-        <x>0</x>
-        <y>0</y>
-        <z>0</z>
-      </ReerLeft>
-      <FrontLeft>
-        <x>0</x>
-        <y>0</y>
-        <z>0</z>
-      </FrontLeft>
-      <FrontRight>
-        <x>0</x>
-        <y>0</y>
-        <z>0</z>
-      </FrontRight>
-    </forceTyre>
-  </forces>
+  </roadProfile>
 </EVAA_load_module>

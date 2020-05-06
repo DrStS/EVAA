@@ -9,15 +9,6 @@
     </xs:sequence>    
   </xs:complexType>
 
-  <xs:complexType name="quad">
-    <xs:sequence>    
-      <xs:element name="x" type="xs:double"/>
-      <xs:element name="y" type="xs:double"/>
-      <xs:element name="z" type="xs:double"/>
-	    <xs:element name="w" type="xs:double"/>
-    </xs:sequence>    
-  </xs:complexType>
-
   <xs:complexType name="vector_t">
     <xs:sequence>
       <xs:element name="x" type="xs:double"/>
@@ -125,26 +116,6 @@
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            <xs:element name="VelocitiesXML">
-              <xs:complexType>
-                <xs:sequence>
-                  <xs:element name="BodyXML" type="vector_t"/>
-                  <xs:element name="angularBodyXML" type="vector_t"/>
-                  <xs:element name="UnsprungMassXML" type="legs_vector_t"/>
-                  <xs:element name="TyreXML" type="legs_vector_t"/>
-                </xs:sequence>
-              </xs:complexType>
-            </xs:element>
-  		      <xs:element name="PositionXML">
-			        <xs:complexType>
-				        <xs:sequence>
-					        <xs:element name="BodyXML" type="vector_t" />
-                  <xs:element name="UnsprungMassXML" type="legs_vector_t" minOccurs="0" maxOccurs="1"/>
-                  <xs:element name="TyreXML" type="legs_vector_t" minOccurs="0" maxOccurs="1"/>
-                </xs:sequence>
-              </xs:complexType>
-  		      </xs:element>
-  		      <xs:element name="OrientationXML" type="quad" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -158,7 +129,6 @@
                   <xs:element name="SolverXML" type="xs:string"/>
                   <xs:element name="MaximalIterationNumberXML" type="xs:int" />
                   <xs:element name="ToleranceXML" type="xs:double" />
-                  <xs:element name="SolutionDimensionXML" type="xs:int" />
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
@@ -174,7 +144,6 @@
             <xs:element name="GeneralSettingsXML">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="GravityXML" type="vector_t" />
                   <xs:element name="TimestepSizeXML" type="xs:double" />
                   <xs:element name="NumberOfIterationsXML" type="xs:int" />
                 </xs:sequence>
