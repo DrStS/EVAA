@@ -132,7 +132,7 @@
   <GravityField>
     <x>0</x>
     <y>0</y>
-    <z>0</z>
+    <z>-9.81</z>
   </GravityField>
 
 </EVAA_load_module>

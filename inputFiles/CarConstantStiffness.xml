@@ -21,10 +21,10 @@
           <z>-0.3</z>
         </RelativeCenterOfInstanteneousRotation>
         <SuspensionSpringsXML>
-          <ReerRight>0.2</ReerRight>
-          <ReerLeft>0.2</ReerLeft>
-          <FrontLeft>0.2</FrontLeft>
-          <FrontRight>0.2</FrontRight>
+          <ReerRight>0.7889</ReerRight>
+          <ReerLeft>0.7889</ReerLeft>
+          <FrontLeft>0.7069</FrontLeft>
+          <FrontRight>0.7069</FrontRight>
         </SuspensionSpringsXML>
         <TyreSpringsXML>
           <ReerRight>0.2</ReerRight>
@@ -95,16 +95,16 @@
   <InitialConditionsXML>
     <SpringElongationXML>
       <BodyXML>
-        <ReerRight>0.2</ReerRight>
-        <ReerLeft>0.2</ReerLeft>
-        <FrontLeft>0.2</FrontLeft>
-        <FrontRight>0.2</FrontRight>
+        <ReerRight>0.4470</ReerRight>
+        <ReerLeft>0.4470</ReerLeft>
+        <FrontLeft>0.4470</FrontLeft>
+        <FrontRight>0.4470</FrontRight>
       </BodyXML>
       <TyreXML>
-        <ReerRight>0.20</ReerRight>
-        <ReerLeft>0.20</ReerLeft>
-        <FrontLeft>0.20</FrontLeft>
-        <FrontRight>0.20</FrontRight>
+        <ReerRight>0.1769</ReerRight>
+        <ReerLeft>0.1769</ReerLeft>
+        <FrontLeft>0.1769</FrontLeft>
+        <FrontRight>0.1769</FrontRight>
       </TyreXML>
     </SpringElongationXML>
 	<PositionXML>

@@ -351,6 +351,7 @@ private:
         FW_fr[i] += db.getWheelMassFrontRight() * gz;
         FW_rl[i] += db.getWheelMassRearLeft() * gz;
         FW_rr[i] += db.getWheelMassRearRight() * gz;
+
     }
 
     void getCholeskyDecomposition() {
@@ -764,7 +765,7 @@ private:
         pt_fr_ = x + 52;
         pt_rl_ = x + 55;
         pt_rr_ = x + 58;
-//        std::cout << "wc: " << wc_[0] << ", " << wc_[1] << ", " << wc_[2] << std::endl;
+        //        std::cout << "wc: " << wc_[0] << ", " << wc_[1] << ", " << wc_[2] << std::endl;
     }
 
     void compute_spring_lengths(T* pcc_, T* pw_, T* pt_, T* cf_r_up_, T* cf_r_low_, T* r_, T& norm_r_up, T& inv_norm_r_up, T& norm_r_low, T& inv_norm_r_low) {
@@ -1448,7 +1449,6 @@ lower_normal4;
         Math::axpy<T>(Constants::DIM, 1, cf_upper_rot_force_rr, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, -1, cf_car_rot_force_rr, 1, brem_start, 1);
         Math::axpy<T>(Constants::DIM, -1, cf_lower_rot_force_rr, 1, brem_start, 1);
-
 
         // local_FR1; ...					  %vt1_dot
         brem_start += Constants::DIM;

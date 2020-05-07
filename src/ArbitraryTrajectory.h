@@ -29,41 +29,41 @@ public:
         _roadPointsY = Math::malloc<T>(numIterations + 1);
 
         _roadAngles = Math::malloc<T>(numIterations);
-        _roadAngularAcceleration = Math::malloc<T>(numIterations);
-        _normedDistance = Math::malloc<T>(numIterations);
+        _roadAngularAcceleration = Math::malloc<T>(numIterations+1);
+        _normedDistance = Math::malloc<T>(numIterations+1);
 
-        _roadAccelerationX = Math::malloc<T>(numIterations);
-        _roadAccelerationY = Math::malloc<T>(numIterations);
+        _roadAccelerationX = Math::malloc<T>(numIterations+1);
+        _roadAccelerationY = Math::malloc<T>(numIterations+1);
 
-        _tyreAccelerationsX_fl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsX_fr = Math::malloc<T>(numIterations);
-        _tyreAccelerationsX_rl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsX_rr = Math::malloc<T>(numIterations);
+        _tyreAccelerationsX_fl = Math::malloc<T>(numIterations+1);
+        _tyreAccelerationsX_fr = Math::malloc<T>(numIterations+1);
+        _tyreAccelerationsX_rl = Math::malloc<T>(numIterations+1);
+        _tyreAccelerationsX_rr = Math::malloc<T>(numIterations+1);
 
-        _tyreAccelerationsY_fl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsY_fr = Math::malloc<T>(numIterations);
-        _tyreAccelerationsY_rl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsY_rr = Math::malloc<T>(numIterations);
+        _tyreAccelerationsY_fl = Math::malloc<T>(numIterations+1);
+        _tyreAccelerationsY_fr = Math::malloc<T>(numIterations+1);
+        _tyreAccelerationsY_rl = Math::malloc<T>(numIterations+1);
+        _tyreAccelerationsY_rr = Math::malloc<T>(numIterations+1);
 
-        _tyreAccelerationsZ_fl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsZ_fr = Math::malloc<T>(numIterations);
-        _tyreAccelerationsZ_rl = Math::malloc<T>(numIterations);
-        _tyreAccelerationsZ_rr = Math::malloc<T>(numIterations);
+        _tyreAccelerationsZ_fl = Math::malloc<T>(numIterations+1);
+        _tyreAccelerationsZ_fr = Math::malloc<T>(numIterations+1);
+        _tyreAccelerationsZ_rl = Math::malloc<T>(numIterations+1);
+        _tyreAccelerationsZ_rr = Math::malloc<T>(numIterations+1);
 
         _legPointsX_fl = Math::malloc<T>(numIterations + 1);
         _legPointsX_fr = Math::malloc<T>(numIterations + 1);
-        _legPointsX_rl = Math::malloc<T>(_numIterations + 1);
-        _legPointsX_rr = Math::malloc<T>(_numIterations + 1);
+        _legPointsX_rl = Math::malloc<T>(numIterations + 1);
+        _legPointsX_rr = Math::malloc<T>(numIterations + 1);
 
-        _legPointsY_fl = Math::malloc<T>(_numIterations + 1);
-        _legPointsY_fr = Math::malloc<T>(_numIterations + 1);
-        _legPointsY_rl = Math::malloc<T>(_numIterations + 1);
-        _legPointsY_rr = Math::malloc<T>(_numIterations + 1);
+        _legPointsY_fl = Math::malloc<T>(numIterations + 1);
+        _legPointsY_fr = Math::malloc<T>(numIterations + 1);
+        _legPointsY_rl = Math::malloc<T>(numIterations + 1);
+        _legPointsY_rr = Math::malloc<T>(numIterations + 1);
 
-        _legPointsZ_fl = Math::malloc<T>(_numIterations + 1);
-        _legPointsZ_fr = Math::malloc<T>(_numIterations + 1);
-        _legPointsZ_rl = Math::malloc<T>(_numIterations + 1);
-        _legPointsZ_rr = Math::malloc<T>(_numIterations + 1);
+        _legPointsZ_fl = Math::malloc<T>(numIterations + 1);
+        _legPointsZ_fr = Math::malloc<T>(numIterations + 1);
+        _legPointsZ_rl = Math::malloc<T>(numIterations + 1);
+        _legPointsZ_rr = Math::malloc<T>(numIterations + 1);
     }
 
     void initializeVerticalProfile(T amplitude_right, T amplitude_left, T period_right, T period_left, T shift_right, T shift_left, T* initialUpperSpringLengths, T* initialLowerSpringLengths, T* latitudes, T* longitudes) {
@@ -254,6 +254,21 @@ public:
         dfDeleteTask(&Task);
     }
 
+    
+    
+    /**
+     * \brief calculate the travelled distance if no trajectory is provided, assume constant velocity
+     * \param v initial velocity of the object [XYZ]
+     */
+    void calculateTravelledDistanceNonArbitraryRoad(T* v) {
+        _normedDistance[0] = 0;
+        for (int i = 1; i < _numIterations + 1; ++i) {
+            _normedDistance[i] = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) * i * _delta_t;        
+        }
+    }
+
+    
+    
     /**
      * \brief calculate the travelled distance at each trajectory point
      */
@@ -378,75 +393,28 @@ public:
     }
 
     /**
+     * \brief calculate vertical positions
+     */
+    void calculateVerticalPositionsLegs() {
+        for (int i = 0; i < _numIterations + 1; ++i) {
+            _legPointsZ_fl[i] = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fl)) - _initialUpperSpringLength_fl - _initialLowerSpringLength_fl;
+            _legPointsZ_fr[i] = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[i] + _phaseShift_fr)) - _initialUpperSpringLength_fr - _initialLowerSpringLength_fr;
+            _legPointsZ_rl[i] = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rl)) - _initialUpperSpringLength_rl - _initialLowerSpringLength_rl;
+            _legPointsZ_rr[i] = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[i] + _phaseShift_rr)) - _initialUpperSpringLength_rr - _initialLowerSpringLength_rr;
+        }
+    }
+
+
+    /**
      * \brief use a second order scheme to calculate the Accelerations that act
      * on the tyre on the trajectory points
      */
     void calculateVerticalAccelerations() {
-        T invDeltaT = 1. / (_delta_t * _delta_t);
-        if (_numIterations > 3) {
-            T pos_fl_prev = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[0] + _phaseShift_fl));
-            T pos_fr_prev = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[0] + _phaseShift_fr));
-            T pos_rl_prev = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[0] + _phaseShift_rl));
-            T pos_rr_prev = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[0] + _phaseShift_rr));
-
-            T pos_fl = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[1] + _phaseShift_fl));
-            T pos_fr = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[1] + _phaseShift_fr));
-            T pos_rl = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[1] + _phaseShift_rl));
-            T pos_rr = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[1] + _phaseShift_rr));
-
-            T pos_fl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[2] + _phaseShift_fl));
-            T pos_fr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[2] + _phaseShift_fr));
-            T pos_rl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[2] + _phaseShift_rl));
-            T pos_rr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[2] + _phaseShift_rr));
-
-            T pos_fl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[3] + _phaseShift_fl));
-            T pos_fr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[3] + _phaseShift_fr));
-            T pos_rl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[3] + _phaseShift_rl));
-            T pos_rr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[3] + _phaseShift_rr));
-
-            _tyreAccelerationsZ_fl[0] = (2 * pos_fl_prev + 5 * pos_fl + 4 * pos_fl_next + pos_fl_nnext) * invDeltaT;
-            _tyreAccelerationsZ_fr[0] = (2 * pos_fr_prev + 5 * pos_fr + 4 * pos_fr_next + pos_fr_nnext) * invDeltaT;
-            _tyreAccelerationsZ_rl[0] = (2 * pos_rl_prev + 5 * pos_rl + 4 * pos_rl_next + pos_rl_nnext) * invDeltaT;
-            _tyreAccelerationsZ_rr[0] = (2 * pos_rr_prev + 5 * pos_rr + 4 * pos_rr_next + pos_rr_nnext) * invDeltaT;
-
-            for (int i = 1; i < _numIterations; ++i) {
-                pos_fl_prev = pos_fl;
-                pos_fl = pos_fl_next;
-                pos_fl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i + 1] + _phaseShift_fl));
-                pos_fr_prev = pos_fr;
-                pos_fr = pos_fr_next;
-                pos_fr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[i + 1] + _phaseShift_fr));
-                pos_rl_prev = pos_rl;
-                pos_rl = pos_rl_next;
-                pos_rl_next = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i + 1] + _phaseShift_rl));
-                pos_rr_prev = pos_rr;
-                pos_rr = pos_rr_next;
-                pos_rr_next = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[i + 1] + _phaseShift_rr));
-
-                _tyreAccelerationsZ_fl[i] = (pos_fl_prev - 2 * pos_fl + pos_fl_next) * invDeltaT;
-                _tyreAccelerationsZ_fr[i] = (pos_fr_prev - 2 * pos_fr + pos_fr_next) * invDeltaT;
-                _tyreAccelerationsZ_rl[i] = (pos_rl_prev - 2 * pos_rl + pos_rl_next) * invDeltaT;
-                _tyreAccelerationsZ_rr[i] = (pos_rr_prev - 2 * pos_rr + pos_rr_next) * invDeltaT;
-            }
-            pos_fl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[_numIterations] + _phaseShift_fl));
-            pos_fr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[_numIterations] + _phaseShift_fr));
-            pos_rl_nnext = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[_numIterations] + _phaseShift_rl));
-            pos_rr_nnext = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[_numIterations] + _phaseShift_rr));
-
-            _tyreAccelerationsZ_fl[_numIterations] = (2 * pos_fl_nnext + 5 * pos_fl_next + 4 * pos_fl + pos_fl_prev) * invDeltaT;
-            _tyreAccelerationsZ_fr[_numIterations] = (2 * pos_fr_nnext + 5 * pos_fr_next + 4 * pos_fr + pos_fr_prev) * invDeltaT;
-            _tyreAccelerationsZ_rl[_numIterations] = (2 * pos_rl_nnext + 5 * pos_rl_next + 4 * pos_rl + pos_rl_prev) * invDeltaT;
-            _tyreAccelerationsZ_rr[_numIterations] = (2 * pos_rr_nnext + 5 * pos_rr_next + 4 * pos_rr + pos_rr_prev) * invDeltaT;
-        }
-        else {
-            for (int i = 0; i < _numIterations + 1; ++i) {
-                _tyreAccelerationsZ_fl[i] = 0;
-                _tyreAccelerationsZ_fr[i] = 0;
-                _tyreAccelerationsZ_rl[i] = 0;
-                _tyreAccelerationsZ_rr[i] = 0;
-            }
-        }
-    }
+        calculateAccelerations(_tyreAccelerationsZ_rr, _legPointsZ_fl);
+        calculateAccelerations(_tyreAccelerationsZ_fr, _legPointsZ_fr);
+        calculateAccelerations(_tyreAccelerationsZ_rl, _legPointsZ_rl);
+        calculateAccelerations(_tyreAccelerationsZ_fl, _legPointsZ_rr);
+   }
 
     /**
      * \brief calculates the Acceleration acting on the tyre due to bumpy road
@@ -460,14 +428,14 @@ public:
      * \param time at which this happens
      * \param mass of the object the force is applied
      */
-    T getVerticalRoadForcesFrontRight(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_rl[iteration]; }
+    T getVerticalRoadForcesFrontRight(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_fr[iteration]; }
 
     /**
      * \brief calculates the Force acting on the tyre due to bumpy road
      * \param time at which this happens
      * \param mass of the object the force is applied
      */
-    T getVerticalRoadForcesRearLeft(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_fr[iteration]; }
+    T getVerticalRoadForcesRearLeft(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_rl[iteration]; }
 
     /**
      * \brief calculates the Force acting on the tyre due to bumpy road
@@ -476,22 +444,7 @@ public:
      */
     T getVerticalRoadForcesRearRight(size_t iteration, T mass) { return mass * _tyreAccelerationsZ_rr[iteration]; }
 
-    /**
-     * \brief calculate vertical positions
-     */
-    void calculateVerticalPositionsLegs() {
-        for (int i = 0; i < _numIterations + 1; ++i) {
-            _legPointsZ_fl[i] = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fl)) 
-                - _initialUpperSpringLength_fl - _initialLowerSpringLength_fl;
-            _legPointsZ_fr[i] = _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fr))
-            -_initialUpperSpringLength_fr - _initialLowerSpringLength_fr;
-            _legPointsZ_rl[i] = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rl))
-            -_initialUpperSpringLength_rl - _initialLowerSpringLength_rl;
-            _legPointsZ_rr[i] = _amplitudeRight * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rr))
-            -_initialUpperSpringLength_rr - _initialLowerSpringLength_rr;
-        }
-    }
-
+    
     /**
      * \brief calculates the position of the t<ew
      * \param time at which this happens
@@ -636,10 +589,11 @@ public:
         pw_rl[1] = _legPointsY_rl[0];
         pw_rr[1] = _legPointsY_rr[0];
 
-        pw_fl[2] = _initialUpperSpringLength_fl + _legPointsZ_fl[0];
-        pw_fr[2] = _initialUpperSpringLength_fr + _legPointsZ_fr[0];
-        pw_rl[2] = _initialUpperSpringLength_rl + _legPointsZ_rl[0];
-        pw_rr[2] = _initialUpperSpringLength_rr + _legPointsZ_rr[0];
+        pw_fl[2] = _initialLowerSpringLength_fl + _legPointsZ_fl[0];
+        pw_fr[2] = _initialLowerSpringLength_fr + _legPointsZ_fr[0];
+        pw_rl[2] = _initialLowerSpringLength_rl + _legPointsZ_rl[0];
+        pw_rr[2] = _initialLowerSpringLength_rr + _legPointsZ_rr[0];
+
 
         // tyre positions
         pt_fl[0] = _legPointsX_fl[0];
@@ -755,10 +709,10 @@ public:
 
 		// wheel positions
 
-		*pw_fl = _initialUpperSpringLength_fl + _legPointsZ_fl[0];
-		*pw_fr = _initialUpperSpringLength_fr + _legPointsZ_fr[0];
-		*pw_rl = _initialUpperSpringLength_rl + _legPointsZ_rl[0];
-		*pw_rr = _initialUpperSpringLength_rr + _legPointsZ_rr[0];
+		*pw_fl = _initialLowerSpringLength_fl + _legPointsZ_fl[0];
+		*pw_fr = _initialLowerSpringLength_fr + _legPointsZ_fr[0];
+		*pw_rl = _initialLowerSpringLength_rl + _legPointsZ_rl[0];
+		*pw_rr = _initialLowerSpringLength_rr + _legPointsZ_rr[0];
 
 		// tyre positions
 

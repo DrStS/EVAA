@@ -120,8 +120,8 @@ public:
         readLegs(_l_long, twoTrackModel.GeometryXML().LongitudinalReferenceToWheelXML());
         readLegs(_l_lat, twoTrackModel.GeometryXML().LateralReferenceToWheelXML());
         readVector(_vehicleCIR, twoTrackModel.GeometryXML().RelativeCenterOfInstanteneousRotation());
-        readLegs(_lower_spring_length, twoTrackModel.GeometryXML().SuspensionSpringsXML());
-        readLegs(_upper_spring_length, twoTrackModel.GeometryXML().TyreSpringsXML());
+        readLegs(_lower_spring_length, twoTrackModel.GeometryXML().TyreSpringsXML());
+        readLegs(_upper_spring_length, twoTrackModel.GeometryXML().SuspensionSpringsXML());
 
         // Load initial parameters
         const auto initial = settings->InitialConditionsXML();
@@ -213,8 +213,6 @@ public:
             _trajectory = new ArbitraryTrajectory<T>(_num_time_iter, _timestep);
             _trajectory->initializeVerticalProfile(sinusoidalProfile.rightTyre().amplitude(), sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(), sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(), sinusoidalProfile.leftTyre().shift(), _initial_upper_spring_length, _initial_lower_spring_length, _l_lat, _l_long);
             _trajectory->calculateTyreShifts();
-            _trajectory->calculateVerticalPositionsLegs();
-            _trajectory->calculateVerticalAccelerations();
         }
         else {
             throw std::logic_error(
@@ -239,6 +237,12 @@ public:
             readVectorLegs(_initial_vel_wheel, straightProfile.initialVelocity().UnsprungMass());
 
             readVectorLegs(_initial_vel_tyre, straightProfile.initialVelocity().Tyre());
+
+            if (_eulerianBoundaryCondition == EulerianBoundaryConditionRoad::SINUSOIDAL) {
+                _trajectory->calculateTravelledDistanceNonArbitraryRoad(_initial_vel_body);
+                _trajectory->calculateVerticalPositionsLegs();
+                _trajectory->calculateVerticalAccelerations();
+            }
         }
         else if (load_data->lagrangianRoadProfile().circularRoadProfile().present()) {
             _lagrangianBoundaryCondition = LagrangianBoundaryConditionRoad::CIRCULAR;
@@ -271,6 +275,13 @@ public:
                 throw std::logic_error(
                     "The direction of the circular road has to be clockwise or counterClockwise!");
             }
+
+            if (_eulerianBoundaryCondition == EulerianBoundaryConditionRoad::SINUSOIDAL) {
+                _trajectory->calculateTravelledDistanceNonArbitraryRoad(_initial_vel_body);
+                _trajectory->calculateVerticalPositionsLegs();
+                _trajectory->calculateVerticalAccelerations();
+            }
+
         }
         else if (load_data->lagrangianRoadProfile().arbitraryRoadProfile().present()) {
             const auto horizontalProfile = load_data->lagrangianRoadProfile().arbitraryRoadProfile().get();
@@ -293,6 +304,10 @@ public:
 
             _trajectory->interpolateRoadPoints(numWayPoints, wayPointsX.data(), wayPointsY.data(), wayPointsTimes.data());
             _trajectory->calculateTravelledDistance();
+            if (_eulerianBoundaryCondition == EulerianBoundaryConditionRoad::SINUSOIDAL) {
+                _trajectory->calculateVerticalPositionsLegs();
+                _trajectory->calculateVerticalAccelerations();
+            }
             _trajectory->calculateAngles();
             _trajectory->calculateAccelerationsCenterOfGravity();
             _trajectory->calculateAccelerationsLegs();
