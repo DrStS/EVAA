@@ -67,22 +67,22 @@ k_spline7 = spline(X,k_grid(6*size_grid+1:7*size_grid));
 k_der7 = fnder(k_spline7,1);
 k_spline8 = spline(X,k_grid(7*size_grid+1:8*size_grid));
 k_der8 = fnder(k_spline8,1);
-d_spline1 = spline(X,k_grid(1:size_grid));
-d_der1 = fnder(k_spline1,1);
-d_spline2 = spline(X,k_grid(size_grid+1:2*size_grid));
+d_spline1 = spline(X,d_grid(1:size_grid));
+d_der1 = fnder(d_spline1,1);
+d_spline2 = spline(X,d_grid(size_grid+1:2*size_grid));
 d_der2 = fnder(k_spline2,1);
-d_spline3 = spline(X,k_grid(2*size_grid+1:3*size_grid));
-d_der3 = fnder(k_spline3,1);
-d_spline4 = spline(X,k_grid(3*size_grid+1:4*size_grid));
-d_der4 = fnder(k_spline4,1);
-d_spline5 = spline(X,k_grid(4*size_grid+1:5*size_grid));
-d_der5 = fnder(k_spline5,1);
-d_spline6 = spline(X,k_grid(5*size_grid+1:6*size_grid));
-d_der6 = fnder(k_spline6,1);
-d_spline7 = spline(X,k_grid(6*size_grid+1:7*size_grid));
-d_der7 = fnder(k_spline7,1);
-d_spline8 = spline(X,k_grid(7*size_grid+1:8*size_grid));
-d_der8 = fnder(k_spline8,1);
+d_spline3 = spline(X,d_grid(2*size_grid+1:3*size_grid));
+d_der3 = fnder(d_spline3,1);
+d_spline4 = spline(X,d_grid(3*size_grid+1:4*size_grid));
+d_der4 = fnder(d_spline4,1);
+d_spline5 = spline(X,d_grid(4*size_grid+1:5*size_grid));
+d_der5 = fnder(d_spline5,1);
+d_spline6 = spline(X,d_grid(5*size_grid+1:6*size_grid));
+d_der6 = fnder(d_spline6,1);
+d_spline7 = spline(X,d_grid(6*size_grid+1:7*size_grid));
+d_der7 = fnder(d_spline7,1);
+d_spline8 = spline(X,d_grid(7*size_grid+1:8*size_grid));
+d_der8 = fnder(d_spline8,1);
 
 %%
 global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr;
@@ -177,7 +177,7 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 1e5;
+num_iter = 5;
 delta_t = 1e-3; 
 t = 0:delta_t:(num_iter - 1)*delta_t;
 
@@ -254,6 +254,8 @@ f_newton_Bdf2 = @(y_curr,y1,y2,y3,y4,K,rhs)( ((9/4)*M_div_h2 + K) * y_curr - B *
 %dKcols_dk = eval(dKcols_dk); % evaluate it numerically
 condition = [];
 d = 0;
+%write to output csv
+iterationsRES = zeros(length(t),2);
 tic
 for i = 1: length(t)
     K = get_K();
@@ -395,14 +397,17 @@ for i = 1: length(t)
             
         %( M_div_h2 + K )\(2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs)-u_n_p_1
         err(iter) = norm(r);
-        if (iter == 100)
+        if (iter == 10)
             d = d + 1;
         end
-        if (err(iter) < tol || iter == 100 || norm(J\r) > norm(Delta))
+        if (err(iter) < tol || iter == 10 || norm(J\r) > norm(Delta))
             err_arr(i) = norm(r);
             break;
         end
     end
+    %write to output csv
+    iterationsRES(i,1) = iter;
+    iterationsRES(i,2) = err(iter);
     
     if (iter >3)
         %order(i) = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))));
@@ -444,6 +449,7 @@ plot(err_arr);
 title('error');
 legend();
 %dlmwrite('lookUp11Dof.txt',[y,err_arr],'delimiter',',','precision',9);
+dlmwrite('Newton11DOF.txt',iterationsRES,'delimiter',',','precision',12);
 
 function K = get_K()
     global l_long_fl;
