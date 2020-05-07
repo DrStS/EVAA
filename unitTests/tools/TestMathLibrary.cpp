@@ -91,7 +91,3 @@ TEST_F(TestMathLibrary, solverLU3x3b) {
 	EXPECT_NEAR(0.0, absError, EVAA::AuxiliaryParameters::machineEpsilon * 8);
 	std::cout << "Absolut error is: " << absError << " versus machineEpsilon: " << EVAA::AuxiliaryParameters::machineEpsilon << std::scientific << std::endl;
 }
-
-
-
-	

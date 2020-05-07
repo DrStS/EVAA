@@ -3,10 +3,10 @@
   <!--roadProfile>
     <fixedTyre></fixedTyre>
   </roadProfile-->
-  <!--roadProfile>
-    <detachedTyre></detachedTyre>
-  </roadProfile-->
   <roadProfile>
+    <detachedTyre></detachedTyre>
+  </roadProfile>
+  <!--roadProfile>
     <circularRoadProfile>
       <radius>50</radius>
       <center>
@@ -15,7 +15,7 @@
         <z>0</z>
       </center>
     </circularRoadProfile>
-  </roadProfile>
+  </roadProfile-->
   <!--roadProfile>
     <arbitraryRoadProfile>
       <horizontalProfile>

@@ -298,6 +298,7 @@ public:
     inline T* getkVec() const { return _kVec; } // TODO consider friend
     inline T* getdVec() const { return _dVec; } // TODO consider friend
 
+
 public:
     /*
     * Convention:
@@ -575,12 +576,12 @@ public:
 #endif
 #else
         // copy constant stiffnesses
-        math::copy<T>(Constants::NUM_LEGS, db.getBodyStiffnessVector(), 1, _kVec, 2);
-        math::copy<T>(Constants::NUM_LEGS, db.getTyreStiffnessVector(), 1, _kVec + 1, 2);
+        Math::copy<T>(Constants::NUM_LEGS, db.getBodyStiffnessVector(), 1, _kVec, 2);
+        Math::copy<T>(Constants::NUM_LEGS, db.getTyreStiffnessVector(), 1, _kVec + 1, 2);
 
         // copy constant dampings
-        math::copy<T>(Constants::NUM_LEGS, db.getBodyDampingVector(), 1, _dVec, 2);
-        math::copy<T>(Constants::NUM_LEGS, db.getTyreDampingVector(), 1, _dVec + 1, 2);       
+        Math::copy<T>(Constants::NUM_LEGS, db.getBodyDampingVector(), 1, _dVec, 2);
+        Math::copy<T>(Constants::NUM_LEGS, db.getTyreDampingVector(), 1, _dVec + 1, 2);       
 #endif
 
         // ALE Buffer Initialization
