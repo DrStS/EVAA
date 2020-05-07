@@ -659,11 +659,35 @@ void EVAAComputeEngine::computeALE(void) {
 	Euler<Constants::floatEVAA>* eulerProfile;
 	Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 
+
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
-	lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter());
-    //lagrangeProfile = new Straight<Constants::floatEVAA>();
-	eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
-	lagrangeProfile->ApplyProfileInitialCondition(car);
+	if (db.getLagrangianRoadConditions() == LagrangianBoundaryConditionRoad::CIRCULAR) {
+		lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter());
+	}
+	else if (db.getLagrangianRoadConditions() == LagrangianBoundaryConditionRoad::STRAIGHT) {
+		lagrangeProfile = new Straight<Constants::floatEVAA>();
+	}
+	else if (db.getLagrangianRoadConditions() == LagrangianBoundaryConditionRoad::ARBITRARY) {
+		lagrangeProfile = new Arbitrary<Constants::floatEVAA>(db.getArbitraryTrajectory());
+	}
+	else {
+		throw "wrong lagrangian road profile condition";
+	}
+
+	if (db.getEulerianRoadConditions() == EulerianBoundaryConditionRoad::FIXED) {
+		eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
+	}
+	else if (db.getEulerianRoadConditions() == EulerianBoundaryConditionRoad::NONFIXED) {
+		eulerProfile = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
+	}
+	else if (db.getEulerianRoadConditions() == EulerianBoundaryConditionRoad::SINUSOIDAL)
+	{
+		eulerProfile = new Sinusoidal<Constants::floatEVAA>(db.getArbitraryTrajectory(), db.getGravityField()[2]);
+	}
+	else {
+		throw "wrong eulerian road profile condition";
+	}
+    lagrangeProfile->ApplyProfileInitialCondition(car);
 	eulerProfile->ApplyProfileInitialCondition(car);
 	LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
     TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car, loadModule);

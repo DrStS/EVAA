@@ -217,10 +217,10 @@ public:
         _temp = Math::malloc<T>(Constants::DOF);
         _matrixTmp = Math::calloc<T>(Constants::DOFDOF);
 #ifdef INTERPOLATION
-		if (_loadModuleObj->GetEulerProfileName() == "Fixed") {
+		if (_loadModuleObj->GetEulerProfileName() == "Fixed" || _loadModuleObj->GetEulerProfileName() == "Sinusoidal") {
 			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructFixedJacobian;
 		}
-		else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed") {
+		else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed" ) {
 			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructNonFixedJacobian;
 		}
         _J = Math::calloc<T>(Constants::DOFDOF);

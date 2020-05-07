@@ -34,7 +34,7 @@
         </TyreSpringsXML>
       </GeometryXML>
       <StiffnessXML>
-        <!--<ConstantXML>
+        <!--ConstantXML>
           <TyreXML>
             <ReerRight>260e3</ReerRight>
             <ReerLeft>260e3</ReerLeft>
@@ -47,7 +47,7 @@
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
           </BodyXML>
-        </ConstantXML>-->
+        </ConstantXML-->
         <LookupTableXML>
           <FilePathXML>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePathXML>
         </LookupTableXML>
@@ -122,7 +122,7 @@
   <SimulationParametersXML>
     <GeneralSettingsXML>
       <TimestepSizeXML>1e-3</TimestepSizeXML>
-      <NumberOfIterationsXML>10000</NumberOfIterationsXML>
+      <NumberOfIterationsXML>1000</NumberOfIterationsXML>
     </GeneralSettingsXML>
     <MultyBodyDynamicsXML>
       <SolverXML>RK4</SolverXML>
