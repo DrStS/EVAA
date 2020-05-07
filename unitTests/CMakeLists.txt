@@ -29,7 +29,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set_property(TARGET gtest_main PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
 ENDIF()
 #------------------------------------------------------------------------------------#
-add_executable(EVAATest ${EVAA_UnitTest_SOURCES})
+add_executable(EVAATest ${EVAA_UnitTest_SOURCES} )
 #------------------------------------------------------------------------------------#
 IF (${USE_HDF5})
     target_link_libraries(EVAATest  EVAALibStatic gtest gtest_main  ${EVAA_3rd_LIBS} debug ${HDF5_LIBRARIES_DEBUG} optimized ${HDF5_LIBRARIES})
