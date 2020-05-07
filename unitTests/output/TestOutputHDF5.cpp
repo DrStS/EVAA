@@ -1,127 +1,72 @@
+#include <gtest/gtest.h>
+#include <sys/stat.h>
+
 #include <array>
+#include <cstdio>
 
 #include "OutputHDF5.h"
-#include "gtest/gtest.h"
-
-class OutputTest : public ::testing::Test {};
 
 #ifdef USE_HDF5
-TEST_F(OutputTest, writeVectorHDF5file) {
-    const int vecDim = 6;
-    std::array<double, vecDim> vec{5, 9, 91, 26, 5, 94};
-    std::array<double, vecDim> vec_another;
 
-    writeVectorToFile("outputVector.h5", "vecTOwrite", vec.data(), vecDim);
+namespace Test {
 
-    readVectorFromFile("outputVector.h5", "vecTOwrite", vec_another.data(), vecDim);
-
-    for (int i = 0; i < vec.size(); ++i) {
-        EXPECT_EQ(vec[i], vec_another[i]) << "Vectors differ at index " << i;
+class TestOutputHDF5 : public ::testing::Test {
+protected:
+    void SetUp() override {
+        _filePath = "";
+        _fileName = "TestOutput.hdf5";
     }
+
+    void TearDown() override { std::remove(_fileName.c_str()); }
+
+    std::string _filePath;
+    std::string _fileName;
+};
+
+TEST_F(TestOutputHDF5, ConstructOutputHDF5Class) {
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
 }
 
-TEST_F(OutputTest, writeMatrixHDF5file) {
-    const int matrixRows = 3;
-    const int matrixColumns = 2;
-    std::array<double, matrixRows * matrixColumns> matrix{5, 9, 91, 26, 5, 94};
-    std::array<double, matrixRows * matrixColumns> matrix_another;
+TEST_F(TestOutputHDF5, ContainersInOutputHDF5Class) {
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
+    testObj.CreateContainer(true);
+    testObj.CloseContainer();
 
-    writeMatrixToFile("outputMatrix.h5", "matrixTOwrite", matrix.data(), matrixRows, matrixColumns);
-
-    readMatrixFromFile("outputMatrix.h5", "matrixTOwrite", matrix_another.data(), matrixRows,
-                       matrixColumns);
-
-    for (auto i = 0; i < matrixRows; ++i) {
-        for (auto j = 0; j < matrixColumns; ++j) {
-            EXPECT_EQ(matrix[i], matrix_another[i])
-                << "Matrix differ at index (" << i << ", " << j << ")\n";
-        }
-    }
+    testObj.OpenContainer(false);
+    testObj.CloseContainer();
 }
 
-TEST_F(OutputTest, ConstructOutputHDF5Class) {
-    std::string _fileName = "Output1.hdf5";
-    std::string _filePath = "";
-    EVAA::HDF5::OutputHDF5<double> testObj(_fileName, _filePath);
-}
-
-TEST_F(OutputTest, ContainersInOutputHDF5Class) {
-    std::string _fileName = "Output1.hdf5";
-    std::string _filePath = "";
-    EVAA::HDF5::OutputHDF5<double> testObj(_fileName, _filePath);
-    testObj.createContainer(true);
-    testObj.closeContainer();
-
-    testObj.openContainer(false);
-    testObj.closeContainer();
-}
-
-TEST_F(OutputTest, WriteVectorOutputHDF5) {
-    std::string _fileName = "OutputWriteVector.hdf5";
-    std::string _filePath = "";
-    EVAA::HDF5::OutputHDF5<double> testObj(_fileName, _filePath);
-    testObj.createContainer(true);
+TEST_F(TestOutputHDF5, WriteVectorOutputHDF5) {
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
+    testObj.CreateContainer(true);
 
     const size_t vecDim = 6;
     double vecWrite[vecDim]{5, 9, 91, 26, 5, 94};
     std::string _datasetName = "SolutionVector";
     testObj.WriteVector(_datasetName, vecWrite, vecDim);
 
-    testObj.closeContainer();
+    testObj.CloseContainer();
 }
 
-TEST_F(OutputTest, TestHandles) {
-    H5::Exception::dontPrint();
-    std::string _fileName = "OutputWriteVector.hdf5";
-    std::string _filePath = "";
-
-    H5::H5File* myHDF5FileHandle = new H5::H5File(_fileName + _filePath, H5F_ACC_RDONLY);
-    H5::Group* myHDF5GroupOperators = new H5::Group(myHDF5FileHandle->openGroup("Default"));
-
-    myHDF5GroupOperators->close();
-    myHDF5FileHandle->close();
-    /*EVAA::HDF5::OutputHDF5<double> testObj(_fileName, _filePath);
-    testObj.openContainer(false);
-
-    const size_t vecDim = 6;
-    double vecWrite[vecDim]{5, 9, 91, 26, 5, 94};
-    std::string _datasetName = "SolutionVector";
-
-    size_t vecDimRead = 0;
-    double vecRead[vecDim];
-    for (auto i = 0; i < vecDim; ++i) vecRead[i] = 0;
-
-    testObj.ReadVector(_datasetName, vecRead, vecDimRead);
-
-    EXPECT_EQ(vecDim, vecDimRead) << "Vectors length differ! ";
-    for (int i = 0; i < vecDim; ++i) {
-        EXPECT_EQ(vecWrite[i], vecRead[i]) << "Vectors differ at index " << i;
-    }
-
-    testObj.closeContainer();*/
-}
-
-TEST_F(OutputTest, WriteReadMatrixOutputHDF5) {
+TEST_F(TestOutputHDF5, WriteReadMatrixOutputHDF5) {
     const int matrixRows = 3;
     const int matrixColumns = 2;
     double matrixWrite[matrixRows * matrixColumns]{5, 9, 91, 26, 5, 94};
 
     // Create OutputHDF5 object
-    std::string _fileName = "OutputWriteMatrix.hdf5";
-    std::string _filePath = "";
-    EVAA::HDF5::OutputHDF5<double> testObj(_fileName, _filePath);
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
 
     // Write part
-    testObj.createContainer(true);
+    testObj.CreateContainer(true);
     std::string _datasetName = "SolutionMatrix";
     testObj.WriteMatrix(_datasetName, matrixWrite, matrixRows, matrixColumns);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Read part
     double matrixRead[matrixRows * matrixColumns];
     size_t matrixRowsRead = 0;
     size_t matrixColumnsRead = 0;
-    testObj.openContainer(false);
+    testObj.OpenContainer(false);
     testObj.ReadMatrix(_datasetName, matrixRead, matrixRowsRead, matrixColumnsRead);
 
     EXPECT_EQ(matrixRows, matrixRowsRead) << "Matrix rows length differ! ";
@@ -134,7 +79,7 @@ TEST_F(OutputTest, WriteReadMatrixOutputHDF5) {
     }
 }
 
-TEST_F(OutputTest, Write3Matrices1File1Group) {
+TEST_F(TestOutputHDF5, Write3Matrices1File1Group) {
     const int matrixRows1 = 3, matrixColumns1 = 2;
     const int matrixRows2 = 3, matrixColumns2 = 2;
     const int matrixRows3 = 3, matrixColumns3 = 2;
@@ -143,34 +88,32 @@ TEST_F(OutputTest, Write3Matrices1File1Group) {
     double matrixWrite3[matrixRows3 * matrixColumns3]{12, 13, 14, 15, 16, 17};
 
     // Create OutputHDF5 object
-    std::string _fileName = "Write3Matrices1File1Group.hdf5";
-    std::string _filePath = "";
-    EVAA::HDF5::OutputHDF5<double> testObj(_fileName, _filePath);
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
 
     // Write part
 
     // Matrix 1
-    testObj.createContainer(true);
+    testObj.CreateContainer(true);
     std::string _datasetName1 = "Matrix 1";
     testObj.WriteMatrix(_datasetName1, matrixWrite1, matrixRows1, matrixColumns1);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Matrix 2
-    testObj.openContainer(true);
+    testObj.OpenContainer(true);
     std::string _datasetName2 = "Matrix 2";
     testObj.WriteMatrix(_datasetName2, matrixWrite2, matrixRows2, matrixColumns2);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Matrix 3
     std::string groupName3 = "Group of Matrix 3";
-    testObj.createContainer(false, groupName3);
+    testObj.CreateContainer(false, groupName3);
     std::string _datasetName3 = "Matrix 3";
     testObj.WriteMatrix(_datasetName3, matrixWrite3, matrixRows3, matrixColumns3,
                         EVAA::HDF5FileHandle::GROUP);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 }
 
-TEST_F(OutputTest, WriteRead3Matrices1File1Group) {
+TEST_F(TestOutputHDF5, WriteRead3Matrices1File1Group) {
     const int matrixRows1 = 3, matrixColumns1 = 2;
     const int matrixRows2 = 3, matrixColumns2 = 2;
     const int matrixRows3 = 3, matrixColumns3 = 2;
@@ -179,31 +122,29 @@ TEST_F(OutputTest, WriteRead3Matrices1File1Group) {
     double matrixWrite3[matrixRows3 * matrixColumns3]{12, 13, 14, 15, 16, 17};
 
     // Create OutputHDF5 object
-    std::string _fileName = "WriteRead3Matrices1File1Group.hdf5";
-    std::string _filePath = "";
-    EVAA::HDF5::OutputHDF5<double> testObj(_fileName, _filePath);
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
 
     // Write part
 
     // Matrix 1
-    testObj.createContainer(true);
+    testObj.CreateContainer(true);
     std::string _datasetName1 = "Matrix 1";
     testObj.WriteMatrix(_datasetName1, matrixWrite1, matrixRows1, matrixColumns1);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Matrix 2
-    testObj.openContainer(true);
+    testObj.OpenContainer(true);
     std::string _datasetName2 = "Matrix 2";
     testObj.WriteMatrix(_datasetName2, matrixWrite2, matrixRows2, matrixColumns2);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Matrix 3
     std::string groupName3 = "Group of Matrix 3";
-    testObj.createContainer(false, groupName3);
+    testObj.CreateContainer(false, groupName3);
     std::string _datasetName3 = "Matrix 3";
     testObj.WriteMatrix(_datasetName3, matrixWrite3, matrixRows3, matrixColumns3,
                         EVAA::HDF5FileHandle::GROUP);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Read part
     double matrixRead1[matrixRows1 * matrixColumns1];
@@ -212,15 +153,15 @@ TEST_F(OutputTest, WriteRead3Matrices1File1Group) {
     size_t matrixRowsRead1 = 0, matrixColumnsRead1 = 0;
     size_t matrixRowsRead2 = 0, matrixColumnsRead2 = 0;
     size_t matrixRowsRead3 = 0, matrixColumnsRead3 = 0;
-    testObj.openContainer(false);
+    testObj.OpenContainer(false);
     testObj.ReadMatrix(_datasetName1, matrixRead1, matrixRowsRead1, matrixColumnsRead1);
     testObj.ReadMatrix(_datasetName2, matrixRead2, matrixRowsRead2, matrixColumnsRead2);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
-    testObj.openContainer(false, groupName3);
+    testObj.OpenContainer(false, groupName3);
     testObj.ReadMatrix(_datasetName3, matrixRead3, matrixRowsRead3, matrixColumnsRead3,
                        EVAA::HDF5FileHandle::GROUP);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Compare part
     EXPECT_EQ(matrixRows1, matrixRowsRead1) << "Matrix 1 rows length differ! ";
@@ -251,7 +192,7 @@ TEST_F(OutputTest, WriteRead3Matrices1File1Group) {
     }
 }
 
-TEST_F(OutputTest, WriteRead3Matrices2Groups) {
+TEST_F(TestOutputHDF5, WriteRead3Matrices2Groups) {
     const int matrixRows1 = 3, matrixColumns1 = 2;
     const int matrixRows2 = 3, matrixColumns2 = 2;
     const int matrixRows3 = 3, matrixColumns3 = 2;
@@ -260,39 +201,37 @@ TEST_F(OutputTest, WriteRead3Matrices2Groups) {
     double matrixWrite3[matrixRows3 * matrixColumns3]{12, 13, 14, 15, 16, 17};
 
     // Create OutputHDF5 object
-    std::string _fileName = "WriteRead3Matrices2Groups.hdf5";
-    std::string _filePath = "";
-    EVAA::HDF5::OutputHDF5<double> testObj(_fileName, _filePath);
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
 
     // Write part
 
     // Matrix 1
-    testObj.createContainer(true);
+    testObj.CreateContainer(true);
     std::string _datasetName1 = "Matrix 1";
     testObj.WriteMatrix(_datasetName1, matrixWrite1, matrixRows1, matrixColumns1);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Matrix 2 in File
-    testObj.openContainer(true);
+    testObj.OpenContainer(true);
     std::string _datasetName2 = "Matrix 2";
     testObj.WriteMatrix(_datasetName2, matrixWrite2, matrixRows2, matrixColumns2);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Matrix 2 in Group
     std::string groupName2 = "Group of Matrix 2";
-    testObj.createContainer(false, groupName2);
+    testObj.CreateContainer(false, groupName2);
     std::string _datasetName2G = "Matrix 2";
     testObj.WriteMatrix(_datasetName2G, matrixWrite2, matrixRows2, matrixColumns2,
                         EVAA::HDF5FileHandle::GROUP);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Matrix 3
     std::string groupName3 = "Group of Matrix 3";
-    testObj.createContainer(false, groupName3);
+    testObj.CreateContainer(false, groupName3);
     std::string _datasetName3 = "Matrix 3";
     testObj.WriteMatrix(_datasetName3, matrixWrite3, matrixRows3, matrixColumns3,
                         EVAA::HDF5FileHandle::GROUP);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Read part
     double matrixRead1[matrixRows1 * matrixColumns1];
@@ -303,20 +242,20 @@ TEST_F(OutputTest, WriteRead3Matrices2Groups) {
     size_t matrixRowsRead2 = 0, matrixColumnsRead2 = 0;
     size_t matrixRowsRead2G = 0, matrixColumnsRead2G = 0;
     size_t matrixRowsRead3 = 0, matrixColumnsRead3 = 0;
-    testObj.openContainer(false);
+    testObj.OpenContainer(false);
     testObj.ReadMatrix(_datasetName1, matrixRead1, matrixRowsRead1, matrixColumnsRead1);
     testObj.ReadMatrix(_datasetName2, matrixRead2, matrixRowsRead2, matrixColumnsRead2);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
-    testObj.openContainer(false, groupName2);
+    testObj.OpenContainer(false, groupName2);
     testObj.ReadMatrix(_datasetName2G, matrixRead2G, matrixRowsRead2G, matrixColumnsRead2G,
                        EVAA::HDF5FileHandle::GROUP);
-    testObj.closeContainer();
-    
-    testObj.openContainer(false, groupName3);
+    testObj.CloseContainer();
+
+    testObj.OpenContainer(false, groupName3);
     testObj.ReadMatrix(_datasetName3, matrixRead3, matrixRowsRead3, matrixColumnsRead3,
                        EVAA::HDF5FileHandle::GROUP);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Compare part
 
@@ -361,39 +300,37 @@ TEST_F(OutputTest, WriteRead3Matrices2Groups) {
     }
 }
 
-TEST_F(OutputTest, WriteReadMatrixFileGroup) {
+TEST_F(TestOutputHDF5, WriteReadMatrixFileGroup) {
     const int matrixRows = 3;
     const int matrixColumns = 2;
     double matrixWrite1[matrixRows * matrixColumns]{5, 9, 91, 26, 5, 94};
     double matrixWrite2[matrixRows * matrixColumns]{1, 2, 1, 2, 1, 2};
 
     // Create OutputHDF5 object
-    std::string _fileName = "WriteReadMatrixFileGroup.hdf5";
-    std::string _filePath = "";
-    EVAA::HDF5::OutputHDF5<double> testObj(_fileName, _filePath);
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
 
     // Write part
     std::string groupName = "Group Test";
-    testObj.createContainer(true, groupName);
+    testObj.CreateContainer(true, groupName);
     std::string _datasetName = "SolutionMatrix";
     testObj.WriteMatrix(_datasetName, matrixWrite1, matrixRows, matrixColumns);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
-    testObj.openContainer(true, groupName);
+    testObj.OpenContainer(true, groupName);
     testObj.WriteMatrix(_datasetName, matrixWrite2, matrixRows, matrixColumns,
                         EVAA::HDF5FileHandle::GROUP);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     // Read part
     double matrixRead1[matrixRows * matrixColumns];
     double matrixRead2[matrixRows * matrixColumns];
     size_t matrixRowsRead = 0;
     size_t matrixColumnsRead = 0;
-    testObj.openContainer(false, groupName);
+    testObj.OpenContainer(false, groupName);
     testObj.ReadMatrix(_datasetName, matrixRead1, matrixRowsRead, matrixColumnsRead);
     testObj.ReadMatrix(_datasetName, matrixRead2, matrixRowsRead, matrixColumnsRead,
                        EVAA::HDF5FileHandle::GROUP);
-    testObj.closeContainer();
+    testObj.CloseContainer();
 
     EXPECT_EQ(matrixRows, matrixRowsRead) << "Matrix 1 rows length differ! ";
     EXPECT_EQ(matrixColumns, matrixColumnsRead) << "Matrix 1 columns length differ! ";
@@ -414,4 +351,5 @@ TEST_F(OutputTest, WriteReadMatrixFileGroup) {
     }
 }
 
+}  // namespace Test
 #endif

@@ -23,7 +23,7 @@ namespace HDF5 {
  * \param[in] size The vector size.
  */
 template <typename T>
-void writeVectorToFile(const std::string& fileName, const std::string& vectorName, T* vector,
+void WriteVectorToFile(const std::string& fileName, const std::string& vectorName, T* vector,
                        size_t size);
 
 /**
@@ -34,7 +34,7 @@ void writeVectorToFile(const std::string& fileName, const std::string& vectorNam
  * \param[in] size The vector size.
  */
 template <typename T>
-void readVectorFromFile(const std::string& fileName, const std::string& vectorName, T* vector,
+void ReadVectorFromFile(const std::string& fileName, const std::string& vectorName, T* vector,
                         size_t size);
 
 /**
@@ -46,7 +46,7 @@ void readVectorFromFile(const std::string& fileName, const std::string& vectorNa
  * \param[in] numColumns The matrix number of columns.
  */
 template <typename T>
-void writeMatrixToFile(const std::string& fileName, const std::string& matrixName, T* matrix,
+void WriteMatrixToFile(const std::string& fileName, const std::string& matrixName, T* matrix,
                        size_t numRows, size_t numColumns);
 
 /**
@@ -58,22 +58,22 @@ void writeMatrixToFile(const std::string& fileName, const std::string& matrixNam
  * \param[in] numColumns The matrix number of columns.
  */
 template <typename T>
-void readMatrixFromFile(const std::string& fileName, const std::string& matrixName, T* matrix,
+void ReadMatrixFromFile(const std::string& fileName, const std::string& matrixName, T* matrix,
                         size_t numRows, size_t numColumns);
 
 /** \brief Templates for HDF5DataType (see https://stackoverflow.com/a/15221077)
  * Allows writing float and doubles. It can be also extended for other data types.
  */
 template <typename T>
-struct getHDF5DataType {
+struct GetHDF5DataType {
     static H5::PredType type() { return H5::PredType::NATIVE_DOUBLE; }
 };
 template <>
-struct getHDF5DataType<float> {
+struct GetHDF5DataType<float> {
     H5::FloatType type{H5::PredType::NATIVE_FLOAT};
 };
 template <>
-struct getHDF5DataType<double> {
+struct GetHDF5DataType<double> {
     H5::FloatType type{H5::PredType::NATIVE_DOUBLE};
 };
 
@@ -83,16 +83,24 @@ struct getHDF5DataType<double> {
 template <class T>
 class OutputHDF5 {
 public:
-    OutputHDF5(std::string _fileName, std::string _filePath) :
-        myFileName(_fileName), myFilePath(_filePath) {
+    /** Constructor with parameters for OutputHDF5. Initialize _filePath and _fileName and set
+     * nullptr to handles
+     * \param[in] filePath Directory path where the files will be written. TODO: implement it
+     * properly (create new folder with check)
+     * \param[in] fileName Name of the file where the data is written
+     */
+    OutputHDF5(std::string filePath, std::string fileName) : _filePath(""), _fileName(fileName) {
+        // TODO Use _filePath argument
+
         H5::Exception::dontPrint();
-        myHDF5FileHandle = nullptr;
-        myHDF5GroupOperators = nullptr;
+        _fileHandle = nullptr;
+        _groupHandle = nullptr;
     };
 
+    /** Destructor of OutputHDF5, deletes the handles. */
     ~OutputHDF5() {
-        delete myHDF5FileHandle;
-        delete myHDF5GroupOperators;
+        delete _fileHandle;
+        delete _groupHandle;
     }
 
     /** \brief Function for creating a container. It allocates the handlers for the HDF5 File and
@@ -102,15 +110,15 @@ public:
      *           - False is used for appending a different in a already defined file.
      * \param[groupName] defines the group name of the container. Default name is "/Default"
      */
-    void createContainer(bool _forceWrite, std::string groupName = "/Default") {
+    void CreateContainer(bool _forceWrite, std::string groupName = "/Default") {
         try {
             if (_forceWrite) {
-                myHDF5FileHandle = new H5::H5File(myFilePath + myFileName, H5F_ACC_TRUNC);
-                myHDF5GroupOperators = new H5::Group(myHDF5FileHandle->createGroup(groupName));
+                _fileHandle = new H5::H5File(_filePath + _fileName, H5F_ACC_TRUNC);
+                _groupHandle = new H5::Group(_fileHandle->createGroup(groupName));
             }
             else {
-                myHDF5FileHandle = new H5::H5File(myFilePath + myFileName, H5F_ACC_RDWR);
-                myHDF5GroupOperators = new H5::Group(myHDF5FileHandle->createGroup(groupName));
+                _fileHandle = new H5::H5File(_filePath + _fileName, H5F_ACC_RDWR);
+                _groupHandle = new H5::Group(_fileHandle->createGroup(groupName));
             }
         }
         catch (H5::FileIException error) {
@@ -126,15 +134,15 @@ public:
      *           - False is used during reading.
      * \param[groupName] defines the group name of the container. Default name is "/Default"
      */
-    void openContainer(bool _writePermission, std::string groupName = "/Default") {
+    void OpenContainer(bool _writePermission, std::string groupName = "/Default") {
         try {
             if (_writePermission) {
-                myHDF5FileHandle = new H5::H5File(myFilePath + myFileName, H5F_ACC_RDWR);
-                myHDF5GroupOperators = new H5::Group(myHDF5FileHandle->openGroup(groupName));
+                _fileHandle = new H5::H5File(_filePath + _fileName, H5F_ACC_RDWR);
+                _groupHandle = new H5::Group(_fileHandle->openGroup(groupName));
             }
             else {
-                myHDF5FileHandle = new H5::H5File(myFilePath + myFileName, H5F_ACC_RDONLY);
-                myHDF5GroupOperators = new H5::Group(myHDF5FileHandle->openGroup(groupName));
+                _fileHandle = new H5::H5File(_filePath + _fileName, H5F_ACC_RDONLY);
+                _groupHandle = new H5::Group(_fileHandle->openGroup(groupName));
             }
         }
         catch (H5::FileIException error) {
@@ -143,52 +151,50 @@ public:
         }
     }
 
-    void closeContainer(void) {
-        myHDF5GroupOperators->close();
-        myHDF5FileHandle->close();
+    /** \brief Close the container.
+     */
+    void CloseContainer(void) {
+        _groupHandle->close();
+        _fileHandle->close();
     }
 
     /** Functions for Matrices */
 
     /* \brief Write a Matrix in the container, in a group or outside of a group.
-     * \param[in] _datasetName The name of the dataset containing the data.
-     * \param[in] _data The matrix values.
-     * \param[in] _numRows The matrix number of rows.
-     * \param[in] _numColumns The matrix number of columns.
+     * \param[in] datasetName The name of the dataset containing the data.
+     * \param[in] data The matrix values.
+     * \param[in] numRows The matrix number of rows.
+     * \param[in] numColumns The matrix number of columns.
      * \param[in] handle Specifier for using a FILE (Default) or GROUP handle. If GROUP, then the
      * object use a (pre)defined group from createContainer or openContainer
      */
-    void WriteMatrix(const std::string& _datasetName, const T* _data, const size_t _numRows,
-                     const size_t _numColumns, HDF5FileHandle handle = HDF5FileHandle::FILE) {
-        const getHDF5DataType<T> HDF5DataType;
+    void WriteMatrix(const std::string& datasetName, const T* data, const size_t numRows,
+                     const size_t numColumns, HDF5FileHandle handle = HDF5FileHandle::FILE) {
+        const GetHDF5DataType<T> HDF5DataType;
         if (handle == HDF5FileHandle::FILE)
-            WriteMatrix(_datasetName, _data, _numRows, _numColumns, HDF5DataType.type,
-                        myHDF5FileHandle);
+            WriteMatrix(datasetName, data, numRows, numColumns, HDF5DataType.type, _fileHandle);
         else if (handle == HDF5FileHandle::GROUP)
-            WriteMatrix(_datasetName, _data, _numRows, _numColumns, HDF5DataType.type,
-                        myHDF5GroupOperators);
+            WriteMatrix(datasetName, data, numRows, numColumns, HDF5DataType.type, _groupHandle);
         else {
             throw std::logic_error("Wrong handle provided. Must be one of: FILE, GROUP");
         }
     }
 
     /* \brief Reads a Matrix from the container, in a group or outside of a group.
-     * \param[in] _datasetName The name of the dataset containing the data.
-     * \param[out] _data The matrix values.
-     * \param[out] _numRows The matrix number of rows.
-     * \param[out] _numColumns The matrix number of columns.
+     * \param[in] datasetName The name of the dataset containing the data.
+     * \param[out] data The matrix values.
+     * \param[out] numRows The matrix number of rows.
+     * \param[out] numColumns The matrix number of columns.
      * \param[in] handle Specifier for using a FILE (Default) or GROUP handle. If GROUP, then the
      * object use a (pre)defined group from createContainer or openContainer
      */
-    void ReadMatrix(const std::string& _datasetName, T* _data, size_t& _numRows,
-                    size_t& _numColumns, HDF5FileHandle handle = HDF5FileHandle::FILE) {
-        const getHDF5DataType<T> HDF5DataType;
+    void ReadMatrix(const std::string& datasetName, T* data, size_t& numRows, size_t& numColumns,
+                    HDF5FileHandle handle = HDF5FileHandle::FILE) {
+        const GetHDF5DataType<T> HDF5DataType;
         if (handle == HDF5FileHandle::FILE)
-            ReadMatrix(_datasetName, _data, _numRows, _numColumns, HDF5DataType.type,
-                       myHDF5FileHandle);
+            ReadMatrix(datasetName, data, numRows, numColumns, HDF5DataType.type, _fileHandle);
         else if (handle == HDF5FileHandle::GROUP)
-            ReadMatrix(_datasetName, _data, _numRows, _numColumns, HDF5DataType.type,
-                       myHDF5GroupOperators);
+            ReadMatrix(datasetName, data, numRows, numColumns, HDF5DataType.type, _groupHandle);
         else {
             throw std::logic_error("Wrong handle provided. Must be one of: FILE, GROUP");
         }
@@ -197,38 +203,38 @@ public:
     /** Functions for Vectors */
 
     /* \brief Write a Vector in the container, in a group or outside of a group.
-     * \param[in] _datasetName The name of the dataset containing the data.
-     * \param[in] _data The vector values.
-     * \param[in] _numElements The vector length.
+     * \param[in] datasetName The name of the dataset containing the data.
+     * \param[in] data The vector values.
+     * \param[in] numElements The vector length.
      * \param[in] handle Specifier for using a FILE (Default) or GROUP handle. If GROUP, then the
      * object use a (pre)defined group from createContainer or openContainer
      */
-    void WriteVector(const std::string& _datasetName, const T* _data, const size_t _numElements,
+    void WriteVector(const std::string& datasetName, const T* data, const size_t numElements,
                      HDF5FileHandle handle = HDF5FileHandle::FILE) {
-        const getHDF5DataType<T> HDF5DataType;
+        const GetHDF5DataType<T> HDF5DataType;
         if (handle == HDF5FileHandle::FILE)
-            WriteVector(_datasetName, _data, _numElements, HDF5DataType.type, myHDF5FileHandle);
+            WriteVector(datasetName, data, numElements, HDF5DataType.type, _fileHandle);
         else if (handle == HDF5FileHandle::GROUP)
-            WriteVector(_datasetName, _data, _numElements, HDF5DataType.type, myHDF5GroupOperators);
+            WriteVector(datasetName, data, numElements, HDF5DataType.type, _groupHandle);
         else {
             throw std::logic_error("Wrong handle provided. Must be one of: FILE, GROUP");
         }
     }
 
     /* \brief Reads a Vector from the container, in a group or outside of a group.
-     * \param[in] _datasetName The name of the dataset containing the data.
-     * \param[out] _data The vector values.
-     * \param[out] _numElements The vector length.
+     * \param[in] datasetName The name of the dataset containing the data.
+     * \param[out] data The vector values.
+     * \param[out] numElements The vector length.
      * \param[in] handle Specifier for using a FILE (Default) or GROUP handle. If GROUP, then the
      * object use a (pre)defined group from createContainer or openContainer
      */
-    void ReadVector(const std::string& _datasetName, T* _data, size_t& _numElements,
+    void ReadVector(const std::string& datasetName, T* data, size_t& numElements,
                     HDF5FileHandle handle = HDF5FileHandle::FILE) {
-        const getHDF5DataType<T> HDF5DataType;
+        const GetHDF5DataType<T> HDF5DataType;
         if (handle == HDF5FileHandle::FILE)
-            ReadVector(_datasetName, _data, _numElements, HDF5DataType.type, myHDF5FileHandle);
+            ReadVector(datasetName, data, numElements, HDF5DataType.type, _fileHandle);
         else if (handle == HDF5FileHandle::GROUP)
-            ReadVector(_datasetName, _data, _numElements, HDF5DataType.type, myHDF5GroupOperators);
+            ReadVector(datasetName, data, numElements, HDF5DataType.type, _groupHandle);
         else {
             throw std::logic_error("Wrong handle provided. Must be one of: FILE, GROUP");
         }
@@ -236,34 +242,34 @@ public:
 
 private:
     /** my file name; */
-    std::string myFileName;
+    std::string _fileName;
     /** my file path; */
-    std::string myFilePath;
+    std::string _filePath;
     /** my file handle; */
-    H5::H5File* myHDF5FileHandle;
+    H5::H5File* _fileHandle;
     /** my group handle; */
-    H5::Group* myHDF5GroupOperators;
+    H5::Group* _groupHandle;
 
 private:
     /** Functions for Matrices */
 
     /* \brief Creates a dataset in a container and write a Matrix in a group or outside of a group.
      * Templated over datatype.
-     * \param[in] _datasetName The name of the dataset containing the data.
-     * \param[in] _data The matrix values.
-     * \param[in] _numRows The matrix number of rows.
-     * \param[in] _numColumns The matrix number of columns.
+     * \param[in] datasetName The name of the dataset containing the data.
+     * \param[in] data The matrix values.
+     * \param[in] numRows The matrix number of rows.
+     * \param[in] numColumns The matrix number of columns.
      * \param[in] datatype The type of data to be written, used for double / float.
      * \param[in] handle Can be of type H5File* or H5Group*.
      */
     template <typename HDF5DataType>
-    void WriteMatrix(const std::string& _datasetName, const T* _data, const size_t _numRows,
-                     const size_t _numColumns, const HDF5DataType& datatype, H5::Group* handle) {
+    void WriteMatrix(const std::string& datasetName, const T* data, const size_t numRows,
+                     const size_t numColumns, const HDF5DataType& datatype, H5::Group* handle) {
         /*
          * Define the size of the array and create the data space for fixed
          * size dataset.
          */
-        const size_t size[] = {_numRows, _numColumns};
+        const size_t size[] = {numRows, numColumns};
         H5::DataSpace dataspace(2, size);
 
         /*
@@ -271,58 +277,56 @@ private:
          * datatype and default dataset creation properties.
          */
         H5::DataSet* dataset =
-            new H5::DataSet(handle->createDataSet(_datasetName, datatype, dataspace));
+            new H5::DataSet(handle->createDataSet(datasetName, datatype, dataspace));
 
-        dataset->write(_data, datatype);
+        dataset->write(data, datatype);
 
         delete dataset;
 
         /*
+        // if need to use attributes
         // Add matrix dimension information to container as attributes
         H5::DataSpace attrDataspaceScalar(H5S_SCALAR);
 
         H5::Attribute attribute = dataset->createAttribute(
             "Matrix # columns", H5::PredType::STD_I32BE, attrDataspaceScalar);
-        int attrDataScalar[1] = {_numColumns};
+        int attrDataScalar[1] = {numColumns};
         attribute.write(H5::PredType::NATIVE_INT, attrDataScalar);
 
         attribute =
             dataset->createAttribute("Matrix # rows", H5::PredType::STD_I32BE, attrDataspaceScalar);
-        attrDataScalar[0] = _numRows;
+        attrDataScalar[0] = numRows;
         attribute.write(H5::PredType::NATIVE_INT, attrDataScalar);
         */
     }
 
     /* \brief Reads a Matrix from a dataset from a container, from a group or outside of a group.
      * Templated over datatype.
-     * \param[in] _datasetName The name of the dataset containing the data.
-     * \param[out] _data The matrix values.
-     * \param[out] _numRows The matrix number of rows.
-     * \param[out] _numColumns The matrix number of columns.
+     * \param[in] datasetName The name of the dataset containing the data.
+     * \param[out] data The matrix values.
+     * \param[out] numRows The matrix number of rows.
+     * \param[out] numColumns The matrix number of columns.
      * \param[in] datatype The type of data to be written, used for double / float.
      * \param[in] handle Can be of type H5File* or H5Group*.
      */
     template <typename HDF5DataType>
-    void ReadMatrix(const std::string& _datasetName, T* _data, size_t& _numRows,
-                    size_t& _numColumns, const HDF5DataType& datatype, H5::Group* handle) {
+    void ReadMatrix(const std::string& datasetName, T* data, size_t& numRows, size_t& numColumns,
+                    const HDF5DataType& datatype, H5::Group* handle) {
         // Open dataset
-        H5::DataSet dataset = handle->openDataSet(_datasetName);
+        H5::DataSet dataset = handle->openDataSet(datasetName);
 
         // Read Matrix
-        dataset.read(_data, datatype);
+        dataset.read(data, datatype);
 
         size_t dims[2];
         // use this for simple data space
         H5Sget_simple_extent_dims(H5Dget_space(dataset.getId()), dims, NULL);
-        _numRows = dims[0];
-        _numColumns = dims[1];
+        numRows = dims[0];
+        numColumns = dims[1];
 
-        /*
+        /* // if need to use attributes
         H5::Attribute attribute = dataset.openAttribute("Matrix # columns");
-        attribute.read(H5::PredType::NATIVE_INT, &_numColumns);
-
-        attribute = dataset.openAttribute("Matrix # rows");
-        attribute.read(H5::PredType::NATIVE_INT, &_numRows);
+        attribute.read(H5::PredType::NATIVE_INT, &numColumns);
         */
     }
 
@@ -330,20 +334,20 @@ private:
 
     /* \brief Creates a dataset in a container and write a Vector in a group or outside of a group.
      * Templated over datatype.
-     * \param[in] _datasetName The name of the dataset containing the data.
-     * \param[in] _data The vector values.
-     * \param[in] _numElements The vector number of elements.
+     * \param[in] datasetName The name of the dataset containing the data.
+     * \param[in] data The vector values.
+     * \param[in] numElements The vector number of elements.
      * \param[in] datatype The type of data to be written, used for double / float.
      * \param[in] handle Can be of type H5File* or H5Group*.
      */
     template <typename HDF5DataType>
-    void WriteVector(const std::string& _datasetName, const T* _data, const size_t _numElements,
+    void WriteVector(const std::string& datasetName, const T* data, const size_t numElements,
                      const HDF5DataType& datatype, H5::Group* handle) {
         /*
          * Define the size of the array and create the data space for fixed
          * size dataset.
          */
-        const size_t size[] = {_numElements};
+        const size_t size[] = {numElements};
         H5::DataSpace dataspace(1, size);
 
         /*
@@ -351,9 +355,9 @@ private:
          * datatype and default dataset creation properties.
          */
         H5::DataSet* dataset =
-            new H5::DataSet(handle->createDataSet(_datasetName, datatype, dataspace));
+            new H5::DataSet(handle->createDataSet(datasetName, datatype, dataspace));
 
-        dataset->write(_data, datatype);
+        dataset->write(data, datatype);
 
         /*
         // Add vector dimension information to container (as attributes)
@@ -361,7 +365,7 @@ private:
 
         H5::Attribute attribute = dataset->createAttribute(
             "Vector # elements", H5::PredType::STD_I32BE, attrDataspaceScalar);
-        int attrDataScalar[1] = {_numElements};
+        int attrDataScalar[1] = {numElements};
         attribute.write(H5::PredType::NATIVE_INT, attrDataScalar);
         */
 
@@ -370,25 +374,25 @@ private:
 
     /* \brief Reads a Vector from a dataset from a container, from a group or outside of a group.
      * Templated over datatype.
-     * \param[in] _datasetName The name of the dataset containing the data.
-     * \param[out] _data The vector values.
-     * \param[out] _numElements The vector number of elements.
+     * \param[in] datasetName The name of the dataset containing the data.
+     * \param[out] data The vector values.
+     * \param[out] numElements The vector number of elements.
      * \param[in] datatype The type of data to be written, used for double / float.
      * \param[in] handle Can be of type H5File* or H5Group*.
      */
     template <typename HDF5DataType>
-    void ReadVector(const std::string& _datasetName, T* _data, size_t& _numElements,
+    void ReadVector(const std::string& datasetName, T* data, size_t& numElements,
                     const HDF5DataType& datatype, H5::Group* handle) {
         /*
          * Create a new dataset within the file using defined dataspace and
          * datatype and default dataset creation properties.
          */
-        H5::DataSet dataset = handle->openDataSet(_datasetName);
+        H5::DataSet dataset = handle->openDataSet(datasetName);
 
-        dataset.read(_data, datatype);
+        dataset.read(data, datatype);
 
         // use this for simple data space
-        H5Sget_simple_extent_dims(H5Dget_space(dataset.getId()), &_numElements, NULL);
+        H5Sget_simple_extent_dims(H5Dget_space(dataset.getId()), &numElements, NULL);
     }
 };
 }  // namespace HDF5
