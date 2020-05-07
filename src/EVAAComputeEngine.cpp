@@ -47,11 +47,13 @@ using Eigen::VectorXd;
 #endif
 
 namespace EVAA {
-EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) {
+EVAAComputeEngine::EVAAComputeEngine(std::string xmlSimulationFileName, std::string xmlCarFileName, std::string xmlLoadFileName) {
+    IO::checkFileExists(xmlSimulationFileName);
     IO::checkFileExists(xmlCarFileName);
     IO::checkFileExists(xmlLoadFileName);
 
-    MetaDatabase<Constants::floatEVAA>::getDatabase().readParameters(xmlCarFileName);
+    MetaDatabase<Constants::floatEVAA>::getDatabase().readSimulationParameters(xmlSimulationFileName);
+    MetaDatabase<Constants::floatEVAA>::getDatabase().readVehicleParameters(xmlCarFileName);
     MetaDatabase<Constants::floatEVAA>::getDatabase().readLoadParameters(xmlLoadFileName);
 }
 

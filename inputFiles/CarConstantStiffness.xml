@@ -47,10 +47,7 @@
             <FrontLeft>19.32e3</FrontLeft>
             <FrontRight>19.32e3</FrontRight>
           </BodyXML>
-        </ConstantXML>>
-        <!--LookupTableXML>
-          <FilePathXML>C:\software\repos\EVAA\inputFiles\lookup.xml</FilePathXML>
-        </LookupTableXML-->
+        </ConstantXML>
       </StiffnessXML>
       <DampingCoefficientsXML>
         <TyreXML>

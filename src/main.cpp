@@ -79,14 +79,18 @@ int main(int argc, char **argv) {
         std::cout << *it << std::endl;
     }
     // allArgs[0] = "EVAA.exe" TODO : Do we need this?
-    if (allArgs.size() > 2) {
-        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
+    if (allArgs.size() > 3) {
+        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2], allArgs[3]);
     }
-    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", 
+#ifdef INTERPOLATION
+    std::string carSettingsFileNameXML = "C:\\software\\repos\\EVAA\\inputFiles\\CarWithInterpolation.xml";
+#else
+    std::string carSettingsFileNameXML = "C:\\software\\repos\\EVAA\\inputFiles\\CarConstantStiffness.xml";
+#endif
+    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(
+        "C:\\software\\repos\\EVAA\\inputFiles\\SimulationParameters.xml", carSettingsFileNameXML,
         "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml");
-//    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", 
 //        "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
-//    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", 
 //        "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml");
     myComputeEngine->printInfo();
 

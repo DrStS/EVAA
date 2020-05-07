@@ -17,6 +17,7 @@
 #endif
 
 #include "IP_EVAA_XML.h"
+#include "VEHICLE_EVAA_XML.h"
 #include "LOAD_EVAA_XML.h"
 #include "LOOKUP_EVAA_XML.h"
 
@@ -87,10 +88,10 @@ public:
      * Reads the car, initial and simulation parameters from an XML file.
      * \param[in] filename The XML file.
      */
-    void MetaDatabase::readParameters(const std::string& filename) {
+    void MetaDatabase::readVehicleParameters(const std::string& filename) {
         // Load car parameters
 
-        const auto settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
+        const auto settings = EVAA_vehicle_settings(filename, xml_schema::flags::dont_validate);
         const auto twoTrackModel = settings->VehicleXML().TwoTrackModelXML();
 
         _mass_body = twoTrackModel.MassXML().BodyXML();
@@ -128,6 +129,16 @@ public:
         readLegs(_initial_lower_spring_length, initial.SpringElongationXML().TyreXML());
         readLegs(_initial_upper_spring_length, initial.SpringElongationXML().BodyXML());
 
+    }
+
+        /**
+     * Reads the simulation parameters from an XML file.
+     * \param[in] filename The XML file.
+     */
+    void MetaDatabase::readSimulationParameters(const std::string& filename) {
+        // Load car parameters
+
+        const auto settings = EVAA_settings(filename, xml_schema::flags::dont_validate);
         // Load simulation parameters
         const auto simulation = settings->SimulationParametersXML();
 
@@ -174,6 +185,7 @@ public:
         _maxNewtonIterations = simulation.LinearALEXML().MaximumNumNewtonIterations();
         _newtonTolerance = simulation.LinearALEXML().Tolerance();
     }
+
 
     /**
      * Reads the load parameters from an XML file.
