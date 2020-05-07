@@ -326,6 +326,7 @@ public:
 		// TODO optimize it
 		Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
 		AddGravity(carObj, profileInducedForce);
+#pragma loop(ivdep)
 		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
 			profileInducedForce[Constants::TYRE_INDEX_EULER[i]] = //
                 carObj->getkVec()[2 * i + 1] * (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] - carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1])  //

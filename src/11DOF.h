@@ -1048,7 +1048,7 @@ public:
         newtonFile.writeSingleValue(_newtonIteration);
 #ifdef INTERPOLATION
         newtonFile.writeSingleValue(_residualNorm);
-#endif
+#endif       
         newtonFile.newLine();
 #endif // WRITECSV
             iter++;

@@ -27,7 +27,7 @@ constexpr size_t NUM_LEGS = 4;
 /** Degrees of Freedom in the Eulerian Frame */
 constexpr size_t DOF = 11;
 
-// TODO: FIX the single precision problem
+/** Deciding over the floating point precision*/
 #ifdef DOUBLE_PRECISION
 using floatEVAA = double;
 #elif SINGLE_PRECISION
