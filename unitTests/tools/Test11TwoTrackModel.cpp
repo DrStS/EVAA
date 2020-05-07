@@ -46,7 +46,7 @@ TEST_F(TestTwoTrackModel, TwoTrackModelNonFixed){
     {
 		newFile >> rowNew;
 		EXPECT_EQ(rowRef[0], rowNew[0]);
-		EXPECT_NEAR(::atof(rowRef[1].c_str()), ::atof(rowNew[1].c_str()), EVAA::AuxiliaryParameters::machineEpsilon*3 );
+		EXPECT_NEAR(::atof(rowRef[1].c_str()), ::atof(rowNew[1].c_str()), 1e-12 );
     }
 }
 #endif // WRITECSV
