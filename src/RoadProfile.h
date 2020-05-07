@@ -5,6 +5,8 @@
 #include <string>
 
 #include "Car.h"
+#include "MetaDataBase.h"
+#include "ArbitraryTrajectory.h"
 #include "Constants.h"
 #include "MathLibrary.h"
 
@@ -77,6 +79,8 @@ public:
 /** Lagrangian profiles*/
 template <typename T>
 class Lagrange : public Profile<T> {
+private:
+	// bla bla
 
 public:
 	Lagrange(): Profile<T>(){}
@@ -210,6 +214,70 @@ public:
 };  // Circular
 
 
+template <typename T>
+class Arbitrary : public Lagrange<T> {
+private:
+	ArbitraryTrajectory<T>* _trajectory;
+
+public:
+	Arbitrary(ArbitraryTrajectory<T>* trajectory) : Lagrange<T>(), _trajectory(trajectory){
+		Name = "Arbitrary";
+	}
+
+	/**
+	 * Get external force acting on the car system in the Lagrangian Frame
+	 * \param Car
+	 * \return profileInducedForce forces acting on each component [GC: XY, W1: XY, T1: XY, ...]
+	 * \return reactionOnTyre reaction force on the tyre induced by profile forcce [T: XY, T2: XY, T3: XY, T4: XY]
+	 */
+	virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj, T* profileInducedForce, T* reactionOnTyre) {
+		_trajectory->getLagrangianForcesCenterOfGravity(_iterationCount, profileInducedForce, carObj->getMassComponents()[0]);
+
+		_trajectory->getLagrangianForcesFrontLeft(_iterationCount, carObj->getMassComponents()[1 + 2*Constants::FRONT_LEFT], profileInducedForce + (1 + 2 * Constants::FRONT_LEFT)*(Constants::DIM - 1));
+		_trajectory->getLagrangianForcesFrontLeft(_iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_LEFT], profileInducedForce + (2 + 2 * Constants::FRONT_LEFT)*(Constants::DIM - 1));
+		
+		_trajectory->getLagrangianForcesFrontRight(_iterationCount, carObj->getMassComponents()[1 + 2 * Constants::FRONT_RIGHT], profileInducedForce + (1 + 2 * Constants::FRONT_RIGHT)*(Constants::DIM - 1));
+		_trajectory->getLagrangianForcesFrontRight(_iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_RIGHT], profileInducedForce + (2 + 2 * Constants::FRONT_RIGHT)*(Constants::DIM - 1));
+		
+		_trajectory->getLagrangianForcesRearLeft(_iterationCount, carObj->getMassComponents()[1 + 2 * Constants::REAR_LEFT], profileInducedForce + (1 + 2 * Constants::REAR_LEFT)*(Constants::DIM - 1));
+		_trajectory->getLagrangianForcesRearLeft(_iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_LEFT], profileInducedForce + (2 + 2 * Constants::REAR_LEFT)*(Constants::DIM - 1));
+		
+		_trajectory->getLagrangianForcesRearRight(_iterationCount, carObj->getMassComponents()[1 + 2 * Constants::REAR_RIGHT], profileInducedForce + (1 + 2 * Constants::REAR_RIGHT)*(Constants::DIM - 1));
+		_trajectory->getLagrangianForcesRearRight(_iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_RIGHT], profileInducedForce + (2 + 2 * Constants::REAR_RIGHT)*(Constants::DIM - 1));
+		
+		// Compute the reaction on tyre due to centrifugal force
+		reactionOnTyre[0] = profileInducedForce[0];
+		reactionOnTyre[1] = profileInducedForce[1];
+		for (auto i = 1; i < Constants::VEC_DIM; ++i) {
+
+			reactionOnTyre[0] += profileInducedForce[(Constants::DIM - 1)*i];
+			reactionOnTyre[1] += profileInducedForce[(Constants::DIM - 1)*i + 1];
+		
+		}
+
+		Math::scal<T>((Constants::DIM - 1)*Constants::VEC_DIM, -1, profileInducedForce, Constants::INCX);
+
+	}
+
+	/**
+	 * Get external torque acting on the car system in Lagrangian Frame
+	 * \param Car
+	 * \return externalTorque torque acting on the car system [GC: Z]
+	 */
+	virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj, T* externalTorque) {
+		*externalTorque = _trajectory->getLagrangianTorque(_iterationCount, carObj->getMomentOfInertia()[8]);
+	}
+	virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
+		T* angle = &(carObj->_currentAngleLagrangian);
+		T* wc = &(carObj->_currentAngularVelocityLagrangian);
+		T* pcc = carObj->_currentPositionLagrangian;
+		T* vcc = carObj->_currentVelocityLagrangian;
+		_trajectory->updateInitialConditionsLagrange(angle, wc, pcc, vcc);
+	}
+	virtual ~Arbitrary() {}
+};
+
+
 /** Follow a circular road profile with radius R and center C */
 template <typename T>
 class Straight : public Lagrange<T> {
@@ -294,4 +362,64 @@ public:
 	}
 	virtual void ApplyProfileInitialCondition(Car<T>* carObj) {}
 };
+
+template <typename T>
+class Sinusoidal : public Euler<T> {
+private:
+	ArbitraryTrajectory<T>* _trajectory;
+public:
+	Sinusoidal(ArbitraryTrajectory<T>* trajectory, T &g) : Euler<T>(g), _trajectory(trajectory){
+		Name = "Sinusoidal";
+	}
+	virtual ~Sinusoidal() {}
+
+	virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj, T* profileInducedForce) {
+		// TODO optimize it
+		Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+		AddGravity(carObj, profileInducedForce);
+		profileInducedForce[Constants::TYRE_INDEX_EULER[0]] = _trajectory->getVerticalRoadForcesFrontLeft(_iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_LEFT]);
+		profileInducedForce[Constants::TYRE_INDEX_EULER[1]] = _trajectory->getVerticalRoadForcesFrontRight(_iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_RIGHT]);
+		profileInducedForce[Constants::TYRE_INDEX_EULER[2]] = _trajectory->getVerticalRoadForcesRearLeft(_iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_LEFT]);
+		profileInducedForce[Constants::TYRE_INDEX_EULER[3]] = _trajectory->getVerticalRoadForcesRearRight(_iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_RIGHT]);
+		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
+			profileInducedForce[Constants::TYRE_INDEX_EULER[i]] += //
+				carObj->getkVec()[2 * i + 1] * (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] - carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1])  //
+				+ carObj->getdVec()[2 * i + 1] * (carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] - carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1]);
+		}
+	}
+
+	virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
+		T* angle = &(carObj->getCurrentDisplacementTwoTrackModel()[1]);
+		T* wc = &(carObj->_currentVelocityTwoTrackModel[1]);
+		
+		T* pcc = &(carObj->getCurrentDisplacementTwoTrackModel()[0]); 
+		T* vcc = &(carObj->_currentVelocityTwoTrackModel[0]); 
+		
+		T* pw_fl = &(carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[0] - 1]); 
+		T* pw_fr = &(carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[1] - 1]);
+		T* pw_rl = &(carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[2] - 1]);
+		T* pw_rr = &(carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[3] - 1]);
+
+		T* pt_fl = &(carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[0]]);
+		T* pt_fr = &(carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[1]]);
+		T* pt_rl = &(carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[2]]);
+		T* pt_rr = &(carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[3]]);
+		
+		T* vw_fl = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[0] - 1]);
+		T* vw_fr = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[1] - 1]);
+		T* vw_rl = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[2] - 1]);
+		T* vw_rr = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[3] - 1]);
+
+		T* vt_fl = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[0]]);
+		T* vt_fr = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[1]]);
+		T* vt_rl = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[2]]);
+		T* vt_rr = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[3]]);
+		
+		_trajectory->updateInitialConditionsEuler(angle, wc, pcc, vcc, pt_fl, pt_fr, pt_rl, pt_rr, pw_fl, pw_fr, pw_rl, pw_rr, vt_fl, vt_fr, vt_rl, vt_rr, vw_fl, vw_fr, vw_rl, vw_rr);
+		carObj->UpdateLengthsTwoTrackModel();
+	}
+
+};
+
 }  // namespace EVAA
+

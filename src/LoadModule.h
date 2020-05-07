@@ -121,7 +121,7 @@ public:
 		_eulerianForce = Math::calloc<T>(Constants::DOF);
 		// set_External_force();
 		ReadExternalForce();
-		if (eulerProfile->GetName() == "Fixed") {
+		if (eulerProfile->GetName() == "Fixed" || eulerProfile->GetName() == "Sinusoidal") {
 			ComputeInternalTorqueFromLagrangianForce = &LoadModule<T>::ComputeInternalTorqueFromLagrangianForceFixed;
 		}
 		else if (eulerProfile->GetName() == "Nonfixed") {

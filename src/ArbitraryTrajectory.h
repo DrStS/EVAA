@@ -522,15 +522,15 @@ public:
      * \param mass of the object the force is applied
      */
     void getLagrangianForcesCenterOfGravity(size_t iteration, T* vector, T mass) {
-        vector[0] = mass * _roadAccelerationX[i];
-        vector[1] = mass * _roadAccelerationY[i];
+        vector[0] = mass * _roadAccelerationX[iteration];
+        vector[1] = mass * _roadAccelerationY[iteration];
     }
     /**
      * \param iteration index of the current time iteration
      * \param Z-component of the moment of inertia
      * \return the Z component [GC:Z]
      */
-    T getLagrangianTorque(size_t iteration, T momentOfInertia) { return momentOfInertia * _roadAngularAcceleration[i]; }
+    T getLagrangianTorque(size_t iteration, T momentOfInertia) { return momentOfInertia * _roadAngularAcceleration[iteration]; }
 
     /**
      * \param iteration index of the current time iteration
@@ -691,6 +691,101 @@ public:
         vt_rr[1] = (-1.5 * _legPointsY_rr[0] + 2 * _legPointsY_rr[1] - 0.5 * _legPointsY_rr[2]) / _delta_t;
         vt_rr[2] = (-1.5 * _legPointsZ_rr[0] + 2 * _legPointsZ_rr[1] - 0.5 * _legPointsZ_rr[2]) / _delta_t;
     }
+
+	/**
+	 * \brief update the initial conditions of the car
+	 * \param[out] angles orientation of the car body [Z]
+	 * \param[out] wc angular velocity [Z]
+	 * \param[out] pcc position of the center of gravity [XY]
+	 * \param[out] vcc velocity of the center of gravity [XY]
+	 */
+	void updateInitialConditionsLagrange(T* angle, T* wc, T* pcc, T* vcc) {
+		// angles
+		*angle = _roadAngles[0];
+
+		// angular velocity
+		*wc = (1.5 * _roadAngles[0] - 2 * _roadAngles[1] + 0.5 * _roadAngles[2]) / _delta_t;
+
+		// initial position
+		pcc[0] = _roadPointsX[0];
+		pcc[1] = _roadPointsY[0];
+
+		// initial velocity
+		vcc[0] = (-1.5 * _roadPointsX[0] + 2 * _roadPointsX[1] - 0.5 * _roadPointsX[2]) / _delta_t;
+		vcc[1] = (-1.5 * _roadPointsY[0] + 2 * _roadPointsY[1] - 0.5 * _roadPointsY[2]) / _delta_t;
+	}
+
+	/**
+	 * \brief update the initial conditions of the car
+	 * \param[out] angles orientation of the car body [XYZ]
+	 * \param[out] wc angular velocity [XYZ]
+	 * \param[out] pcc position of the center of gravity [XYZ]
+	 * \param[out] vcc velocity of the center of gravity [XYZ]
+	 * \param[out] pt_fl tyre position front left [XYZ]
+	 * \param[out] pt_fr tyre position front right [XYZ]
+	 * \param[out] pt_rl tyre position rear left [XYZ]
+	 * \param[out] pt_rr tyre position rear right [XYZ]
+	 * \param[out] pw_fl wheel position front left [XYZ]
+	 * \param[out] pw_fr wheel position front right [XYZ]
+	 * \param[out] pw_rl wheel position rear left [XYZ]
+	 * \param[out] vw_rr wheel position rear right [XYZ]
+	 * \param[out] vt_fl tyre velocity front left [XYZ]
+	 * \param[out] vt_fr tyre velocity front right [XYZ]
+	 * \param[out] vt_rl tyre velocity rear left [XYZ]
+	 * \param[out] vt_rr tyre velocity rear right [XYZ]
+	 * \param[out] vw_fl wheel velocity front left [XYZ]
+	 * \param[out] vw_fr wheel velocity front right [XYZ]
+	 * \param[out] vw_rl wheel velocity rear left [XYZ]
+	 * \param[out] vw_rr wheel velocity rear right [XYZ]
+	 */
+	void updateInitialConditionsEuler(T* angle, T* wc, T* pcc, T* vcc, T* pt_fl, T* pt_fr, T* pt_rl, T* pt_rr, T* pw_fl, T* pw_fr, T* pw_rl, T* pw_rr, T* vt_fl, T* vt_fr, T* vt_rl, T* vt_rr, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr) {
+		// angles
+		angle[0] = 0;
+		angle[1] = 0;
+
+		// angular velocity
+		wc[0] = 0;
+		wc[1] = 0;
+
+		// initial position
+		*pcc = 0;
+
+		// initial velocity
+		*vcc = 0;
+
+		// wheel positions
+
+		*pw_fl = _initialUpperSpringLength_fl + _legPointsZ_fl[0];
+		*pw_fr = _initialUpperSpringLength_fr + _legPointsZ_fr[0];
+		*pw_rl = _initialUpperSpringLength_rl + _legPointsZ_rl[0];
+		*pw_rr = _initialUpperSpringLength_rr + _legPointsZ_rr[0];
+
+		// tyre positions
+
+		*pt_fl = _legPointsZ_fl[0];
+		*pt_fr = _legPointsZ_fr[0];
+		*pt_rl = _legPointsZ_rl[0];
+		*pt_rr = _legPointsZ_rr[0];
+
+		// initial wheel velocity
+		*vw_fl = (-1.5 * _legPointsZ_fl[0] + 2 * _legPointsZ_fl[1] - 0.5 * _legPointsZ_fl[2]) / _delta_t;
+
+		*vw_fr = (-1.5 * _legPointsZ_fr[0] + 2 * _legPointsZ_fr[1] - 0.5 * _legPointsZ_fr[2]) / _delta_t;
+
+		*vw_rl = (-1.5 * _legPointsZ_rl[0] + 2 * _legPointsZ_rl[1] - 0.5 * _legPointsZ_rl[2]) / _delta_t;
+
+		*vw_rr = (-1.5 * _legPointsZ_rr[0] + 2 * _legPointsZ_rr[1] - 0.5 * _legPointsZ_rr[2]) / _delta_t;
+
+		// initial wheel velocity
+		*vt_fl = (-1.5 * _legPointsZ_fl[0] + 2 * _legPointsZ_fl[1] - 0.5 * _legPointsZ_fl[2]) / _delta_t;
+
+		*vt_fr = (-1.5 * _legPointsZ_fr[0] + 2 * _legPointsZ_fr[1] - 0.5 * _legPointsZ_fr[2]) / _delta_t;
+
+		*vt_rl = (-1.5 * _legPointsZ_rl[0] + 2 * _legPointsZ_rl[1] - 0.5 * _legPointsZ_rl[2]) / _delta_t;
+
+		*vt_rr = (-1.5 * _legPointsZ_rr[0] + 2 * _legPointsZ_rr[1] - 0.5 * _legPointsZ_rr[2]) / _delta_t;
+	}
+
 
     /**
      * \brief test functions for trajectory generation
