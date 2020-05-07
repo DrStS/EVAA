@@ -4,7 +4,7 @@ EVAA: Efficient Vehicle dynAmics simulAtor
 high performance vehicle dynamics model and simulation for applications 
 w.r.t. autonomous driving
 ***
-# Coding sytle  
+# Coding style  
 Use naming from [google c++ style guide](https://google.github.io/styleguide/cppguide.html#Naming)
 ***
 # Build EVAA  
