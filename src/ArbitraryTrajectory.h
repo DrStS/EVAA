@@ -410,10 +410,10 @@ public:
      * on the tyre on the trajectory points
      */
     void calculateVerticalAccelerations() {
-        calculateAccelerations(_tyreAccelerationsZ_rr, _legPointsZ_fl);
+        calculateAccelerations(_tyreAccelerationsZ_fl, _legPointsZ_fl);
         calculateAccelerations(_tyreAccelerationsZ_fr, _legPointsZ_fr);
         calculateAccelerations(_tyreAccelerationsZ_rl, _legPointsZ_rl);
-        calculateAccelerations(_tyreAccelerationsZ_fl, _legPointsZ_rr);
+        calculateAccelerations(_tyreAccelerationsZ_rr, _legPointsZ_rr);
    }
 
     /**
