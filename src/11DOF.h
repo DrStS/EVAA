@@ -1034,7 +1034,9 @@ public:
 
     void Solve(T* sol_vect) {
 #ifdef WRITECSV
-    IO::MyFile<T> newtonFile("_C:\\software\\repos\\EVAA\\output\\newtonOutput.txt");
+#ifdef INTERPOLATION
+        IO::MyFile<T> newtonFile("C:\\software\\repos\\EVAA\\output\\newtonOutput.txt");
+#endif // INTERPOLATION
 #endif
         int iter = 1;
         T t = _h;
@@ -1045,11 +1047,11 @@ public:
             // solution_vect = _uSolution + iter * (DOF);
             UpdateStep(iter, sol_vect);
 #ifdef WRITECSV
-        newtonFile.writeSingleValue(_newtonIteration);
 #ifdef INTERPOLATION
+        newtonFile.writeSingleValue(_newtonIteration);
         newtonFile.writeSingleValue(_residualNorm);
-#endif       
         newtonFile.newLine();
+#endif       
 #endif // WRITECSV
             iter++;
             t += _h;
