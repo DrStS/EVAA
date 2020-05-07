@@ -79,6 +79,12 @@ private:
     T norm_r_up_fl, norm_r_up_fr, norm_r_up_rl, norm_r_up_rr;
     T norm_r_low_fl, norm_r_low_fr, norm_r_low_rl, norm_r_low_rr;
 
+    // solution vector from the previous iteration (for the flying car)
+    T* _previousSolution;
+    T* _previousTyreForces;
+    bool _iterationBegin;
+    size_t _currentIteration;
+
     /**
      * Calculate the positions of the tyres and wheels according to the initial
      * orientation of the car The legs always form a 90 degrees angle to the car
@@ -247,6 +253,8 @@ private:
         A_Ic = Math::calloc<T>(Constants::DIMDIM);
         A_rem = Math::calloc<T>(Constants::DIMDIM * Constants::DIM);
         accelerations = Math::calloc<T>(Constants::DIMDIM * Constants::DIM);
+        _previousSolution = Math::calloc<T>(Constants::MBD_SOLUTION_SIZE);
+        _previousTyreForces = Math::calloc<T>(Constants::NUM_LEGS);
     }
 
     void ReadFromXML() {
@@ -351,7 +359,6 @@ private:
         FW_fr[i] += db.getWheelMassFrontRight() * gz;
         FW_rl[i] += db.getWheelMassRearLeft() * gz;
         FW_rr[i] += db.getWheelMassRearRight() * gz;
-
     }
 
     void getCholeskyDecomposition() {
@@ -530,21 +537,57 @@ private:
      * \brief set the road forces to the one from the trajectory
      */
     void getArbitraryRoadForces(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr, size_t i) {
+        if (_iterationBegin) {
+            _previousTyreForces[Constants::FRONT_LEFT] = Fr_fl[2];
+            _previousTyreForces[Constants::FRONT_RIGHT] = Fr_fr[2];
+            _previousTyreForces[Constants::REAR_LEFT] = Fr_rl[2];
+            _previousTyreForces[Constants::REAR_RIGHT] = Fr_rr[2];
+            _iterationBegin = false;
+        }
+
         auto& db = MetaDatabase<T>::getDatabase();
 
         db.getArbitraryTrajectory()->getLagrangianForcesFrontLeft(i, db.getTyreMassFrontLeft(), Fr_fl);
-        Fr_fl[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesFrontLeft(i, db.getTyreMassFrontLeft());
-
         db.getArbitraryTrajectory()->getLagrangianForcesFrontRight(i, db.getTyreMassFrontRight(), Fr_fr);
-        Fr_fr[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesFrontRight(i, db.getTyreMassFrontRight());
-
         db.getArbitraryTrajectory()->getLagrangianForcesRearLeft(i, db.getTyreMassRearLeft(), Fr_rl);
-        Fr_rl[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesRearLeft(i, db.getTyreMassRearLeft());
-
         db.getArbitraryTrajectory()->getLagrangianForcesRearRight(i, db.getTyreMassRearRight(), Fr_rr);
-        Fr_rr[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesRearRight(i, db.getTyreMassRearRight());
+
+        T delta_t = db.getTimeStepSize();
+
+        flyingCarRoadForces(db.getTyreMassFrontLeft(), Fr_fl[2], Fr_fl[2], Constants::FRONT_LEFT, db.getArbitraryTrajectory()->getVerticalPositionFrontLeft(i - 1), (db.getArbitraryTrajectory()->getVerticalPositionFrontLeft(i) - db.getArbitraryTrajectory()->getVerticalPositionFrontLeft(i - 1)) / delta_t, db.getArbitraryTrajectory()->getVerticalRoadForcesFrontLeft(i, db.getTyreMassFrontLeft()), delta_t);
+
+        flyingCarRoadForces(db.getTyreMassFrontRight(), Fr_fr[2], Fr_fr[2], Constants::FRONT_RIGHT, db.getArbitraryTrajectory()->getVerticalPositionFrontRight(i - 1), (db.getArbitraryTrajectory()->getVerticalPositionFrontRight(i) - db.getArbitraryTrajectory()->getVerticalPositionFrontRight(i - 1)) / delta_t, db.getArbitraryTrajectory()->getVerticalRoadForcesFrontRight(i, db.getTyreMassFrontRight()), delta_t);
+
+        flyingCarRoadForces(db.getTyreMassRearLeft(), Fr_rl[2], Fr_rl[2], Constants::REAR_LEFT, db.getArbitraryTrajectory()->getVerticalPositionRearLeft(i - 1), (db.getArbitraryTrajectory()->getVerticalPositionRearLeft(i) - db.getArbitraryTrajectory()->getVerticalPositionRearLeft(i - 1)) / delta_t, db.getArbitraryTrajectory()->getVerticalRoadForcesRearLeft(i, db.getTyreMassRearLeft()), delta_t);
+
+        flyingCarRoadForces(db.getTyreMassRearRight(), Fr_rr[2], Fr_rr[2], Constants::REAR_RIGHT, db.getArbitraryTrajectory()->getVerticalPositionRearRight(i - 1), (db.getArbitraryTrajectory()->getVerticalPositionRearRight(i) - db.getArbitraryTrajectory()->getVerticalPositionRearRight(i - 1)) / delta_t, db.getArbitraryTrajectory()->getVerticalRoadForcesRearRight(i, db.getTyreMassRearRight()), delta_t);
     }
 
+    void flyingCarRoadForces(T mass, T FT, T& FR, size_t leg_index, T traj_pos, T traj_vel, T traj_force, T& delta_t) {
+        T& previous_velocity = _previousSolution[20 + Constants::DIM * leg_index];
+        T& previous_position = _previousSolution[51 + Constants::DIM * leg_index];
+
+        T nothing = 0.0;
+
+        // tyre is below or on the road
+        if (previous_position <= traj_pos) {
+            FR = traj_force;
+
+           //push the car up (NOT PHYSICAL, just for nice output) TODO: make the collision physical
+            FR += mass * (traj_pos - previous_position) / delta_t;
+
+
+           // add a bump if the car has a velocity inside the road
+            if (previous_velocity < std::min(nothing, traj_vel)) {
+                FR += mass * (std::min(nothing, traj_vel) - previous_velocity) / delta_t;
+            }
+
+            // do not pull the car downwards
+            if (traj_force < _previousTyreForces[leg_index]) {
+                FR = FT;
+            }
+        }
+    }
     /** Functions needed for compute_f */
 
     /**
@@ -1708,6 +1751,10 @@ public:
         parametersCSV.writeParameters();
 #endif  // WRITECSV
 
+        Math::copy<T>(Constants::MBD_SOLUTION_SIZE, x_vector, 1, _previousSolution, 1);
+        _currentIteration = 1;
+        _iterationBegin = true;
+
         if (used_solver == MBDSolver::BROYDEN_CN) {
             Math::Solvers<T, MBDMethod>::BroydenCN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
         }
@@ -1747,7 +1794,11 @@ public:
     /**
      * \brief here comes everything which has to be done at the end of one time iteration
      */
-    void postprocessingTimeIteration(size_t iteration) {}
+    void postprocessingTimeIteration(size_t iteration, T* solutionPreviousTimestep) {
+        _currentIteration = iteration + 1;
+        Math::copy<T>(Constants::MBD_SOLUTION_SIZE, solutionPreviousTimestep, 1, _previousSolution, 1);
+        _iterationBegin = true;
+    }
 
     /**
      * Solver which is called at each time step
@@ -1905,6 +1956,8 @@ public:
         Math::free<T>(FT_rr);
         Math::free<T>(A_Ic);
         Math::free<T>(A_rem);
+        Math::free<T>(_previousTyreForces);
+        Math::free<T>(_previousSolution);
     }
 };
 

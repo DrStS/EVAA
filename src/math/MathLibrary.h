@@ -562,6 +562,7 @@ public:
             }
             // x_vector_new(n,:) = x;
             // start position of new time step
+            obj->postprocessingTimeIteration(i, x);
             curr_time_start_pos = x_vector_new + i * x_len;
             Math::copy<T>(x_len, x, 1, curr_time_start_pos, 1);
         }
@@ -806,6 +807,7 @@ public:
                 }
                 // x_vector_new(n,:) = x;
                 // start position of new time step
+                obj->postprocessingTimeIteration(i, x);
                 curr_time_start_pos = x_vector_new + i * x_len;
                 Math::copy<T>(x_len, x, 1, curr_time_start_pos, 1);
             }
@@ -957,6 +959,7 @@ public:
             }
             // x_vector_new(n,:) = x;
             // start position of new time step
+            obj->postprocessingTimeIteration(i, x);
             curr_time_start_pos = x_vector_new + i * x_len;
             Math::copy<T>(x_len, x, 1, curr_time_start_pos, 1);
         }
@@ -1086,6 +1089,7 @@ public:
             Math::axpy<T>(x_len, coeff3, k3, 1, curr_time_start_pos, 1);
             Math::axpy<T>(x_len, coeff4, k4, 1, curr_time_start_pos, 1);
             t += dt;
+            obj->postprocessingTimeIteration(i, curr_time_start_pos);
         }
         Math::free<T>(f_old);
         Math::free<T>(k1);

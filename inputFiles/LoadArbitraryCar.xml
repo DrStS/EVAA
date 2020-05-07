@@ -19,7 +19,7 @@
   <eulerianRoadProfile>
     <sinusoidalProfile>
       <rightTyre amplitude="0.05" period="10" shift="0"/>
-      <leftTyre amplitude="0.05" period="10" shift="0"/>
+      <leftTyre amplitude="0.05" period="7" shift="5"/>
     </sinusoidalProfile>
   </eulerianRoadProfile>
 
