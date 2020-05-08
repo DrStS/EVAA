@@ -351,5 +351,72 @@ TEST_F(TestOutputHDF5, WriteReadMatrixFileGroup) {
     }
 }
 
+TEST_F(TestOutputHDF5, WriteString) {
+    // Create OutputHDF5 object
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
+
+    std::string dataWrite = "Data to write";
+    const std::string datasetName = "Write String";
+    const std::string groupName = "Group string";
+
+    testObj.CreateContainer(true, groupName);
+    testObj.WriteString(datasetName, dataWrite, EVAA::HDF5FileHandle::FILE);
+    testObj.CloseContainer();
+}
+
+TEST_F(TestOutputHDF5, ReadWrittenString) {
+    // Create OutputHDF5 object
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
+
+    std::string dataRead;
+    std::string dataWrite = "Data to write";
+    const std::string datasetName = "Write String";
+    const std::string groupName = "Group string";
+
+    testObj.CreateContainer(true, groupName);
+    testObj.WriteString(datasetName, dataWrite, EVAA::HDF5FileHandle::FILE);
+    testObj.CloseContainer();
+
+    testObj.OpenContainer(false, groupName);
+    testObj.ReadString(datasetName, dataRead, EVAA::HDF5FileHandle::FILE);
+    testObj.CloseContainer();
+
+    EXPECT_EQ(dataRead, dataWrite) << "Read data differs from written!";
+}
+
+TEST_F(TestOutputHDF5, WriteMatrixVectorString) {
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, "write 3" + _fileName);
+
+    // write vector
+    const size_t vecDim = 6;
+    double vecWrite[vecDim]{5, 9, 91, 26, 5, 94};
+    std::string datasetNameVector = "SolutionVector";
+    std::string groupName = "Group Test";
+    testObj.CreateContainer(true, groupName);
+    testObj.WriteVector(datasetNameVector, vecWrite, vecDim);
+    testObj.WriteVector(datasetNameVector, vecWrite, vecDim, EVAA::HDF5FileHandle::GROUP);
+    testObj.CloseContainer();
+
+    // write matrix
+    const int matrixRows = 3;
+    const int matrixColumns = 2;
+    double matrixWrite[matrixRows * matrixColumns]{5, 9, 91, 26, 5, 94};
+    std::string datasetNameMatrix = "SolutionMatrix";
+    testObj.OpenContainer(true, groupName);
+    testObj.WriteMatrix(datasetNameMatrix, matrixWrite, matrixRows, matrixColumns);
+    testObj.WriteMatrix(datasetNameMatrix, matrixWrite, matrixRows, matrixColumns,
+                        EVAA::HDF5FileHandle::GROUP);
+    testObj.CloseContainer();
+
+    // write string
+    std::string data = "Data to write";
+    const std::string datasetNameString = "Write String";
+
+    testObj.OpenContainer(true, groupName);
+    testObj.WriteString(datasetNameString, data);
+    testObj.WriteString(datasetNameString, data, EVAA::HDF5FileHandle::GROUP);
+    testObj.CloseContainer();
+}
+
 }  // namespace Test
 #endif

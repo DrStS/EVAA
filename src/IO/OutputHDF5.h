@@ -23,8 +23,8 @@ namespace HDF5 {
  * \param[in] size The vector size.
  */
 template <typename T>
-void WriteVectorToFile(const std::string& fileName, const std::string& vectorName, T* vector,
-                       size_t size);
+void W11riteVectorToFile(const std::string& fileName, const std::string& vectorName, T* vector,
+                         size_t size);
 
 /**
  * Reads a single vector from a HDF5 file.
@@ -169,7 +169,7 @@ public:
      * object use a (pre)defined group from createContainer or openContainer
      */
     void WriteMatrix(const std::string& datasetName, const T* data, const size_t numRows,
-                     const size_t numColumns, HDF5FileHandle handle = HDF5FileHandle::FILE) {
+                     const size_t numColumns, const HDF5FileHandle handle = HDF5FileHandle::FILE) {
         const GetHDF5DataType<T> HDF5DataType;
         if (handle == HDF5FileHandle::FILE)
             WriteMatrix(datasetName, data, numRows, numColumns, HDF5DataType.type, _fileHandle);
@@ -189,7 +189,7 @@ public:
      * object use a (pre)defined group from createContainer or openContainer
      */
     void ReadMatrix(const std::string& datasetName, T* data, size_t& numRows, size_t& numColumns,
-                    HDF5FileHandle handle = HDF5FileHandle::FILE) {
+                    const HDF5FileHandle handle = HDF5FileHandle::FILE) {
         const GetHDF5DataType<T> HDF5DataType;
         if (handle == HDF5FileHandle::FILE)
             ReadMatrix(datasetName, data, numRows, numColumns, HDF5DataType.type, _fileHandle);
@@ -210,14 +210,16 @@ public:
      * object use a (pre)defined group from createContainer or openContainer
      */
     void WriteVector(const std::string& datasetName, const T* data, const size_t numElements,
-                     HDF5FileHandle handle = HDF5FileHandle::FILE) {
+                     const HDF5FileHandle handle = HDF5FileHandle::FILE) {
         const GetHDF5DataType<T> HDF5DataType;
         if (handle == HDF5FileHandle::FILE)
             WriteVector(datasetName, data, numElements, HDF5DataType.type, _fileHandle);
         else if (handle == HDF5FileHandle::GROUP)
             WriteVector(datasetName, data, numElements, HDF5DataType.type, _groupHandle);
         else {
-            throw std::logic_error("Wrong handle provided. Must be one of: FILE, GROUP");
+            throw std::logic_error(
+                "Wrong handle provided. Must be one of: HDF5FileHandle::FILE, "
+                "HDF5FileHandle::GROUP");
         }
     }
 
@@ -229,7 +231,7 @@ public:
      * object use a (pre)defined group from createContainer or openContainer
      */
     void ReadVector(const std::string& datasetName, T* data, size_t& numElements,
-                    HDF5FileHandle handle = HDF5FileHandle::FILE) {
+                    const HDF5FileHandle handle = HDF5FileHandle::FILE) {
         const GetHDF5DataType<T> HDF5DataType;
         if (handle == HDF5FileHandle::FILE)
             ReadVector(datasetName, data, numElements, HDF5DataType.type, _fileHandle);
@@ -238,6 +240,74 @@ public:
         else {
             throw std::logic_error("Wrong handle provided. Must be one of: FILE, GROUP");
         }
+    }
+
+    /** Functions for Strings */
+    void WriteString(const std::string& datasetName, const std::string data,
+                     const HDF5FileHandle handle = HDF5FileHandle::FILE) {
+        // allocate handle
+        H5::Group* handleWrite;
+        if (handle == HDF5FileHandle::FILE)
+            handleWrite = _fileHandle;
+        else if (handle == HDF5FileHandle::GROUP)
+            handleWrite = _groupHandle;
+        else {
+            throw std::logic_error(
+                "Wrong handle provided. Must be one of: HDF5FileHandle::FILE, "
+                "HDF5FileHandle::GROUP");
+        }
+
+        // write the string in dataset
+
+        // Create new dataspace for attribute
+        H5::DataSpace dataspace(H5S_SCALAR);
+
+        // Create new string datatype for attribute
+        H5::StrType datatype(H5::PredType::C_S1, data.length());
+
+        /*
+         * Create a new dataset within the file using defined dataspace and
+         * datatype and default dataset creation properties.
+         */
+        H5::DataSet* dataset =
+            new H5::DataSet(handleWrite->createDataSet(datasetName, datatype, dataspace));
+
+        dataset->write(data, datatype);
+
+        delete dataset;
+    }
+
+    void ReadString(const std::string& datasetName, std::string& data,
+                    const HDF5FileHandle handle = HDF5FileHandle::FILE) {
+        // allocate handle
+        H5::Group* handleRead;
+        if (handle == HDF5FileHandle::FILE)
+            handleRead = _fileHandle;
+        else if (handle == HDF5FileHandle::GROUP)
+            handleRead = _groupHandle;
+        else {
+            throw std::logic_error(
+                "Wrong handle provided. Must be one of: HDF5FileHandle::FILE, "
+                "HDF5FileHandle::GROUP");
+        }
+
+        /* Open a dataset */
+        H5::DataSet dataset = handleRead->openDataSet(datasetName);
+
+        /* Get datatype for dataset */
+        H5::DataType dtype = dataset.getDataType();
+
+        /* Get length of string */
+        size_t dataLength = dataset.getDataType().getSize();
+
+        /* Read dataset from disk */
+        char* readData = new char[dataLength];
+        dataset.read((void*)readData, dtype);
+
+        /* Assign data values to data string */
+        data.assign(readData, dataLength);
+
+        delete[] readData;
     }
 
 private:
@@ -264,7 +334,8 @@ private:
      */
     template <typename HDF5DataType>
     void WriteMatrix(const std::string& datasetName, const T* data, const size_t numRows,
-                     const size_t numColumns, const HDF5DataType& datatype, H5::Group* handle) {
+                     const size_t numColumns, const HDF5DataType& datatype,
+                     const H5::Group* handle) {
         /*
          * Define the size of the array and create the data space for fixed
          * size dataset.
@@ -311,7 +382,7 @@ private:
      */
     template <typename HDF5DataType>
     void ReadMatrix(const std::string& datasetName, T* data, size_t& numRows, size_t& numColumns,
-                    const HDF5DataType& datatype, H5::Group* handle) {
+                    const HDF5DataType& datatype, const H5::Group* handle) {
         // Open dataset
         H5::DataSet dataset = handle->openDataSet(datasetName);
 
@@ -321,6 +392,7 @@ private:
         size_t dims[2];
         // use this for simple data space
         H5Sget_simple_extent_dims(H5Dget_space(dataset.getId()), dims, NULL);
+
         numRows = dims[0];
         numColumns = dims[1];
 
@@ -342,7 +414,7 @@ private:
      */
     template <typename HDF5DataType>
     void WriteVector(const std::string& datasetName, const T* data, const size_t numElements,
-                     const HDF5DataType& datatype, H5::Group* handle) {
+                     const HDF5DataType& datatype, const H5::Group* handle) {
         /*
          * Define the size of the array and create the data space for fixed
          * size dataset.
@@ -382,7 +454,7 @@ private:
      */
     template <typename HDF5DataType>
     void ReadVector(const std::string& datasetName, T* data, size_t& numElements,
-                    const HDF5DataType& datatype, H5::Group* handle) {
+                    const HDF5DataType& datatype, const H5::Group* handle) {
         /*
          * Create a new dataset within the file using defined dataspace and
          * datatype and default dataset creation properties.
@@ -391,8 +463,8 @@ private:
 
         dataset.read(data, datatype);
 
-        // use this for simple data space
-        H5Sget_simple_extent_dims(H5Dget_space(dataset.getId()), &numElements, NULL);
+        // use this for simple 1D data space
+        numElements = dataset.getDataType().getSize();
     }
 };
 }  // namespace HDF5
