@@ -63,7 +63,7 @@ public:
 		profileInducedForce[0] += carObj->getMassComponents()[0] * gravity;
 	#pragma loop(ivdep)
 		for (auto i = Constants::DIM; i < Constants::DOF; ++i) {
-			profileInducedForce[i] += carObj->getMassComponents()[i] * gravity;
+			profileInducedForce[i] += carObj->getMassComponents()[i-(Constants::DIM - 1)] * gravity;
 		}
 	}
 

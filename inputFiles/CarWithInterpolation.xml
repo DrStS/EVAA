@@ -21,10 +21,10 @@
           <z>-0.3</z>
         </RelativeCenterOfInstanteneousRotation>
         <SuspensionSpringsXML>
-          <ReerRight>0.2</ReerRight>
-          <ReerLeft>0.2</ReerLeft>
-          <FrontLeft>0.2</FrontLeft>
-          <FrontRight>0.2</FrontRight>
+          <ReerRight>0.4</ReerRight>
+          <ReerLeft>0.4</ReerLeft>
+          <FrontLeft>0.4</FrontLeft>
+          <FrontRight>0.4</FrontRight>
         </SuspensionSpringsXML>
         <TyreSpringsXML>
           <ReerRight>0.2</ReerRight>
@@ -40,16 +40,16 @@
       </StiffnessXML>
       <DampingCoefficientsXML>
         <TyreXML>
-          <ReerRight>100</ReerRight>
-          <ReerLeft>100</ReerLeft>
-          <FrontLeft>100</FrontLeft>
-          <FrontRight>100</FrontRight>
+          <ReerRight>0</ReerRight>
+          <ReerLeft>0</ReerLeft>
+          <FrontLeft>0</FrontLeft>
+          <FrontRight>0</FrontRight>
         </TyreXML>
         <BodyXML>
-          <ReerRight>100</ReerRight>
-          <ReerLeft>100</ReerLeft>
-          <FrontLeft>100</FrontLeft>
-          <FrontRight>100</FrontRight>
+          <ReerRight>0</ReerRight>
+          <ReerLeft>0</ReerLeft>
+          <FrontLeft>0</FrontLeft>
+          <FrontRight>0</FrontRight>
         </BodyXML>
       </DampingCoefficientsXML>
       <MassXML>
@@ -84,16 +84,16 @@
   <InitialConditionsXML>
     <SpringElongationXML>
       <BodyXML>
+        <ReerRight>0.4</ReerRight>
+        <ReerLeft>0.4</ReerLeft>
+        <FrontLeft>0.4</FrontLeft>
+        <FrontRight>0.4</FrontRight>
+      </BodyXML>
+      <TyreXML>
         <ReerRight>0.2</ReerRight>
         <ReerLeft>0.2</ReerLeft>
         <FrontLeft>0.2</FrontLeft>
         <FrontRight>0.2</FrontRight>
-      </BodyXML>
-      <TyreXML>
-        <ReerRight>0.1769</ReerRight>
-        <ReerLeft>0.1769</ReerLeft>
-        <FrontLeft>0.1769</FrontLeft>
-        <FrontRight>0.1769</FrontRight>
       </TyreXML>
     </SpringElongationXML>
 	<PositionXML>

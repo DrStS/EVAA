@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     double time11DOF = 0.;
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-        myComputeEngine->computeMKLTwoTrackModelBE();
+//        myComputeEngine->computeMKLTwoTrackModelBE();
         timer1.stop();
         time11DOF += timer1.getDurationMilliSec();
     }

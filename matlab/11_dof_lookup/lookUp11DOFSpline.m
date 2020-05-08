@@ -8,18 +8,18 @@ c = 1.2;
 %c = 0;
 %% zero lengths
 
-L1 = 0.2;
+L1 = 0.7;
 L2 = 0.2;
-L3 = 0.2;
+L3 = 0.7;
 L4 = 0.2;
-L5 = 0.2;
+L5 = 0.7;
 L6 = 0.2;
-L7 = 0.2;
+L7 = 0.7;
 L8 = 0.2;
 %%
 global k_grid d_grid size_grid l_min l_max dl;
 % calc min and max length to evaluate (just for now)
-l_min = 0.02;
+l_min = 0.01;
 l_max = 1;
 % grid size
 size_grid = 101;
@@ -383,6 +383,16 @@ for i = 1: length(t)
         l7 = eval(l7_sym);
         l8 = eval(l8_sym);
         len = [l1;l2;l3;l4;l5;l6;l7;l8];
+%        for l=1:8
+%            if len(l)<l_min
+%                disp(len(l))
+%                return
+%            elseif len(l)>l_max
+%                disp(len(l))
+%                return
+%            end
+%        end
+            
         K = get_K();
         if fixed
             newForce = K * u_n_p_1;
@@ -399,7 +409,7 @@ for i = 1: length(t)
             
         %( M_div_h2 + K )\(2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs)-u_n_p_1
         err(iter) = norm(r);
-        if (iter == 10)
+        if (iter == 20)
             d = d + 1
         end
         if (err(iter) < tol || iter == 10 || norm(J\r) > norm(Delta))
