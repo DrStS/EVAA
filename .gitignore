@@ -14,6 +14,9 @@ build*
 out/
 *.cmake
 
+# HDF5
+*.hdf5
+
 # Matlab
 *.asv
 

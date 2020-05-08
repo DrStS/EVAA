@@ -80,7 +80,7 @@ struct GetHDF5DataType<double> {
 /** \brief OutputHDF5 is a class that handles the writing to and reading from HDF5 files.
  * The algorithms instantiate an OutputHDF5 object.
  */
-template <class T>
+template <typename T>
 class OutputHDF5 {
 public:
     /** Constructor with parameters for OutputHDF5. Initialize _filePath and _fileName and set
@@ -470,8 +470,6 @@ private:
 }  // namespace HDF5
 };  // namespace EVAA
 
-#ifdef USE_HDF5
 #include "OutputHDF5.cpp"
-#endif  // USE_HDF5
 
 #endif  // USE_HDF5
