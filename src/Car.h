@@ -232,9 +232,6 @@ private:
     T _massFullCar;      // 1 scalar
     T* _momentOfInertia;  // [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izz]
     T* _vehicleCIR;       // [XYZ]
-    T* _unexcitedPositionTwoTrackModel;  // [CG:Z, theta:XY, W_fl:Z, T_fl:Z,
-                                         // W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z,
-                                         // W_rr:Z, T_rr:Z]
     T* _unexcitedSpringsLength;          // [W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z,
                                          // T_rl:Z, W_rr:Z, T_rr:Z]
 
@@ -322,6 +319,11 @@ public:
     T* _currentDisplacementTwoTrackModel;  // [CG:Z, theta:XY, W_fl:Z, T_fl:Z,
                                           // W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z,
                                           // W_rr:Z, T_rr:Z] (TODO: still public)
+
+    T* _unexcitedPositionTwoTrackModel;    // [CG:Z, theta:XY, W_fl:Z, T_fl:Z,
+                                           // W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z,
+                                           // W_rr:Z, T_rr:Z] (TODO: still public, no getter)
+
     
     // For ALE || suggestion: reduce it to only leg position (wheel == tyre)
     T* _currentPositionLagrangian;        // [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY, T_fr:XY, W_rl:XY, T_rl:XY, W_rr:XY, T_rr:XY]
@@ -603,10 +605,11 @@ public:
 
         // global vector update
         UpdateGlobalTwoTrackVectors();
-	/*	Math::write_vector(_unexcitedPositionTwoTrackModel, 11);
-		Math::write_vector(_currentDisplacementTwoTrackModel, 11);
-		Math::write_vector(_currentPositionTwoTrackModel, 11);*/
-        // compute current spring lengths
+/*        std::cout << "new" << std::endl;
+        IO::writeVector<T>(_unexcitedPositionTwoTrackModel, 11);
+        IO::writeVector<T>(_currentDisplacementTwoTrackModel, 11);
+        IO::writeVector<T>(_currentPositionTwoTrackModel, 11);
+*/        // compute current spring lengths
         ComputeCurrentSpringLength();
 
         // Compute CIR distances
