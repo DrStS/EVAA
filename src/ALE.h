@@ -15,7 +15,7 @@ template <class T>
 class ALE {
 private:
     // necessary class objects
-    Car<T>* _carObj;                 // suppose Interpolation in the Car
+    Car<T>* _carObj;                // suppose Interpolation in the Car
     LoadModule<T>* _loadModuleObj;  // needs Profile and Car
     TwoTrackModelParent<T>* _twoTrackModelObj;
 
@@ -43,8 +43,11 @@ public:
     /**
      * Constructor
      */
-    ALE(Car<T>* carObjVal, LoadModule<T>* loadModuleVal, TwoTrackModelParent<T>* twoTrackModelVal) : //
-        _carObj(carObjVal), _loadModuleObj(loadModuleVal), _twoTrackModelObj(twoTrackModelVal) {        
+    ALE(Car<T>* carObjVal, LoadModule<T>* loadModuleVal, TwoTrackModelParent<T>* twoTrackModelVal) :
+        //
+        _carObj(carObjVal),
+        _loadModuleObj(loadModuleVal),
+        _twoTrackModelObj(twoTrackModelVal) {
         _h = MetaDatabase<T>::getDatabase().getTimeStepSize();
         _tend = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations() * _h;
 
@@ -114,7 +117,7 @@ public:
         T* angleVecCSV = Math::malloc<T>(_solutionVectorSize * Constants::DIM);
         T* posVecCSV = Math::malloc<T>(_solutionVectorSize * Constants::DIM * Constants::VEC_DIM);
         T* velVecCSV = Math::malloc<T>(_solutionVectorSize * (Constants::DIM - 1) * Constants::VEC_DIM);
-#endif // WRITECSV
+#endif  // WRITECSV
 
         T* solution_vect;
         int iter = 1;
@@ -124,10 +127,10 @@ public:
             // This has to be done at each time step
             //
             // update force vector
-			_loadModuleObj->GetLagrangianForce(iter, _lagrangianForceVector);
-			_loadModuleObj->GetTorqueLagrange(iter, _lagrangianTorque);
-			//if (iter == 1000) IO::writeVector(_lagrangianForceVector, lagrangianForceDimension); 
-		    LagrangianUpdate(t);
+            _loadModuleObj->GetLagrangianForce(iter, _lagrangianForceVector);
+            _loadModuleObj->GetTorqueLagrange(iter, _lagrangianTorque);
+            // if (iter == 1000) IO::writeVector(_lagrangianForceVector, lagrangianForceDimension);
+            LagrangianUpdate(t);
 
             _twoTrackModelObj->UpdateStep(iter, _carObj->_currentDisplacementTwoTrackModel);
             _carObj->UpdateLengthsTwoTrackModel();
@@ -135,11 +138,11 @@ public:
             solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
 
 #ifdef WRITECSV
-            _carObj->CombineResults();            
+            _carObj->CombineResults();
             Math::copy(Constants::VEC_DIM * Constants::DIM, _carObj->getPositionVector(), 1, posVecCSV + iter * Constants::DIM * Constants::VEC_DIM, 1);
             Math::copy(Constants::DIM, _carObj->getAngleCG(), 1, angleVecCSV + iter * Constants::DIM, 1);
-            Math::copy(Constants::DIM, _carObj->_currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM-1) * Constants::VEC_DIM, 1);
-#endif // WRITECSV
+            Math::copy(Constants::DIM, _carObj->_currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM - 1) * Constants::VEC_DIM, 1);
+#endif  // WRITECSV
 
             // only call this function at every checkpoint
             _carObj->CombineEulerianLagrangianVectors(solution_vect);
@@ -155,7 +158,6 @@ public:
         Math::free(posVecCSV);
 #endif  // WRITECSV
 
-
         Math::copy<T>(Constants::VEC_DIM * Constants::DIM, u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
         _carObj->CombineResults();
 
@@ -164,7 +166,7 @@ public:
         Math::free<T>(_lagrangianForceVector);
         Math::free<T>(_newLagrangianForceVector);
         delete _lagrangianTorque;
-		delete _newLagrangianTorque;
+        delete _newLagrangianTorque;
     }
 
     /**
@@ -180,18 +182,10 @@ public:
     void CalculateGlobalMomentofInertiaZ() {
         // get the global inertia actiing in Z direction
         _momentOfInertiaZ = _carObj->getMomentOfInertia()[8];
-        _momentOfInertiaZ +=
-            (_carObj->getMassComponents()[1] + _carObj->getMassComponents()[2]) *
-            (_carObj->_lenLat[0] * _carObj->_lenLat[0] + _carObj->_lenLong[0] * _carObj->_lenLong[0]);
-        _momentOfInertiaZ +=
-            (_carObj->getMassComponents()[3] + _carObj->getMassComponents()[4]) *
-            (_carObj->_lenLat[1] * _carObj->_lenLat[1] + _carObj->_lenLong[1] * _carObj->_lenLong[1]);
-        _momentOfInertiaZ +=
-            (_carObj->getMassComponents()[5] + _carObj->getMassComponents()[6]) *
-            (_carObj->_lenLat[2] * _carObj->_lenLat[2] + _carObj->_lenLong[2] * _carObj->_lenLong[2]);
-        _momentOfInertiaZ +=
-            (_carObj->getMassComponents()[7] + _carObj->getMassComponents()[8]) *
-            (_carObj->_lenLat[3] * _carObj->_lenLat[3] + _carObj->_lenLong[3] * _carObj->_lenLong[3]);
+        _momentOfInertiaZ += (_carObj->getMassComponents()[1] + _carObj->getMassComponents()[2]) * (_carObj->_lenLat[0] * _carObj->_lenLat[0] + _carObj->_lenLong[0] * _carObj->_lenLong[0]);
+        _momentOfInertiaZ += (_carObj->getMassComponents()[3] + _carObj->getMassComponents()[4]) * (_carObj->_lenLat[1] * _carObj->_lenLat[1] + _carObj->_lenLong[1] * _carObj->_lenLong[1]);
+        _momentOfInertiaZ += (_carObj->getMassComponents()[5] + _carObj->getMassComponents()[6]) * (_carObj->_lenLat[2] * _carObj->_lenLat[2] + _carObj->_lenLong[2] * _carObj->_lenLong[2]);
+        _momentOfInertiaZ += (_carObj->getMassComponents()[7] + _carObj->getMassComponents()[8]) * (_carObj->_lenLat[3] * _carObj->_lenLat[3] + _carObj->_lenLong[3] * _carObj->_lenLong[3]);
     }
 
     /**
@@ -199,16 +193,16 @@ public:
      */
     void PrintFinalResults() {
         const T* sln = _carObj->getPositionVector();
-        std::cout << "ALE: orientation angles=\n\t[" << _carObj->getAngleCG()[0] << "\n\t " << _carObj->getAngleCG()[1] << "\n\t " << _carObj->getAngleCG()[2] << "]" << std::endl;
-        std::cout << "ALE: car body position pc=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
-        std::cout << "ALE: rear-right wheel position pw1=\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
-        std::cout << "ALE: rear-left wheel position pw2=\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
-        std::cout << "ALE: front-left wheel position pw3=\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;
-        std::cout << "ALE: front-right wheel position pw4=\n\t[" << sln[9] << "\n\t " << sln[10] << "\n\t " << sln[11] << "]" << std::endl;
-        std::cout << "ALE: rear-right tyre position pt1=\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
-        std::cout << "ALE: rear-left tyre position pt2=\n\t[" << sln[18] << "\n\t " << sln[19] << "\n\t " << sln[20] << "]" << std::endl;
-        std::cout << "ALE: front-left tyre position pt3=\n\t[" << sln[6] << "\n\t " << sln[7] << "\n\t " << sln[8] << "]" << std::endl;
-        std::cout << "ALE: front-right tyre position pt4=\n\t[" << sln[12] << "\n\t " << sln[13] << "\n\t " << sln[14] << "]" << std::endl;
+        std::cout << "ALE: orientation angles =\n\t[" << _carObj->getAngleCG()[0] << "\n\t " << _carObj->getAngleCG()[1] << "\n\t " << _carObj->getAngleCG()[2] << "]" << std::endl;
+        std::cout << "ALE: car body position pc =\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
+        std::cout << "ALE: front-left wheel position pw1 =\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;
+        std::cout << "ALE: front-right wheel position pw2 =\n\t[" << sln[9] << "\n\t " << sln[10] << "\n\t " << sln[11] << "]" << std::endl;
+        std::cout << "ALE: rear-left wheel position pw3 =\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
+        std::cout << "ALE: rear-right wheel position pw4 =\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
+        std::cout << "ALE: front-left tyre position pt1 =\n\t[" << sln[6] << "\n\t " << sln[7] << "\n\t " << sln[8] << "]" << std::endl;
+        std::cout << "ALE: front-right tyre position pt2 =\n\t[" << sln[12] << "\n\t " << sln[13] << "\n\t " << sln[14] << "]" << std::endl;
+        std::cout << "ALE: rear-left tyre position pt3 =\n\t[" << sln[18] << "\n\t " << sln[19] << "\n\t " << sln[20] << "]" << std::endl;
+        std::cout << "ALE: rear-right tyre position pt4 =\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
     }
 };
 
