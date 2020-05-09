@@ -49,9 +49,11 @@ private:
 #endif  // WRITECSV
 
 #ifdef USE_HDF5
+#ifdef USE_CHECKPOINTS
     HDF5::OutputHDF5<T>* _checkpointsALE;
     HDF5::OutputHDF5<T>* _checkpointsALEFormatted;
     std::string _groupNameCheckpoints;  // basic name for a checkpoint group
+#endif                                  // USE_CHECKPOINTS
 #endif                                  // USE_HDF5
 
 public:
@@ -83,8 +85,9 @@ public:
 #endif  // WRITECSV
 
 #ifdef USE_HDF5
+#ifdef USE_CHECKPOINTS
         _groupNameCheckpoints = "ALE Checkpoint t = ";
-        
+
         _checkpointsALE = new HDF5::OutputHDF5<T>(filePath, fileName);
         _checkpointsALE->CreateContainer(true);
         _checkpointsALE->CloseContainer();
@@ -92,6 +95,7 @@ public:
         _checkpointsALEFormatted = new HDF5::OutputHDF5<T>(filePath, "ALE_Checkpoints_formatted.hdf5");
         _checkpointsALEFormatted->CreateContainer(true);
         _checkpointsALEFormatted->CloseContainer();
+#endif
 #endif
     }
 
@@ -107,8 +111,10 @@ public:
         Math::free(posVecCSV);
 #endif  // WRITECSV
 #ifdef USE_HDF5
+#ifdef USE_CHECKPOINTS
         delete _checkpointsALE;
         delete _checkpointsALEFormatted;
+#endif
 #endif
     }
 
@@ -180,6 +186,7 @@ public:
             _carObj->CombineEulerianLagrangianVectors(solutionVector);
 
 #ifdef USE_HDF5
+#ifdef USE_CHECKPOINTS
             // Call this only at checkpoints
             _checkpointsALE->CreateContainer(false, _groupNameCheckpoints + std::to_string(t));
             // Write whatever vectors / matrices
@@ -195,6 +202,7 @@ public:
             // TODO Write vectors for points of interest
             _checkpointsALEFormatted->CloseContainer();
 #endif  // USE_HDF5
+#endif  // USE_CHECKPOINTS
 
         }  // end time iterations
 
@@ -202,7 +210,6 @@ public:
         IO::MyFile<T> solutionCSV("C:\\software\\repos\\EVAA\\output\\aleSolution.txt");
         solutionCSV.writeSolutionMatrix(posVecCSV, velVecCSV, angleVecCSV, _solutionVectorSize);
 #endif  // WRITECSV
-        std::cout << "_solutionVectorSize = " << _solutionVectorSize << "\n\n";
         // TODO How do we put the initial solution in _fullSolution?
         Math::copy<T>(Constants::VEC_DIM * Constants::DIM, _fullSolution + (_solutionVectorSize - 1) * (Constants::VEC_DIM * Constants::DIM), 1, finalSolution, 1);
         _carObj->CombineResults();
@@ -228,14 +235,14 @@ public:
         const T* sln = _carObj->getPositionVector();
         std::cout << "ALE: orientation angles =\n\t[" << _carObj->getAngleCG()[0] << "\n\t " << _carObj->getAngleCG()[1] << "\n\t " << _carObj->getAngleCG()[2] << "]" << std::endl;
         std::cout << "ALE: car body position pc =\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
-        std::cout << "ALE: front-left wheel position pw3 =\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;
-        std::cout << "ALE: front-right wheel position pw4 =\n\t[" << sln[9] << "\n\t " << sln[10] << "\n\t " << sln[11] << "]" << std::endl;
-        std::cout << "ALE: rear-left wheel position pw2 =\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
-        std::cout << "ALE: rear-right wheel position pw1 =\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
-        std::cout << "ALE: front-left tyre position pt3 =\n\t[" << sln[6] << "\n\t " << sln[7] << "\n\t " << sln[8] << "]" << std::endl;
-        std::cout << "ALE: front-right tyre position pt4 =\n\t[" << sln[12] << "\n\t " << sln[13] << "\n\t " << sln[14] << "]" << std::endl;
-        std::cout << "ALE: rear-left tyre position pt2 =\n\t[" << sln[18] << "\n\t " << sln[19] << "\n\t " << sln[20] << "]" << std::endl;
-        std::cout << "ALE: rear-right tyre position pt1 =\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
+        std::cout << "ALE: front-left wheel position pw1 =\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;
+        std::cout << "ALE: front-right wheel position pw2 =\n\t[" << sln[9] << "\n\t " << sln[10] << "\n\t " << sln[11] << "]" << std::endl;
+        std::cout << "ALE: rear-left wheel position pw3 =\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
+        std::cout << "ALE: rear-right wheel position pw4 =\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
+        std::cout << "ALE: front-left tyre position pt1 =\n\t[" << sln[6] << "\n\t " << sln[7] << "\n\t " << sln[8] << "]" << std::endl;
+        std::cout << "ALE: front-right tyre position pt2 =\n\t[" << sln[12] << "\n\t " << sln[13] << "\n\t " << sln[14] << "]" << std::endl;
+        std::cout << "ALE: rear-left tyre position pt3 =\n\t[" << sln[18] << "\n\t " << sln[19] << "\n\t " << sln[20] << "]" << std::endl;
+        std::cout << "ALE: rear-right tyre position pt4 =\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
     }
 
 #ifdef USE_HDF5
