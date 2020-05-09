@@ -365,45 +365,43 @@ void GetQuaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis) {
  * \return transformed_basis the basis vectors in matrix form
  */
 template <typename T>
-void GetBasis(const T* initial_orientation, T* transfrormed_basis) {
+void GetBasis(const T* initial_orientation, T* transformed_basis) {
     // quaternion initial_orientation yields basis(calculates basically the
     // matrix rotation the euclidian basis to the local basis)
 
     // get local basis vectors using unit quaternion rotation
     // s = 1 / norm(q) ^ 2;      %normalizer, only to remove numerical stuffy
     // stuff
-    size_t quad_dim = 4;
-    size_t dim = 3;
-    T nrm = Math::nrm2<T>(quad_dim, initial_orientation, 1);
-    T s = 1. / (nrm * nrm);
-    Math::scal<T>(dim * dim, 0, transfrormed_basis, 1);
+    const size_t quad_dim = 4;
+    T s = 1. / Math::dot<T>(quad_dim, initial_orientation, 1, initial_orientation, 1);
+    Math::scal<T>(Constants::DIM * Constants::DIM, 0, transformed_basis, 1);
     size_t i, j;
 
     T quad_sum = 0;
-    for (i = 0; i < dim; ++i) {
+    for (i = 0; i < Constants::DIM; ++i) {
         quad_sum += initial_orientation[i] * initial_orientation[i];
     }
     i = 0;
     j = 0;
-    transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transformed_basis[i * Constants::DIM + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
     j = 1;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
     j = 2;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
     i = 1;
     j = 0;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
     j = 1;
-    transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transformed_basis[i * Constants::DIM + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
     j = 2;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
     i = 2;
     j = 0;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
     j = 1;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
     j = 2;
-    transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transformed_basis[i * Constants::DIM + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
 }
 
 /**
@@ -467,7 +465,7 @@ public:
         T* x_new = Math::malloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
-        double nrm = 0.01;
+        T nrm = 0.01;
         T t = 0;
         T val = 0;
         Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);
@@ -609,7 +607,7 @@ public:
         T* x_new = Math::malloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
-        double nrm = 0.01;
+        T nrm = 0.01;
         T t = 0;
         T val = 0;
         Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);
@@ -855,7 +853,7 @@ public:
         T* x_new = Math::malloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-3;
-        double nrm = 0.01;
+        T nrm = 0.01;
         T t = 0;
         T val = 0;
         Math::copy<T>(x_len, x_previous, 1, x_vector_new, 1);

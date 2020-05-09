@@ -651,11 +651,17 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 void EVAAComputeEngine::computeMBD(void) {
     size_t num_iter = MetaDatabase<Constants::floatEVAA>::getDatabase().getNumberOfTimeIterations();
     size_t solution_dim = MetaDatabase<Constants::floatEVAA>::getDatabase().getSolutionVectorSize();
-    Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(solution_dim);
+    Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(solution_dim);
     MBDMethod<Constants::floatEVAA> solver;
 
     solver.Solve(sol);
     solver.PrintFinalResult(sol);
+
+#ifdef USE_HDF5
+    solver.WriteFinalResult(sol);
+    solver.WriteFinalResultFormatted(sol);
+#endif  // USE_HDF5
+
     Math::free<Constants::floatEVAA>(sol);
 }
 
@@ -675,7 +681,7 @@ void EVAAComputeEngine::computeALE(void) {
 #ifndef USE_HDF5
     ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
 #else
-    std::string fileName = "ALE Checkpoints.hdf5";
+    std::string fileName = "ALE_Checkpoints.hdf5";
     std::string filePath = "";
     ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj, filePath, fileName);
 #endif  // ! USE_HDF5

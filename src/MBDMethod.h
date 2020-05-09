@@ -10,6 +10,10 @@
 #include "MathLibrary.h"
 #include "MetaDatabase.h"
 
+#ifdef USE_HDF5
+#include "IO/OutputHDF5.h"
+#endif
+
 namespace EVAA {
 
 /**
@@ -81,6 +85,12 @@ private:
     T norm_r_up_fl, norm_r_up_fr, norm_r_up_rl, norm_r_up_rr;
     T norm_r_low_fl, norm_r_low_fr, norm_r_low_rl, norm_r_low_rr;
 
+#ifdef USE_HDF5
+    HDF5::OutputHDF5<T>* _checkpointsMBD;
+    HDF5::OutputHDF5<T>* _checkpointsMBDFormatted;
+    std::string _groupNameCheckpoints;  // basic name for a checkpoint group
+#endif                                  //  USE_HDF5
+
     /**
      * Calculate the positions of the tyres and wheels according to the initial
      * orientation of the car The legs always form a 90 degrees angle to the car
@@ -117,8 +127,8 @@ private:
         const T* initial_upper_spring_length = db.getBodySpringInitialLengthVector();
         const T* initial_lower_spring_length = db.getTyreSpringInitialLengthVector();
 
-        T* global_z = Math::calloc<T>(Constants::DIM);
-        T* C_Nc = Math::calloc<T>(Constants::DIMDIM);
+        T* global_z = Math::malloc<T>(Constants::DIM);
+        T* C_Nc = Math::malloc<T>(Constants::DIMDIM);
 
         // 1. qc = qc/norm(qc); This is in quaternions
         T nrm = Math::nrm2<T>(Constants::NUM_LEGS, initial_orientation_, 1);
@@ -1519,14 +1529,26 @@ lower_normal4;
 
 public:
     /**
-     * Constructor
+     * Constructor (with default parameters for writing in Output HDF5)
      */
-    MBDMethod() {
+    MBDMethod(const std::string& filePath = "", const std::string& fileName = "MBD_Checkpoints.hdf5") {
         MemoryAllocation();
 
         ReadFromXML();
 
         getCholeskyDecomposition();
+
+#ifdef USE_HDF5
+        _groupNameCheckpoints = "MBD Checkpoint t = ";
+
+        _checkpointsMBD = new HDF5::OutputHDF5<T>(filePath, fileName);
+        _checkpointsMBD->CreateContainer(true);
+        _checkpointsMBD->CloseContainer();
+
+        _checkpointsMBDFormatted = new HDF5::OutputHDF5<T>(filePath, "MBD_Checkpoints_formatted.hdf5");
+        _checkpointsMBDFormatted->CreateContainer(true);
+        _checkpointsMBDFormatted->CloseContainer();
+#endif
     }
 
     /**
@@ -1536,8 +1558,8 @@ public:
         // From the formulation we have 61 dimensions in the solution vector
         auto& db = MetaDatabase<T>::getDatabase();
         size_t solution_size = (this->num_iter + 1) * this->solution_dim;
-        T* complete_vector = Math::calloc<T>(solution_size);
-        x_vector = Math::calloc<T>(solution_dim);
+        T* complete_vector = Math::malloc<T>(solution_size);
+        x_vector = Math::malloc<T>(solution_dim);
         Math::GetTilda<T>(r_fl, r_fl_tilda);
         Math::GetTilda<T>(r_fr, r_fr_tilda);
         Math::GetTilda<T>(r_rl, r_rl_tilda);
@@ -1703,9 +1725,32 @@ public:
         solutionCSV.writeSolutionMatrixMBD(complete_vector, this->num_iter + 1);
 #endif  // WRITECSV
 
+#ifdef USE_HDF5
+        WriteBulkResults(complete_vector, num_iter + 1, solution_dim);
+#endif  // USE_HDF5
+
+#ifdef USE_HDF5  // TODO should be USE_CHECKPOINTS
+        // write at checkpoints
+        // TODO checkpoints vector read from somewhere (contains the iteration numbers for checkpoints)
+        const size_t numCheckpoints = 3;
+        size_t checkpoints[numCheckpoints];  // to be read from somewhere
+        checkpoints[0] = 0.25 * num_iter;
+        checkpoints[1] = 0.5 * num_iter;
+        checkpoints[2] = 0.75 * num_iter;
+
+        for (auto i = 0; i < numCheckpoints; ++i) {
+            _checkpointsMBD->CreateContainer(false, _groupNameCheckpoints + std::to_string((T)checkpoints[i] * h));
+            _checkpointsMBD->WriteVector("MBD Checkpoint t = " + std::to_string((T)checkpoints[i] * h), &complete_vector[checkpoints[i]], solution_dim, HDF5FileHandle::GROUP);
+            _checkpointsMBD->CloseContainer();
+            // TODO : decide if we want with format or without
+            _checkpointsMBDFormatted->CreateContainer(false, _groupNameCheckpoints + std::to_string((T)checkpoints[i] * h));
+            WriteFormattedSolution(_checkpointsMBDFormatted, &complete_vector[checkpoints[i]], HDF5FileHandle::GROUP);
+            _checkpointsMBDFormatted->CloseContainer();
+        }
+#endif
+
         T* start = complete_vector + (this->num_iter) * this->solution_dim;
         Math::copy<T>(this->solution_dim, start, 1, solution_vector, 1);
-        //	std::cout << "Solution copied!\n" << std::endl;
         Math::free<T>(complete_vector);
         Math::free<T>(x_vector);
     }
@@ -1790,34 +1835,116 @@ public:
      */
     size_t get_solution_dimension() { return this->solution_dim; }
 
+#ifdef USE_HDF5
+    /** Write a solution vector in formatted fashion.
+     * \param[in] handle if HDF5FileHandle::FILE, then writes in file; if HDF5FileHandle::GROUP, then writes in group
+     */
+    void WriteFormattedSolution(HDF5::OutputHDF5<T>* writeMBD, T* sln, const HDF5FileHandle& handle = HDF5FileHandle::FILE) {
+        std::string datasetName = "MBD: angular velocity w";
+        writeMBD->WriteVector(datasetName, &sln[0], Constants::DIM, handle);
+        datasetName = "MBD: car body velocity vc";
+        writeMBD->WriteVector(datasetName, &sln[3], Constants::DIM, handle);
+        // Wheels velocities
+        datasetName = "MBD: front-left wheel velocity vw_fl";
+        writeMBD->WriteVector(datasetName, &sln[6], Constants::DIM, handle);
+        datasetName = "MBD: front-right wheel velocity vw_fr";
+        writeMBD->WriteVector(datasetName, &sln[9], Constants::DIM, handle);
+        datasetName = "MBD: rear-left wheel velocity vw_rl";
+        writeMBD->WriteVector(datasetName, &sln[12], Constants::DIM, handle);
+        datasetName = "MBD: rear-right wheel velocity vw_rr";
+        writeMBD->WriteVector(datasetName, &sln[15], Constants::DIM, handle);
+        // Tyres  velocities
+        datasetName = "MBD: front-left tyre velocity vt_fl";
+        writeMBD->WriteVector(datasetName, &sln[18], Constants::DIM, handle);
+        datasetName = "MBD: front-right tyre velocity vt_fr";
+        writeMBD->WriteVector(datasetName, &sln[21], Constants::DIM, handle);
+        datasetName = "MBD: rear-left tyre velocity vt_rl";
+        writeMBD->WriteVector(datasetName, &sln[24], Constants::DIM, handle);
+        datasetName = "MBD: rear-right tyre velocity vt_rr";
+        writeMBD->WriteVector(datasetName, &sln[27], Constants::DIM, handle);
+        // Quaternion orientation
+        datasetName = "MBD: orientation q";
+        writeMBD->WriteVector(datasetName, &sln[30], Constants::DIM + 1, handle);
+        datasetName = "MBD: car body position pc";
+        writeMBD->WriteVector(datasetName, &sln[34], Constants::DIM, handle);
+        // Wheels positions
+        datasetName = "MBD: front-left wheel position pw_fl";
+        writeMBD->WriteVector(datasetName, &sln[37], Constants::DIM, handle);
+        datasetName = "MBD: front-right wheel position pw_f";
+        writeMBD->WriteVector(datasetName, &sln[40], Constants::DIM, handle);
+        datasetName = "MBD: rear-left wheel position pw_rl";
+        writeMBD->WriteVector(datasetName, &sln[43], Constants::DIM, handle);
+        datasetName = "MBD: rear-right wheel position pw_rr";
+        writeMBD->WriteVector(datasetName, &sln[46], Constants::DIM, handle);
+        // Tyres positions
+        datasetName = "MBD: front-left tyre position pt_fl";
+        writeMBD->WriteVector(datasetName, &sln[49], Constants::DIM, handle);
+        datasetName = "MBD: front-right tyre position pt_fr";
+        writeMBD->WriteVector(datasetName, &sln[52], Constants::DIM, handle);
+        datasetName = "MBD: rear-left tyre position pt_rl";
+        writeMBD->WriteVector(datasetName, &sln[55], Constants::DIM, handle);
+        datasetName = "MBD: rear-right tyre position pt_rr";
+        writeMBD->WriteVector(datasetName, &sln[58], Constants::DIM, handle);
+    }
+#endif
+
+#ifdef USE_HDF5
+    void WriteFinalResultFormatted(T* sln, const std::string filePath = "", const std::string fileName = "MBD_final_solution_formatted.hdf5") {
+        HDF5::OutputHDF5<T> finalMBD(filePath, fileName);
+        finalMBD.CreateContainer(true);
+        WriteFormattedSolution(&finalMBD, sln, HDF5FileHandle::FILE);
+        finalMBD.CloseContainer();
+    }
+#endif  // USE_HDF5
+
+#ifdef USE_HDF5
+    void WriteFinalResult(T* sln, const std::string filePath = "", const std::string fileName = "MBD_final_solution_formatted.hdf5") {
+        HDF5::OutputHDF5<Constants::floatEVAA> finalMBD(filePath, fileName);
+        std::string datasetName = "MBD final solution";
+        finalMBD.CreateContainer(true);
+        finalMBD.WriteVector(datasetName, &sln[0], solution_dim);
+        finalMBD.CloseContainer();
+    }
+#endif  // USE_HDF5
+
+#ifdef USE_HDF5
+    void WriteBulkResults(T* fullSolution, const size_t& numIterations, const size_t& solutionDimension, const std::string& filePath = "", const std::string& fileName = "MBD_full_solution.hdf5") {
+        HDF5::OutputHDF5<Constants::floatEVAA> finalMBD(filePath, fileName);
+        std::string datasetName = "MBD bulk solution";
+        finalMBD.CreateContainer(true);
+        finalMBD.WriteMatrix(datasetName, fullSolution, numIterations, solutionDimension);
+        finalMBD.CloseContainer();
+    }
+#endif  // USE_HDF5
+
     /**
-     * Beatiful output of the result
+     * Beautiful output of the result
      * \param sln solution vector
      */
     void PrintFinalResult(T* sln) {
         std::cout << std::scientific;
         std::cout << std::setprecision(15);
 
-        std::cout << "MBD: angular velocity w=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
-        std::cout << "MBD: car body velocity vc=\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;
-        std::cout << "MBD: front-left wheel velocity vw_fl=\n\t[" << sln[6] << "\n\t " << sln[7] << "\n\t " << sln[8] << "]" << std::endl;
-        std::cout << "MBD: front-right wheel velocity vw_fr=\n\t[" << sln[9] << "\n\t " << sln[10] << "\n\t " << sln[11] << "]" << std::endl;
-        std::cout << "MBD: rear-left wheel velocity vw_rl=\n\t[" << sln[12] << "\n\t " << sln[13] << "\n\t " << sln[14] << "]" << std::endl;
-        std::cout << "MBD: rear-right wheel velocity vw_rr=\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
-        std::cout << "MBD: front-left tyre velocity vt_fl=\n\t[" << sln[18] << "\n\t " << sln[19] << "\n\t " << sln[20] << "]" << std::endl;
-        std::cout << "MBD: front-right tyre velocity vt_fr=\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
-        std::cout << "MBD: rear-left tyre velocity vt_rl=\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
-        std::cout << "MBD: rear-right tyre velocity vt_rr=\n\t[" << sln[27] << "\n\t " << sln[28] << "\n\t " << sln[29] << "]" << std::endl;
-        std::cout << "MBD: orientation q=\n\t[" << sln[30] << "\n\t " << sln[31] << "\n\t " << sln[32] << "\n\t " << sln[33] << "]" << std::endl;
-        std::cout << "MBD: car body position pc=\n\t[" << sln[34] << "\n\t " << sln[35] << "\n\t " << sln[36] << "]" << std::endl;
-        std::cout << "MBD: front-left wheel position pw_fl=\n\t[" << sln[37] << "\n\t " << sln[38] << "\n\t " << sln[39] << "]" << std::endl;
-        std::cout << "MBD: front-right wheel position pw_fr=\n\t[" << sln[40] << "\n\t " << sln[41] << "\n\t " << sln[42] << "]" << std::endl;
-        std::cout << "MBD: rear-left wheel position pw_rl=\n\t[" << sln[43] << "\n\t " << sln[44] << "\n\t " << sln[45] << "]" << std::endl;
-        std::cout << "MBD: rear-right wheel position pw_rr=\n\t[" << sln[46] << "\n\t " << sln[47] << "\n\t " << sln[48] << "]" << std::endl;
-        std::cout << "MBD: front-left tyre position pt_fl=\n\t[" << sln[49] << "\n\t " << sln[50] << "\n\t " << sln[51] << "]" << std::endl;
-        std::cout << "MBD: front-right tyre position pt_fr=\n\t[" << sln[52] << "\n\t " << sln[53] << "\n\t " << sln[54] << "]" << std::endl;
-        std::cout << "MBD: rear-left tyre position pt_rl=\n\t[" << sln[55] << "\n\t " << sln[56] << "\n\t " << sln[57] << "]" << std::endl;
-        std::cout << "MBD: rear-right tyre position pt_rr=\n\t[" << sln[58] << "\n\t " << sln[59] << "\n\t " << sln[60] << "]" << std::endl;
+        std::cout << "MBD: angular velocity w =\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
+        std::cout << "MBD: car body velocity vc =\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;
+        std::cout << "MBD: front-left wheel velocity vw_fl =\n\t[" << sln[6] << "\n\t " << sln[7] << "\n\t " << sln[8] << "]" << std::endl;
+        std::cout << "MBD: front-right wheel velocity vw_fr =\n\t[" << sln[9] << "\n\t " << sln[10] << "\n\t " << sln[11] << "]" << std::endl;
+        std::cout << "MBD: rear-left wheel velocity vw_rl =\n\t[" << sln[12] << "\n\t " << sln[13] << "\n\t " << sln[14] << "]" << std::endl;
+        std::cout << "MBD: rear-right wheel velocity vw_rr =\n\t[" << sln[15] << "\n\t " << sln[16] << "\n\t " << sln[17] << "]" << std::endl;
+        std::cout << "MBD: front-left tyre velocity vt_fl =\n\t[" << sln[18] << "\n\t " << sln[19] << "\n\t " << sln[20] << "]" << std::endl;
+        std::cout << "MBD: front-right tyre velocity vt_fr =\n\t[" << sln[21] << "\n\t " << sln[22] << "\n\t " << sln[23] << "]" << std::endl;
+        std::cout << "MBD: rear-left tyre velocity vt_rl =\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
+        std::cout << "MBD: rear-right tyre velocity vt_rr =\n\t[" << sln[27] << "\n\t " << sln[28] << "\n\t " << sln[29] << "]" << std::endl;
+        std::cout << "MBD: orientation q =\n\t[" << sln[30] << "\n\t " << sln[31] << "\n\t " << sln[32] << "\n\t " << sln[33] << "]" << std::endl;
+        std::cout << "MBD: car body position pc =\n\t[" << sln[34] << "\n\t " << sln[35] << "\n\t " << sln[36] << "]" << std::endl;
+        std::cout << "MBD: front-left wheel position pw_fl =\n\t[" << sln[37] << "\n\t " << sln[38] << "\n\t " << sln[39] << "]" << std::endl;
+        std::cout << "MBD: front-right wheel position pw_fr =\n\t[" << sln[40] << "\n\t " << sln[41] << "\n\t " << sln[42] << "]" << std::endl;
+        std::cout << "MBD: rear-left wheel position pw_rl =\n\t[" << sln[43] << "\n\t " << sln[44] << "\n\t " << sln[45] << "]" << std::endl;
+        std::cout << "MBD: rear-right wheel position pw_rr =\n\t[" << sln[46] << "\n\t " << sln[47] << "\n\t " << sln[48] << "]" << std::endl;
+        std::cout << "MBD: front-left tyre position pt_fl =\n\t[" << sln[49] << "\n\t " << sln[50] << "\n\t " << sln[51] << "]" << std::endl;
+        std::cout << "MBD: front-right tyre position pt_fr =\n\t[" << sln[52] << "\n\t " << sln[53] << "\n\t " << sln[54] << "]" << std::endl;
+        std::cout << "MBD: rear-left tyre position pt_rl =\n\t[" << sln[55] << "\n\t " << sln[56] << "\n\t " << sln[57] << "]" << std::endl;
+        std::cout << "MBD: rear-right tyre position pt_rr =\n\t[" << sln[58] << "\n\t " << sln[59] << "\n\t " << sln[60] << "]" << std::endl;
     }
 
     /**
@@ -1866,6 +1993,11 @@ public:
         Math::free<T>(FT_rr);
         Math::free<T>(A_Ic);
         Math::free<T>(A_rem);
+
+#ifdef USE_HDF5  // TODO: use USE_CHECKPOINT
+        delete _checkpointsMBD;
+        delete _checkpointsMBDFormatted;
+#endif
     }
 };
 
