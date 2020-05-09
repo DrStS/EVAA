@@ -30,18 +30,25 @@ private:
 
     // time and solution vectors
     T* _timeArray = nullptr;
-    T* _solutionVector = nullptr;
+    T* _fullSolution = nullptr;
 
     // global centripetal forces on the whole car [XYZ]
     T* _lagrangianForceVector = nullptr;
     T* _newLagrangianForceVector = nullptr;
 
     // global torque on the car [XYZ]
-    T* _lagrangianTorque = nullptr;
-    T* _newLagrangianTorque = nullptr;
+    T _lagrangianTorque;
+    T _newLagrangianTorque;
 
     // quantities for the whole car
     T _momentOfInertiaZ;
+
+#ifdef WRITECSV
+    IO::MyFile<T>* solutionCSV = nullptr;
+    T* angleVecCSV;
+    T* posVecCSV;
+    T* velVecCSV;
+#endif  // WRITECSV
 
 #ifdef USE_HDF5
     HDF5::OutputHDF5<T>* _checkpointsALE;
@@ -63,35 +70,48 @@ public:
         _tend = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations() * _h;
 
         _solutionVectorSize = (floor(_tend / _h) + 1);
-        _solutionVector = Math::malloc<T>(_solutionVectorSize * (Constants::VEC_DIM * Constants::DIM));
+        _fullSolution = Math::malloc<T>(_solutionVectorSize * (Constants::VEC_DIM * Constants::DIM));
+
+        // initialize solution vector
+        _timeArray = Math::calloc<T>(_solutionVectorSize);                              // TODO Allocation in constructor
+        _lagrangianForceVector = Math::calloc<T>(Constants::lagrangianForceDimension);  // TODO Allocation in constructor
+
+        // this was 2 dimensional allocation and update force updates 3 dimension on this
+        _newLagrangianForceVector = Math::calloc<T>(Constants::lagrangianForceDimension);
+
+#ifdef WRITECSV
+        solutionCSV = new IO::MyFile<T>("C:\\software\\repos\\EVAA\\output\\aleSolution.txt");
+        IO::MyFile<T> parametersCSV("C:\\software\\repos\\EVAA\\output\\simulationParameters.txt");
+        parametersCSV.writeParameters();
+        angleVecCSV = Math::malloc<T>(_solutionVectorSize * Constants::DIM);
+        posVecCSV = Math::malloc<T>(_solutionVectorSize * Constants::DIM * Constants::VEC_DIM);
+        velVecCSV = Math::malloc<T>(_solutionVectorSize * (Constants::DIM - 1) * Constants::VEC_DIM);
+#endif  // WRITECSV
     }
 
     /**
      * Constructor (considering writing in Output HDF5)
      */
-    ALE(Car<T>* carObjVal, LoadModule<T>* loadModuleVal, TwoTrackModelParent<T>* twoTrackModelVal, std::string filePath, std::string fileName) :
-        //
-        _carObj(carObjVal),
-        _loadModuleObj(loadModuleVal),
-        _twoTrackModelObj(twoTrackModelVal),
-        _filePath(filePath),
-        _fileName(fileName) {
-        _h = MetaDatabase<T>::getDatabase().getTimeStepSize();
-        _tend = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations() * _h;
-
-        _solutionVectorSize = (floor(_tend / _h) + 1);
-        _solutionVector = Math::malloc<T>(_solutionVectorSize * (Constants::VEC_DIM * Constants::DIM));
-
 #ifdef USE_HDF5
+    ALE(Car<T>* carObjVal, LoadModule<T>* loadModuleVal, TwoTrackModelParent<T>* twoTrackModelVal, std::string filePath, std::string fileName) : ALE(carObjVal, loadModuleVal, twoTrackModelVal) {
         _checkpointsALE = new HDF5::OutputHDF5<T>(filePath, fileName);
         _groupNameCheckpoints = "ALE Checkpoint t = ";
         _checkpointsALE->CreateContainer(true, _groupNameCheckpoints);
         _checkpointsALE->CloseContainer();
-#endif
     }
+#endif
 
     ~ALE() {
-        Math::free<T>(_solutionVector);
+        Math::free<T>(_fullSolution);
+        Math::free<T>(_timeArray);
+        Math::free<T>(_lagrangianForceVector);
+        Math::free<T>(_newLagrangianForceVector);
+        // TODO : Move this to destructor, it is not part of the solver
+#ifdef WRITECSV
+        Math::free(angleVecCSV);
+        Math::free(velVecCSV);
+        Math::free(posVecCSV);
+#endif  // WRITECSV
 #ifdef USE_HDF5
         delete _checkpointsALE;
 #endif
@@ -104,80 +124,53 @@ public:
      * time
      */
     void LagrangianUpdate(const size_t iter) {
-        // TODO fix order of comments
-
-        // 2. Update global X,Y positions of the car
+        // 1. Update global X,Y positions of the car
         Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentPositionLagrangian[0], _carObj->getCurrentVelocityLagrangian()[0], _lagrangianForceVector[0], _h, _carObj->getMassCarFull());
         Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentPositionLagrangian[1], _carObj->getCurrentVelocityLagrangian()[1], _lagrangianForceVector[1], _h, _carObj->getMassCarFull());
 
-        // 4. Update Z-rotation
-        Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentAngleLagrangian, _carObj->getCurrentAngularVelocityLagrangian(), *_lagrangianTorque, _h, _momentOfInertiaZ);
+        // 2. Update Z-rotation
+        Math::Solvers<T, ALE>::StoermerVerletPosition(_carObj->_currentAngleLagrangian, _carObj->getCurrentAngularVelocityLagrangian(), _lagrangianTorque, _h, _momentOfInertiaZ);
 
-        // get forces
+        // 3. get forces
         _loadModuleObj->GetLagrangianForce(iter, _newLagrangianForceVector);
-        _loadModuleObj->GetTorqueLagrange(iter, _newLagrangianTorque);
+        _loadModuleObj->GetTorqueLagrange(iter, &_newLagrangianTorque);
 
-        // 1. Update global X,Y velocities
+        // 4. Update global X,Y velocities
         Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentVelocityLagrangian[0], _lagrangianForceVector[0], _newLagrangianForceVector[0], _h, _carObj->getMassCarFull());
         Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentVelocityLagrangian[1], _lagrangianForceVector[1], _newLagrangianForceVector[1], _h, _carObj->getMassCarFull());
 
-        // 3. Update Z-angular velocities
-        Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentAngularVelocityLagrangian, *_lagrangianTorque, *_newLagrangianTorque, _h, _momentOfInertiaZ);
+        // 5. Update Z-angular velocities
+        Math::Solvers<T, ALE>::StoermerVerletVelocity(_carObj->_currentAngularVelocityLagrangian, _lagrangianTorque, _newLagrangianTorque, _h, _momentOfInertiaZ);
 
-        // update forces and _lagrangianTorque
+        // 6. update forces and _lagrangianTorque
         _lagrangianForceVector[0] = _newLagrangianForceVector[0];
         _lagrangianForceVector[1] = _newLagrangianForceVector[1];
 
-        *_lagrangianTorque = *_newLagrangianTorque;  // z - component
+        _lagrangianTorque = _newLagrangianTorque;  // z - component
     }
 
-    void Solve(T* sol_vect, T* u_sol_param) {
-        // TODO : WTF IS THIS FUNCTION DOING?
-
-        // initialize solution vector
-        const int lagrangianForceDimension = Constants::DIM - 1;  // TODO Create separate constant
-
-        // allocate memory
-
-        _timeArray = Math::calloc<T>(_solutionVectorSize);                   // TODO Allocation in constructor
-        _lagrangianForceVector = Math::calloc<T>(lagrangianForceDimension);  // TODO Allocation in constructor
-
-        // this was 2 dimensional allocation and update force updates 3 dimension on this
-        _newLagrangianForceVector = Math::calloc<T>(lagrangianForceDimension);
-
-        _lagrangianTorque = new T;     // TODO In constructor (However, consider using stack as well!!!)
-        _newLagrangianTorque = new T;  // TODO In constructor (However, consider using stack as well!!!)
-
+    /**
+     * Executes the time iteration of the ALE solvers, switches from global
+     * position update to solving of the linear 11DOF system
+     */
+    void Solve(T* finalSolution) {
         // calculate characteristics of the whole car
         CalculateGlobalMomentofInertiaZ();
 
-        // start time iteration
-        T t = _h;
-
-        // TODO : Move this to constructor, it is not part of the solver
-#ifdef WRITECSV
-        IO::MyFile<T> solutionCSV("C:\\software\\repos\\EVAA\\output\\aleSolution.txt");
-        IO::MyFile<T> parametersCSV("C:\\software\\repos\\EVAA\\output\\simulationParameters.txt");
-        parametersCSV.writeParameters();
-        T* angleVecCSV = Math::malloc<T>(_solutionVectorSize * Constants::DIM);
-        T* posVecCSV = Math::malloc<T>(_solutionVectorSize * Constants::DIM * Constants::VEC_DIM);
-        T* velVecCSV = Math::malloc<T>(_solutionVectorSize * (Constants::DIM - 1) * Constants::VEC_DIM);
-#endif  // WRITECSV
-
-        T* solution_vect;
-        int iter = 1;
         // time iteration
-        double eps = _h / 100;
-        while (std::abs(t - (_tend + _h)) > eps) {
-            // TODO : For loop deletes code
+        size_t iter;
+        T t;
+        T eps = _h / 100;
+        for (iter = 1, t = _h; std::abs(t - (_tend + _h)) > eps; iter++, t += _h) {
             // TODO : What is the stoping criterion? We have the number of iterations apriori!
 
             // This has to be done at each time step
             //
             // update force vector
             _loadModuleObj->GetLagrangianForce(iter, _lagrangianForceVector);
-            _loadModuleObj->GetTorqueLagrange(iter, _lagrangianTorque);
-            // if (iter == 1000) IO::writeVector(_lagrangianForceVector, lagrangianForceDimension);
+            _loadModuleObj->GetTorqueLagrange(iter, &_lagrangianTorque);
+            // if (iter == 1000) IO::writeVector(_lagrangianForceVector,
+            // Constants::lagrangianForceDimension);
             LagrangianUpdate(t);
 
             _twoTrackModelObj->UpdateStep(iter, _carObj->_currentDisplacementTwoTrackModel);
@@ -191,11 +184,9 @@ public:
             Math::copy(Constants::DIM, _carObj->_currentVelocityLagrangian, 1, velVecCSV + iter * (Constants::DIM - 1) * Constants::VEC_DIM, 1);
 #endif  // WRITECSV
 
-            // only call this function at every checkpoint
-            solution_vect = u_sol_param + iter * (Constants::VEC_DIM * Constants::DIM);
-            _carObj->CombineEulerianLagrangianVectors(solution_vect);
-
 #ifdef USE_HDF5
+            T* solution_vect = _fullSolution + iter * (Constants::VEC_DIM * Constants::DIM);
+            _carObj->CombineEulerianLagrangianVectors(solution_vect);
             // Call this only at checkpoints
             _checkpointsALE->CreateContainer(false, _groupNameCheckpoints + std::to_string(t));
             // Write whatever vectors / matrices
@@ -206,36 +197,16 @@ public:
             // TODO Write vectors for points of interest
             _checkpointsALE->CloseContainer();
 #endif  // USE_HDF5
-
-            t += _h;
-            iter++;
         }
 
-        // TODO : Move this to destructor, it is not part of the solver
 #ifdef WRITECSV
-        solutionCSV.writeSolutionMatrix(posVecCSV, velVecCSV, angleVecCSV, _solutionVectorSize);
-        Math::free(angleVecCSV);
-        Math::free(velVecCSV);
-        Math::free(posVecCSV);
+        solutionCSV->writeSolutionMatrix(posVecCSV, velVecCSV, angleVecCSV, _solutionVectorSize);
 #endif  // WRITECSV
 
-        // TODO How do we put the initial solution in u_sol_param?
-        Math::copy<T>(Constants::VEC_DIM * Constants::DIM, u_sol_param + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, sol_vect, 1);
+        // TODO How do we put the initial solution in _fullSolution?
+        Math::copy<T>(Constants::VEC_DIM * Constants::DIM, _fullSolution + (iter - 1) * (Constants::VEC_DIM * Constants::DIM), 1, finalSolution, 1);
         _carObj->CombineResults();
-
-        // TODO : Move this to destructor!
-        Math::free<T>(_timeArray);
-        Math::free<T>(_lagrangianForceVector);
-        Math::free<T>(_newLagrangianForceVector);
-        delete _lagrangianTorque;
-        delete _newLagrangianTorque;
     }
-
-    /**
-     * Executes the time iteration of the ALE solvers, switches from global
-     * position update to solving of the linear 11DOF system
-     */
-    void Solve(T* sol_vect) { Solve(sol_vect, _solutionVector); }
 
     /**
      * Adds the contribution of the wheels and tyres to the inertia moment of
@@ -271,7 +242,7 @@ public:
 #ifdef USE_HDF5
         HDF5::OutputHDF5<Constants::floatEVAA> fullALE(filePath, fileName);
         fullALE.CreateContainer(true);
-        fullALE.WriteMatrix(datasetName, _solutionVector, _solutionVectorSize, Constants::VEC_DIM * Constants::DIM);
+        fullALE.WriteMatrix(datasetName, _fullSolution, _solutionVectorSize, Constants::VEC_DIM * Constants::DIM);
         fullALE.CloseContainer();
 #endif  // USE_HDF5
     }

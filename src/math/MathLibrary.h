@@ -264,15 +264,15 @@ void GetRotationMatrix(const T yaw, const T pitch, const T roll, T* R) {
  */
 template <typename T>
 void GetRotationMatrixSmallAnglesXY(const T yaw, const T pitch, const T roll, T* R) {
-	R[0] = (std::cos(yaw));
-	R[1] = ((std::cos(yaw)) * (pitch) * (roll) - (std::sin(yaw)));
-	R[2] = ((std::cos(yaw)) * (pitch) + (std::sin(yaw)) * (roll));
-	R[3] = (std::sin(yaw));
-	R[4] = ((std::sin(yaw)) * (pitch) * (roll) + (std::cos(yaw)));
-	R[5] = ((std::sin(yaw)) * (pitch) - (std::cos(yaw)) * (roll));
-	R[6] = -(pitch);
-	R[7] = (roll);
-	R[8] = 1;
+    R[0] = (std::cos(yaw));
+    R[1] = ((std::cos(yaw)) * (pitch) * (roll) - (std::sin(yaw)));
+    R[2] = ((std::cos(yaw)) * (pitch) + (std::sin(yaw)) * (roll));
+    R[3] = (std::sin(yaw));
+    R[4] = ((std::sin(yaw)) * (pitch) * (roll) + (std::cos(yaw)));
+    R[5] = ((std::sin(yaw)) * (pitch) - (std::cos(yaw)) * (roll));
+    R[6] = -(pitch);
+    R[7] = (roll);
+    R[8] = 1;
 }
 
 /**
@@ -448,7 +448,7 @@ public:
      *  \param x_previous previous solution
      *  \return new solution
      */
-    static void BroydenEuler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+    static void BroydenEuler(C* obj, T* x_previous, T* x_vector_new, const T& dt, const size_t& num_time_iter, const T& tol, const size_t& max_iter) {
         size_t x_len = obj->get_solution_dimension();
         T* f_old = Math::malloc<T>(x_len);
         T* f_new = Math::malloc<T>(x_len);
@@ -477,7 +477,7 @@ public:
 
             // 1. Initialize guess from previous time step
             // f_old = f(t(n-1), x_previous');
-            obj->compute_f3D_reduced(it_start, t, f_old,i);
+            obj->compute_f3D_reduced(it_start, t, f_old, i);
 
             // in case the velocity is 0 add nuggets to avoid singular matrices
             // (slow check for improvement) f_old(abs(f_old) < 0.01) = 0.01;
@@ -490,7 +490,7 @@ public:
             t += dt;
             Math::copy<T>(x_len, it_start, 1, x, 1);
             Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
-            obj->compute_f3D_reduced(x, t, f_new,i);
+            obj->compute_f3D_reduced(x, t, f_new, i);
 
             // Initial approximation of the Jacobian
             // dx = x - x_previous;
@@ -530,7 +530,7 @@ public:
                 Math::scal<T>(x_len, -1, x_new, 1);
 
                 // Calculate new derivative
-                obj->compute_f3D_reduced(x_new, t, f_new,i);
+                obj->compute_f3D_reduced(x_new, t, f_new, i);
 
                 // F_new = x_new - x_previous - delta_t * x_dot
                 Math::copy<T>(x_len, x_new, 1, F_new, 1);
@@ -590,7 +590,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void BroydenBDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+    static void BroydenBDF2(C* obj, T* x_previous, T* x_vector_new, const T& dt, const size_t& num_time_iter, const T& tol, const size_t& max_iter) {
         size_t x_len = obj->get_solution_dimension();
         T* f_old = Math::malloc<T>(x_len);
         T* f_new = Math::malloc<T>(x_len);
@@ -621,7 +621,7 @@ public:
 
         // 1. Initialize guess from previous time step
         // f_old = f(t(n-1), x_previous');
-        obj->compute_f3D_reduced(it_start, t, f_old,i);
+        obj->compute_f3D_reduced(it_start, t, f_old, i);
         // in case the velocity is 0 add nuggets to avoid singular matrices
         // (slow check for improvement) f_old(abs(f_old) < 0.01) = 0.01;
         val = eps * (2 * (1 + rand() % 2) - 3);
@@ -633,7 +633,7 @@ public:
         t += dt;
         Math::copy<T>(x_len, it_start, 1, x, 1);
         Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
-        obj->compute_f3D_reduced(x, t, f_new,i);
+        obj->compute_f3D_reduced(x, t, f_new, i);
 
         // Initial approximation of the Jacobian
         // dx = x - x_previous;
@@ -672,7 +672,7 @@ public:
             Math::scal<T>(x_len, -1, x_new, 1);
 
             // Calculate new derivative
-            obj->compute_f3D_reduced(x_new, t, f_new,i);
+            obj->compute_f3D_reduced(x_new, t, f_new, i);
 
             // F_new = x_new - x_previous - delta_t * x_dot
             Math::copy<T>(x_len, x_new, 1, F_new, 1);
@@ -715,7 +715,7 @@ public:
 
                 // 1. Initialize guess from previous time step
                 // f_old = f(t(n-1), x_previous');
-                obj->compute_f3D_reduced(it_start, t, f_old,i);
+                obj->compute_f3D_reduced(it_start, t, f_old, i);
                 // in case the velocity is 0 add nuggets to avoid singular
                 // matrices (slow check for improvement) f_old(abs(f_old) <
                 // 0.01) = 0.01;
@@ -728,7 +728,7 @@ public:
                 t += dt;
                 Math::copy<T>(x_len, it_start, 1, x, 1);
                 Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
-                obj->compute_f3D_reduced(x, t, f_new,i);
+                obj->compute_f3D_reduced(x, t, f_new, i);
 
                 // Initial approximation of the Jacobian
                 // dx = x - x_previous;
@@ -771,7 +771,7 @@ public:
                     Math::scal<T>(x_len, -1, x_new, 1);
 
                     // Calculate new derivative
-                    obj->compute_f3D_reduced(x_new, t - dt, f_new,i);
+                    obj->compute_f3D_reduced(x_new, t - dt, f_new, i);
 
                     // F_new = x_new - 4/3 * x_previous + 1/3 *
                     // x_previous_previous - 2/3 * delta_t
@@ -834,7 +834,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void BroydenCN(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+    static void BroydenCN(C* obj, T* x_previous, T* x_vector_new, const T& dt, const size_t& num_time_iter, const T& tol, const size_t& const max_iter) {
         // std::cout << "Broyden started!\n" << std::endl;
 
         size_t x_len = obj->get_solution_dimension();
@@ -866,7 +866,7 @@ public:
 
             // 1. Initialize guess from previous time step
             // f_old = f(t(n-1), x_previous');
-            obj->compute_f3D_reduced(it_start, t, f_old,i);
+            obj->compute_f3D_reduced(it_start, t, f_old, i);
 
             // in case the velocity is 0 add nuggets to avoid singular matrices
             // (slow check for improvement) f_old(abs(f_old) < 0.001) = 0.001;
@@ -879,7 +879,7 @@ public:
             t += dt;
             Math::copy<T>(x_len, it_start, 1, x, 1);
             Math::axpy<T>(x_len, dt, f_old, 1, x, 1);
-            obj->compute_f3D_reduced(x, t, f_new,i);
+            obj->compute_f3D_reduced(x, t, f_new, i);
 
             // Initial approximation of the Jacobian
             // dx = x - x_previous;
@@ -922,7 +922,7 @@ public:
                 Math::scal<T>(x_len, -1, x_new, 1);
 
                 // Calculate new derivative
-                obj->compute_f3D_reduced(x_new, t, f_new,i);
+                obj->compute_f3D_reduced(x_new, t, f_new, i);
 
                 // F_new = x_new - x_previous - delta_t * 0.5 * (x_dot +
                 // x_dot_previous);
@@ -981,17 +981,9 @@ public:
     /**
      * \brief newton loop for the 11 Dof system
      */
-    static void Newton(
-        C* obj /**< instance of 11dof class*/,
-        T* force /**< pointer to force vector (not from 11dof class)*/,
-        T* J /**< pointer to Jacobian from 11dofClass*/,
-        T* res /**< residual from 11Dof class*/,
-        T* res_norm /**< norm of the residual from the 11 Dof class*/,
-        T* u_n_p_1 /**< current position vector*/,
-        T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/,
-        T* tolerance /**< pointer to tolerance from 11 dof class for stopping criteria*/,
-        int* maxNewtonIteratins /**< pointer to maxiumum number of neton iterations*/,
-        int* count /**< pointer to iteration count */
+    static void Newton(C* obj /**< instance of 11dof class*/, T* force /**< pointer to force vector (not from 11dof class)*/, T* J /**< pointer to Jacobian from 11dofClass*/, T* res /**< residual from 11Dof class*/, T* res_norm /**< norm of the residual from the 11 Dof class*/, T* u_n_p_1 /**< current position vector*/, T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/, T* tolerance /**< pointer to tolerance from 11 dof class for stopping criteria*/,  // TODO: change to const&
+                       int* maxNewtonIteratins /**< pointer to maxiumum number of Newton iterations*/,                                                                                                                                                                                                                                                                                                                                                                                              // TODO: change to const&
+                       int* count /**< pointer to iteration count */                                                                                                                                                                                                                                                                                                                                                                                                                                // TODO: change to const&
     ) {
         *count = 0;
         T delta_norm = 1, delta_norm2 = 0;
@@ -999,7 +991,7 @@ public:
         obj->CalculateResidual(force);
 
         do {
-            *count= *count + 1;
+            *count = *count + 1;
             obj->ConstructJacobian();
 
             // get J=LL^T
@@ -1021,6 +1013,7 @@ public:
             Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
             delta_norm2 = Math::nrm2<T>(Constants::DOF, temp, 1);
         } while (*res_norm > *tolerance && delta_norm2 < delta_norm && *count < *maxNewtonIteratins);
+        // TODO: res_norm and tolerance not updated in Newton method!
     }
 
     /**
@@ -1030,7 +1023,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+    static void RK4(C* obj, T* x_previous, T* x_vector_new, const T& dt, const size_t& num_time_iter, const T& tol, const size_t& max_iter) {
         size_t x_len = obj->get_solution_dimension();
         T* f_old = Math::malloc<T>(x_len);
         T* k1 = Math::malloc<T>(x_len);
@@ -1060,7 +1053,7 @@ public:
             Math::copy<T>(x_len, k1, 1, x, 1);
             Math::scal<T>(x_len, 1. / 2.0, x, 1);
             Math::axpy<T>(x_len, 1, it_start, 1, x, 1);
-            obj->compute_f3D_reduced(x, t + dt / 2.0, f_old,i);
+            obj->compute_f3D_reduced(x, t + dt / 2.0, f_old, i);
             Math::copy<T>(x_len, f_old, 1, k2, 1);
             Math::scal<T>(x_len, dt, k2, 1);
 
@@ -1068,14 +1061,14 @@ public:
             Math::copy<T>(x_len, k2, 1, x, 1);
             Math::scal<T>(x_len, 1. / 2.0, x, 1);
             Math::axpy<T>(x_len, 1, it_start, 1, x, 1);
-            obj->compute_f3D_reduced(x, t + dt / 2.0, f_old,i);
+            obj->compute_f3D_reduced(x, t + dt / 2.0, f_old, i);
             Math::copy<T>(x_len, f_old, 1, k3, 1);
             Math::scal<T>(x_len, dt, k3, 1);
 
             // k4 = delta_t * f(t_prev + delta_t, x_previous' + k3')';
             Math::copy<T>(x_len, k3, 1, x, 1);
             Math::axpy<T>(x_len, 1, it_start, 1, x, 1);
-            obj->compute_f3D_reduced(x, t + dt, f_old,i);
+            obj->compute_f3D_reduced(x, t + dt, f_old, i);
             Math::copy<T>(x_len, f_old, 1, k4, 1);
             Math::scal<T>(x_len, dt, k4, 1);
 
@@ -1102,7 +1095,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void LinearBackwardEuler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
+    static void LinearBackwardEuler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, const size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix
          * A would be overwritten and results stored in x computes the backward
@@ -1129,7 +1122,7 @@ public:
      * vector \param num_time_iter number of time steps to perform \param dt
      * timestep \param x_previous previous solution \return new solution
      */
-    static void LinearBackwardEulerDiag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, size_t dim) {
+    static void LinearBackwardEulerDiag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, const size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix
          * A would be overwritten and results stored in x computes the backward
@@ -1164,7 +1157,7 @@ public:
      * \param[in] delta_t timestep
      * \param[in] mass mass
      */
-    static void StoermerVerletPosition(T& x, const T v, const T F, const T delta_t, const T mass) { x += delta_t * v + delta_t * delta_t / (2 * mass) * F; }
+    static void StoermerVerletPosition(T& x, const T& v, const T& F, const T& delta_t, const T& mass) { x += delta_t * v + delta_t * delta_t / (2 * mass) * F; }
 
     /**
      * 2nd order Stoermer-Verlet algorithm to update the velocity of one scalar
@@ -1174,9 +1167,9 @@ public:
      * \param[in] delta_t timestep
      * \param[in] mass mass
      */
-    static void StoermerVerletVelocity(T& v, const T F, const T F_new, const T delta_t, const T mass) { v += delta_t / (2 * mass) * (F + F_new); }
+    static void StoermerVerletVelocity(T& v, const T& F, const T& F_new, const T& delta_t, const T& mass) { v += delta_t / (2 * mass) * (F + F_new); }
 
-    static void LinearBDF2(T* A, T* B, T* C, T* D, T* E, T* x_n, T* x_n_m_1, T* x_n_m_2, T* x_n_m_3, T* b, T* x_n_p_1, size_t dim) {
+    static void LinearBDF2(T* A, T* B, T* C, T* D, T* E, T* x_n, T* x_n_m_1, T* x_n_m_2, T* x_n_m_3, T* b, T* x_n_p_1, const size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix
          * A would be overwritten and results stored in x computes the backward

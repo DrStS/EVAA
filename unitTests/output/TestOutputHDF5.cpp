@@ -385,7 +385,7 @@ TEST_F(TestOutputHDF5, ReadWrittenString) {
 }
 
 TEST_F(TestOutputHDF5, WriteMatrixVectorString) {
-    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, "write 3" + _fileName);
+    EVAA::HDF5::OutputHDF5<double> testObj(_filePath, _fileName);
 
     // write vector
     const size_t vecDim = 6;
