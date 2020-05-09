@@ -14,7 +14,7 @@
 #include "LoadModule.h"
 #include "MetaDatabase.h"
 
-#define DAMPING 1
+//#define DAMPING 1
 
 namespace EVAA {
 

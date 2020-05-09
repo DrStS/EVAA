@@ -8,7 +8,7 @@
 #include "MathLibrary.h"
 #include "MetaDatabase.h"
 
-#define DAMPING 1  // TODO remove
+//#define DAMPING 1  // TODO remove
 
 namespace EVAA {
 
@@ -232,8 +232,7 @@ private:
     T _massFullCar;      // 1 scalar
     T* _momentOfInertia;  // [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izz]
     T* _vehicleCIR;       // [XYZ]
-    T* _unexcitedSpringsLength;          // [W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z,
-                                         // T_rl:Z, W_rr:Z, T_rr:Z]
+
 
     // TODO only use to write to HDF5 DISCUSS
     T* _PositionVector;  // [CG:XYZ, W_fl:XYZ, T_fl:XYZ, W_fr:XYZ, T_fr:XYZ,
@@ -323,6 +322,9 @@ public:
     T* _unexcitedPositionTwoTrackModel;    // [CG:Z, theta:XY, W_fl:Z, T_fl:Z,
                                            // W_fr:Z, T_fr:Z, W_rl:Z, T_rl:Z,
                                            // W_rr:Z, T_rr:Z] (TODO: still public, no getter)
+
+        T* _unexcitedSpringsLength;  // [W_fl:Z, T_fl:Z, W_fr:Z, T_fr:Z, W_rl:Z,
+                                 // T_rl:Z, W_rr:Z, T_rr:Z]
 
     
     // For ALE || suggestion: reduce it to only leg position (wheel == tyre)
@@ -643,6 +645,8 @@ public:
         ConvertALEToGlobal(_currentVelocityLagrangian, _VelocityVector);
 		Convert11DOFToGlobal(_currentVelocityTwoTrackModel, _VelocityVector);
     }
+
+
 
     /**
      * get distance vector from each important Point of the car (9: CG, 4*W_i, 4*T_i)

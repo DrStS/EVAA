@@ -395,7 +395,7 @@ public:
             wheelPosition -= tyrePosition;
             centerPosition -= interpolationFactor[i] * tyrePosition;
 
-
+            unexcitedTyrePosition += tyrePosition;
             unexcitedWheelPosition += tyrePosition;
             unexcitedCenterPosition += interpolationFactor[i] * tyrePosition;
 
@@ -508,7 +508,27 @@ public:
         _trajectory->updateInitialConditionsEuler(angle, wc, pcc, vcc, pt_fl, pt_fr, pt_rl, pt_rr,
                                                   pw_fl, pw_fr, pw_rl, pw_rr, vt_fl, vt_fr, vt_rl,
                                                   vt_rr, vw_fl, vw_fr, vw_rl, vw_rr);
+
+        // calculate new unexcited positions
+        carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT]] = *pt_fl;
+        carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT]] = *pt_fr;
+        carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT]] = *pt_rl;
+        carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT]] = *pt_rr;
+
+
+        carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT] - 1] =
+            *pt_fl + carObj->_unexcitedSpringsLength[Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT]];
+        carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT] - 1] =
+            *pt_fr + carObj->_unexcitedSpringsLength[Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT]];
+        carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT] - 1] =
+            *pt_rl + carObj->_unexcitedSpringsLength[Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT]];
+        carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT] - 1] =
+            *pt_rr + carObj->_unexcitedSpringsLength[Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT]];
+        
+        
         carObj->UpdateLengthsTwoTrackModel();
+
+
     }
 };
 
