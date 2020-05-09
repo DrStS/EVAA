@@ -370,11 +370,8 @@ public:
 
     virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
 
-        std::cout << "init" << std::endl;
-        IO::writeVector<T>(carObj->_unexcitedPositionTwoTrackModel, 11);
-        IO::writeVector<T>(carObj->_currentDisplacementTwoTrackModel, 11);
 
-        T interpolationFactor[4];
+        T interpolationFactor[Constants::NUM_LEGS];
         for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
             interpolationFactor[i] =
                 0.5 * carObj->_lenLong[i] / (carObj->_lenLong[0] + carObj->_lenLong[2]);
@@ -395,12 +392,12 @@ public:
                 carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[i]];
 
 
-//            wheelPosition -= tyrePosition;
-//            centerPosition -= interpolationFactor[i] * tyrePosition;
+            wheelPosition -= tyrePosition;
+            centerPosition -= interpolationFactor[i] * tyrePosition;
 
 
-//            unexcitedWheelPosition += tyrePosition;
-//            unexcitedCenterPosition += interpolationFactor[i] * tyrePosition;
+            unexcitedWheelPosition += tyrePosition;
+            unexcitedCenterPosition += interpolationFactor[i] * tyrePosition;
 
             tyrePosition = 0;
         }

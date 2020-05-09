@@ -9,18 +9,18 @@
         <FrontLeft>260e3</FrontLeft>
         <FrontRight>260e3</FrontRight>
       </Tyre>
-      <!--Body>
+      <Body>
         <ReerRight>13.12e3</ReerRight>
         <ReerLeft>13.12e3</ReerLeft>
         <FrontLeft>19.32e3</FrontLeft>
         <FrontRight>19.32e3</FrontRight>
-      </Body-->
-	  <Body>
+      </Body>
+      <!--Body>
         <ReerRight>26.24e3</ReerRight>
         <ReerLeft>26.24e3</ReerLeft>
         <FrontLeft>38.64e3</FrontLeft>
         <FrontRight>38.64e3</FrontRight>
-      </Body>
+      </Body-->
     </Magnitude>
     <TableParameters>
 			<b>1.59</b>
@@ -28,7 +28,7 @@
 		</TableParameters>
 		<Range>
 			<l_min>0.02</l_min>
-			<l_max>1</l_max>
+			<l_max>2</l_max>
 		</Range>
     <InterpolationMethod>
 			<k>8</k>
