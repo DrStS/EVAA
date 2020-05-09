@@ -86,10 +86,12 @@ private:
     T norm_r_low_fl, norm_r_low_fr, norm_r_low_rl, norm_r_low_rr;
 
 #ifdef USE_HDF5
+#ifdef USE_CHECKPOINTS
     HDF5::OutputHDF5<T>* _checkpointsMBD;
     HDF5::OutputHDF5<T>* _checkpointsMBDFormatted;
     std::string _groupNameCheckpoints;  // basic name for a checkpoint group
-#endif                                  //  USE_HDF5
+#endif
+#endif  //  USE_HDF5
 
     /**
      * Calculate the positions of the tyres and wheels according to the initial
@@ -1539,6 +1541,7 @@ public:
         getCholeskyDecomposition();
 
 #ifdef USE_HDF5
+#ifdef USE_CHECKPOINTS
         _groupNameCheckpoints = "MBD Checkpoint t = ";
 
         _checkpointsMBD = new HDF5::OutputHDF5<T>(filePath, fileName);
@@ -1548,6 +1551,7 @@ public:
         _checkpointsMBDFormatted = new HDF5::OutputHDF5<T>(filePath, "MBD_Checkpoints_formatted.hdf5");
         _checkpointsMBDFormatted->CreateContainer(true);
         _checkpointsMBDFormatted->CloseContainer();
+#endif
 #endif
     }
 
@@ -1730,6 +1734,7 @@ public:
 #endif  // USE_HDF5
 
 #ifdef USE_HDF5  // TODO should be USE_CHECKPOINTS
+#ifdef USE_CHECKPOINTS
         // write at checkpoints
         // TODO checkpoints vector read from somewhere (contains the iteration numbers for checkpoints)
         const size_t numCheckpoints = 3;
@@ -1747,6 +1752,7 @@ public:
             WriteFormattedSolution(_checkpointsMBDFormatted, &complete_vector[checkpoints[i]], HDF5FileHandle::GROUP);
             _checkpointsMBDFormatted->CloseContainer();
         }
+#endif
 #endif
 
         T* start = complete_vector + (this->num_iter) * this->solution_dim;
@@ -1995,8 +2001,10 @@ public:
         Math::free<T>(A_rem);
 
 #ifdef USE_HDF5  // TODO: use USE_CHECKPOINT
+#ifdef USE_CHECKPOINTS
         delete _checkpointsMBD;
         delete _checkpointsMBDFormatted;
+#endif
 #endif
     }
 };
