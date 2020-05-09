@@ -111,14 +111,15 @@ int main(int argc, char **argv) {
 #endif
     const size_t numIterations = 1;
 
+    std::cout << std::defaultfloat;
     double timeMBD = 0.;    
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-        //myComputeEngine->computeMBD();
+        myComputeEngine->computeMBD();
         timer1.stop();
         timeMBD += timer1.getDurationMilliSec();
     }
-    std::cout << "It took " << timeMBD / numIterations << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
+    std::cout << "It took " << std::defaultfloat << timeMBD / numIterations << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
     
     double time11DOF = 0.;
     for (auto i = 0; i < numIterations; ++i) {
@@ -127,7 +128,7 @@ int main(int argc, char **argv) {
         timer1.stop();
         time11DOF += timer1.getDurationMilliSec();
     }
-    std::cout << "It took " << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
+    std::cout << "It took " << std::defaultfloat << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
 
     double timeALE = 0.;
     for (auto i = 0; i < numIterations; ++i) {
@@ -136,7 +137,7 @@ int main(int argc, char **argv) {
         timer1.stop();
         timeALE += timer1.getDurationMilliSec();
     }
-    std::cout << "It took " << timeALE / numIterations << " ms to run the solver(computeALE).\n\n\n" << std::endl;
+    std::cout << "It took " << std::defaultfloat << timeALE / numIterations << " ms to run the solver(computeALE).\n\n\n" << std::endl;
 
     delete myComputeEngine;
 
