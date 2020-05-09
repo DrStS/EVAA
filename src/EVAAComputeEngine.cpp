@@ -62,10 +62,7 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xml
 void EVAAComputeEngine::printInfo(void) {
     Math::PrintMKLInfo();
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
-    std::cout << "\n\nCalculate the solution after "
-              << db.getNumberOfTimeIterations() * db.getTimeStepSize()
-              << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations()
-              << " iterations\n\n\n";
+    std::cout << "\n\nCalculate the solution after " << db.getNumberOfTimeIterations() * db.getTimeStepSize() << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations() << " iterations\n\n\n";
 }
 
 void EVAAComputeEngine::computeEigen11DOF(void) {
@@ -139,34 +136,14 @@ void EVAAComputeEngine::computeEigen11DOF(void) {
     M(10, 10) = m_11;
 
     // Define the stiffness matrix
-    K << k_11 + k_21 + k_31 + k_41, -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2,
-        -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4, -k_11, 0, -k_21, 0, -k_31, 0, -k_41, 0,
-        0, l_1 * l_1 * k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41,
-        l_1 * l_3 * k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41, l_1 * k_11, 0,
-        -l_2 * k_21, 0, -l_2 * k_31, 0, l_1 * k_41, 0, 0, 0,
-        l_3 * l_3 * k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41, l_3 * k_11, 0,
-        l_3 * k_21, 0, -l_4 * k_31, 0, -l_4 * k_41, 0, 0, 0, 0, k_11 + k_12, -k_12, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, k_12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_21 + k_22, -k_22, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, k_22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_31 + k_32, -k_32, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, k_32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_41 + k_42, -k_42, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, k_42;
+    K << k_11 + k_21 + k_31 + k_41, -k_11 * l_1 - k_41 * l_1 + k_21 * l_2 + k_31 * l_2, -k_11 * l_3 - k_21 * l_3 + k_31 * l_4 + k_41 * l_4, -k_11, 0, -k_21, 0, -k_31, 0, -k_41, 0, 0, l_1 * l_1 * k_11 + l_2 * l_2 * k_21 + l_2 * l_2 * k_31 + l_1 * l_1 * k_41, l_1 * l_3 * k_11 - l_3 * l_2 * k_21 + l_2 * l_4 * k_31 - l_1 * l_4 * k_41, l_1 * k_11, 0, -l_2 * k_21, 0, -l_2 * k_31, 0, l_1 * k_41, 0, 0, 0, l_3 * l_3 * k_11 + l_3 * l_3 * k_21 + l_4 * l_4 * k_31 + l_4 * l_4 * k_41, l_3 * k_11, 0, l_3 * k_21, 0, -l_4 * k_31, 0, -l_4 * k_41, 0, 0, 0, 0, k_11 + k_12, -k_12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_21 + k_22, -k_22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_31 + k_32, -k_32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_41 + k_42, -k_42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k_42;
     MatrixXd K_diag(Constants::DOF, Constants::DOF);
     K_aux = K + K.transpose();
     K_aux.diagonal() -= K.diagonal();
     K = K_aux;
 
     // Define the damping matrix
-    D << d_11 + d_21 + d_31 + d_41, -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2,
-        -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4, -d_11, 0, -d_21, 0, -d_31, 0, -d_41, 0,
-        0, l_1 * l_1 * d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41,
-        l_1 * l_3 * d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41, l_1 * d_11, 0,
-        -l_2 * d_21, 0, -l_2 * d_31, 0, l_1 * d_41, 0, 0, 0,
-        l_3 * l_3 * d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41, l_3 * d_11, 0,
-        l_3 * d_21, 0, -l_4 * d_31, 0, -l_4 * d_41, 0, 0, 0, 0, d_11 + d_12, -d_12, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, d_12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_21 + d_22, -d_22, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, d_22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_31 + d_32, -d_32, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, d_32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_41 + d_42, -d_42, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, d_42;
+    D << d_11 + d_21 + d_31 + d_41, -d_11 * l_1 - d_41 * l_1 + d_21 * l_2 + d_31 * l_2, -d_11 * l_3 - d_21 * l_3 + d_31 * l_4 + d_41 * l_4, -d_11, 0, -d_21, 0, -d_31, 0, -d_41, 0, 0, l_1 * l_1 * d_11 + l_2 * l_2 * d_21 + l_2 * l_2 * d_31 + l_1 * l_1 * d_41, l_1 * l_3 * d_11 - l_3 * l_2 * d_21 + l_2 * l_4 * d_31 - l_1 * l_4 * d_41, l_1 * d_11, 0, -l_2 * d_21, 0, -l_2 * d_31, 0, l_1 * d_41, 0, 0, 0, l_3 * l_3 * d_11 + l_3 * l_3 * d_21 + l_4 * l_4 * d_31 + l_4 * l_4 * d_41, l_3 * d_11, 0, l_3 * d_21, 0, -l_4 * d_31, 0, -l_4 * d_41, 0, 0, 0, 0, d_11 + d_12, -d_12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_21 + d_22, -d_22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_31 + d_32, -d_32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_41 + d_42, -d_42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, d_42;
     MatrixXd D_diag(Constants::DOF, Constants::DOF);
     D_aux = D + D.transpose();
     D_aux.diagonal() -= D.diagonal();
@@ -341,15 +318,12 @@ void EVAAComputeEngine::computeBlaze11DOF(void) {
     M(10, 10) = m_11;
 
     // Define the solution vectors
-    DynamicVector<Constants::floatEVAA, columnVector> u_n_p_1(
-        Constants::DOF,
-        0);  // initialize vector of dimension 11 and null elements
-    DynamicVector<Constants::floatEVAA, columnVector> u_n(
-        Constants::DOF,
-        0);  // initialize vector of dimension 11 and null elements
-    DynamicVector<Constants::floatEVAA, columnVector> u_n_m_1(
-        Constants::DOF,
-        0);  // initialize vector of dimension 11 and null elements
+    DynamicVector<Constants::floatEVAA, columnVector> u_n_p_1(Constants::DOF,
+                                                              0);  // initialize vector of dimension 11 and null elements
+    DynamicVector<Constants::floatEVAA, columnVector> u_n(Constants::DOF,
+                                                          0);  // initialize vector of dimension 11 and null elements
+    DynamicVector<Constants::floatEVAA, columnVector> u_n_m_1(Constants::DOF,
+                                                              0);  // initialize vector of dimension 11 and null elements
 
     // Perform the iterations
     int numTimeSteps = db.getNumberOfTimeIterations();
@@ -579,10 +553,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
     void* jitter;
     // adds matrix matrix product to scalar matrix product
-    std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS,
-                                      Constants::DOF, 1, Constants::DOF, 1, Constants::DOF,
-                                      Constants::DOF, 0, Constants::DOF)
-              << std::endl;
+    std::cout << mkl_jit_create_dgemm(&jitter, MKL_COL_MAJOR, MKL_NOTRANS, MKL_NOTRANS, Constants::DOF, 1, Constants::DOF, 1, Constants::DOF, Constants::DOF, 0, Constants::DOF) << std::endl;
     dgemm_jit_kernel_t myDGEMMKernel = mkl_jit_get_dgemm_ptr(jitter);
 
     for (int iTime = 0; iTime < numTimeSteps; iTime++) {
@@ -594,8 +565,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
            trans, const MKL_INT m, const MKL_INT n, const double alpha, const
            double* a, const MKL_INT lda, const double* x, const MKL_INT incx,
            const double beta, double* y, const MKL_INT incy); */
-        Math::gemv<Constants::floatEVAA>(CblasColMajor, CblasNoTrans, 11, 11, 1, B, 11, u_n, 1, 0,
-                                         u_n_p_1, 1);
+        Math::gemv<Constants::floatEVAA>(CblasColMajor, CblasNoTrans, 11, 11, 1, B, 11, u_n, 1, 0, u_n_p_1, 1);
 #endif
 #ifdef USE_GEMM
         // cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11,1,
@@ -605,9 +575,8 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
         // y: = alpha*A*x + beta*y
         // tmp = ((-1. / (h*h))*M) * u_n_m_1
 #ifndef USE_GEMM
-        Math::gemv<Constants::floatEVAA>(
-            CblasColMajor, CblasNoTrans, Constants::DOF, Constants::DOF,  //
-            (-1. / (h * h)), M, Constants::DOF, u_n_m_1, 1, 0, tmp, 1);   //
+        Math::gemv<Constants::floatEVAA>(CblasColMajor, CblasNoTrans, Constants::DOF, Constants::DOF,  //
+                                         (-1. / (h * h)), M, Constants::DOF, u_n_m_1, 1, 0, tmp, 1);   //
 #endif
 #ifdef USE_GEMM
         // cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, 11, 1, 11,1,
@@ -626,8 +595,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
         // lapack_int LAPACKE_dgetrs (int matrix_layout , char trans ,
         // lapack_int n , lapack_int nrhs , const double * a , lapack_int lda ,
         // const lapack_int * ipiv , double * b , lapack_int ldb );
-        LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', Constants::DOF, 1, K, Constants::DOF, pivot.data(),
-                       u_n_p_1, 1);
+        LAPACKE_dgetrs(LAPACK_ROW_MAJOR, 'N', Constants::DOF, 1, K, Constants::DOF, pivot.data(), u_n_p_1, 1);
 
         for (int i = 0; i < Constants::DOF; ++i) {
             u_n_m_1[i] = u_n[i];
@@ -658,10 +626,8 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
         Lagrange<Constants::floatEVAA>* lagrange = new Straight<Constants::floatEVAA>();
-        Euler<Constants::floatEVAA>* euler =
-            new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
-        LoadModule<Constants::floatEVAA>* load =
-            new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
+        Euler<Constants::floatEVAA>* euler = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
+        LoadModule<Constants::floatEVAA>* load = new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
         TwoTrackModelFull<Constants::floatEVAA> solver(car, load);
         euler->ApplyProfileInitialCondition(car);
         solver.Solve(sol);
@@ -699,24 +665,19 @@ void EVAAComputeEngine::computeALE(void) {
     Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
-    lagrangeProfile =
-        new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
+    lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
     // lagrangeProfile = new Straight<Constants::floatEVAA>();
     eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
     lagrangeProfile->ApplyProfileInitialCondition(car);
     eulerProfile->ApplyProfileInitialCondition(car);
-    LoadModule<Constants::floatEVAA>* loadModule =
-        new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
-    TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj =
-        new TwoTrackModelBE<Constants::floatEVAA>(car, loadModule);
+    LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
+    TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car, loadModule);
 #ifndef USE_HDF5
-    ALE<Constants::floatEVAA>* ale =
-        new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
+    ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
 #else
     std::string fileName = "ALE Checkpoints.hdf5";
     std::string filePath = "";
-    ALE<Constants::floatEVAA>* ale =
-        new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj, filePath, fileName);
+    ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj, filePath, fileName);
 #endif  // ! USE_HDF5
 
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;

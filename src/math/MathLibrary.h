@@ -981,17 +981,15 @@ public:
     /**
      * \brief newton loop for the 11 Dof system
      */
-    static void Newton(C* obj /**< instance of 11dof class*/, T* force /**< pointer to force vector (not from 11dof class)*/, T* J /**< pointer to Jacobian from 11dofClass*/, T* res /**< residual from 11Dof class*/, T* res_norm /**< norm of the residual from the 11 Dof class*/, T* u_n_p_1 /**< current position vector*/, T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/, T* tolerance /**< pointer to tolerance from 11 dof class for stopping criteria*/,  // TODO: change to const&
-                       int* maxNewtonIteratins /**< pointer to maxiumum number of Newton iterations*/,                                                                                                                                                                                                                                                                                                                                                                                              // TODO: change to const&
-                       int* count /**< pointer to iteration count */                                                                                                                                                                                                                                                                                                                                                                                                                                // TODO: change to const&
+    static void Newton(C* obj /**< instance of 11dof class*/, T* force /**< pointer to force vector (not from 11dof class)*/, T* J /**< pointer to Jacobian from 11dofClass*/, T* res /**< residual from 11Dof class*/, T& res_norm /**< reference to norm of the residual from the 11 Dof class*/, T* u_n_p_1 /**< current position vector*/, T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/, T& tolerance /**< reference to tolerance from 11 dof class for stopping criteria*/, size_t& maxNewtonIterations /**< reference to maxiumum number of Newton iterations*/, size_t& count /**< reference to iteration count */
     ) {
-        *count = 0;
+        count = 0;
         T delta_norm = 1, delta_norm2 = 0;
         lapack_int status;
         obj->CalculateResidual(force);
 
         do {
-            *count = *count + 1;
+            count++;
             obj->ConstructJacobian();
 
             // get J=LL^T
@@ -1005,15 +1003,14 @@ public:
 
             // update all the matrices
             obj->UpdateSystem();
-            // calculate the newton function
+            // calculate the Newton function
             obj->CalculateResidual(force);
             // copy the new residual to a temp to check if newton has converged
             // without losing residual
             Math::copy<T>(Constants::DOF, res, 1, temp, 1);
             Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
             delta_norm2 = Math::nrm2<T>(Constants::DOF, temp, 1);
-        } while (*res_norm > *tolerance && delta_norm2 < delta_norm && *count < *maxNewtonIteratins);
-        // TODO: res_norm and tolerance not updated in Newton method!
+        } while (res_norm > tolerance && delta_norm2 < delta_norm && count < maxNewtonIterations);
     }
 
     /**
@@ -1023,7 +1020,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void RK4(C* obj, T* x_previous, T* x_vector_new, const T& dt, const size_t& num_time_iter, const T& tol, const size_t& max_iter) {
+    static void RK4(C* obj, const T* x_previous, T* x_vector_new, const T& dt, const size_t& num_time_iter, const T& tol, const size_t& max_iter) {
         size_t x_len = obj->get_solution_dimension();
         T* f_old = Math::malloc<T>(x_len);
         T* k1 = Math::malloc<T>(x_len);
@@ -1095,7 +1092,7 @@ public:
      * \param x_previous previous solution
      * \return new solution
      */
-    static void LinearBackwardEuler(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, const size_t dim) {
+    static void LinearBackwardEuler(T* A, const T* B, const T* C, const T* x_prev, const T* x_prev_prev, const T* b, T* x, const size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix
          * A would be overwritten and results stored in x computes the backward
@@ -1122,7 +1119,7 @@ public:
      * vector \param num_time_iter number of time steps to perform \param dt
      * timestep \param x_previous previous solution \return new solution
      */
-    static void LinearBackwardEulerDiag(T* A, T* B, T* C, T* x_prev, T* x_prev_prev, T* b, T* x, const size_t dim) {
+    static void LinearBackwardEulerDiag(T* A, const T* B, const T* C, const T* x_prev, const T* x_prev_prev, const T* b, T* x, const size_t dim) {
         /*
          * This works for only symmetric positive definite A the provided matrix
          * A would be overwritten and results stored in x computes the backward
