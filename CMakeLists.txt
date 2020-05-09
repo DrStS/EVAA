@@ -66,8 +66,9 @@ option(USE_MATLAB              "Build Matlab API"  OFF)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
 option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  OFF)
-option(INTERPOLATION         "Use Interpolation"  ON)
-option(WRITECSV         "Write the solution into a CSV"  OFF)
+option(INTERPOLATION           "Use Interpolation"  ON)
+option(WRITECSV                "Write the solution into a CSV"  OFF)
+option(USE_CHECKPOINTS         	   "Writing to HDF5 at checkpoints"  ON)
 set(DataType_Precision "DOUBLE" CACHE STRING "DataType_Precision chosen by the user at CMake configure time")
 set_property(CACHE DataType_Precision PROPERTY STRINGS DOUBLE SINGLE INVALID)
 ######################################################################################
@@ -268,6 +269,12 @@ ENDIF()
 IF (${WRITECSV}) 
    MESSAGE("Writing to CSV")
    add_definitions(-DWRITECSV)
+ENDIF()
+#------------------------------------------------------------------------------------#
+# Check USE_CHECKPOINTS
+IF (${USE_CHECKPOINTS}) 
+   MESSAGE("Writing to HDF5 at checkpoints")
+   add_definitions(-DUSE_CHECKPOINTS)
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Check DataType_Precision

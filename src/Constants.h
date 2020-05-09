@@ -11,6 +11,7 @@ constexpr size_t ALIGNMENT = 64;
 // 10 Constants::DIMensions because of torque of the body
 /** dimension of solution space */
 constexpr size_t DIM = 3;
+constexpr size_t lagrangianForceDimension = 2;
 
 /** [CG, Wi, Ti] (9 positions / vectors for CG, wheels and tyres) */
 constexpr size_t VEC_DIM = 9;
@@ -46,10 +47,10 @@ constexpr size_t REAR_LEFT = 2;
 constexpr int REAR_RIGHT = 3;
 
 /** Tyre index in Euler Frame 11DOF */
-constexpr int TYRE_INDEX_EULER[4] {4, 6, 8, 10};
+constexpr int TYRE_INDEX_EULER[4]{4, 6, 8, 10};
 
 /** Tyre index in the Lagrangian Frame Start position*/
-constexpr int TYRE_INDEX_LAGRANGE[4] { 4, 8, 12, 16 };
+constexpr int TYRE_INDEX_LAGRANGE[4]{4, 8, 12, 16};
 
 /** It's PI come on */
 const floatEVAA PI = 3.141592653589793238463;

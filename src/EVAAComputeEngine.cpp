@@ -46,6 +46,10 @@ using Eigen::VectorXd;
 #include <blaze/Math.h>
 #endif
 
+#ifdef USE_HDF5
+#include <IO/OutputHDF5.h>
+#endif
+
 namespace EVAA {
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName) {
     IO::checkFileExists(xmlCarFileName);
@@ -618,14 +622,14 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
-    if (true) { // TODO remove this
+    if (true) {  // TODO remove this
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
-		Lagrange<Constants::floatEVAA>* lagrange = new Straight<Constants::floatEVAA>();
-		Euler<Constants::floatEVAA>* euler = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
-		LoadModule<Constants::floatEVAA>* load = new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
+        Lagrange<Constants::floatEVAA>* lagrange = new Straight<Constants::floatEVAA>();
+        Euler<Constants::floatEVAA>* euler = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
+        LoadModule<Constants::floatEVAA>* load = new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
         TwoTrackModelFull<Constants::floatEVAA> solver(car, load);
-		euler->ApplyProfileInitialCondition(car);
+        euler->ApplyProfileInitialCondition(car);
         solver.Solve(sol);
 
         solver.PrintFinalResults(sol);
@@ -647,28 +651,40 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
 void EVAAComputeEngine::computeMBD(void) {
     size_t num_iter = MetaDatabase<Constants::floatEVAA>::getDatabase().getNumberOfTimeIterations();
     size_t solution_dim = MetaDatabase<Constants::floatEVAA>::getDatabase().getSolutionVectorSize();
-    Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(solution_dim);
+    Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(solution_dim);
     MBDMethod<Constants::floatEVAA> solver;
 
     solver.Solve(sol);
     solver.PrintFinalResult(sol);
+
+#ifdef USE_HDF5
+    solver.WriteFinalResult(sol);
+    solver.WriteFinalResultFormatted(sol);
+#endif  // USE_HDF5
+
     Math::free<Constants::floatEVAA>(sol);
 }
 
 void EVAAComputeEngine::computeALE(void) {
     Lagrange<Constants::floatEVAA>* lagrangeProfile;
-	Euler<Constants::floatEVAA>* eulerProfile;
-	Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
+    Euler<Constants::floatEVAA>* eulerProfile;
+    Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
-	lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
-    //lagrangeProfile = new Straight<Constants::floatEVAA>();
-	eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
-	lagrangeProfile->ApplyProfileInitialCondition(car);
-	eulerProfile->ApplyProfileInitialCondition(car);
-	LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
+    lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter(), db.getCircularRoadRadius());
+    // lagrangeProfile = new Straight<Constants::floatEVAA>();
+    eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
+    lagrangeProfile->ApplyProfileInitialCondition(car);
+    eulerProfile->ApplyProfileInitialCondition(car);
+    LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
     TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car, loadModule);
+#ifndef USE_HDF5
     ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
+#else
+    std::string fileName = "ALE_Checkpoints.hdf5";
+    std::string filePath = "";
+    ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj, filePath, fileName);
+#endif  // ! USE_HDF5
 
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
     Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(solutionDim);
@@ -677,11 +693,16 @@ void EVAAComputeEngine::computeALE(void) {
 
     ale->PrintFinalResults();
 
-	delete TwoTrackModel_obj;
+    // Write solution in HDF5
+#ifdef USE_HDF5
+    ale->WriteBulkResults();
+#endif  // USE_HDF5
+
+    delete TwoTrackModel_obj;
     delete car;
     delete loadModule;
     delete lagrangeProfile;
-	delete eulerProfile;
+    delete eulerProfile;
     delete ale;
 
     Math::free<Constants::floatEVAA>(sol);
