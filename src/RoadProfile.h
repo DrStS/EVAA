@@ -413,6 +413,8 @@ public:
             tyreVelocity = 0;
         }
 
+        // angle thingy from Shubham
+
         carObj->UpdateLengthsTwoTrackModel();
     }
 };
@@ -449,18 +451,19 @@ public:
         // TODO optimize it
         Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
         AddGravity(carObj, profileInducedForce);
-        profileInducedForce[Constants::TYRE_INDEX_EULER[0]] =
+        profileInducedForce[Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT]] =
             _trajectory->getVerticalRoadForcesFrontLeft(
                 _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_LEFT]);
-        profileInducedForce[Constants::TYRE_INDEX_EULER[1]] =
+        profileInducedForce[Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT]] =
             _trajectory->getVerticalRoadForcesFrontRight(
                 _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_RIGHT]);
-        profileInducedForce[Constants::TYRE_INDEX_EULER[2]] =
+        profileInducedForce[Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT]] =
             _trajectory->getVerticalRoadForcesRearLeft(
                 _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_LEFT]);
-        profileInducedForce[Constants::TYRE_INDEX_EULER[3]] =
+        profileInducedForce[Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT]] =
             _trajectory->getVerticalRoadForcesRearRight(
                 _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_RIGHT]);
+
         for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
             profileInducedForce[Constants::TYRE_INDEX_EULER[i]] +=  //
                 carObj->getkVec()[2 * i + 1] *
@@ -510,24 +513,87 @@ public:
                                                   vt_rr, vw_fl, vw_fr, vw_rl, vw_rr);
 
         // calculate new unexcited positions
+        //tyres
         carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT]] = *pt_fl;
         carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT]] = *pt_fr;
         carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT]] = *pt_rl;
         carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT]] = *pt_rr;
 
-
+        //wheels
         carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT] - 1] =
-            *pt_fl + carObj->_unexcitedSpringsLength[Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT]];
+            *pt_fl + carObj->_unexcitedSpringsLength[2*Constants::FRONT_LEFT+1];
         carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT] - 1] =
-            *pt_fr + carObj->_unexcitedSpringsLength[Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT]];
+            *pt_fr + carObj->_unexcitedSpringsLength[2*Constants::FRONT_RIGHT+1];
         carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT] - 1] =
-            *pt_rl + carObj->_unexcitedSpringsLength[Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT]];
+            *pt_rl + carObj->_unexcitedSpringsLength[2*Constants::REAR_LEFT+1];
         carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT] - 1] =
-            *pt_rr + carObj->_unexcitedSpringsLength[Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT]];
-        
-        
-        carObj->UpdateLengthsTwoTrackModel();
+            *pt_rr + carObj->_unexcitedSpringsLength[2*Constants::REAR_RIGHT+1];
 
+        // CoG
+        carObj->_unexcitedPositionTwoTrackModel[0] =
+            0.5 * carObj->_lenLong[Constants::FRONT_LEFT] /
+                (carObj->_lenLong[Constants::FRONT_LEFT] + carObj->_lenLong[Constants::REAR_LEFT]) *
+                (carObj->_unexcitedPositionTwoTrackModel
+                     [Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT] - 1] +
+                 carObj->_unexcitedSpringsLength[2 * Constants::FRONT_LEFT] +
+                 carObj->_unexcitedPositionTwoTrackModel
+                     [Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT] - 1] +
+                 carObj->_unexcitedSpringsLength[2 * Constants::FRONT_RIGHT]) +
+            0.5 * carObj->_lenLong[Constants::REAR_LEFT] /
+                (carObj->_lenLong[Constants::FRONT_LEFT] + carObj->_lenLong[Constants::REAR_LEFT]) *
+                (carObj->_unexcitedPositionTwoTrackModel
+                     [Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT] - 1] +
+                 carObj->_unexcitedSpringsLength[2 * Constants::REAR_LEFT] +
+                 carObj->_unexcitedPositionTwoTrackModel
+                     [Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT] - 1] +
+                 carObj->_unexcitedSpringsLength[2 * Constants::REAR_RIGHT]);   
+
+
+        // calculate the new displacements
+        //tyres
+        *pt_fl = 0;
+        *pt_fr = 0;
+        *pt_rl = 0;
+        *pt_rr = 0;
+
+        //wheels
+        *pw_fl = carObj->_unexcitedPositionTwoTrackModel
+                [Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT] - 1] - *pw_fl;
+        *pw_fr = carObj->_unexcitedPositionTwoTrackModel
+                [Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT] - 1] - *pw_fr;
+        *pw_rl = carObj->_unexcitedPositionTwoTrackModel
+                [Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT] - 1] - *pw_rl;
+        *pw_rr = carObj->_unexcitedPositionTwoTrackModel
+                [Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT] - 1] - *pw_rr;
+
+        //CoG
+        *pcc = carObj->_unexcitedPositionTwoTrackModel[0] - *pcc;
+
+        
+        // velocities
+        // wheel
+        *vw_fl -= *vt_fl;
+        *vw_fr -= *vt_fr;
+        *vw_rl -= *vt_rl;
+        *vw_rr -= *vt_rr;
+
+        // center
+        *vcc -= 0.5 * carObj->_lenLong[Constants::FRONT_LEFT] /
+                (carObj->_lenLong[Constants::FRONT_LEFT] + carObj->_lenLong[Constants::REAR_LEFT]) *
+                (*vt_fl + *vt_fr) +
+            0.5 * carObj->_lenLong[Constants::REAR_LEFT] /
+                (carObj->_lenLong[Constants::FRONT_LEFT] + carObj->_lenLong[Constants::REAR_LEFT]) *
+                (*vt_rl + *vt_rr); 
+
+        // tyres
+        *vt_fl = 0;
+        *vt_fr = 0;
+        *vt_rl = 0;
+        *vt_rr = 0;
+
+        // angle thingy from Shubham
+
+        carObj->UpdateLengthsTwoTrackModel();
 
     }
 };
