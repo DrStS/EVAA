@@ -82,8 +82,8 @@ int main(int argc, char **argv) {
     if (allArgs.size() > 2) {
         EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
     }
-    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
-    myComputeEngine->printInfo();
+    /*EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
+    myComputeEngine->printInfo();*/
 
     auto &timer1 = EVAA::anaysisTimer01;
 #if MIGHT_BE_USEFUL
@@ -100,12 +100,12 @@ int main(int argc, char **argv) {
     timer1.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
 #endif
-    const size_t numIterations = 1;
+    const size_t numIterations = 1000;
 
     double timeMBD = 0.;
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-        myComputeEngine->computeMBD();
+        //myComputeEngine->computeMBD();
         timer1.stop();
         timeMBD += timer1.getDurationMilliSec();
     }
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
     double time11DOF = 0.;
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-        myComputeEngine->computeMKLTwoTrackModelBE();
+        //myComputeEngine->computeMKLTwoTrackModelBE();
         timer1.stop();
         time11DOF += timer1.getDurationMilliSec();
     }
@@ -122,14 +122,17 @@ int main(int argc, char **argv) {
 
     double timeALE = 0.;
     for (auto i = 0; i < numIterations; ++i) {
+        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
+        std::cout << "\n\n\tRun #" << i << "\n";
         timer1.start();
         myComputeEngine->computeALE();
         timer1.stop();
         timeALE += timer1.getDurationMilliSec();
+        delete myComputeEngine;
     }
     std::cout << "It took " << std::defaultfloat << timeALE / numIterations << " ms to run the solver(computeALE).\n\n\n" << std::endl;
 
-    delete myComputeEngine;
+    
 
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
 #endif  // EVAA_COMMANDLINE_ON

@@ -664,7 +664,7 @@ void EVAAComputeEngine::computeMBD(void) {
 
     Math::free<Constants::floatEVAA>(sol);
 }
-
+size_t count_interp_debug = 0;
 void EVAAComputeEngine::computeALE(void) {
     Lagrange<Constants::floatEVAA>* lagrangeProfile;
     Euler<Constants::floatEVAA>* eulerProfile;
@@ -689,9 +689,34 @@ void EVAAComputeEngine::computeALE(void) {
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
     Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(solutionDim);
 
+    count_interp_debug = 0;
     ale->Solve(sol);
 
-    ale->PrintFinalResults();
+    //ale->PrintFinalResults();
+
+    const Constants::floatEVAA referenceSol10000[27]{
+        4.135096280261828e+01, 2.826459216805883e+01, 1.126378639902540e-02,
+        4.154715807839495e+01, 3.044840703466934e+01, -1.990765867665921e-01,
+        4.154715807839495e+01, 3.044840703466934e+01, -3.999999999929912e-01,
+        4.345745389243970e+01, 2.765612980222034e+01, -1.989710780597381e-01,
+        4.345745389243970e+01, 2.765612980222034e+01, -3.999999999925863e-01,
+        3.908512909797009e+01, 2.874998749750857e+01, -1.996571497369217e-01,
+        3.908512909797009e+01, 2.874998749750857e+01, -3.999999999970579e-01,
+        4.098232522447469e+01, 2.597685806353227e+01, -1.995843733724195e-01,
+        4.098232522447469e+01, 2.597685806353227e+01, -3.999999999968397e-01};
+
+    auto tmp = 0, count = 0;
+    for (auto i = 0; i < 27; ++i) {
+        if (std::abs(referenceSol10000[i] - sol[i]) > 7.11e-15) {
+            count++;
+            tmp++;
+            std::cout << i << ": " << std::abs(sol[i] - referenceSol10000[i]) << "\n";
+        }
+    }
+   /* if (tmp) {
+        std::cout << "count: " << count << "\n";
+        throw "BREEAK!!!";
+    }*/
 
     // Write solution in HDF5
 #ifdef USE_HDF5

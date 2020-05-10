@@ -36,7 +36,7 @@ void writeVector(std::ostream& out, const T* vect, const size_t count) {
     out << "[ ";
     for (auto i = 0; i < count; ++i) {
         out.precision(15);
-        out << std::scientific << vect[i] << std::endl;
+        out << std::scientific << vect[i] << "," << std::endl;
     }
     out << "]" << std::endl;
 }
