@@ -22,6 +22,10 @@ if isfile('LegFl.txt') && isfile('LegFr.txt') && isfile('LegRl.txt') && isfile('
     traj_rl = csvread('LegRl.txt');
     traj_rr = csvread('LegRr.txt');
     plot_traj= true;
+    traj_fl(:,3) = traj_fl(:,3) - traj_fl(2,3) + aleSolution(2,57);
+    traj_fr(:,3) = traj_fr(:,3) - traj_fr(2,3) + aleSolution(2,60);
+    traj_rl(:,3) = traj_rl(:,3) - traj_rl(2,3) + aleSolution(2,54);
+    traj_rr(:,3) = traj_rr(:,3) - traj_rr(2,3) + aleSolution(2,51);
 end
 
 % Simulation parameters
@@ -55,4 +59,4 @@ end
 
 % visualize
 vis_fig = figure(1);
-visualizer3D(vis_fig, adaptedSolution, transpose(traj_rr), transpose(traj_rl), false, delta_t, vel_norms);
+visualizer3D(vis_fig, adaptedSolution, transpose(traj_rr), transpose(traj_rl), true, delta_t, vel_norms);

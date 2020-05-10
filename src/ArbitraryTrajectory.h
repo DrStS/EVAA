@@ -692,34 +692,16 @@ public:
 	 * \param[out] vw_rl wheel velocity rear left [XYZ]
 	 * \param[out] vw_rr wheel velocity rear right [XYZ]
 	 */
-	void updateInitialConditionsEuler(T* angle, T* wc, T* pcc, T* vcc, T* pt_fl, T* pt_fr, T* pt_rl, T* pt_rr, T* pw_fl, T* pw_fr, T* pw_rl, T* pw_rr, T* vt_fl, T* vt_fr, T* vt_rl, T* vt_rr, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr) {
-		// angles
-		angle[0] = 0;
-		angle[1] = 0;
-
-		// angular velocity
-		wc[0] = 0;
-		wc[1] = 0;
-
-		// initial position
-		*pcc = 0;
-
+	void updateInitialConditionsEuler(T* diffT1, T* diffT2, T* diffT3, T* diffT4, T* vcc, T* vt_fl, T* vt_fr, T* vt_rl, T* vt_rr, T* vw_fl, T* vw_fr, T* vw_rl, T* vw_rr) {
+		
 		// initial velocity
 		*vcc = 0;
 
-		// wheel positions
-
-		*pw_fl = _initialLowerSpringLength_fl + _legPointsZ_fl[0];
-		*pw_fr = _initialLowerSpringLength_fr + _legPointsZ_fr[0];
-		*pw_rl = _initialLowerSpringLength_rl + _legPointsZ_rl[0];
-		*pw_rr = _initialLowerSpringLength_rr + _legPointsZ_rr[0];
-
-		// tyre positions
-
-		*pt_fl = _legPointsZ_fl[0];
-		*pt_fr = _legPointsZ_fr[0];
-		*pt_rl = _legPointsZ_rl[0];
-		*pt_rr = _legPointsZ_rr[0];
+		// Initial amplitude of sine
+		*diffT1 = _legPointsZ_fl[0] + _initialLowerSpringLength_fl + _initialUpperSpringLength_fl;
+		*diffT2 = _legPointsZ_fr[0] + _initialLowerSpringLength_fr + _initialUpperSpringLength_fr;
+		*diffT3 = _legPointsZ_rl[0] + _initialLowerSpringLength_rl + _initialUpperSpringLength_rl;
+		*diffT4 = _legPointsZ_rr[0] + _initialLowerSpringLength_rr + _initialUpperSpringLength_rr;
 
 		// initial wheel velocity
 		*vw_fl = (-1.5 * _legPointsZ_fl[0] + 2 * _legPointsZ_fl[1] - 0.5 * _legPointsZ_fl[2]) / _delta_t;

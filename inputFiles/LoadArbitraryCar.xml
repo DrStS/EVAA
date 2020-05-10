@@ -17,11 +17,11 @@
   </lagrangianRoadProfile>
 
   <eulerianRoadProfile>
-    <fixedTyre></fixedTyre>
-    <!--<sinusoidalProfile>
-      <rightTyre amplitude="0.0" period="10" shift="0"/>
-      <leftTyre amplitude="0.0" period="7" shift="5"/>
-    </sinusoidalProfile>-->
+    <!--<fixedTyre></fixedTyre>-->
+    <sinusoidalProfile>
+      <rightTyre amplitude="0.05" period="20" shift="0"/>
+      <leftTyre amplitude="0.05" period="14" shift="5"/>
+    </sinusoidalProfile>
   </eulerianRoadProfile>
 
   <externalForces>

@@ -27,7 +27,7 @@
 			<c>1.2</c>
 		</TableParameters>
 		<Range>
-			<l_min>0.02</l_min>
+			<l_min>0.01</l_min>
 			<l_max>2</l_max>
 		</Range>
     <InterpolationMethod>
