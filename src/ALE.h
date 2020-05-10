@@ -120,7 +120,7 @@ public:
 #endif  // WRITECSV
 
         T* solution_vect;
-        size_t iter = 1;
+        int iter = 1;
         // time iteration
         double eps = _h / 100;
         while (std::abs(t - (_tend + _h)) > eps) {
@@ -194,9 +194,6 @@ public:
      */
     void PrintFinalResults() {
         const T* sln = _carObj->getPositionVector();
-
-        IO::writeVector(sln, 27);
-
         std::cout << "ALE: orientation angles =\n\t[" << _carObj->getAngleCG()[0] << "\n\t " << _carObj->getAngleCG()[1] << "\n\t " << _carObj->getAngleCG()[2] << "]" << std::endl;
         std::cout << "ALE: car body position pc =\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
         std::cout << "ALE: front-left wheel position pw1 =\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;

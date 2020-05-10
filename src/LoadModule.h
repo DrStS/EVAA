@@ -14,7 +14,7 @@ namespace EVAA {
 template <typename T>
 class LoadModule {
 private:
-    Profile<T>* _activeProfile = nullptr;
+    Profile<T>* _activeProfile;
 	Lagrange<T>* _lagrangianProfile;
 	Euler<T>* _eulerianProfile;
     Car<T>* _carObj;

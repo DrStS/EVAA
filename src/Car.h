@@ -262,11 +262,10 @@ public:
     inline const T* getMomentOfInertia() const { return _momentOfInertia; }
     inline const T* getPositionVector() const { return _PositionVector; }
     inline const T* getAngleCG() const { return _angleCG; }
-    void setInitialAngularVelocityGlobalZ(const T& AngularVelocityLagrangian) { _initialAngularVelocityGlobal[2] = AngularVelocityLagrangian; }
-	void setInitialAngleGlobalZ(const T& AngleLagrangian) { _initialAngleGlobal[2] = AngleLagrangian; }
+    void setInitialAngularVelocityGlobalZ(T AngularVelocityLagrangian) { _initialAngularVelocityGlobal[2] = AngularVelocityLagrangian; }
+	void setInitialAngleGlobalZ(T AngleLagrangian) { _initialAngleGlobal[2] = AngleLagrangian; }
     inline const T* getCurrentVelocityTwoTrackModel() const { return _currentVelocityTwoTrackModel; }
     inline T* getCurrentDisplacementTwoTrackModel() const { return _currentDisplacementTwoTrackModel; } // TODO consider friend
-    inline T* getCurrentPositionTwoTrackModel() const { return _currentPositionTwoTrackModel; }          // TODO consider friend
     inline const T* getCurrentCIRTwoTrackModel() const { return _currentCIRTwoTrackModel; }
     inline const T* getCurrentSpringsLengths() const { return _currentSpringsLengths; }
     inline const T* getCurrentPositionLagrangian() const { return _currentPositionLagrangian; }
@@ -541,8 +540,7 @@ public:
 
         // copy the initial velocity to the velocity vector
         Math::copy<T>(Constants::DIM * Constants::VEC_DIM, _initialVelocityGlobal, 1, _VelocityVector, 1);
-		Math::write_vector(_initialVelocityGlobal, 27);
-		Math::write_vector(_VelocityVector, 27);
+
         // Initial Angular velocity
         Math::copy<T>(Constants::DIM, db.getBodyInitialAngularVelocity(), 1, _initialAngularVelocityGlobal, 1);
         Math::copy<T>(Constants::DIM, _initialAngularVelocityGlobal, 1, _wCG, 1);
