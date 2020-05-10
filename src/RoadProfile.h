@@ -322,8 +322,8 @@ public:
         T* vcc = carObj->_currentVelocityLagrangian;
         _trajectory->updateInitialConditionsLagrange(angle, wc, pcc, vcc);
 
-        carObj->setInitialAngleGlobalZ(angle);
-        carObj->setInitialAngularVelocityGlobalZ(wc);
+        carObj->setInitialAngleGlobalZ(*angle);
+        carObj->setInitialAngularVelocityGlobalZ(*wc);
 
     }
     virtual ~Arbitrary() {}
