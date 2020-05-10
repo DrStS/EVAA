@@ -618,6 +618,7 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 #endif  // TODO_TEMPLATE_JIT_DONE
 }
 
+size_t count_interp_debug = 0;
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
     if (true) {  // TODO remove this
@@ -628,9 +629,27 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
         LoadModule<Constants::floatEVAA>* load = new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
         TwoTrackModelFull<Constants::floatEVAA> solver(car, load);
         euler->ApplyProfileInitialCondition(car);
+
+        count_interp_debug = 0;
         solver.Solve(sol);
 
-        solver.PrintFinalResults(sol);
+        //solver.PrintFinalResults(sol);
+
+         static const Constants::floatEVAA referenceSol10000[11]{
+            -4.905058321191742e+02, -1.234530958929979e-11, -6.280776657038311e-04,
+            -4.905050915672644e+02, -4.905050944956259e+02, -4.905050915672049e+02,
+            -4.905050944955660e+02, -4.904771375679942e+02, -4.904766703982466e+02,
+            -4.904771375679734e+02, -4.904766703982280e+02};
+
+        static size_t tmp = 0;
+        size_t count = 0;
+        for (auto i = 0; i < 11; ++i) {
+            if (std::abs(referenceSol10000[i] - sol[i]) > 1e-13) {
+                count++;
+                tmp++;
+                std::cout << i << ": " << std::abs(sol[i] - referenceSol10000[i]) << "\n";
+            }
+        }
 
         Math::free<Constants::floatEVAA>(sol);
         delete car;
@@ -656,7 +675,7 @@ void EVAAComputeEngine::computeMBD(void) {
     Math::free<Constants::floatEVAA>(sol);
 }
 
-size_t count_interp_debug = 0;
+
 void EVAAComputeEngine::computeALE(void) {    
     
     Lagrange<Constants::floatEVAA>* lagrangeProfile;
@@ -703,24 +722,24 @@ void EVAAComputeEngine::computeALE(void) {
 
     //ale->PrintFinalResults();
 
-    static const Constants::floatEVAA referenceSol[27]{
-        4.135025711566947e+01, 2.826598299572068e+01, -2.964664025202878e-01,
-        3.916643840561618e+01, 2.846218388944320e+01, -7.295705474835158e-01,
-        3.916643840561618e+01, 2.846218388944320e+01, -9.068999999623417e-01,
-        4.195872332495178e+01, 3.037246846759697e+01, -7.293453194291111e-01,
-        4.195872332495178e+01, 3.037246846759697e+01, -9.068999999700099e-01,
-        4.086485796913190e+01, 2.600015487049299e+01, -7.240230632824189e-01,
-        4.086485796913190e+01, 2.600015487049299e+01, -9.068999999316856e-01,
-        4.363799503728265e+01, 2.789733983815576e+01, -7.238677280242418e-01,
-        4.363799503728265e+01, 2.789733983815576e+01, -9.068999999363774e-01};
+    static const Constants::floatEVAA referenceSol10000[27]{
+        -2.080734004508660e+01, 4.546487545598364e+01, -2.958850317637176e-01,
+        -2.137145776107084e+01, 4.334636533364495e+01, -7.339361639602977e-01,
+        -2.137145776107084e+01, 4.334636533364495e+01, -9.068999998752805e-01,
+        -2.278016214994628e+01, 4.642233590435636e+01, -7.278263715806652e-01,
+        -2.278016214994628e+01, 4.642233590435636e+01, -9.069000000153846e-01,
+        -1.865657919140012e+01, 4.460160712220029e+01, -7.248630945059418e-01,
+        -1.865657919140012e+01, 4.460160712220029e+01, -9.069000000858778e-01,
+        -2.005562351234522e+01, 4.765648449202482e+01, -7.206496107770988e-01,
+        -2.005562351234522e+01, 4.765648449202482e+01, -9.069000001394530e-01};
 
     static size_t tmp = 0;
     size_t count = 0;
     for (auto i = 0; i < 27; ++i) {
-        if (std::abs(referenceSol[i] - sol[i]) > 1e-14) {
+        if (std::abs(referenceSol10000[i] - sol[i]) > 1e-14) {
             count++;
             tmp++;
-            std::cout << i << ": " << std::abs(sol[i] - referenceSol[i]) << "\n";
+            std::cout << i << ": " << std::abs(sol[i] - referenceSol10000[i]) << "\n";
         }        
     }
  /*   if (tmp) {
