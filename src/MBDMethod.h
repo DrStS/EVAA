@@ -1885,8 +1885,8 @@ public:
      * \param sln solution vector
      */
     void PrintFinalResult(T* sln) {
-        std::cout << std::scientific;
-        std::cout << std::setprecision(15);
+        /*std::cout << std::scientific;
+        std::cout << std::setprecision(15);*/
 
         std::cout << "MBD: angular velocity w=\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
         std::cout << "MBD: car body velocity vc=\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;

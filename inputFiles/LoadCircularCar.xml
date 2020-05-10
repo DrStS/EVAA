@@ -14,16 +14,17 @@
       </centerOfCircle>
       <initialVelocity>
         <x>0</x>
-        <y>3</y>
+        <y>10</y>
         <z>0</z>
       </initialVelocity>
       <directionRotation>clockwise</directionRotation>
     </circularRoadProfile>
   </lagrangianRoadProfile>
-  
+
   <eulerianRoadProfile>
     <fixedTyre></fixedTyre>
   </eulerianRoadProfile>
+
 
   <externalForces>
     <forceBody>
