@@ -210,7 +210,7 @@ public:
             std::cout << "Run the simulation with a sinusoidal tyre profile" << std::endl;
 
             const auto sinusoidalProfile = load_data->eulerianRoadProfile().sinusoidalProfile().get();
-            _trajectory = new ArbitraryTrajectory<T>(_num_time_iter+1, _timestep);
+            if (_trajectory == nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter + 1, _timestep);
             _trajectory->initializeVerticalProfile(sinusoidalProfile.rightTyre().amplitude(), sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(), sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(), sinusoidalProfile.leftTyre().shift(), _initial_upper_spring_length, _initial_lower_spring_length, _l_lat, _l_long);
             _trajectory->calculateTyreShifts();
         }
@@ -287,7 +287,7 @@ public:
             const auto horizontalProfile = load_data->lagrangianRoadProfile().arbitraryRoadProfile().get();
             _lagrangianBoundaryCondition = LagrangianBoundaryConditionRoad::ARBITRARY;
             std::cout << "Run the simulation on an arbitrary road" << std::endl;
-            if (_trajectory == nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter+1, _timestep);
+            if (_trajectory != nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter + 1, _timestep);
 
             std::vector<T> wayPointsX;
             std::vector<T> wayPointsY;
@@ -592,7 +592,7 @@ private:
             a[6] = _k_body[3];
             a[7] = _k_tyre[3];
 
-            _lookupStiffness = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
+            if (_lookupStiffness == nullptr) _lookupStiffness = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
             _interpolation = 1;  // to switch from constant to interpolation type
 
             // damping is /100 from the stiffness for the start
@@ -601,7 +601,7 @@ private:
                 a[j] /= 100;
             }
 
-            _lookupDamping = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
+            if (_lookupDamping == nullptr) _lookupDamping = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
 
             delete[] a;
             delete[] _k_body;
