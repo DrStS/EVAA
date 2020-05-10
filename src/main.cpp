@@ -132,10 +132,8 @@ int main(int argc, char **argv) {
 
     double timeALE = 0.;
     for (auto i = 0; i < numIterations; ++i) {
-        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\SimulationParameters.xml", carSettingsFileNameXML,
-                                                                               //        "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml");
-                                                                               "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
-                                                                               //        "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml");
+        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\SimulationParameters.xml", carSettingsFileNameXML, "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
+        std::cout << "\n\n\tRun #" << i << "\n";
         timer1.start();
         myComputeEngine->computeALE();
         timer1.stop();

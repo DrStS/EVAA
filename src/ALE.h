@@ -53,9 +53,6 @@ public:
 
         _solutionVectorSize = (floor(_tend / _h) + 1);
         _solutionVector = Math::malloc<T>(_solutionVectorSize * (Constants::VEC_DIM * Constants::DIM));
-
-        std::cout << "Write _currentPositionTwoTrackModel in ALE Constructor: \n";
-        IO::writeVector(_carObj->getCurrentPositionTwoTrackModel(), 11);
     }
 
     ~ALE() { Math::free<T>(_solutionVector); }

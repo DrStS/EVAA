@@ -252,20 +252,6 @@ public:
         ConstructAMatrix();
         ConstructBMatrix();
         ConstructCMatrix();
-
-        std::cout << std::defaultfloat;
-        std::cout << " M in BE constructor\n";
-        IO::writeMatrix(_M_h2, 11, 11);
-        std::cout << " K in BE constructor\n";
-        IO::writeMatrix(_K, 11, 11);
-        std::cout << " A in BE constructor\n";
-        IO::writeMatrix(_A, 11, 11);
-        std::cout << " B in BE constructor\n";
-        IO::writeMatrix(_B, 11, 11);
-        std::cout << " C in BE constructor\n";
-        IO::writeMatrix(_C, 11, 11);
-        std::cout << " D in BE constructor\n";
-        IO::writeMatrix(_D, 11, 11);
     }
 
     /**

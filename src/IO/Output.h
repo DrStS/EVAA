@@ -37,7 +37,7 @@ void writeVector(std::ostream& out, const T* vect, const size_t count) {
     out << "[ ";
     for (auto i = 0; i < count; ++i) {
         out.precision(15);
-        out << std::scientific << vect[i] << std::endl;
+        out << std::scientific << vect[i] << "," << std::endl;
     }
     out << "]" << std::endl;
 }
@@ -64,7 +64,7 @@ void writeMatrix(const T* matrix, const size_t rows, const size_t cols) {
     std::cout << std::defaultfloat;
     for (auto i = 0; i < rows; ++i) {
         for (auto j = 0; j < cols; ++j) {
-            std::cout << matrix[i * rows + cols] << "   ";
+            std::cout << matrix[i * rows + j] << "   ";
         }
         std::cout << " \n";
     }
