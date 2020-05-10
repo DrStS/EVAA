@@ -271,7 +271,9 @@ public:
     inline const T* getCurrentPositionLagrangian() const { return _currentPositionLagrangian; }
     inline const T getCurrentAngularVelocityLagrangian() const { return _currentAngularVelocityLagrangian; }
     inline const T* getCurrentVelocityLagrangian() const { return _currentVelocityLagrangian; }
-	inline const T* getCurrentCornerPositions() const { return _currentCornerPositions; }
+    T getMomentOfInertiaLagrangian() const { return _lagrangianMomentOfInertia; }
+    void setMomentOfInertiaLagrangian(T moment) { _lagrangianMomentOfInertia = moment; }
+    inline const T* getCurrentCornerPositions() const { return _currentCornerPositions; }
 	inline const T* getUnexcitedPositionTwoTrackModel() const { return _unexcitedPositionTwoTrackModel; }
     inline T* getkVec() const { return _kVec; } // TODO consider friend
     inline T* getdVec() const { return _dVec; } // TODO consider friend
@@ -319,6 +321,9 @@ public:
     T* _currentVelocityLagrangian;        // [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY,
                                          // T_fr:XY, W_rl:XY, T_rl:XY, W_rr:XY,
                                          // T_rr:XY] (TODO: still public) consider friend
+
+    T _lagrangianMomentOfInertia;         // corresponds to the whole car object (TODO:as before)
+    
     
 	T* _currentCornerPositions;  // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]
 								 // sorry for everyone

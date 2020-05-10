@@ -247,47 +247,62 @@ public:
      */
     virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj,
                                            T* profileInducedForce, T* reactionOnTyre) {
+
+        // CoG
         _trajectory->getLagrangianForcesCenterOfGravity(_iterationCount, profileInducedForce,
                                                         carObj->getMassComponents()[0]);
 
+        // wheel fl
         _trajectory->getLagrangianForcesFrontLeft(
             _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::FRONT_LEFT],
             profileInducedForce + (1 + 2 * Constants::FRONT_LEFT) * (Constants::DIM - 1));
+
+        // tyre fl
         _trajectory->getLagrangianForcesFrontLeft(
             _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_LEFT],
             profileInducedForce + (2 + 2 * Constants::FRONT_LEFT) * (Constants::DIM - 1));
 
+
+        // wheel fr
         _trajectory->getLagrangianForcesFrontRight(
             _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::FRONT_RIGHT],
             profileInducedForce + (1 + 2 * Constants::FRONT_RIGHT) * (Constants::DIM - 1));
+
+        // tyre fr
         _trajectory->getLagrangianForcesFrontRight(
             _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_RIGHT],
             profileInducedForce + (2 + 2 * Constants::FRONT_RIGHT) * (Constants::DIM - 1));
 
+        // wheel rl
         _trajectory->getLagrangianForcesRearLeft(
             _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::REAR_LEFT],
             profileInducedForce + (1 + 2 * Constants::REAR_LEFT) * (Constants::DIM - 1));
+
+        // tyre fl
         _trajectory->getLagrangianForcesRearLeft(
             _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_LEFT],
             profileInducedForce + (2 + 2 * Constants::REAR_LEFT) * (Constants::DIM - 1));
 
+        // wheel rr
         _trajectory->getLagrangianForcesRearRight(
             _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::REAR_RIGHT],
             profileInducedForce + (1 + 2 * Constants::REAR_RIGHT) * (Constants::DIM - 1));
+
+        // tyre rr
         _trajectory->getLagrangianForcesRearRight(
             _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_RIGHT],
             profileInducedForce + (2 + 2 * Constants::REAR_RIGHT) * (Constants::DIM - 1));
 
         // Compute the reaction on tyre due to centrifugal force
-        reactionOnTyre[0] = profileInducedForce[0];
-        reactionOnTyre[1] = profileInducedForce[1];
+        reactionOnTyre[0] = -profileInducedForce[0];
+        reactionOnTyre[1] = -profileInducedForce[1];
         for (auto i = 1; i < Constants::VEC_DIM; ++i) {
-            reactionOnTyre[0] += profileInducedForce[(Constants::DIM - 1) * i];
-            reactionOnTyre[1] += profileInducedForce[(Constants::DIM - 1) * i + 1];
+            reactionOnTyre[0] -= profileInducedForce[(Constants::DIM - 1) * i];
+            reactionOnTyre[1] -= profileInducedForce[(Constants::DIM - 1) * i + 1];
         }
 
-        Math::scal<T>((Constants::DIM - 1) * Constants::VEC_DIM, -1, profileInducedForce,
-                      Constants::INCX);
+        //Math::scal<T>((Constants::DIM - 1) * Constants::VEC_DIM, -1, profileInducedForce,
+        //              Constants::INCX);
     }
 
     /**
@@ -298,7 +313,7 @@ public:
     virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj,
                                             T* externalTorque) {
         *externalTorque =
-            _trajectory->getLagrangianTorque(_iterationCount, carObj->getMomentOfInertia()[8]);
+            _trajectory->getLagrangianTorque(_iterationCount, carObj->getMomentOfInertiaLagrangian());
     }
     virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
         T* angle = &(carObj->_currentAngleLagrangian);
@@ -306,6 +321,10 @@ public:
         T* pcc = carObj->_currentPositionLagrangian;
         T* vcc = carObj->_currentVelocityLagrangian;
         _trajectory->updateInitialConditionsLagrange(angle, wc, pcc, vcc);
+
+        carObj->setInitialAngleGlobalZ(angle);
+        carObj->setInitialAngularVelocityGlobalZ(wc);
+
     }
     virtual ~Arbitrary() {}
 };
