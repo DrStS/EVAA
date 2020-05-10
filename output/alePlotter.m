@@ -37,7 +37,7 @@ r4 = [parameters(5); 0; -parameters(9)];
 upper_spring_length = [parameters(10); parameters(11); parameters(12); parameters(13)];
 lower_spring_length = [parameters(14); parameters(15); parameters(16); parameters(17)];
 
-angles = aleSolution(:,31:33);
+%angles = aleSolution(:,31:33);
 
 % calculate quaternion out of angle representation
 %q = calculateQuaternions(angles, numIterations);

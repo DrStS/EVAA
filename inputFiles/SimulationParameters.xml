@@ -3,7 +3,7 @@
   <SimulationParametersXML>
     <GeneralSettingsXML>
       <TimestepSizeXML>1e-3</TimestepSizeXML>
-      <NumberOfIterationsXML>10000</NumberOfIterationsXML>
+      <NumberOfIterationsXML>1000000</NumberOfIterationsXML>
     </GeneralSettingsXML>
     <MultyBodyDynamicsXML>
       <SolverXML>BroydenCN</SolverXML>

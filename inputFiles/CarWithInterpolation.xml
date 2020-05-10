@@ -84,10 +84,10 @@
   <InitialConditionsXML>
     <SpringElongationXML>
       <BodyXML>
-        <ReerRight>0.4470</ReerRight>
-        <ReerLeft>0.4470</ReerLeft>
-        <FrontLeft>0.4470</FrontLeft>
-        <FrontRight>0.4470</FrontRight>
+        <ReerRight>0.6</ReerRight>
+        <ReerLeft>0.6</ReerLeft>
+        <FrontLeft>0.6</FrontLeft>
+        <FrontRight>0.6</FrontRight>
       </BodyXML>
       <TyreXML>
         <ReerRight>0.1769</ReerRight>

@@ -90,8 +90,8 @@ int main(int argc, char **argv) {
     EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(
         "C:\\software\\repos\\EVAA\\inputFiles\\SimulationParameters.xml", carSettingsFileNameXML,
 //        "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml");
-//       "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
-        "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml");
+       "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
+//        "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml");
     myComputeEngine->printInfo();
 
     auto &timer1 = EVAA::anaysisTimer01;
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
     double timeMBD = 0.;    
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-        myComputeEngine->computeMBD();
+        //myComputeEngine->computeMBD();
         timer1.stop();
         timeMBD += timer1.getDurationMilliSec();
     }
