@@ -94,6 +94,84 @@ void TransmutateElements(T* arr, size_t start, size_t end, T value, T tol) {
     }
 }
 
+template <typename T>
+void ConstructPlane(T* point1, T* point2, T* point3, T* normal) {
+	T _linesegment1[Constants::DIM];
+	T _linesegment2[Constants::DIM];
+	Math::copy<T>(Constants::DIM, point2, Constants::INCX, _linesegment1, Constants::INCX);
+	Math::copy<T>(Constants::DIM, point3, Constants::INCX, _linesegment2, Constants::INCX);
+	Math::axpy<T>(Constants::DIM, -1, point1, Constants::INCX, _linesegment1, Constants::INCX);
+	Math::axpy<T>(Constants::DIM, -1, point1, Constants::INCX, _linesegment2, Constants::INCX);
+	CrossProduct<T>(_linesegment1, _linesegment2, normal);
+}
+
+template <typename T>
+void ConstructPlaneFixedCoordinateSystem(T* point1, T* point2, T* point3, T* coordinateMatrix) {
+	T X[Constants::DIM];
+	T Y[Constants::DIM];
+	T Z[Constants::DIM];
+	// Make z axis perpendicular to the plane
+	ConstructPlane<T>(point1, point2, point3, Z);
+	// make it a unit vector
+	T inv_nrm = 1.0/Math::nrm2(Constants::DIM, Z, Constants::INCX);
+	Math::scal<T>(Constants::DIM, inv_nrm, Z, Constants::INCX);
+	
+	// Construct x axis of the plane using (P1 + P2)/2 - P3
+	Math::copy<T>(Constants::DIM, point1, Constants::INCX, X, Constants::INCX);
+	Math::axpy<T>(Constants::DIM, 1, point2, Constants::INCX, X, Constants::INCX);
+	Math::scal<T>(Constants::DIM, 0.5, X, Constants::INCX);
+	
+	Math::axpy<T>(Constants::DIM, -1, point3, Constants::INCX, X, Constants::INCX);
+	// Make x unit vector
+	inv_nrm = 1.0 / Math::nrm2(Constants::DIM, X, Constants::INCX);
+	Math::scal<T>(Constants::DIM, inv_nrm, X, Constants::INCX);
+
+	// compute Y by cross product
+	CrossProduct<T>(Z, X, Y);
+	
+	// copy it to the coordinatematrix
+	Math::copy<T>(Constants::DIM, X, Constants::INCX, coordinateMatrix, Constants::DIM);
+	Math::copy<T>(Constants::DIM, Y, Constants::INCX, coordinateMatrix + 1, Constants::DIM);
+	Math::copy<T>(Constants::DIM, Z, Constants::INCX, coordinateMatrix + 2, Constants::DIM);
+}
+
+/*
+	print a vector
+	\param vect the data
+	\param count its size
+	*/
+template <typename T>
+void write_vector(T* vect, int count) {
+	std::cout << "Debug mode print" << std::endl;
+	for (size_t i = 0; i < count; ++i) {
+		//std::cout << vect[i] << std::endl;
+		std::cout.precision(15);
+		std::cout << std::scientific << vect[i] << std::endl;
+		//printf("%1.15f\n", vect[i]);
+	}
+	//exit(5);
+}
+
+/*
+print a matrix
+\param vect the data
+\param count its size=count x count
+*/
+template <typename T>
+void write_matrix(T* vect, int count) {
+	std::cout << "Debug mode print" << std::endl;
+	for (size_t i = 0; i < count; ++i) {
+		//std::cout << vect[i] << std::endl;
+		std::cout.precision(5);
+		for (size_t j = 0; j < count; ++j) {
+			std::cout << std::scientific << vect[i*count + j] << "  ";
+		}
+		std::cout << "\n" << std::endl;
+		//printf("%1.15f\n", vect[i]);
+	}
+	//exit(5);
+}
+
 /**
  * Performs the elementwise multiplication of two vectors
  * \param v1 first vector

@@ -17,9 +17,9 @@
 #endif
 
 #include "IP_EVAA_XML.h"
+#include "VEHICLE_EVAA_XML.h"
 #include "LOAD_EVAA_XML.h"
 #include "LOOKUP_EVAA_XML.h"
-#include "VEHICLE_EVAA_XML.h"
 
 namespace EVAA {
 
@@ -128,9 +128,10 @@ public:
 
         readLegs(_initial_lower_spring_length, initial.SpringElongationXML().TyreXML());
         readLegs(_initial_upper_spring_length, initial.SpringElongationXML().BodyXML());
+
     }
 
-    /**
+        /**
      * Reads the simulation parameters from an XML file.
      * \param[in] filename The XML file.
      */
@@ -184,6 +185,7 @@ public:
         _maxNewtonIterations = simulation.LinearALEXML().MaximumNumNewtonIterations();
         _newtonTolerance = simulation.LinearALEXML().Tolerance();
     }
+
 
     /**
      * Reads the load parameters from an XML file.
@@ -269,9 +271,9 @@ public:
             }
             else if (circularProfile.directionRotation() == "counterClockwise") {
                 _rotationCircularRoad = DirectionCircularRoad::COUNTERCLOCKWISE;
-            }
-            else {
-                throw std::logic_error("The direction of the circular road has to be clockwise or counterClockwise!");
+            } else {
+                throw std::logic_error(
+                    "The direction of the circular road has to be clockwise or counterClockwise!");
             }
 
             if (_eulerianBoundaryCondition == EulerianBoundaryConditionRoad::SINUSOIDAL) {
@@ -279,6 +281,7 @@ public:
                 _trajectory->calculateVerticalPositionsLegs();
                 _trajectory->calculateVerticalAccelerations();
             }
+
         }
         else if (load_data->lagrangianRoadProfile().arbitraryRoadProfile().present()) {
             const auto horizontalProfile = load_data->lagrangianRoadProfile().arbitraryRoadProfile().get();
@@ -508,44 +511,47 @@ public:
 private:
     /** Private constructor for the singleton instance. */
     MetaDatabase() : _lookup_filename("") {
-        SetValueToZero(_k_tyre, Constants::NUM_LEGS);
-        SetValueToZero(_k_body, Constants::NUM_LEGS);
-        SetValueToZero(_c_tyre, Constants::NUM_LEGS);
-        SetValueToZero(_c_body, Constants::NUM_LEGS);
-        SetValueToZero(_l_long, Constants::NUM_LEGS);
-        SetValueToZero(_l_lat, Constants::NUM_LEGS);
-        SetValueToZero(_vehicleCIR, Constants::DIM);
-        _mass_body = 0;
-        SetValueToZero(_I_body, Constants::DIMDIM);
-        SetValueToZero(_mass, 2 * Constants::NUM_LEGS);
-        SetValueToZero(_lower_spring_length, Constants::NUM_LEGS);
-        SetValueToZero(_upper_spring_length, Constants::NUM_LEGS);
-        SetValueToZero(_initial_lower_spring_length, Constants::NUM_LEGS);
-        SetValueToZero(_initial_upper_spring_length, Constants::NUM_LEGS);
-        SetValueToZero(_initial_vel_body, Constants::DIM);
-        SetValueToZero(_initial_vel_wheel, Constants::DIM * Constants::NUM_LEGS);
-        SetValueToZero(_initial_vel_tyre, Constants::DIM * Constants::NUM_LEGS);
-        SetValueToZero(_initial_ang_vel_body, Constants::DIM);
-        SetValueToZero(_gravity, Constants::DIM);
-        SetValueToZero(_initial_pos_body, Constants::DIM);
-        SetValueToZero(_initialAngleGlobal, Constants::DIM + 1);
-        SetValueToZero(_initial_pos_wheel, Constants::DIM * Constants::NUM_LEGS);
-        SetValueToZero(_initial_pos_tyre, Constants::DIM * Constants::NUM_LEGS);
-        SetValueToZero(_external_force_wheel, Constants::DIM * Constants::NUM_LEGS);
-        SetValueToZero(_external_force_tyre, Constants::DIM * Constants::NUM_LEGS);
-        SetValueToZero(_external_force_body, Constants::DIM);
-        SetValueToZero(_profile_center, Constants::DIM);
-        _tolerance = 0;
-        _timestep = 0;
-        _num_time_iter = 0;
+		SetValueToZero(_k_tyre, Constants::NUM_LEGS);
+		SetValueToZero(_k_body, Constants::NUM_LEGS);
+		SetValueToZero(_c_tyre, Constants::NUM_LEGS);
+		SetValueToZero(_c_body, Constants::NUM_LEGS);
+		SetValueToZero(_l_long, Constants::NUM_LEGS);
+		SetValueToZero(_l_lat, Constants::NUM_LEGS);
+		SetValueToZero(_vehicleCIR, Constants::DIM);
+		_mass_body = 0;
+		SetValueToZero(_I_body, Constants::DIMDIM);
+		SetValueToZero(_mass, 2 * Constants::NUM_LEGS);
+		SetValueToZero(_lower_spring_length, Constants::NUM_LEGS);
+		SetValueToZero(_upper_spring_length, Constants::NUM_LEGS);
+		SetValueToZero(_initial_lower_spring_length, Constants::NUM_LEGS);
+		SetValueToZero(_initial_upper_spring_length, Constants::NUM_LEGS);
+		SetValueToZero(_initial_vel_body, Constants::DIM);
+		SetValueToZero(_initial_vel_wheel, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_initial_vel_tyre, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_initial_ang_vel_body, Constants::DIM);
+		SetValueToZero(_gravity, Constants::DIM);
+		SetValueToZero(_initial_pos_body, Constants::DIM);
+		SetValueToZero(_initialAngleGlobal, Constants::DIM + 1);
+		SetValueToZero(_initial_pos_wheel, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_initial_pos_tyre, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_external_force_wheel, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_external_force_tyre, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_external_force_body, Constants::DIM);
+		SetValueToZero(_profile_center, Constants::DIM);
+		_tolerance = 0;
+		_timestep = 0;
+		_num_time_iter = 0;
+		
+		_newtonTolerance = 0;
+		_maxNewtonIterations = 0;
 
-        _newtonTolerance = 0;
-        _maxNewtonIterations = 0;
+		_initialVelocityCircular = 0;
 
-        _initialVelocityCircular = 0;
-    }
+	}
 
-    void SetValueToZero(T* arr, size_t n) { Math::scal<T>(n, 0, arr, Constants::INCX); }
+	void SetValueToZero(T* arr, size_t n) {
+		Math::scal<T>(n, 0, arr, Constants::INCX);
+	}
 
     /**
      * Reads the lookup table parameters from an XML file.
@@ -672,7 +678,7 @@ private:
     All general simulation parameters and car specific parameters (such as
     geometry and initial conditions)
     */
-    T _k_tyre[Constants::NUM_LEGS];
+    T _k_tyre[Constants::NUM_LEGS]; 
     T _k_body[Constants::NUM_LEGS];
     T _c_tyre[Constants::NUM_LEGS];
     T _c_body[Constants::NUM_LEGS];

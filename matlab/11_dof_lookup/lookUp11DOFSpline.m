@@ -30,7 +30,8 @@ k_grid = zeros(8*size_grid,1);
 d_grid = zeros(8*size_grid,1);
 dl = (l_max-l_min)/(size_grid-1);
 % k response function
-k = @(l,a)(c*l*l + b*l + a);
+%k = @(l,a)(c*l*l + b*l + a);
+k = @(l,a)(a);
 % fill in grid values
 for i = 0:size_grid-1
     X(i+1) = l_min+i*dl;
