@@ -66,27 +66,7 @@ private:
         _currentDisplacementTwoTrackModel[10] = _currentDisplacementTwoTrackModel[9] + _unexcitedSpringsLength[7] - _currentSpringsLengths[7];
     }
 
-    /**
-     * Construct corner initilizer
-     */
-    void ConstructCornerRelativeToCG(T* corners) {
-        corners[0] = +_lenLong[0];  // fl
-        corners[4] = +_lenLat[0];   // fl
-
-        corners[1] = +_lenLong[1];  // fr
-        corners[5] = -_lenLat[1];   // fr
-
-        corners[2] = -_lenLong[2];  // rl
-        corners[6] = +_lenLat[2];   // rl
-
-        corners[3] = -_lenLong[3];  // rr
-        corners[7] = -_lenLat[3];   // rr
-
-#pragma loop(ivdep)
-        for (auto i = 8; i < 12; i++) {
-            corners[i] = 0;
-        }
-    }
+    
 
      /**
      * Calculates the values of Corners for general angles.
@@ -266,8 +246,7 @@ private:
                                        // T_rl:Z, W_rr:Z, T_rr:Z]
     // For global necessary updates
     T* _currentRotationMatrix;   // [xx, xy, xz, yx, yy, yz, zx, zy, zz]
-    T* _currentCornerPositions;  // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]
-                                 // sorry for everyone
+    
 
     void (Car<T>::*_RotationMatrix)(const T, const T, const T, T*);
 
@@ -293,6 +272,8 @@ public:
     inline const T* getCurrentPositionLagrangian() const { return _currentPositionLagrangian; }
     inline const T getCurrentAngularVelocityLagrangian() const { return _currentAngularVelocityLagrangian; }
     inline const T* getCurrentVelocityLagrangian() const { return _currentVelocityLagrangian; }
+	inline const T* getCurrentCornerPositions() const { return _currentCornerPositions; }
+	inline const T* getUnexcitedPositionTwoTrackModel() const { return _unexcitedPositionTwoTrackModel; }
     inline T* getkVec() const { return _kVec; } // TODO consider friend
     inline T* getdVec() const { return _dVec; } // TODO consider friend
 
@@ -336,7 +317,10 @@ public:
     T* _currentVelocityLagrangian;        // [CG:XY, W_fl:XY, T_fl:XY, W_fr:XY,
                                          // T_fr:XY, W_rl:XY, T_rl:XY, W_rr:XY,
                                          // T_rr:XY] (TODO: still public) consider friend
-     
+    
+	T* _currentCornerPositions;  // [X:fl,fr,rl,rr Y:fl,fr,rl,rr Z:fl,fr,rl,rr]
+								 // sorry for everyone
+
     // Members from 11 DOF system
     T* _lenLat;
     T *_lenLong;
@@ -643,7 +627,27 @@ public:
         ConvertALEToGlobal(_currentVelocityLagrangian, _VelocityVector);
 		Convert11DOFToGlobal(_currentVelocityTwoTrackModel, _VelocityVector);
     }
+	/**
+	 * Construct corner initilizer
+	 */
+	void ConstructCornerRelativeToCG(T* corners) {
+		corners[0] = +_lenLong[0];  // fl
+		corners[4] = +_lenLat[0];   // fl
 
+		corners[1] = +_lenLong[1];  // fr
+		corners[5] = -_lenLat[1];   // fr
+
+		corners[2] = -_lenLong[2];  // rl
+		corners[6] = +_lenLat[2];   // rl
+
+		corners[3] = -_lenLong[3];  // rr
+		corners[7] = -_lenLat[3];   // rr
+
+#pragma loop(ivdep)
+		for (auto i = 8; i < 12; i++) {
+			corners[i] = 0;
+		}
+	}
     /**
      * get distance vector from each important Point of the car (9: CG, 4*W_i, 4*T_i)
      * \param[in] Point_P, 

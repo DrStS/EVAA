@@ -70,6 +70,64 @@ public:
      */
     virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj,
                                          T* profileInducedForce) = 0;
+
+	bool TestConstraint(Car<T>* carObj) {
+		/*Construct plane equation*/
+		T _planeNormal[Constants::DIM];
+		T _point1[Constants::DIM] = { carObj->_currentCornerPositions[0], carObj->_currentCornerPositions[4] ,carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[0] - 1] + carObj->getCurrentSpringsLengths()[0] };
+		T _point2[Constants::DIM] = { carObj->_currentCornerPositions[1], carObj->_currentCornerPositions[5], carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[1] - 1] + carObj->getCurrentSpringsLengths()[2] };
+		T _point3[Constants::DIM] = { carObj->_currentCornerPositions[2], carObj->_currentCornerPositions[6], carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[2] - 1] + carObj->getCurrentSpringsLengths()[4] };
+		T _point4[Constants::DIM] = { carObj->_currentCornerPositions[3], carObj->_currentCornerPositions[7], carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[3] - 1] + carObj->getCurrentSpringsLengths()[6] };
+		T _pointCG[Constants::DIM] = { carObj->_currentPositionLagrangian[0], carObj->_currentPositionLagrangian[1],  carObj->_unexcitedPositionTwoTrackModel[0] };
+		T _linesegment1[Constants::DIM];
+		T _linesegment2[Constants::DIM];
+		T _testlinesegment[Constants::DIM];
+		Math::copy<T>(Constants::DIM, _point1, Constants::INCX, _linesegment1, Constants::INCX);
+		Math::copy<T>(Constants::DIM, _point1, Constants::INCX, _linesegment2, Constants::INCX);
+		Math::axpy<T>(Constants::DIM, -1, _point2, Constants::INCX, _linesegment1, Constants::INCX);
+		Math::axpy<T>(Constants::DIM, -1, _point3, Constants::INCX, _linesegment2, Constants::INCX);
+		Math::CrossProduct<T>(_linesegment1, _linesegment2, _planeNormal);
+		/* Test for the 4th point and CG */
+		Math::copy<T>(Constants::DIM, _point1, Constants::INCX, _testlinesegment, Constants::INCX);
+		Math::axpy<T>(Constants::DIM, -1, _point4, Constants::INCX, _testlinesegment, Constants::INCX);
+		T eps = 1e-8;
+		if (Math::dot<T>(Constants::DIM, _testlinesegment, Constants::INCX, _planeNormal, Constants::INCX) > eps) {
+			throw "conditions are not good for 4th spring";
+		}
+		else {
+			std::cout << "1st position is ";
+			for (auto i = 0; i < Constants::DIM; ++i) {
+				std::cout << " " << _point1[i] << " ";
+			}
+			std::cout << std::endl;
+			std::cout << "2nd position is ";
+			for (auto i = 0; i < Constants::DIM; ++i) {
+				std::cout << " " << _point2[i] << " ";
+			}
+			std::cout << std::endl;
+			std::cout << "3rd position is ";
+			for (auto i = 0; i < Constants::DIM; ++i) {
+				std::cout << " " << _point3[i] << " ";
+			}
+			std::cout << std::endl;
+			std::cout << "4th position is ";
+			for (auto i = 0; i < Constants::DIM; ++i) {
+				std::cout << " " << _point4[i] << " ";
+			}
+			std::cout << std::endl;
+		}
+		Math::copy<T>(Constants::DIM, _point1, Constants::INCX, _testlinesegment, Constants::INCX);
+		Math::axpy<T>(Constants::DIM, -1, _pointCG, Constants::INCX, _testlinesegment, Constants::INCX);
+		if (Math::dot<T>(Constants::DIM, _testlinesegment, Constants::INCX, _planeNormal, Constants::INCX) > eps) {
+			std::cout << "CG position is ";
+			for (auto i = 0; i < Constants::DIM; ++i) {
+				std::cout << " " << _pointCG[i] << " ";
+			}
+			std::cout << std::endl;
+			throw "conditions are not good for CG";
+		}
+		return 1;
+	}
 };
 
 /** Lagrangian profiles*/
@@ -354,62 +412,107 @@ public:
         // TODO optimize it
         Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
         AddGravity(carObj, profileInducedForce);
-#pragma loop(ivdep)
+		#pragma loop(ivdep)
         for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
             profileInducedForce[Constants::TYRE_INDEX_EULER[i]] =  //
-                carObj->getkVec()[2 * i + 1] *
-                    (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
-                     carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] -
-                                                                   1])  //
-                +
-                carObj->getdVec()[2 * i + 1] *
-                    (carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
+                carObj->getkVec()[2 * i + 1] * (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
+                     carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1])  //
+                + carObj->getdVec()[2 * i + 1] * (carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
                      carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1]);
         }
     }
 
     virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
 
+		/*construct legs
+		
+		For fixed leg the tyre displacement has to be zeros without changing the reference level of the system. 
+		This implies that the four legs when constructed the CG position can be uniquely determined satisfying the constraint.
+		*/
+		
+		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
+			carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] = 0;
+			carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] = (carObj->getCurrentSpringsLengths()[2 * i + 1] + carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]]) - carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1];
+			//std::cout << "unexcited position = " << carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1] << ", displacement = " << carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] << ", upper spring length = " << carObj->getCurrentSpringsLengths()[2 * i] << std::endl;
+			carObj->_currentCornerPositions[(Constants::DIM - 1)*Constants::NUM_LEGS + i] = carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1] + carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] + carObj->getCurrentSpringsLengths()[2 * i];
+		}
 
-        T interpolationFactor[Constants::NUM_LEGS];
-        for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
-            interpolationFactor[i] =
-                0.5 * carObj->_lenLong[i] / (carObj->_lenLong[0] + carObj->_lenLong[2]);
-        }
+		/*Make the plane from corners to get CG position angles and displacement*/
+		T _planeNormal[Constants::DIM];
+		T _point1[Constants::DIM];
+		T _point2[Constants::DIM];
+		T _point3[Constants::DIM];
+		T _point4[Constants::DIM];
+		T _pointCG[Constants::DIM];
+		T _testlinesegment[Constants::DIM];
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions, Constants::NUM_LEGS, _point1, Constants::INCX);
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions + 1, Constants::NUM_LEGS, _point2, Constants::INCX);
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions + 2, Constants::NUM_LEGS, _point3, Constants::INCX);
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions + 3, Constants::NUM_LEGS, _point4, Constants::INCX);
+		Math::ConstructPlane<T>(_point1, _point2, _point3, _planeNormal);
+		/* Test for the 4th point and CG */
+		Math::copy<T>(Constants::DIM, _point4, Constants::INCX, _testlinesegment, Constants::INCX);
+		Math::axpy<T>(Constants::DIM, -1, _point1, Constants::INCX, _testlinesegment, Constants::INCX);
+		T eps = 1e-8;
+		if (Math::dot<T>(Constants::DIM, _testlinesegment, Constants::INCX, _planeNormal, Constants::INCX) > eps) {
+			throw "conditions are not good for rear right spring";
+		}
+		//else {
+		//	std::cout << "1st position is ";
+		//	for (auto i = 0; i < Constants::DIM; ++i) {
+		//		std::cout << " " << _point1[i] << " ";
+		//	}
+		//	std::cout << std::endl;
+		//	std::cout << "2nd position is ";
+		//	for (auto i = 0; i < Constants::DIM; ++i) {
+		//		std::cout << " " << _point2[i] << " ";
+		//	}
+		//	std::cout << std::endl;
+		//	std::cout << "3rd position is ";
+		//	for (auto i = 0; i < Constants::DIM; ++i) {
+		//		std::cout << " " << _point3[i] << " ";
+		//	}
+		//	std::cout << std::endl;
+		//	std::cout << "4th position is ";
+		//	for (auto i = 0; i < Constants::DIM; ++i) {
+		//		std::cout << " " << _point4[i] << " ";
+		//	}
+		//	std::cout << std::endl;
+		//}
+		/*Construct CG*/
+		// get rotation matrix about corner 1
+		T _rotationMatrix[Constants::DIMDIM];
+		Math::ConstructPlaneFixedCoordinateSystem<T>(_point1, _point2, _point3, _rotationMatrix);
+		// construct corner relative to CG and then inverse the sign to make untilted vector from FL corner to CG and rotate it to get final position
+		T _tempCorners[Constants::DIM * Constants::NUM_LEGS];
+		carObj->ConstructCornerRelativeToCG(_tempCorners);
+		Math::copy<T>(Constants::DIM, _tempCorners, Constants::NUM_LEGS, _testlinesegment, Constants::INCX);
+		
+		Math::scal<T>(Constants::DIM, -1, _testlinesegment, Constants::INCX);
 
-        // update displacements
-        T& centerPosition =
-            carObj->_currentDisplacementTwoTrackModel[0];
-        T& unexcitedCenterPosition = carObj->_unexcitedPositionTwoTrackModel[0];
-        for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
-            T& wheelPosition =
-                carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1];
-            T& unexcitedWheelPosition =
-                carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1];
-            T& tyrePosition =
-                carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i]];
-            T& unexcitedTyrePosition =
-                carObj->_unexcitedPositionTwoTrackModel[Constants::TYRE_INDEX_EULER[i]];
+		Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, _rotationMatrix, Constants::DIM, _testlinesegment, Constants::INCX, 0, _pointCG, Constants::INCX);
+		// test again for sake of sanctity
+		Math::copy<T>(Constants::DIM, _pointCG, Constants::INCX, _testlinesegment, Constants::INCX);
+		Math::axpy<T>(Constants::DIM, -1, _point1, Constants::INCX, _testlinesegment, Constants::INCX);
+		//if (Math::dot<T>(Constants::DIM, _testlinesegment, Constants::INCX, _planeNormal, Constants::INCX) > eps) {
+		//	//std::cout << "CG position is ";
+		//	//for (auto i = 0; i < Constants::DIM; ++i) {
+		//	//	std::cout << " " << _pointCG[i] << " ";
+		//	//}
+		//	//std::cout << std::endl;
+		//	throw "conditions are not good for CG";
+		//}
+		//std::cout << "Computed CG coordinates are = ("<<_pointCG[0] << ", " << _pointCG[1] << ", " << _pointCG[2] << ")" << std::endl;
+		carObj->_currentDisplacementTwoTrackModel[0] = (_pointCG[2]+ _point1[2]) - carObj->_unexcitedPositionTwoTrackModel[0];
+		
 
-
-            wheelPosition -= tyrePosition;
-            centerPosition -= interpolationFactor[i] * tyrePosition;
-
-
-            unexcitedWheelPosition += tyrePosition;
-            unexcitedCenterPosition += interpolationFactor[i] * tyrePosition;
-
-            tyrePosition = 0;
-        }
+		/* Get the rotation matrix */
+		carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
+		carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
 
         // update velocities
-        T& centerVelocity = carObj->_currentVelocityTwoTrackModel[0];
         for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
-            T& wheelVelocity =
-                carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1];
             T& tyreVelocity = carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i]];
-            wheelVelocity -= tyreVelocity;
-            centerVelocity -= interpolationFactor[i] * tyreVelocity;
             tyreVelocity = 0;
         }
 

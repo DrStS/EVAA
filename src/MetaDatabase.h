@@ -510,7 +510,49 @@ public:
 
 private:
     /** Private constructor for the singleton instance. */
-    MetaDatabase() : _lookup_filename("") {}
+    MetaDatabase() : _lookup_filename("") {
+		SetValueToZero(_k_tyre, Constants::NUM_LEGS);
+		SetValueToZero(_k_body, Constants::NUM_LEGS);
+		SetValueToZero(_c_tyre, Constants::NUM_LEGS);
+		SetValueToZero(_c_body, Constants::NUM_LEGS);
+		SetValueToZero(_l_long, Constants::NUM_LEGS);
+		SetValueToZero(_l_lat, Constants::NUM_LEGS);
+		SetValueToZero(_vehicleCIR, Constants::DIM);
+		_mass_body = 0;
+		SetValueToZero(_I_body, Constants::DIMDIM);
+		SetValueToZero(_mass, 2 * Constants::NUM_LEGS);
+		SetValueToZero(_lower_spring_length, Constants::NUM_LEGS);
+		SetValueToZero(_upper_spring_length, Constants::NUM_LEGS);
+		SetValueToZero(_initial_lower_spring_length, Constants::NUM_LEGS);
+		SetValueToZero(_initial_upper_spring_length, Constants::NUM_LEGS);
+		SetValueToZero(_initial_vel_body, Constants::DIM);
+		SetValueToZero(_initial_vel_wheel, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_initial_vel_tyre, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_initial_ang_vel_body, Constants::DIM);
+		SetValueToZero(_gravity, Constants::DIM);
+		SetValueToZero(_initial_pos_body, Constants::DIM);
+		SetValueToZero(_initialAngleGlobal, Constants::DIM + 1);
+		SetValueToZero(_initial_pos_wheel, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_initial_pos_tyre, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_external_force_wheel, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_external_force_tyre, Constants::DIM * Constants::NUM_LEGS);
+		SetValueToZero(_external_force_body, Constants::DIM);
+		SetValueToZero(_profile_center, Constants::DIM);
+		_tolerance = 0;
+		_timestep = 0;
+		_num_time_iter = 0;
+		
+		_newtonTolerance = 0;
+		_maxNewtonIterations = 0;
+
+		_initialVelocityCircular = 0;
+
+	}
+
+	void SetValueToZero(T* arr, size_t n) {
+		Math::scal<T>(n, 0, arr, Constants::INCX);
+	}
+
     /**
      * Reads the lookup table parameters from an XML file.
      * \param[in] filename The XML file.
@@ -636,7 +678,7 @@ private:
     All general simulation parameters and car specific parameters (such as
     geometry and initial conditions)
     */
-    T _k_tyre[Constants::NUM_LEGS];
+    T _k_tyre[Constants::NUM_LEGS]; 
     T _k_body[Constants::NUM_LEGS];
     T _c_tyre[Constants::NUM_LEGS];
     T _c_body[Constants::NUM_LEGS];

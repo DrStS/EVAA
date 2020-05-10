@@ -73,7 +73,8 @@
   </lagrangianRoadProfile>
   
   <eulerianRoadProfile>
-    <detachedTyre></detachedTyre>
+	<fixedTyre></fixedTyre>
+    <!--detachedTyre></detachedTyre-->
   </eulerianRoadProfile>
 
 
