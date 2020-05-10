@@ -210,7 +210,7 @@ public:
             std::cout << "Run the simulation with a sinusoidal tyre profile" << std::endl;
 
             const auto sinusoidalProfile = load_data->eulerianRoadProfile().sinusoidalProfile().get();
-            _trajectory = new ArbitraryTrajectory<T>(_num_time_iter, _timestep);
+            _trajectory = new ArbitraryTrajectory<T>(_num_time_iter+1, _timestep);
             _trajectory->initializeVerticalProfile(sinusoidalProfile.rightTyre().amplitude(), sinusoidalProfile.leftTyre().amplitude(), sinusoidalProfile.rightTyre().period(), sinusoidalProfile.leftTyre().period(), sinusoidalProfile.rightTyre().shift(), sinusoidalProfile.leftTyre().shift(), _initial_upper_spring_length, _initial_lower_spring_length, _l_lat, _l_long);
             _trajectory->calculateTyreShifts();
         }
@@ -287,7 +287,7 @@ public:
             const auto horizontalProfile = load_data->lagrangianRoadProfile().arbitraryRoadProfile().get();
             _lagrangianBoundaryCondition = LagrangianBoundaryConditionRoad::ARBITRARY;
             std::cout << "Run the simulation on an arbitrary road" << std::endl;
-            if (_trajectory == nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter, _timestep);
+            if (_trajectory == nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter+1, _timestep);
 
             std::vector<T> wayPointsX;
             std::vector<T> wayPointsY;

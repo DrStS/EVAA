@@ -149,7 +149,7 @@ public:
         inverseRadiusOfCircle =
             1.0 / Math::nrm2<T>(Constants::DIM - 1, radiusVector, Constants::INCX);
         Math::scal<T>(Constants::DIM - 1, inverseRadiusOfCircle, radiusVector, Constants::INCX);
-
+		
         // Compute the tangential direction of the velocity to compute angular velocity
         tangentialVelocityDirection[0] = -radiusVector[1];
         tangentialVelocityDirection[1] = radiusVector[0];
@@ -164,13 +164,11 @@ public:
         carObj->setInitialAngularVelocityGlobalZ(carObj->getCurrentAngularVelocityLagrangian());
 
         // apply angle condition on z angle
-        carObj->setInitialAngleGlobalZ(carObj->_currentAngleLagrangian =
-                                           std::atan2(carObj->_currentVelocityLagrangian[1],
-                                                      carObj->_currentVelocityLagrangian[0]));
+		carObj->_currentAngleLagrangian = std::atan2(carObj->_currentVelocityLagrangian[1], carObj->_currentVelocityLagrangian[0]);
+		carObj->setInitialAngleGlobalZ(carObj->_currentAngleLagrangian);
     }
 
-    virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj,
-                                            T* externalTorque) {
+    virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj, T* externalTorque) {
         *externalTorque = 0;
     }
 
@@ -182,29 +180,20 @@ public:
      * of form [CG, W1, T1, ... ] \param[out] centrifugalForce: Computed centrifugal force on each
      * component of the car
      */
-    void ComputeCentrifugalForceLagrangian(const T* distanceFromCenter, const T* velocityLagrangian,
-                                           const T* mass, T* centrifugalForce) {
+    void ComputeCentrifugalForceLagrangian(const T* distanceFromCenter, const T* velocityLagrangian, const T* mass, size_t numComponents, T* centrifugalForce) {
         // Copy the radius vector to the force to extract direction
-        Math::copy<T>((Constants::DIM - 1) * Constants::VEC_DIM, distanceFromCenter,
-                      Constants::INCX, centrifugalForce, Constants::INCX);
+        Math::copy<T>((Constants::DIM - 1) * numComponents, distanceFromCenter, Constants::INCX, centrifugalForce, Constants::INCX);
         T velocityMagnitude;
-        for (auto i = 0; i < Constants::VEC_DIM; ++i) {
-            inverseRadiusOfCircle =
-                1.0 / Math::nrm2<T>((Constants::DIM - 1),
-                                    centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
+        for (auto i = 0; i < numComponents; ++i) {
+            inverseRadiusOfCircle = 1.0 / Math::nrm2<T>((Constants::DIM - 1), centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
 
-            Math::scal<T>((Constants::DIM - 1), inverseRadiusOfCircle,
-                          centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
+            Math::scal<T>((Constants::DIM - 1), inverseRadiusOfCircle, centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
             // Cross product to get tangential velocity component
             tangentialVelocityDirection[0] = *(centrifugalForce + (Constants::DIM - 1) * i + 1);
             tangentialVelocityDirection[1] = -*(centrifugalForce + (Constants::DIM - 1) * i);
-            velocityMagnitude =
-                Math::dot<T>((Constants::DIM - 1), velocityLagrangian + (Constants::DIM - 1) * i,
-                             Constants::INCX, tangentialVelocityDirection, Constants::INCX);
+            velocityMagnitude = Math::dot<T>((Constants::DIM - 1), velocityLagrangian + (Constants::DIM - 1) * i, Constants::INCX, tangentialVelocityDirection, Constants::INCX);
             // Force computation
-            Math::scal<T>(Constants::DIM - 1,
-                          mass[i] * velocityMagnitude * velocityMagnitude * inverseRadiusOfCircle,
-                          centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
+            Math::scal<T>(Constants::DIM - 1, mass[i] * velocityMagnitude * velocityMagnitude * inverseRadiusOfCircle, centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
         }
     }
 
@@ -215,16 +204,10 @@ public:
                                            T* profileInducedForce, T* reactionOnTyre) {
         carObj->ComputeDisplacementToPointLagrangian(centerOfCircle, radiusVector);
         // compute centrifugal force on each component
-        ComputeCentrifugalForceLagrangian(radiusVector, carObj->getCurrentVelocityLagrangian(),
-                                          carObj->getMassComponents(), profileInducedForce);
-
-        // Compute the reaction on tyre due to centrifugal force
-        reactionOnTyre[0] = -profileInducedForce[0];
-        reactionOnTyre[1] = -profileInducedForce[1];
-        for (auto i = 1; i < Constants::VEC_DIM; ++i) {
-            reactionOnTyre[0] -= profileInducedForce[(Constants::DIM - 1) * i];
-            reactionOnTyre[1] -= profileInducedForce[(Constants::DIM - 1) * i + 1];
-        }
+        ComputeCentrifugalForceLagrangian(radiusVector, carObj->getCurrentVelocityLagrangian(), carObj->getMassComponents(), Constants::VEC_DIM, profileInducedForce);
+		T totalMass = carObj->getMassCarFull();
+		ComputeCentrifugalForceLagrangian(radiusVector, carObj->getCurrentVelocityLagrangian(), &totalMass, 1, reactionOnTyre);
+		Math::scal<T>(Constants::DIM - 1, -1, reactionOnTyre, Constants::INCX);
     }
 };  // Circular
 
@@ -245,49 +228,61 @@ public:
      * \return reactionOnTyre reaction force on the tyre induced by profile forcce [T: XY, T2: XY,
      * T3: XY, T4: XY]
      */
-    virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj,
-                                           T* profileInducedForce, T* reactionOnTyre) {
+    virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj, T* profileInducedForce, T* reactionOnTyre) {
+
+        // CoG
         _trajectory->getLagrangianForcesCenterOfGravity(_iterationCount, profileInducedForce,
                                                         carObj->getMassComponents()[0]);
 
+        // wheel fl
         _trajectory->getLagrangianForcesFrontLeft(
             _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::FRONT_LEFT],
             profileInducedForce + (1 + 2 * Constants::FRONT_LEFT) * (Constants::DIM - 1));
+
+        // tyre fl
         _trajectory->getLagrangianForcesFrontLeft(
             _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_LEFT],
             profileInducedForce + (2 + 2 * Constants::FRONT_LEFT) * (Constants::DIM - 1));
 
+
+        // wheel fr
         _trajectory->getLagrangianForcesFrontRight(
             _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::FRONT_RIGHT],
             profileInducedForce + (1 + 2 * Constants::FRONT_RIGHT) * (Constants::DIM - 1));
+
+        // tyre fr
         _trajectory->getLagrangianForcesFrontRight(
             _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_RIGHT],
             profileInducedForce + (2 + 2 * Constants::FRONT_RIGHT) * (Constants::DIM - 1));
 
+        // wheel rl
         _trajectory->getLagrangianForcesRearLeft(
             _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::REAR_LEFT],
             profileInducedForce + (1 + 2 * Constants::REAR_LEFT) * (Constants::DIM - 1));
+
+        // tyre fl
         _trajectory->getLagrangianForcesRearLeft(
             _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_LEFT],
             profileInducedForce + (2 + 2 * Constants::REAR_LEFT) * (Constants::DIM - 1));
 
+        // wheel rr
         _trajectory->getLagrangianForcesRearRight(
             _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::REAR_RIGHT],
             profileInducedForce + (1 + 2 * Constants::REAR_RIGHT) * (Constants::DIM - 1));
+
+        // tyre rr
         _trajectory->getLagrangianForcesRearRight(
             _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_RIGHT],
             profileInducedForce + (2 + 2 * Constants::REAR_RIGHT) * (Constants::DIM - 1));
 
         // Compute the reaction on tyre due to centrifugal force
-        reactionOnTyre[0] = profileInducedForce[0];
-        reactionOnTyre[1] = profileInducedForce[1];
-        for (auto i = 1; i < Constants::VEC_DIM; ++i) {
-            reactionOnTyre[0] += profileInducedForce[(Constants::DIM - 1) * i];
-            reactionOnTyre[1] += profileInducedForce[(Constants::DIM - 1) * i + 1];
-        }
+		// CoG
+		_trajectory->getLagrangianForcesCenterOfGravity(_iterationCount, reactionOnTyre, carObj->getMassCarFull());
+        
 
-        Math::scal<T>((Constants::DIM - 1) * Constants::VEC_DIM, -1, profileInducedForce,
-                      Constants::INCX);
+        Math::scal<T>((Constants::DIM - 1) * Constants::VEC_DIM, -1, profileInducedForce, Constants::INCX);
+		
+
     }
 
     /**
@@ -298,7 +293,7 @@ public:
     virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj,
                                             T* externalTorque) {
         *externalTorque =
-            _trajectory->getLagrangianTorque(_iterationCount, carObj->getMomentOfInertia()[8]);
+            _trajectory->getLagrangianTorque(_iterationCount, carObj->getMomentOfInertiaLagrangian());
     }
     virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
         T* angle = &(carObj->_currentAngleLagrangian);
@@ -306,6 +301,10 @@ public:
         T* pcc = carObj->_currentPositionLagrangian;
         T* vcc = carObj->_currentVelocityLagrangian;
         _trajectory->updateInitialConditionsLagrange(angle, wc, pcc, vcc);
+
+        carObj->setInitialAngleGlobalZ(*angle);
+        carObj->setInitialAngularVelocityGlobalZ(*wc);
+
     }
     virtual ~Arbitrary() {}
 };
@@ -520,6 +519,10 @@ public:
                     (carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
                      carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1]);
         }
+		std::cout << "Euler position for iteration number: " << _iterationCount << ", mass = " << carObj->getMassCarFull() << std::endl;
+		Math::write_vector(carObj->getCurrentPositionTwoTrackModel(), 11);
+		/*std::cout << "Lagrange force" << std::endl;
+		Math::write_vector(reactionOnTyre, 2);*/
     }
 
     virtual void ApplyProfileInitialCondition(Car<T>* carObj) {

@@ -72,11 +72,12 @@
     </straightRoadProfile>
   </lagrangianRoadProfile>
 
-  <!--eulerianRoadProfile>
-    <detachedTyre></detachedTyre>
-  </eulerianRoadProfile-->
   <eulerianRoadProfile>
-	<fixedTyre></fixedTyre>
+	<!--fixedTyre></fixedTyre-->
+	<sinusoidalProfile>
+      <rightTyre amplitude="0.01" period="10" shift="0"/>
+      <leftTyre amplitude="0.01" period="7" shift="5"/>
+    </sinusoidalProfile>
     <!--detachedTyre></detachedTyre-->
   </eulerianRoadProfile>
 

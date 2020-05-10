@@ -202,7 +202,7 @@ public:
         T* timeInterpolationPoints = Math::malloc<T>(_numIterations + 1);
         T interpolationTime = _delta_t * _numIterations;
         // when interpolationTime is longer than road defined exit
-        if (interpolationTime > maxTime) {
+        if (interpolationTime > maxTime + _delta_t) {
             throw std::domain_error("Simulation time is longer than road is defined: " + std::to_string(interpolationTime) + " > " + std::to_string(maxTime));
         }
         else {

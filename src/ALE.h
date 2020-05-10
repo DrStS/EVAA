@@ -130,7 +130,7 @@ public:
             _loadModuleObj->GetLagrangianForce(iter, _lagrangianForceVector);
             _loadModuleObj->GetTorqueLagrange(iter, _lagrangianTorque);
             // if (iter == 1000) IO::writeVector(_lagrangianForceVector, lagrangianForceDimension);
-            LagrangianUpdate(t);
+            LagrangianUpdate(iter);
 
             _twoTrackModelObj->UpdateStep(iter, _carObj->_currentDisplacementTwoTrackModel);
             _carObj->UpdateLengthsTwoTrackModel();
@@ -186,6 +186,7 @@ public:
         _momentOfInertiaZ += (_carObj->getMassComponents()[3] + _carObj->getMassComponents()[4]) * (_carObj->_lenLat[1] * _carObj->_lenLat[1] + _carObj->_lenLong[1] * _carObj->_lenLong[1]);
         _momentOfInertiaZ += (_carObj->getMassComponents()[5] + _carObj->getMassComponents()[6]) * (_carObj->_lenLat[2] * _carObj->_lenLat[2] + _carObj->_lenLong[2] * _carObj->_lenLong[2]);
         _momentOfInertiaZ += (_carObj->getMassComponents()[7] + _carObj->getMassComponents()[8]) * (_carObj->_lenLat[3] * _carObj->_lenLat[3] + _carObj->_lenLong[3] * _carObj->_lenLong[3]);
+        _carObj->setMomentOfInertiaLagrangian(_momentOfInertiaZ);
     }
 
     /**

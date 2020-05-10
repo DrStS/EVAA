@@ -158,6 +158,7 @@ public:
 
 		Math::axpy<T>(Constants::VEC_DIM, 1, externalForce, 3,  _lagrangianForce, 2);
 		Math::axpy<T>(Constants::VEC_DIM, 1, externalForce+1, 3,  _lagrangianForce+1, 2);
+		
 	}
 
 	/* 
