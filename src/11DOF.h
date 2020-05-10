@@ -10,8 +10,8 @@
 
 #include "Car.h"
 #include "Constants.h"
-#include "MathLibrary.h"
 #include "LoadModule.h"
+#include "MathLibrary.h"
 #include "MetaDatabase.h"
 
 //#define DAMPING 1
@@ -27,17 +27,17 @@ class TwoTrackModelParent {
 protected:
     /** pointer to car instance with all important car parameter */
     Car<T>* _car;
-	LoadModule<T>* _loadModuleObj;
+    LoadModule<T>* _loadModuleObj;
 
-	/** Force Vector for the load module*/
-	T* _twoTrackModelForce = nullptr;
+    /** Force Vector for the load module*/
+    T* _twoTrackModelForce = nullptr;
 
     // time step related
     /** solution in next timestep */
     T _factor_h;
     /** solution in next timestep */
     T _h;
-	size_t _currentIter;
+    size_t _currentIter;
 
     T _tolerance;
     int _maxNewtonIteration;
@@ -54,12 +54,12 @@ protected:
     T* _u_n = nullptr;
     T* _A = nullptr;
     T* _B = nullptr;
-    T* _C = nullptr; 
-    
+    T* _C = nullptr;
+
     T* _M_h2 = nullptr;
     T* _K = nullptr;
     T* _D = nullptr;
-    
+
     /** used for the constructStiffnesMatrix and ConstructDampingMatrix. */
     T* _matrixTmp = nullptr;
     T* _kVec = nullptr;
@@ -74,11 +74,11 @@ protected:
 #ifdef DAMPING
     T* _dDdxx = nullptr;
     T* _dddl = nullptr;
-#endif // DAMPING
+#endif  // DAMPING
     T* _residual = nullptr;
     T _residualNorm;
     T* _dkdl = nullptr;
-#endif // INTERPOLATION
+#endif  // INTERPOLATION
 
 public:
     /**
@@ -107,8 +107,8 @@ public:
 template <typename T>
 class TwoTrackModelBE : public TwoTrackModelParent<T> {
 private:
-	/** For pperformance benefit we keep it here */
-	void (TwoTrackModelBE<T>::*_JacobianAdjustment)();
+    /** For pperformance benefit we keep it here */
+    void (TwoTrackModelBE<T>::*_JacobianAdjustment)();
 
     /**
      * \brief construct _A Matrix
@@ -167,17 +167,16 @@ protected:
         Math::scal<T>(Constants::DOF, 1. / (_h * _h), _M_h2, Constants::DOF + 1);
     }
 
-	/**
-	* \breif Compute velocity of the car based on the displacement vectors
-	* 
-	* called inside UpdateStep function
-	*/
-	void UpdateVelocity() {
-		Math::copy<T>(Constants::DOF, _u_n_p_1, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
-		Math::axpy<T>(Constants::DOF, -1, _u_n, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
-		Math::scal<T>(Constants::DOF, _factor_h, _car->_currentVelocityTwoTrackModel, Constants::INCX);
-	}
-
+    /**
+     * \breif Compute velocity of the car based on the displacement vectors
+     *
+     * called inside UpdateStep function
+     */
+    void UpdateVelocity() {
+        Math::copy<T>(Constants::DOF, _u_n_p_1, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
+        Math::axpy<T>(Constants::DOF, -1, _u_n, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
+        Math::scal<T>(Constants::DOF, _factor_h, _car->_currentVelocityTwoTrackModel, Constants::INCX);
+    }
 
     /**
      * \brief initialise the vectors _u_n, _u_n_m_1, _u_n_p_1
@@ -202,10 +201,10 @@ public:
      * \brief Constructor
      */
     TwoTrackModelBE(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelParent(inputCar, loadModel) {
-        _u_n_m_1 = Math::malloc<T>(Constants::DOF);					// velocity
-        _u_n = Math::malloc<T>(Constants::DOF);						// position
-        _u_n_p_1 = _car->getCurrentDisplacementTwoTrackModel();		// position
-		_twoTrackModelForce = Math::malloc<T>(Constants::DOF);		// force
+        _u_n_m_1 = Math::malloc<T>(Constants::DOF);              // velocity
+        _u_n = Math::malloc<T>(Constants::DOF);                  // position
+        _u_n_p_1 = _car->getCurrentDisplacementTwoTrackModel();  // position
+        _twoTrackModelForce = Math::malloc<T>(Constants::DOF);   // force
 
         _A = Math::malloc<T>(Constants::DOFDOF);
         _B = Math::calloc<T>(Constants::DOFDOF);
@@ -217,22 +216,21 @@ public:
         _temp = Math::malloc<T>(Constants::DOF);
         _matrixTmp = Math::calloc<T>(Constants::DOFDOF);
 #ifdef INTERPOLATION
-        if (_loadModuleObj->GetEulerProfileName() == "Fixed" ) {
-			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructFixedJacobian;
-		}
-        else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed" ||
-                 _loadModuleObj->GetEulerProfileName() == "Sinusoidal") {
-			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructNonFixedJacobian;
-		}
+        if (_loadModuleObj->GetEulerProfileName() == "Fixed") {
+            _JacobianAdjustment = &TwoTrackModelBE<T>::ConstructFixedJacobian;
+        }
+        else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed" || _loadModuleObj->GetEulerProfileName() == "Sinusoidal") {
+            _JacobianAdjustment = &TwoTrackModelBE<T>::ConstructNonFixedJacobian;
+        }
         _J = Math::calloc<T>(Constants::DOFDOF);
         _dKdxx = Math::calloc<T>(Constants::DOFDOF);
-		_dkdl = Math::malloc<T>(2 * Constants::NUM_LEGS);
-        
+        _dkdl = Math::malloc<T>(2 * Constants::NUM_LEGS);
+
 #ifdef DAMPING
-		_dddl = Math::calloc<T>(2 * Constants::NUM_LEGS);
-		_dDdxx = Math::calloc<T>(Constants::DOFDOF);
+        _dddl = Math::calloc<T>(2 * Constants::NUM_LEGS);
+        _dDdxx = Math::calloc<T>(Constants::DOFDOF);
 #endif
-		_residual = Math::malloc<T>(Constants::DOF);
+        _residual = Math::malloc<T>(Constants::DOF);
 #endif
         _tolerance = MetaDatabase<T>::getDatabase().getNewtonTolerance();
         _maxNewtonIteration = MetaDatabase<T>::getDatabase().getMaxNewtonIterations();
@@ -251,7 +249,7 @@ public:
 #ifdef DAMPING
         ConstructDampingMatrix();
 #endif
-		ConstructAMatrix();
+        ConstructAMatrix();
         ConstructBMatrix();
         ConstructCMatrix();
     }
@@ -265,7 +263,7 @@ public:
         Math::free<T>(_C);
         Math::free<T>(_u_n);
         Math::free<T>(_u_n_m_1);
-		Math::free<T>(_twoTrackModelForce);
+        Math::free<T>(_twoTrackModelForce);
         Math::free<T>(_M_h2);
         Math::free<T>(_K);
         Math::free<T>(_D);
@@ -273,12 +271,12 @@ public:
         Math::free<T>(_matrixTmp);
 #ifdef INTERPOLATION
         Math::free<T>(_J);
-		Math::free<T>(_dkdl);
-		Math::free<T>(_dKdxx);
+        Math::free<T>(_dkdl);
+        Math::free<T>(_dKdxx);
 #ifdef DAMPING
-		
+
         Math::free<T>(_dddl);
-		Math::free<T>(_dDdxx);
+        Math::free<T>(_dDdxx);
 #endif
         Math::free<T>(_residual);
 #endif
@@ -290,21 +288,21 @@ public:
      */
     virtual void UpdateStep(size_t currentIter, T* solution) {
         // Math::scal<T>(Constants::DOF, -1, _u_n_m_1, Constants::INCX);
-		// Get the force
-		_currentIter = currentIter;
-		_loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
-		Math::Solvers<T, TwoTrackModelBE<T> >::LinearBackwardEuler(_A, _B, _C, _u_n, _u_n_m_1, _twoTrackModelForce, _u_n_p_1, Constants::DOF);
-        
+        // Get the force
+        _currentIter = currentIter;
+        _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
+        Math::Solvers<T, TwoTrackModelBE<T>>::LinearBackwardEuler(_A, _B, _C, _u_n, _u_n_m_1, _twoTrackModelForce, _u_n_p_1, Constants::DOF);
+
 #ifdef INTERPOLATION
-		UpdateSystem();
-		Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
+        UpdateSystem();
+        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
 #else
-		ConstructAMatrix();
+        ConstructAMatrix();
 #endif
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
-        
-		// update two track velocity in car
-		UpdateVelocity();
+
+        // update two track velocity in car
+        UpdateVelocity();
 
         // _u_n_m_1 points to _u_n and _u_n points to _u_n_m_1
         Math::SwapAddress<T>(_u_n, _u_n_m_1);
@@ -351,10 +349,10 @@ public:
         Math::copy<T>(Constants::DOFDOF, _A, 1, _J, 1);
         // _J += dKdx * x[n+1]
         Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
-		(this->*_JacobianAdjustment)();
+        (this->*_JacobianAdjustment)();
 #ifdef DAMPING
-                db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
-		// temp = x[n+1]
+        db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
+        // temp = x[n+1]
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, _temp, 1);
         // temp += -x[n]
         Math::axpy<T>(Constants::DOF, -1, _u_n, 1, _temp, 1);
@@ -367,7 +365,7 @@ public:
     /**
      * \brief construct Jacobian for fixed to road
      *
-     * add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h D - K + 1/h dDdx * x[n]] 
+     * add the rows according to the tyres of [-(1/h dDdx + dKdx) x[n+1] - 1/h D - K + 1/h dDdx * x[n]]
      * therefore J = M_h2 for the tyre positions
      */
     void ConstructFixedJacobian() {
@@ -381,9 +379,7 @@ public:
      *
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
-    void SetJacobianTyreLineToFixed(int tyreNumber) {
-        Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1);
-    }
+    void SetJacobianTyreLineToFixed(int tyreNumber) { Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1); }
 
     /**
      * \brief construct Jacobian for that one time step when the tyre hits the road
@@ -417,7 +413,7 @@ public:
         // _matrixTmp /= h
         Math::scal(Constants::DOFDOF, fact_h, _matrixTmp, 1);
         // write line into Jacobien
-		SetJacobianTyreLineToTransition(tyreNumber, _matrixTmp);
+        SetJacobianTyreLineToTransition(tyreNumber, _matrixTmp);
     }
     /**
      * \brief set a line in the jacobian according to a tyre to the transition versino
@@ -425,16 +421,14 @@ public:
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      * \param[in] JNew precalculated Jacobian
      */
-    void SetJacobianTyreLineToTransition(int tyreNumber, T* JNew) {
-        Math::copy<T>(Constants::DOF, JNew + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1);
-    }
+    void SetJacobianTyreLineToTransition(int tyreNumber, T* JNew) { Math::copy<T>(Constants::DOF, JNew + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1); }
 
-	/**
-	 * \brief construct Jacobian for non-fixed to road
-	 *
-	 * No Modification in the Jacobian*
-	 */
-	void ConstructNonFixedJacobian() {}
+    /**
+     * \brief construct Jacobian for non-fixed to road
+     *
+     * No Modification in the Jacobian*
+     */
+    void ConstructNonFixedJacobian() {}
 
     /**
      * \brief update all dependent matrices on the position vector
@@ -443,12 +437,12 @@ public:
      */
     void UpdateSystem() {
         _car->UpdateLengthsTwoTrackModel();
-		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
+        _loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructStiffnessMatrix();
 #ifdef DAMPING
         ConstructDampingMatrix();
 #endif
-		ConstructAMatrix();
+        ConstructAMatrix();
         ConstructBMatrix();
     }
     /**
@@ -668,9 +662,14 @@ public:
      * times a position vec is stored of size DOF * DOF.
      */
     void ConstructLookupDerivativeX(T* der, T* x, T* dMdxx) {
-        _temp[0] = x[0] * (der[0] + der[2] + der[4] + der[6]) - der[2] * x[5] - der[4] * x[7] - der[6] * x[9] - der[0] * x[3] + x[1] * (der[0] * _car->_lenLat[0] - der[2] * _car->_lenLat[1] + der[4] * _car->_lenLat[2] - der[6] * _car->_lenLat[3]) - x[2] * (der[0] * _car->_lenLong[0] + der[2] * _car->_lenLong[1] - der[4] * _car->_lenLong[2] - der[6] * _car->_lenLong[3]);
-        dMdxx[1] = der[2] * _car->_lenLat[1] * _car->_lenLat[1] * x[1] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * x[1] + der[6] * _car->_lenLat[3] * _car->_lenLat[3] * x[1] + der[0] * _car->_lenLat[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) - der[2] * _car->_lenLat[1] * x[0] + der[2] * _car->_lenLat[1] * x[5] + der[4] * _car->_lenLat[2] * x[0] - der[4] * _car->_lenLat[2] * x[7] - der[6] * _car->_lenLat[3] * x[0] + der[6] * _car->_lenLat[3] * x[9] - der[0] * _car->_lenLat[0] * _car->_lenLong[0] * x[2] + der[2] * _car->_lenLat[1] * _car->_lenLong[1] * x[2] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[2] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[2];
-        dMdxx[2] = der[0] * _car->_lenLong[0] * _car->_lenLong[0] * x[2] + der[4] * _car->_lenLong[2] * _car->_lenLong[2] * x[2] + der[6] * _car->_lenLong[3] * _car->_lenLong[3] * x[2] - der[0] * _car->_lenLong[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) + der[2] * _car->_lenLong[1] * (x[5] - x[0] + _car->_lenLat[1] * x[1] + _car->_lenLong[1] * x[2]) + der[4] * _car->_lenLong[2] * x[0] - der[4] * _car->_lenLong[2] * x[7] + der[6] * _car->_lenLong[3] * x[0] - der[6] * _car->_lenLong[3] * x[9] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[1] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[1];
+        _temp[0] = x[0] * (der[0] + der[2] + der[4] + der[6]) - der[2] * x[5] - der[4] * x[7] - der[6] * x[9] - der[0] * x[3] + x[1] * (der[0] * _car->_lenLat[0] - der[2] * _car->_lenLat[1] + der[4] * _car->_lenLat[2] - der[6] * _car->_lenLat[3]) -
+                   x[2] * (der[0] * _car->_lenLong[0] + der[2] * _car->_lenLong[1] - der[4] * _car->_lenLong[2] - der[6] * _car->_lenLong[3]);
+        dMdxx[1] = der[2] * _car->_lenLat[1] * _car->_lenLat[1] * x[1] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * x[1] + der[6] * _car->_lenLat[3] * _car->_lenLat[3] * x[1] + der[0] * _car->_lenLat[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) -
+                   der[2] * _car->_lenLat[1] * x[0] + der[2] * _car->_lenLat[1] * x[5] + der[4] * _car->_lenLat[2] * x[0] - der[4] * _car->_lenLat[2] * x[7] - der[6] * _car->_lenLat[3] * x[0] + der[6] * _car->_lenLat[3] * x[9] -
+                   der[0] * _car->_lenLat[0] * _car->_lenLong[0] * x[2] + der[2] * _car->_lenLat[1] * _car->_lenLong[1] * x[2] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[2] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[2];
+        dMdxx[2] = der[0] * _car->_lenLong[0] * _car->_lenLong[0] * x[2] + der[4] * _car->_lenLong[2] * _car->_lenLong[2] * x[2] + der[6] * _car->_lenLong[3] * _car->_lenLong[3] * x[2] -
+                   der[0] * _car->_lenLong[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) + der[2] * _car->_lenLong[1] * (x[5] - x[0] + _car->_lenLat[1] * x[1] + _car->_lenLong[1] * x[2]) + der[4] * _car->_lenLong[2] * x[0] -
+                   der[4] * _car->_lenLong[2] * x[7] + der[6] * _car->_lenLong[3] * x[0] - der[6] * _car->_lenLong[3] * x[9] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[1] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[1];
         dMdxx[3] = -der[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1] - _car->_lenLong[0] * x[2]);
         dMdxx[4] = 0;
         dMdxx[5] = der[2] * (x[5] - x[0] + _car->_lenLat[1] * x[1] + _car->_lenLong[1] * x[2]);
@@ -680,8 +679,17 @@ public:
         dMdxx[9] = -der[6] * (x[0] - x[9] - _car->_lenLat[3] * x[1] + _car->_lenLong[3] * x[2]);
         dMdxx[10] = 0;
 
-        _temp[1] = der[2] * _car->_lenLat[1] * _car->_lenLat[1] * x[0] - der[2] * _car->_lenLat[1] * _car->_lenLat[1] * _car->_lenLat[1] * x[1] - der[2] * _car->_lenLat[1] * _car->_lenLat[1] * x[5] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * x[0] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * _car->_lenLat[2] * x[1] - der[4] * _car->_lenLat[2] * _car->_lenLat[2] * x[7] + der[6] * _car->_lenLat[3] * _car->_lenLat[3] * x[0] - der[6] * _car->_lenLat[3] * _car->_lenLat[3] * _car->_lenLat[3] * x[1] - der[6] * _car->_lenLat[3] * _car->_lenLat[3] * x[9] + der[0] * _car->_lenLat[0] * _car->_lenLat[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) - der[0] * _car->_lenLat[0] * _car->_lenLat[0] * _car->_lenLong[0] * x[2] - der[2] * _car->_lenLat[1] * _car->_lenLat[1] * _car->_lenLong[1] * x[2] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * _car->_lenLong[2] * x[2] + der[6] * _car->_lenLat[3] * _car->_lenLat[3] * _car->_lenLong[3] * x[2];
-        dMdxx[Constants::DOF + 2] = der[2] * _car->_lenLat[1] * _car->_lenLong[1] * x[0] - der[2] * _car->_lenLat[1] * _car->_lenLong[1] * x[5] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[0] - der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[7] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[0] + der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[9] + der[0] * _car->_lenLat[0] * _car->_lenLong[0] * _car->_lenLong[0] * x[2] - der[2] * _car->_lenLat[1] * _car->_lenLat[1] * _car->_lenLong[1] * x[1] - der[2] * _car->_lenLat[1] * _car->_lenLong[1] * _car->_lenLong[1] * x[2] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * _car->_lenLong[2] * x[1] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * _car->_lenLong[2] * x[2] + der[6] * _car->_lenLat[3] * _car->_lenLat[3] * _car->_lenLong[3] * x[1] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * _car->_lenLong[3] * x[2] - der[0] * _car->_lenLat[0] * _car->_lenLong[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]);
+        _temp[1] = der[2] * _car->_lenLat[1] * _car->_lenLat[1] * x[0] - der[2] * _car->_lenLat[1] * _car->_lenLat[1] * _car->_lenLat[1] * x[1] - der[2] * _car->_lenLat[1] * _car->_lenLat[1] * x[5] +
+                   der[4] * _car->_lenLat[2] * _car->_lenLat[2] * x[0] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * _car->_lenLat[2] * x[1] - der[4] * _car->_lenLat[2] * _car->_lenLat[2] * x[7] +
+                   der[6] * _car->_lenLat[3] * _car->_lenLat[3] * x[0] - der[6] * _car->_lenLat[3] * _car->_lenLat[3] * _car->_lenLat[3] * x[1] - der[6] * _car->_lenLat[3] * _car->_lenLat[3] * x[9] +
+                   der[0] * _car->_lenLat[0] * _car->_lenLat[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) - der[0] * _car->_lenLat[0] * _car->_lenLat[0] * _car->_lenLong[0] * x[2] -
+                   der[2] * _car->_lenLat[1] * _car->_lenLat[1] * _car->_lenLong[1] * x[2] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * _car->_lenLong[2] * x[2] + der[6] * _car->_lenLat[3] * _car->_lenLat[3] * _car->_lenLong[3] * x[2];
+        dMdxx[Constants::DOF + 2] = der[2] * _car->_lenLat[1] * _car->_lenLong[1] * x[0] - der[2] * _car->_lenLat[1] * _car->_lenLong[1] * x[5] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[0] -
+                                    der[4] * _car->_lenLat[2] * _car->_lenLong[2] * x[7] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[0] + der[6] * _car->_lenLat[3] * _car->_lenLong[3] * x[9] +
+                                    der[0] * _car->_lenLat[0] * _car->_lenLong[0] * _car->_lenLong[0] * x[2] - der[2] * _car->_lenLat[1] * _car->_lenLat[1] * _car->_lenLong[1] * x[1] -
+                                    der[2] * _car->_lenLat[1] * _car->_lenLong[1] * _car->_lenLong[1] * x[2] + der[4] * _car->_lenLat[2] * _car->_lenLat[2] * _car->_lenLong[2] * x[1] +
+                                    der[4] * _car->_lenLat[2] * _car->_lenLong[2] * _car->_lenLong[2] * x[2] + der[6] * _car->_lenLat[3] * _car->_lenLat[3] * _car->_lenLong[3] * x[1] -
+                                    der[6] * _car->_lenLat[3] * _car->_lenLong[3] * _car->_lenLong[3] * x[2] - der[0] * _car->_lenLat[0] * _car->_lenLong[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]);
         dMdxx[Constants::DOF + 3] = -der[0] * _car->_lenLat[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1] - _car->_lenLong[0] * x[2]);
         dMdxx[Constants::DOF + 4] = 0;
         dMdxx[Constants::DOF + 5] = -der[2] * _car->_lenLat[1] * (x[5] - x[0] + _car->_lenLat[1] * x[1] + _car->_lenLong[1] * x[2]);
@@ -691,7 +699,11 @@ public:
         dMdxx[Constants::DOF + 9] = der[6] * _car->_lenLat[3] * (x[0] - x[9] - _car->_lenLat[3] * x[1] + _car->_lenLong[3] * x[2]);
         dMdxx[Constants::DOF + 10] = 0;
 
-        _temp[2] = der[2] * _car->_lenLong[1] * _car->_lenLong[1] * x[0] - der[0] * _car->_lenLong[0] * _car->_lenLong[0] * _car->_lenLong[0] * x[2] - der[2] * _car->_lenLong[1] * _car->_lenLong[1] * _car->_lenLong[1] * x[2] - der[2] * _car->_lenLong[1] * _car->_lenLong[1] * x[5] + der[4] * _car->_lenLong[2] * _car->_lenLong[2] * x[0] + der[4] * _car->_lenLong[2] * _car->_lenLong[2] * _car->_lenLong[2] * x[2] - der[4] * _car->_lenLong[2] * _car->_lenLong[2] * x[7] + der[6] * _car->_lenLong[3] * _car->_lenLong[3] * x[0] + der[6] * _car->_lenLong[3] * _car->_lenLong[3] * _car->_lenLong[3] * x[2] - der[6] * _car->_lenLong[3] * _car->_lenLong[3] * x[9] + der[0] * _car->_lenLong[0] * _car->_lenLong[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) - der[2] * _car->_lenLat[1] * _car->_lenLong[1] * _car->_lenLong[1] * x[1] + der[4] * _car->_lenLat[2] * _car->_lenLong[2] * _car->_lenLong[2] * x[1] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * _car->_lenLong[3] * x[1];
+        _temp[2] = der[2] * _car->_lenLong[1] * _car->_lenLong[1] * x[0] - der[0] * _car->_lenLong[0] * _car->_lenLong[0] * _car->_lenLong[0] * x[2] - der[2] * _car->_lenLong[1] * _car->_lenLong[1] * _car->_lenLong[1] * x[2] -
+                   der[2] * _car->_lenLong[1] * _car->_lenLong[1] * x[5] + der[4] * _car->_lenLong[2] * _car->_lenLong[2] * x[0] + der[4] * _car->_lenLong[2] * _car->_lenLong[2] * _car->_lenLong[2] * x[2] -
+                   der[4] * _car->_lenLong[2] * _car->_lenLong[2] * x[7] + der[6] * _car->_lenLong[3] * _car->_lenLong[3] * x[0] + der[6] * _car->_lenLong[3] * _car->_lenLong[3] * _car->_lenLong[3] * x[2] -
+                   der[6] * _car->_lenLong[3] * _car->_lenLong[3] * x[9] + der[0] * _car->_lenLong[0] * _car->_lenLong[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1]) - der[2] * _car->_lenLat[1] * _car->_lenLong[1] * _car->_lenLong[1] * x[1] +
+                   der[4] * _car->_lenLat[2] * _car->_lenLong[2] * _car->_lenLong[2] * x[1] - der[6] * _car->_lenLat[3] * _car->_lenLong[3] * _car->_lenLong[3] * x[1];
         dMdxx[2 * Constants::DOF + 3] = der[0] * _car->_lenLong[0] * (x[0] - x[3] + _car->_lenLat[0] * x[1] - _car->_lenLong[0] * x[2]);
         dMdxx[2 * Constants::DOF + 4] = 0;
         dMdxx[2 * Constants::DOF + 5] = -der[2] * _car->_lenLong[1] * (x[5] - x[0] + _car->_lenLat[1] * x[1] + _car->_lenLong[1] * x[2]);
@@ -835,25 +847,23 @@ private:
         ConstructAMatrix();
     }
 
-	/**
-   * \brief update the velocity vector
-   *
-   * v = (3x[n+1]-4x[n]+x[n-1])/(2h)
-   */
-	void UpdateVelocity() {
-
-		// v = x[n+1]
-		Math::copy<T>(Constants::DOF, _u_n_p_1, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
-		// v *= 3/2;
-		Math::scal<T>(Constants::DOF, 1.5, _car->_currentVelocityTwoTrackModel, Constants::INCX);
-		// v -= 2x[n]
-		Math::axpy<T>(Constants::DOF, -2, _u_n, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
-		// v += 0.5*x[n-1]
-		Math::axpy<T>(Constants::DOF, 0.5, _u_n_m_1, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
-		// v /= h
-		Math::scal<T>(Constants::DOF, _factor_h, _car->_currentVelocityTwoTrackModel, Constants::INCX);
-	}
-
+    /**
+     * \brief update the velocity vector
+     *
+     * v = (3x[n+1]-4x[n]+x[n-1])/(2h)
+     */
+    void UpdateVelocity() {
+        // v = x[n+1]
+        Math::copy<T>(Constants::DOF, _u_n_p_1, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
+        // v *= 3/2;
+        Math::scal<T>(Constants::DOF, 1.5, _car->_currentVelocityTwoTrackModel, Constants::INCX);
+        // v -= 2x[n]
+        Math::axpy<T>(Constants::DOF, -2, _u_n, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
+        // v += 0.5*x[n-1]
+        Math::axpy<T>(Constants::DOF, 0.5, _u_n_m_1, Constants::INCX, _car->_currentVelocityTwoTrackModel, Constants::INCX);
+        // v /= h
+        Math::scal<T>(Constants::DOF, _factor_h, _car->_currentVelocityTwoTrackModel, Constants::INCX);
+    }
 
 public:
     /**
@@ -884,7 +894,7 @@ public:
         }
     }
     virtual void UpdateStep(size_t currentIter, T* solution) {
-		_currentIter = currentIter;
+        _currentIter = currentIter;
         (this->*_activeExecutor)(_currentIter, solution);
         _timeStepCount += 1;
     }
@@ -897,8 +907,8 @@ public:
      */
     void UpdateStepBDF2(size_t currentIter, T* solution) {
         // cblas_dscal(DOF,0, force, 1);
-		// compute Force
-		_loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
+        // compute Force
+        _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
 
         GetInitialGuess(_twoTrackModelForce);
 #ifdef INTERPOLATION
@@ -907,8 +917,8 @@ public:
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
         // _u_n_m_2 points to _u_n_m_3 and _u_n_m_3 points to _u_n_m_2
 
-		// update velocity inside car class
-		UpdateVelocity();
+        // update velocity inside car class
+        UpdateVelocity();
 
         Math::SwapAddress<T>(_u_n_m_2, _u_n_m_3);
         // _u_n_m_2 points to _u_n_m_1 and _u_n_m_1 points to _u_n_m_3
@@ -942,7 +952,7 @@ public:
     void UpdateSystem() {
         // constructSpringLengths();
         _car->UpdateLengthsTwoTrackModel();
-		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
+        _loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructStiffnessMatrix();
 #ifdef DAMPING
         ConstructDampingMatrix();
@@ -1037,28 +1047,26 @@ public:
 #ifdef WRITECSV
 #ifdef INTERPOLATION
         IO::MyFile<T> newtonFile("C:\\software\\repos\\EVAA\\output\\newtonOutput.txt");
-#endif // INTERPOLATION
+#endif  // INTERPOLATION
 #endif
         int iter = 1;
         T t = _h;
         double eps = _h / 100;
         T* solution_vect = _uSolution;
-       
+
         while (std::abs(t - (_tend + _h)) > eps) {
             // solution_vect = _uSolution + iter * (DOF);
             UpdateStep(iter, sol_vect);
 #ifdef WRITECSV
 #ifdef INTERPOLATION
-        newtonFile.writeSingleValue(_newtonIteration);
-        newtonFile.writeSingleValue(_residualNorm);
-        newtonFile.newLine();
-#endif       
-#endif // WRITECSV
+            newtonFile.writeSingleValue(_newtonIteration);
+            newtonFile.writeSingleValue(_residualNorm);
+            newtonFile.newLine();
+#endif
+#endif  // WRITECSV
             iter++;
             t += _h;
         }
-
-        
     }
 
     void PrintFinalResults(T* sln) {
@@ -1076,13 +1084,11 @@ public:
         std::cout << "linear11DOF: rear-right tyre position pt1=\n\t[" << sln[10] << "]" << std::endl;
     }
 
-    virtual ~TwoTrackModelFull() {
-        Math::free<T>(_uSolution);
-    }
+    virtual ~TwoTrackModelFull() { Math::free<T>(_uSolution); }
 
 private:
     T _tend;
-    T *_uSolution;
+    T* _uSolution;
 };
 
 }  // namespace EVAA

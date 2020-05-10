@@ -594,7 +594,7 @@ public:
 
             // Broyden's Method
             for (size_t j = 0; j < max_iter; ++j) {
-                if (Math::nrm2<T>(x_len, F, 1) < tol) {
+                if (Math::nrm2<T>(x_len, F, 1) < tol) {// TODO : Implement condition over the gradient
                     break;
                 }
 
@@ -1078,7 +1078,6 @@ public:
         T delta_norm = 1, delta_norm2 = 0;
         lapack_int status;
         obj->CalculateResidual(force);
-
         do {
             *count= *count + 1;
             obj->ConstructJacobian();

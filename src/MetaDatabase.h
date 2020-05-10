@@ -549,8 +549,9 @@ private:
 
 	}
 
-	void SetValueToZero(T* arr, size_t n) {
-		Math::scal<T>(n, 0, arr, Constants::INCX);
+	void SetValueToZero(T* arr, const size_t n) {
+		//Math::scal<T>(n, 0, arr, Constants::INCX);
+        for (auto i = 0; i < n; ++i) arr[i] = 0;
 	}
 
     /**

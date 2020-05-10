@@ -3,13 +3,13 @@ clear; close all; clc;
 
 %% initial conditions
 k_body_fl=28e3*0.69;
-k_tyre_fl=260e3;
+k_tyre_fl=19.32e3;
 k_body_fr=28e3*0.69;
-k_tyre_fr=260e3;
+k_tyre_fr=19.32e3;
 k_body_rl=16e3*0.82;
-k_tyre_rl=260e3;
+k_tyre_rl=13.12e3;
 k_body_rr=16e3*0.82;
-k_tyre_rr=260e3;
+k_tyre_rr=13.12e3;
 penalty = 1e5;
 k_body_rot_fl = penalty;  % this is a penalty value->try it as high as possible and see how the convergence evolves
 k_body_rot_fr = penalty;
@@ -31,8 +31,8 @@ l_long_fl=1.395;
 l_long_fr=1.395;
 l_long_rl=1.596;
 l_long_rr=1.596;
-l_lat_fl=2*0.84;
-l_lat_fr=2*0.84;
+l_lat_fl=2*0.8458;
+l_lat_fr=2*0.8458;
 l_lat_rl=2*0.84;
 l_lat_rr=2*0.84;
 mass_Body=1936;
@@ -86,7 +86,7 @@ lower_rotational_stiffness = [k_tyre_rot_rr; k_tyre_rot_rl; k_tyre_rot_fl; k_tyr
 
 generate_from_trajectoryXYZ = true;
 
-% allocalte memory
+% allocate memory
 F_tyre1 = zeros(3,num_iter+1);
 F_tyre2 = zeros(3,num_iter+1);
 F_tyre3 = zeros(3,num_iter+1);
@@ -216,22 +216,22 @@ FW4 = [0; -mass_wheel(4)*g; 0];
 % FR3 = @(t, i, y, pcc, vt, vb, F) zeros(3,1);
 % FR4 = @(t, i, y, pcc, vt, vb, F) zeros(3,1);
 
-% FR1 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
-% FR2 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
-% FR3 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
-% FR4 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
+FR1 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
+FR2 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);
+FR3 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(3), y);
+FR4 = @(t, i, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(4), y);
 
-if generate_from_trajectoryXYZ
-    % arbitrary trajectory
-    FR1 = @(t, i, y, pcc, vt, vb, F) ...
-        flying_car_road_forces(mass_tyre(1), F, 1, F_tyre1, trajectoryXYZ_t1, vt1, i, delta_t);        
-    FR2 = @(t, i, y, pcc, vt, vb, F) ...
-        flying_car_road_forces(mass_tyre(2), F, 2, F_tyre2, trajectoryXYZ_t2, vt2, i, delta_t);
-    FR3 = @(t, i, y, pcc, vt, vb, F) ...
-        flying_car_road_forces(mass_tyre(3), F, 3, F_tyre3, trajectoryXYZ_t3, vt3, i, delta_t);
-    FR4 = @(t, i, y, pcc, vt, vb, F) ...
-        flying_car_road_forces(mass_tyre(4), F, 4, F_tyre4, trajectoryXYZ_t4, vt4, i, delta_t);
-end
+% if generate_from_trajectoryXYZ
+%     % arbitrary trajectory
+%     FR1 = @(t, i, y, pcc, vt, vb, F) ...
+%         flying_car_road_forces(mass_tyre(1), F, 1, F_tyre1, trajectoryXYZ_t1, vt1, i, delta_t);        
+%     FR2 = @(t, i, y, pcc, vt, vb, F) ...
+%         flying_car_road_forces(mass_tyre(2), F, 2, F_tyre2, trajectoryXYZ_t2, vt2, i, delta_t);
+%     FR3 = @(t, i, y, pcc, vt, vb, F) ...
+%         flying_car_road_forces(mass_tyre(3), F, 3, F_tyre3, trajectoryXYZ_t3, vt3, i, delta_t);
+%     FR4 = @(t, i, y, pcc, vt, vb, F) ...
+%         flying_car_road_forces(mass_tyre(4), F, 4, F_tyre4, trajectoryXYZ_t4, vt4, i, delta_t);
+% end
 
 %PLAY AROUND; expect RK4 and BCN to work fine
 % Explicit solvers 

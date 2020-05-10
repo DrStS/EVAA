@@ -199,15 +199,20 @@ public:
      * \param[out] inter pointer to array of size k to store interpolation values
      */
     void getInterpolation(const T* length, T* inter) const {
+        
+        count_interp_debug++;
+
         // size of array describing derivative (dorder), which is definde two lines below
         const MKL_INT ndorder = 1;
         const MKL_INT dorder[1] = {1};  // only the values are computed
 
         for (auto i = 0; i < ny; i++) {
             if (length[i] > l_max) {
+                std::cout << "Number of getInterpolation calls: " << count_interp_debug << "\n";
                 throw std::domain_error("spring length to big for lookup: " + std::to_string(length[i]) + " > " + std::to_string(l_max));
             }
             if (length[i] < l_min) {
+                std::cout << "Number of getInterpolation calls: " << count_interp_debug << "\n";
                 throw std::domain_error("spring length to small for lookup: " + std::to_string(length[i]) + " < " + std::to_string(l_min));
             }
             Math::dfInterpolate1D<T>(task[i], DF_INTERP, DF_METHOD_PP, 1, &length[i], DF_NO_HINT, ndorder, dorder, nullptr, &inter[i], rhint, 0);

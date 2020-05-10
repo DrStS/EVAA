@@ -6,7 +6,7 @@
       <NumberOfIterationsXML>10000</NumberOfIterationsXML>
     </GeneralSettingsXML>
     <MultyBodyDynamicsXML>
-      <SolverXML>BroydenCN</SolverXML>
+      <SolverXML>RK4</SolverXML>
       <MaximalIterationNumberXML>10000</MaximalIterationNumberXML>
       <ToleranceXML>1e-7</ToleranceXML>
     </MultyBodyDynamicsXML>
