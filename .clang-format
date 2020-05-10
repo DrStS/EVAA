@@ -7,7 +7,7 @@ BasedOnStyle: Google
 ReflowComments: true
 
 # Enforce max line length.
-ColumnLimit: 1000
+ColumnLimit: 250
 
 # Indent
 IndentWidth: 4

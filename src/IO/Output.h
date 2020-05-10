@@ -22,6 +22,7 @@ namespace IO {
  */
 template <typename T>
 void writeVector(const T* vector, const size_t count) {
+    std::cout << std::defaultfloat;
     writeVector(std::cout, vector, count);
 }
 
@@ -51,11 +52,23 @@ void writeVector(std::ostream& out, const T* vect, const size_t count) {
 template <typename T>
 void writeMatrix(std::ostream& out, const T* matrix, const size_t rows, const size_t cols) {
     out << "[" << std::endl;
-    for (auto i = 0; i < count; ++i) {
+    for (auto i = 0; i < rows; ++i) {
         out << "  ";
         writeVector(out, matrix + cols * i, cols);
     }
     out << std::endl;
+}
+
+template <typename T>
+void writeMatrix(const T* matrix, const size_t rows, const size_t cols) {   
+    std::cout << std::defaultfloat;
+    for (auto i = 0; i < rows; ++i) {
+        for (auto j = 0; j < cols; ++j) {
+            std::cout << matrix[i * rows + cols] << "   ";
+        }
+        std::cout << " \n";
+    }
+    std::cout << " \n";
 }
 
 /**

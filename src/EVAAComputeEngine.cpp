@@ -620,14 +620,14 @@ void EVAAComputeEngine::computeMKL11DOF(void) {
 
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
-    if (true) { // TODO remove this
+    if (true) {  // TODO remove this
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
-		Lagrange<Constants::floatEVAA>* lagrange = new Straight<Constants::floatEVAA>();
-		Euler<Constants::floatEVAA>* euler = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
-		LoadModule<Constants::floatEVAA>* load = new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
+        Lagrange<Constants::floatEVAA>* lagrange = new Straight<Constants::floatEVAA>();
+        Euler<Constants::floatEVAA>* euler = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
+        LoadModule<Constants::floatEVAA>* load = new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
         TwoTrackModelFull<Constants::floatEVAA> solver(car, load);
-		euler->ApplyProfileInitialCondition(car);
+        euler->ApplyProfileInitialCondition(car);
         solver.Solve(sol);
 
         solver.PrintFinalResults(sol);
@@ -656,57 +656,84 @@ void EVAAComputeEngine::computeMBD(void) {
     Math::free<Constants::floatEVAA>(sol);
 }
 
-void EVAAComputeEngine::computeALE(void) {
+size_t count_interp_debug = 0;
+void EVAAComputeEngine::computeALE(void) {    
+    
     Lagrange<Constants::floatEVAA>* lagrangeProfile;
-	Euler<Constants::floatEVAA>* eulerProfile;
-	Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
-
+    Euler<Constants::floatEVAA>* eulerProfile;
+    Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
 
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
-	if (db.getLagrangianRoadConditions() == LagrangianBoundaryConditionRoad::CIRCULAR) {
-		lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter());
-	}
-	else if (db.getLagrangianRoadConditions() == LagrangianBoundaryConditionRoad::STRAIGHT) {
-		lagrangeProfile = new Straight<Constants::floatEVAA>();
-	}
-	else if (db.getLagrangianRoadConditions() == LagrangianBoundaryConditionRoad::ARBITRARY) {
-		lagrangeProfile = new Arbitrary<Constants::floatEVAA>(db.getArbitraryTrajectory());
-	}
-	else {
-		throw "wrong lagrangian road profile condition";
-	}
+    if (db.getLagrangianRoadConditions() == LagrangianBoundaryConditionRoad::CIRCULAR) {
+        lagrangeProfile = new Circular<Constants::floatEVAA>(db.getCircularRoadCenter());
+    }
+    else if (db.getLagrangianRoadConditions() == LagrangianBoundaryConditionRoad::STRAIGHT) {
+        lagrangeProfile = new Straight<Constants::floatEVAA>();
+    }
+    else if (db.getLagrangianRoadConditions() == LagrangianBoundaryConditionRoad::ARBITRARY) {
+        lagrangeProfile = new Arbitrary<Constants::floatEVAA>(db.getArbitraryTrajectory());
+    }
+    else {
+        throw "wrong lagrangian road profile condition";
+    }
 
-	if (db.getEulerianRoadConditions() == EulerianBoundaryConditionRoad::FIXED) {
-		eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
-	}
-	else if (db.getEulerianRoadConditions() == EulerianBoundaryConditionRoad::NONFIXED) {
-		eulerProfile = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
-	}
-	else if (db.getEulerianRoadConditions() == EulerianBoundaryConditionRoad::SINUSOIDAL)
-	{
-		eulerProfile = new Sinusoidal<Constants::floatEVAA>(db.getArbitraryTrajectory(), db.getGravityField()[2]);
-	}
-	else {
-		throw "wrong eulerian road profile condition";
-	}
+    if (db.getEulerianRoadConditions() == EulerianBoundaryConditionRoad::FIXED) {
+        eulerProfile = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
+    }
+    else if (db.getEulerianRoadConditions() == EulerianBoundaryConditionRoad::NONFIXED) {
+        eulerProfile = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
+    }
+    else if (db.getEulerianRoadConditions() == EulerianBoundaryConditionRoad::SINUSOIDAL) {
+        eulerProfile = new Sinusoidal<Constants::floatEVAA>(db.getArbitraryTrajectory(), db.getGravityField()[2]);
+    }
+    else {
+        throw "wrong eulerian road profile condition";
+    }
     lagrangeProfile->ApplyProfileInitialCondition(car);
-	eulerProfile->ApplyProfileInitialCondition(car);
-	LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
+    eulerProfile->ApplyProfileInitialCondition(car);
+    LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
     TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car, loadModule);
     ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
 
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
     Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(solutionDim);
 
+    count_interp_debug = 0;
     ale->Solve(sol);
 
-    ale->PrintFinalResults();
+    //ale->PrintFinalResults();
 
-	delete TwoTrackModel_obj;
+    const Constants::floatEVAA referenceSol[27]{
+        4.135025711717026e+01, 2.826598299452915e+01, 1.390215911479731e-02,
+        3.916643337958500e+01, 2.846219123697477e+01, -4.471467983229860e-01,
+        3.916643337958500e+01, 2.846219123697477e+01, -6.238999999756398e-01,
+        4.195872835398454e+01, 3.037246111768233e+01, -4.469282446314615e-01,
+        4.195872835398454e+01, 3.037246111768233e+01, -6.238999999842283e-01,
+        4.086485297757658e+01, 2.600016216763133e+01, -4.422608921405404e-01,
+        4.086485297757658e+01, 2.600016216763133e+01, -6.239000000939482e-01,
+        4.363800003183954e+01, 2.789733253863435e+01, -4.421101579280428e-01,
+        4.363800003183954e+01, 2.789733253863435e+01, -6.239000000990548e-01};
+
+    static size_t run = 0;
+
+    auto tmp = 0, count = 0;
+    for (auto i = 0; i < 27; ++i) {
+        if (std::abs(referenceSol[i] - sol[i]) > 1e-6) {
+            count++;
+            tmp = 1;
+            std::cout << i << ": " << std::abs(sol[i] - referenceSol[i]) << "\n";
+        }        
+    }
+    if (tmp) {
+        std::cout << "count: " << count << "\n";
+        throw "BREEAK!!!";
+    }
+
+    delete TwoTrackModel_obj;
     delete car;
     delete loadModule;
     delete lagrangeProfile;
-	delete eulerProfile;
+    delete eulerProfile;
     delete ale;
 
     Math::free<Constants::floatEVAA>(sol);

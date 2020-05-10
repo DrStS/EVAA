@@ -53,6 +53,9 @@ public:
 
         _solutionVectorSize = (floor(_tend / _h) + 1);
         _solutionVector = Math::malloc<T>(_solutionVectorSize * (Constants::VEC_DIM * Constants::DIM));
+
+        std::cout << "Write _currentPositionTwoTrackModel in ALE Constructor: \n";
+        IO::writeVector(_carObj->getCurrentPositionTwoTrackModel(), 11);
     }
 
     ~ALE() { Math::free<T>(_solutionVector); }
@@ -120,7 +123,7 @@ public:
 #endif  // WRITECSV
 
         T* solution_vect;
-        int iter = 1;
+        size_t iter = 1;
         // time iteration
         double eps = _h / 100;
         while (std::abs(t - (_tend + _h)) > eps) {
@@ -194,7 +197,6 @@ public:
     void PrintFinalResults() {
         const T* sln = _carObj->getPositionVector();
 
-        IO::writeVector(_carObj->getAngleCG(), 3);
         IO::writeVector(sln, 27);
 
         std::cout << "ALE: orientation angles =\n\t[" << _carObj->getAngleCG()[0] << "\n\t " << _carObj->getAngleCG()[1] << "\n\t " << _carObj->getAngleCG()[2] << "]" << std::endl;

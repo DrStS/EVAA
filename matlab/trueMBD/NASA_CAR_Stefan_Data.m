@@ -62,10 +62,10 @@ mass_wheel = [mass_wheel_rr, mass_wheel_rl, mass_wheel_fl, mass_wheel_fr];
 % tyre parameters (provided as vectors [right-back, left-back, left-front, right_front])
 mass_tyre = [mass_tyre_rr, mass_tyre_rl, mass_tyre_fl, mass_tyre_fr];                   % do not put to zero to avoid singularities, Dirichlet condition are enforced via a force vector
 
-upper_spring_length = [0.2; 0.2; 0.2; 0.2];
-lower_spring_length = [0.2; 0.2; 0.2; 0.2];
+upper_spring_length = [0.4470; 0.4470; 0.4470; 0.4470];
+lower_spring_length = [0.1769; 0.1769; 0.1769; 0.1769];
 
-initial_upper_spring_length = [0.2; 0.2; 0.2; 0.2];                 % PLAY AROUND 
+initial_upper_spring_length = [0.7889; 0.7889; 0.7069; 0.7069];                 % PLAY AROUND 
 initial_lower_spring_length = [0.2; 0.2; 0.2; 0.2];
 
 upper_spring_stiffness = [k_body_rr; k_body_rl; k_body_fl; k_body_fr];
@@ -148,12 +148,12 @@ iscircular = true;
 %PLAY AROUND; expect RK4 and BCN to work fine
 % Explicit solvers 
 % solver = @(f, t, x) explicit_solver(f, t, x);
-solver = @(f, t, x) Runge_Kutta_4(f, t, x);
+% solver = @(f, t, x) Runge_Kutta_4(f, t, x);
 
 % Implicit solvers
 % solver = @(f, t, x) Broyden_Euler(f, t, x, tol, max_iter);
 % solver = @(f, t, x) Broyden_Crank_Nicolson(f, t, x, tol, max_iter);
-% solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
+solver = @(f, t, x) Broyden_PDF2(f, t, x, tol, max_iter);
 %% solving
 [t,y, y_sol, metrics] =  main_nasa_car(r1, r2, r3, r4, mass, mass_wheel, mass_tyre, Ic, initial_orientation, initial_position, ... 
                 lower_spring_length, upper_spring_length, initial_lower_spring_length, initial_upper_spring_length, ...
@@ -215,54 +215,52 @@ pt_rr = y_sol(end,50:52)';
 
 %%
 
+sol_MBD = y_sol(end, end-26:end)';
+
 sol_MBD = [
-  exchange_yz(qc);
-  exchange_yz(pcc);
-  exchange_yz(pw_fl);
-  exchange_yz(pw_fr);
-  exchange_yz(pw_rl);
-  exchange_yz(pw_rr);
-  exchange_yz(pt_fl);
-  exchange_yz(pt_fr);
-  exchange_yz(pt_rl);
-  exchange_yz(pt_rr);
+  pcc;
+  
+  pw_fl;
+  pw_rl;
+  pw_rr;
+  pw_fr;  
+  
+  pt_fl;
+  pt_rl;
+  pt_rr;
+  pt_fr;
 ];
 
-sol_ALE = [ -2.450490334545334e-02
-1.544980413136255e-02
-3.570796326794676e+00
--1.779016411364247e+01
-5.337766349767312e+01
-2.780839756680015e-02
--1.835409769135471e+01
-5.125923764760565e+01
--4.515139831502987e-01
--1.835409769135471e+01
-5.125923764760565e+01
--6.239000000007695e-01
--1.976317035677414e+01
-5.433503967377462e+01
--4.457551128532243e-01
--1.976317035677414e+01
-5.433503967377462e+01
--6.239000000015001e-01
--1.563922038439619e+01
-5.251447885827123e+01
--4.414628563093654e-01
--1.563922038439619e+01
-5.251447885827123e+01
--6.238999999646753e-01
--1.703863045646089e+01
-5.556918883933285e+01
--4.374914629796005e-01
--1.703863045646089e+01
-5.556918883933285e+01
--6.238999999660959e-01
+sol_ALE =[  
+  49.9100
+   -0.0070
+    2.9982
+   51.6827
+   -0.4438
+    1.5058
+   48.3288
+   -0.4438
+    1.3044
+   48.1378
+   -0.4482
+    4.2893
+   51.5150
+   -0.4482
+    4.4921
+   51.6827
+   -0.6239
+    1.5058
+   48.3288
+   -0.6239
+    1.3044
+   48.1378
+   -0.6239
+    4.2893
+   51.5150
+   -0.6239
+    4.4921
 ];
 
-function xgood = exchange_yz(xwrong)
-  xgood(1) = xwrong(1);
-  xgood(2) = xwrong(3);
-  xgood(3) = xwrong(2);
-  xgood = xgood';
-end
+[sol_ALE, sol_MBD, sol_ALE-sol_MBD]
+
+norm(sol_ALE - sol_MBD, inf)

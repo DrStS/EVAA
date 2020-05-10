@@ -1000,7 +1000,6 @@ public:
         T delta_norm = 1, delta_norm2 = 0;
         lapack_int status;
         obj->CalculateResidual(force);
-        std::cout << "\n\n res_norm: \n\t";
         do {
             *count= *count + 1;
             obj->ConstructJacobian();
@@ -1023,7 +1022,6 @@ public:
             Math::copy<T>(Constants::DOF, res, 1, temp, 1);
             Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
             delta_norm2 = Math::nrm2<T>(Constants::DOF, temp, 1);
-            std::cout << *res_norm << " \t ";
         } while (*res_norm > *tolerance && delta_norm2 < delta_norm && *count < *maxNewtonIteratins);
     }
 

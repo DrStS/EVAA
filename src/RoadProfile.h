@@ -19,7 +19,7 @@ template <typename T>
 class Profile {
 protected:
     std::string Name;
-    T* massOfComponents;  // [GC, W1, T1, ... ]						size: 9
+    T* massOfComponents = nullptr;  // [GC, W1, T1, ... ]						size: 9
 
 public:
     Profile() { massOfComponents = Math::malloc<T>(Constants::VEC_DIM); }
