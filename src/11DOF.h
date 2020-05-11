@@ -292,8 +292,8 @@ public:
         // Get the force
         _currentIter = currentIter;
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
+		
         Math::Solvers<T, TwoTrackModelBE<T>>::LinearBackwardEuler(_A, _B, _C, _u_n, _u_n_m_1, _twoTrackModelForce, _u_n_p_1, Constants::DOF);
-
 #ifdef INTERPOLATION
         UpdateSystem();
         Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
@@ -301,7 +301,6 @@ public:
         ConstructAMatrix();
 #endif
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
-
         // update two track velocity in car
         UpdateVelocity();
 
@@ -438,11 +437,12 @@ public:
      */
     void UpdateSystem() {
         _car->UpdateLengthsTwoTrackModel();
-        _loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
-        ConstructStiffnessMatrix();
+		ConstructStiffnessMatrix();
+        
 #ifdef DAMPING
         ConstructDampingMatrix();
 #endif
+		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructAMatrix();
         ConstructBMatrix();
     }
@@ -890,7 +890,6 @@ public:
             TwoTrackModelBE<T>::UpdateStep(currentIter, solution);
             // construct _A
             ConstructAMatrix();
-            ConstructAMatrix();
             _activeExecutor = &TwoTrackModelBDF2<T>::UpdateStepBDF2;
         }
     }
@@ -910,13 +909,22 @@ public:
         // cblas_dscal(DOF,0, force, 1);
         // compute Force
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
-        GetInitialGuess(_twoTrackModelForce);
+		std::cout << "Force for BDF2, iter = " << currentIter<< std::endl;
+		Math::write_vector(_twoTrackModelForce, 11);
+		GetInitialGuess(_twoTrackModelForce);
+		std::cout << "Initial guess for BDF2, iter = " << currentIter << std::endl;
+		Math::write_vector(_u_n_p_1, 11);
+		
 #ifdef INTERPOLATION
         UpdateSystem();
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
 #endif
-        IO::writeVector<T>(_u_n_p_1, Constants::DOF);
-        Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
+		std::cout << "Results for BDF2, iter = " << currentIter << std::endl;
+		Math::write_vector(_u_n_p_1, 11);
+		exit(5);
+
+
+		Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
         // _u_n_m_2 points to _u_n_m_3 and _u_n_m_3 points to _u_n_m_2
 
         // update velocity inside car class
@@ -953,11 +961,12 @@ public:
      */
     void UpdateSystem() {
         _car->UpdateLengthsTwoTrackModel();
-        _loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
-        ConstructStiffnessMatrix();
+		ConstructStiffnessMatrix();
+        
 #ifdef DAMPING
         ConstructDampingMatrix();
 #endif
+		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructAMatrix();
         ConstructbVec();
     }
@@ -993,6 +1002,8 @@ public:
         // _J += 1/_h * _dDdxx
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _dDdxx, 1, _J, 1);
 #endif
+		std::cout << "Jacobian for BDF2, iter = " << _currentIter << std::endl;
+		Math::write_matrix(_J, 11);
     }
 
     /**
@@ -1037,8 +1048,7 @@ public:
 template <typename T>
 class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
 public:
-    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) :
-        TwoTrackModelBDF2<T>(inputCar, loadModel) {       
+    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBDF2<T>(inputCar, loadModel) {       
         size_t sol_size = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations();
         _tend = sol_size * _h;
         _uSolution = Math::calloc<T>((sol_size + 1) * Constants::DOF);

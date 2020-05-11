@@ -8,13 +8,13 @@ c = 1.2;
 %c = 0;
 %% zero lengths
 
-L1 = 0.7;
+L1 = 0.2;
 L2 = 0.2;
-L3 = 0.7;
+L3 = 0.2;
 L4 = 0.2;
-L5 = 0.7;
+L5 = 0.2;
 L6 = 0.2;
-L7 = 0.7;
+L7 = 0.2;
 L8 = 0.2;
 %%
 global k_grid d_grid size_grid l_min l_max dl;
@@ -233,8 +233,8 @@ u_n_m_1(1)=u_n(1);
 u_n_p_1=u_n;
 
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
-%rhs =[-1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
-rhs = diag(M)*(-9.81);
+rhs =[1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
+%rhs = diag(M)*(-9.81);
 rhs(2:3) = 0;
 M_div_h2 = M / (delta_t * delta_t);
 %%
@@ -242,7 +242,6 @@ fixed = true;
 euler = true;
 bdf2 = true;
 if bdf2
-  %  A = (9/4)*M_div_h2 + K;
     B = (6)*M_div_h2;
     C = (-11/2)*M_div_h2;
     D = (2)*M_div_h2;
@@ -271,9 +270,6 @@ for i = 1: length(t)
         rhs(11) = newForce(11);
         if euler
             u_n_p_1 = ( M_div_h2 + K )\ (2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs);
-            if bdf2 && i==2
-                euler=false;
-            end
         elseif bdf2
             u_n_p_1 = ((9/4)*M_div_h2 + K)\ (B*u_n + C*u_n_m_1 + D*u_n_m_2 + E*u_n_m_3 + rhs);
         end

@@ -433,7 +433,7 @@ public:
 			//std::cout << "unexcited position = " << carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1] << ", displacement = " << carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] << ", upper spring length = " << carObj->getCurrentSpringsLengths()[2 * i] << std::endl;
 			carObj->_currentCornerPositions[(Constants::DIM - 1)*Constants::NUM_LEGS + i] = carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1] + carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] + carObj->getCurrentSpringsLengths()[2 * i];
 		}
-
+		
 		/*Make the plane from corners to get CG position angles and displacement*/
 		T _planeNormal[Constants::DIM];
 		T _point1[Constants::DIM];
@@ -472,6 +472,7 @@ public:
 		/* Get the angles */
 		carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
 		carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
+
 
         // update velocities
         for (auto i = 0; i < Constants::NUM_LEGS; ++i) {

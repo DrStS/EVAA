@@ -1116,15 +1116,23 @@ public:
         T delta_norm = 1, delta_norm2 = 0;
         lapack_int status;
         obj->CalculateResidual(force);
+		static lapack_int pivNewton[Constants::DOF]; // TODO: Fucking remove it from here!!!!!!!!!!!
         do {
             *count = *count + 1;
             obj->ConstructJacobian();
 
+			status = Math::getrf<T>(LAPACK_ROW_MAJOR, Constants::DOF, Constants::DOF, J, Constants::DOF, pivNewton);
+			
+
             // get J=LL^T
-            status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
-            Math::potrfCheckStatus(status);
+//			status = Math::potrf<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, J, Constants::DOF);
+			
+//			Math::potrfCheckStatus(status);
             // residual=J\residual -> residual = delta
-            Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, res, 1);
+
+//            Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, res, 1);
+
+			Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', Constants::DOF, 1, J, Constants::DOF, pivNewton, res, 1);
             // u_n_p_1 -= delta
             Math::axpy<T>(Constants::DOF, -1, res, 1, u_n_p_1, 1);
             delta_norm = Math::nrm2<T>(Constants::DOF, res, 1);
