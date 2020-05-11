@@ -34,7 +34,7 @@ private:
      * \param[in] length docs for input parameter v
      * \return y
      */
-    static T responseFunction(const T a, const T b, const T c, const T length) { return c * length * length + b * length + a; }
+    static T responseFunction(const T& a, const T& b, const T& c, const T& length) { return c * length * length + b * length + a; }
 
 public:
     /**
@@ -48,7 +48,7 @@ public:
      * each spring \param[in] b coefficient for linear part \param[in] c
      * coefficient for quadratic part \param[in] k number of springs
      */
-    static void buildLinearGrid(T* grid, T* axis, int size, T l_min, T l_max, T* a, T b, T c, int k) {
+    static void buildLinearGrid(T* grid, T* axis, const size_t& size, const T& l_min, const T& l_max, const T a[8], const T& b, const T& c, const size_t& k) {
         T density = (l_max - l_min) / (size - 1);
 #pragma loop(ivdep)
         for (auto i = 0; i < size; i++) {
@@ -72,7 +72,7 @@ public:
      * each spring \param[in] b coefficient for linear part \param[in] c
      * coefficient for quadratic part \param[in] k number of springs
      */
-    static void buildChebyshevGrid(T* grid, T* axis, int size, T l_min, T l_max, T* a, T b, T c, int k) {
+    static void buildChebyshevGrid(T* grid, T* axis, const size_t& size, const T& l_min, const T& l_max, const T a[8], const T& b, const T& c, const size_t& k) {
 #pragma loop(ivdep)
         for (auto i = 0; i < size; i++) {
             axis[i] = (1 + cos((2 * i + 1) / (2 * size) * Constants::PI)) / 2 * (l_max - l_min) + l_min;
@@ -104,19 +104,18 @@ constexpr MKL_INT rhint = DF_NO_HINT;
 template <typename T>
 class EVAALookup {
 private:
-    DFTaskPtr* task = nullptr; /**< Data Fitting task descriptor */
-    MKL_INT nx;                /**< number of break points (data points in the grid)*/
-    MKL_INT
-    ny;                         /**< number of functions ( in our case 1 per task but 8 in total)*/
+    DFTaskPtr* task = nullptr;  /**< Data Fitting task descriptor */
+    size_t nx;                  /**< number of break points (data points in the grid)*/
+    size_t ny;                  /**< number of functions ( in our case 1 per task but 8 in total)*/
     MKL_INT bc_type = DF_NO_BC; /**< boundary conditions type*/
     MKL_INT ic_type = DF_NO_IC; /**< internal conditions type*/
 
-    T* axis = nullptr;        /**< array of break points (axis with length values of the grid points)*/
-    T* grid = nullptr;        /**< function values */
-    T* scoeff = nullptr;      /**< array of spline coefficients*/
-    MKL_INT stype;  /**< spline type: linear = DF_PP_DEFAULT, spline = DF_PP_NATURAL*/
-    MKL_INT sorder; /**< spline order: linear = DF_PP_LINEAR, spline = DF_PP_CUBIC*/
-    T l_min, l_max; /**< to test wheather its inbound */
+    T* axis = nullptr;   /**< array of break points (axis with length values of the grid points)*/
+    T* grid = nullptr;   /**< function values */
+    T* scoeff = nullptr; /**< array of spline coefficients*/
+    MKL_INT stype;       /**< spline type: linear = DF_PP_DEFAULT, spline = DF_PP_NATURAL*/
+    MKL_INT sorder;      /**< spline order: linear = DF_PP_LINEAR, spline = DF_PP_CUBIC*/
+    T l_min, l_max;      /**< to test wheather its inbound */
 
 public:
     /**
@@ -135,7 +134,14 @@ public:
      * number of springs \param type int which corersponds to a certain type of
      * interpolation \param order order of the interpolation: depends on type
      */
-    EVAALookup(int size, T* a, T b, T c, T l_min, T l_max, int k, int type, int order) : nx(size), ny(k), sorder(order), stype(type), l_min(l_min), l_max(l_max) {
+    EVAALookup(const size_t size, const T a[8], const T& b, const T& c, const T& l_min, const T& l_max, const size_t k, const size_t type, const size_t order) :
+        //
+        nx(size),
+        l_min(l_min),
+        l_max(l_max),
+        ny(k),
+        stype(type),
+        sorder(order) {
         if (sorder == DF_PP_CUBIC) {
             bc_type = DF_BC_FREE_END;
         }
@@ -168,7 +174,7 @@ public:
         // for debugging purposes
 #ifdef WRITECSV
         generateLookupOutputFile(l_min, l_max, a[0]);
-#endif // WRITECSV
+#endif  // WRITECSV
 
         Math::free<T>(grid);
     }
@@ -187,7 +193,6 @@ public:
             dfDeleteTask(&task[i]);
         }
         Math::free<DFTaskPtr>(task);
-        
     }
     /**
      * \brief interpolates the ny = k grids ob the lookuptable
@@ -199,7 +204,6 @@ public:
      * \param[out] inter pointer to array of size k to store interpolation values
      */
     void getInterpolation(const T* length, T* inter) const {
-        
         count_interp_debug++;
 
         // size of array describing derivative (dorder), which is definde two lines below

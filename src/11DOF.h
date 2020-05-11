@@ -1036,10 +1036,9 @@ public:
 template <typename T>
 class TwoTrackModelFull : public TwoTrackModelBE<T> {
 public:
-    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBE<T>(inputCar, loadModel) {
-        auto& db = MetaDatabase<T>::getDatabase();
-        _tend = db.getNumberOfTimeIterations() * _h;
-        int sol_size = (floor(_tend / _h) + 1);
+    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBE<T>(inputCar, loadModel) {       
+        size_t sol_size = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations();
+        _tend = sol_size * _h;
         _uSolution = Math::calloc<T>((sol_size + 1) * Constants::DOF);
     }
 
@@ -1049,9 +1048,9 @@ public:
         IO::MyFile<T> newtonFile("C:\\software\\repos\\EVAA\\output\\newtonOutput.txt");
 #endif  // INTERPOLATION
 #endif
-        int iter = 1;
+        size_t iter = 1;
         T t = _h;
-        double eps = _h / 100;
+        T eps = _h / 100;
         T* solution_vect = _uSolution;
 
         while (std::abs(t - (_tend + _h)) > eps) {
