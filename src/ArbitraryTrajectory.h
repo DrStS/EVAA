@@ -295,7 +295,7 @@ public:
     * This means, that between two XML points  [X(i), Y(i)] and [X(�+1),
     Y(i+1)], there will be n=(times(�+1) - times(i)) / delta_t true road points
      */
-    void interpolateRoadPoints(size_t numProvidedPoints, T* providedPointsX, T* providedPointsY, T* providedTimes) {
+    void interpolateRoadPoints(const size_t& numProvidedPoints, T* providedPointsX, T* providedPointsY, T* providedTimes) {
         for (auto i = 0; i < numProvidedPoints - 1; i++) {
             if (providedTimes[i] >= providedTimes[i + 1]) {
                 std::cout << providedTimes[i] << std::endl;
@@ -304,7 +304,7 @@ public:
             }
         }
         T maxTime = providedTimes[numProvidedPoints - 1];
-        int numInterpolationPoints = maxTime / _delta_t + 1;
+        size_t numInterpolationPoints = maxTime / _delta_t + 1;
         T* timeInterpolationPoints = Math::malloc<T>(_numIterations + 1);
         T interpolationTime = _delta_t * _numIterations;
         // when interpolationTime is longer than road defined exit
@@ -368,7 +368,7 @@ public:
      */
     void calculateTravelledDistanceNonArbitraryRoad(T* v) {
         _normedDistance[0] = 0;
-        for (int i = 1; i < _numIterations + 1; ++i) {
+        for (size_t i = 1; i < _numIterations + 1; ++i) {
             _normedDistance[i] = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) * i * _delta_t;        
         }
     }
@@ -380,7 +380,7 @@ public:
      */
     void calculateTravelledDistance() {
         _normedDistance[0] = 0;
-        for (int i = 1; i < _numIterations + 1; ++i) {
+        for (size_t i = 1; i < _numIterations + 1; ++i) {
             _normedDistance[i] = _normedDistance[i - 1] + sqrt((_roadPointsX[i] - _roadPointsX[i - 1]) * (_roadPointsX[i] - _roadPointsX[i - 1]) + (_roadPointsY[i] - _roadPointsY[i - 1]) * (_roadPointsY[i] - _roadPointsY[i - 1]));
         }
     }
@@ -405,7 +405,7 @@ public:
                 _roadAngles[0] = -std::acos(directionX / directionNorm);
             }
 
-            for (int i = 1; i < _numIterations; ++i) {
+            for (size_t i = 1; i < _numIterations; ++i) {
                 directionX = -0.5 * _roadPointsX[i - 1] + 0.5 * _roadPointsX[i + 1];
                 directionY = -0.5 * _roadPointsY[i - 1] + 0.5 * _roadPointsY[i + 1];
                 directionNorm = std::sqrt(directionX * directionX + directionY * directionY);
@@ -434,7 +434,7 @@ public:
             }
         }
         else {
-            for (int i = 0; i < _numIterations + 1; ++i) {
+            for (size_t i = 0; i < _numIterations + 1; ++i) {
                 _roadAngles[i] = 0;
             }
         }
@@ -460,7 +460,7 @@ public:
         T localYcoordinates[Constants::NUM_LEGS] = {-_l_lat_fl, _l_lat_fr, -_l_lat_rl, _l_lat_rr};
 
         // get all leg positions
-        for (int i = 0; i < _numIterations + 1; ++i) {
+        for (size_t i = 0; i < _numIterations + 1; ++i) {
             T c = std::cos(_roadAngles[i]);
             T s = std::sin(_roadAngles[i]);
 
@@ -502,7 +502,7 @@ public:
      * \brief calculate vertical positions
      */
     void calculateVerticalPositionsLegs() {
-        for (int i = 0; i < _numIterations + 1; ++i) {
+        for (size_t i = 0; i < _numIterations + 1; ++i) {
             _legPointsZ_fl[i] = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_fl)) - _initialUpperSpringLength_fl - _initialLowerSpringLength_fl;
             _legPointsZ_fr[i] = _amplitudeRight * std::sin(_frequencyRight * (_normedDistance[i] + _phaseShift_fr)) - _initialUpperSpringLength_fr - _initialLowerSpringLength_fr;
             _legPointsZ_rl[i] = _amplitudeLeft * std::sin(_frequencyLeft * (_normedDistance[i] + _phaseShift_rl)) - _initialUpperSpringLength_rl - _initialLowerSpringLength_rl;
@@ -842,7 +842,7 @@ public:
         T x;
 
         // create circular road trajectory
-        for (int i = 0; i < _numIterations + 1; ++i) {
+        for (size_t i = 0; i < _numIterations + 1; ++i) {
             x = _delta_t * i * velocity;
             _roadPointsX[i] = center[0] + radius * std::sin(x / radius);
             _roadPointsY[i] = center[1] + radius * std::cos(x / radius);
@@ -864,7 +864,7 @@ public:
         calculateAccelerationsCenterOfGravity();
         calculateAccelerationsLegs(longitude, longitude, longitude, longitude, latitude, latitude, latitude, latitude);
 
-        for (int i = 0; i < _numIterations + 1; ++i) {
+        for (size_t i = 0; i < _numIterations + 1; ++i) {
             // check the correctness of the distance
             if (std::abs(_normedDistance[i] - velocity * _delta_t * i) > tolerance) {
                 std::cout << "calculateTravelledDistance failed in "
@@ -1067,14 +1067,14 @@ private:
         if (_numIterations > 3) {
             acceleration[0] = -(2 * points[0] + 5 * points[1] + 4 * points[2] + points[3]) * invDeltaT;
 
-            for (int i = 1; i < _numIterations; ++i) {
+            for (size_t i = 1; i < _numIterations; ++i) {
                 acceleration[i] = (points[i - 1] - 2 * points[i] + points[i + 1]) * invDeltaT;
             }
 
             acceleration[_numIterations] = -(2 * points[_numIterations] + 5 * points[_numIterations - 1] + 4 * points[_numIterations - 2] + points[_numIterations - 3]) * invDeltaT;
         }
         else {
-            for (int i = 0; i < _numIterations + 1; ++i) {
+            for (size_t i = 0; i < _numIterations + 1; ++i) {
                 acceleration[i] = 0;
             }
         }
