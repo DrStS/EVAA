@@ -16,6 +16,9 @@ build*
 out/
 *.cmake
 
+# HDF5
+*.hdf5
+
 # Matlab
 *.asv
 
@@ -37,3 +40,9 @@ dump/*
 
 # clang-format
 .clang-format
+
+# Visual Studio Code Analysis
+*.sarif
+
+# binary files
+bin64/*

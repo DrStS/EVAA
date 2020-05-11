@@ -288,7 +288,7 @@ public:
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
     virtual void UpdateStep(size_t currentIter, T* solution) {
-        // Math::scal<T>(Constants::DOF, -1, _u_n_m_1, Constants::INCX); // TODO what is this?
+        // Math::scal<T>(Constants::DOF, -1, _u_n_m_1, Constants::INCX);
         // Get the force
         _currentIter = currentIter;
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
@@ -296,7 +296,7 @@ public:
         Math::Solvers<T, TwoTrackModelBE<T>>::LinearBackwardEuler(_A, _B, _C, _u_n, _u_n_m_1, _twoTrackModelForce, _u_n_p_1, Constants::DOF);
 #ifdef INTERPOLATION
         UpdateSystem();
-        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
+        Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, _twoTrackModelForce, _J, _residual, _residualNorm, _u_n_p_1, _temp, _tolerance, _maxNewtonIteration, _newtonIteration);
 #else
         ConstructAMatrix();
 #endif
@@ -1084,9 +1084,6 @@ public:
     void PrintFinalResults(T* sln) {
         std::cout.precision(15);
         std::cout << std::scientific;
-
-        IO::writeVector(sln, 11);
-
         std::cout << "linear11DOF: orientation angles=\n\t[" << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
         std::cout << "linear11DOF: car body position pc=\n\t[" << sln[0] << "]" << std::endl;
         std::cout << "linear11DOF: front-left wheel position pw3=\n\t[" << sln[3] << "]" << std::endl;

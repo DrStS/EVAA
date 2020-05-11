@@ -464,54 +464,38 @@ void GetBasis(const T* initial_orientation, T* transformed_basis) {
     // get local basis vectors using unit quaternion rotation
     // s = 1 / norm(q) ^ 2;      %normalizer, only to remove numerical stuffy
     // stuff
-    size_t quad_dim = 4;
-    size_t dim = 3;  // TODO: Replace dim with Constants::DIM
-    T nrm = Math::nrm2<T>(quad_dim, initial_orientation, 1);  // TODO : use dot
-    T s = 1. / (nrm * nrm);
-    // Math::scal<T>(dim * dim, 0, transformed_basis, 1);
-    Math::SetValueToZero<T>(transformed_basis, Constants::DIMDIM);
+    const size_t quad_dim = 4;
+    //T nrm = Math::nrm2<T>(quad_dim, initial_orientation, 1);  // TODO : use dot
+    //T s = 1. / (nrm * nrm);
+    T s = 1. / Math::dot<T>(quad_dim, initial_orientation, 1, initial_orientation, 1);
+    Math::scal<T>(Constants::DIM * Constants::DIM, 0, transformed_basis, 1);
     size_t i, j;
 
     T quad_sum = 0;
-    for (i = 0; i < dim; ++i) {
+    for (i = 0; i < Constants::DIM; ++i) {
         quad_sum += initial_orientation[i] * initial_orientation[i];
     }
     i = 0;
     j = 0;
-    transformed_basis[i * dim + j] =
-        1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transformed_basis[i * Constants::DIM + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
     j = 1;
-    transformed_basis[i * dim + j] = 2 * s *
-                                     (initial_orientation[i] * initial_orientation[j] -
-                                      initial_orientation[i + 2] * initial_orientation[j + 2]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
     j = 2;
-    transformed_basis[i * dim + j] = 2 * s *
-                                     (initial_orientation[i] * initial_orientation[j] +
-                                      initial_orientation[i + 1] * initial_orientation[j + 1]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
     i = 1;
     j = 0;
-    transformed_basis[i * dim + j] = 2 * s *
-                                     (initial_orientation[i] * initial_orientation[j] +
-                                      initial_orientation[i + 2] * initial_orientation[j + 2]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
     j = 1;
-    transformed_basis[i * dim + j] =
-        1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transformed_basis[i * Constants::DIM + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
     j = 2;
-    transformed_basis[i * dim + j] = 2 * s *
-                                     (initial_orientation[i] * initial_orientation[j] -
-                                      initial_orientation[i - 1] * initial_orientation[j + 1]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
     i = 2;
     j = 0;
-    transformed_basis[i * dim + j] = 2 * s *
-                                     (initial_orientation[i] * initial_orientation[j] -
-                                      initial_orientation[i + 1] * initial_orientation[j + 1]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
     j = 1;
-    transformed_basis[i * dim + j] = 2 * s *
-                                     (initial_orientation[i] * initial_orientation[j] +
-                                      initial_orientation[i + 1] * initial_orientation[j - 1]);
+    transformed_basis[i * Constants::DIM + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
     j = 2;
-    transformed_basis[i * dim + j] =
-        1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transformed_basis[i * Constants::DIM + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
 }
 
 /**
@@ -626,8 +610,7 @@ public:
 
             // Broyden's Method
             for (size_t j = 0; j < max_iter; ++j) {
-                if (Math::nrm2<T>(x_len, F, 1) <
-                    tol) {  // TODO : Implement condition over the gradient
+                if (Math::nrm2<T>(x_len, F, 1) < tol) {  // TODO : Implement condition over the gradient
                     break;
                 }
 
@@ -910,9 +893,7 @@ public:
                     Math::scal<T>(x_len, 1. / nrm, dx, 1);
                     Math::scal<T>(x_len, 1. / nrm, dF, 1);
                     // y := alpha*A*x + beta*y, dgemv operation
-                    Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1, J, x_len, dx, 1, 1,
-                                  dF,
-                                  1);  // using dF to store data
+                    Math::gemv<T>(CblasRowMajor, CblasNoTrans, x_len, x_len, -1, J, x_len, dx, 1, 1, dF, 1);  // using dF to store data
                     Math::ger<T>(CblasRowMajor, x_len, x_len, 1, dF, 1, dx, 1, J, x_len);
 
                     // F = F_new; interchanging pointers to avoid copy
@@ -1101,24 +1082,16 @@ public:
     /**
      * \brief newton loop for the 11 Dof system
      */
-    static void Newton(
-        C* obj /**< instance of 11dof class*/,
-        T* force /**< pointer to force vector (not from 11dof class)*/,
-        T* J /**< pointer to Jacobian from 11dofClass*/, T* res /**< residual from 11Dof class*/,
-        T* res_norm /**< norm of the residual from the 11 Dof class*/,
-        T* u_n_p_1 /**< current position vector*/,
-        T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/,
-        T* tolerance /**< pointer to tolerance from 11 dof class for stopping criteria*/,
-        size_t* maxNewtonIteratins /**< pointer to maxiumum number of neton iterations*/,
-        size_t* count /**< pointer to iteration count */
+    // TODO write the documentation above
+    static void Newton(C* obj /**< instance of 11dof class*/, T* force /**< pointer to force vector (not from 11dof class)*/, T* J /**< pointer to Jacobian from 11dofClass*/, T* res /**< residual from 11Dof class*/, T& res_norm /**< reference to norm of the residual from the 11 Dof class*/, T* u_n_p_1 /**< current position vector*/, T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/, T& tolerance /**< reference to tolerance from 11 dof class for stopping criteria*/, size_t& maxNewtonIterations /**< reference to maxiumum number of Newton iterations*/, size_t& count /**< reference to iteration count */
     ) {
-        *count = 0;
+        count = 0;
         T delta_norm = 1, delta_norm2 = 0;
         lapack_int status;
         obj->CalculateResidual(force);
 		static lapack_int pivNewton[Constants::DOF]; // TODO: Fucking remove it from here!!!!!!!!!!!
         do {
-            *count = *count + 1;
+            count++;
             obj->ConstructJacobian();
 
 			status = Math::getrf<T>(LAPACK_ROW_MAJOR, Constants::DOF, Constants::DOF, J, Constants::DOF, pivNewton);
@@ -1139,15 +1112,14 @@ public:
 
             // update all the matrices
             obj->UpdateSystem();
-            // calculate the newton function
+            // calculate the Newton function
             obj->CalculateResidual(force);
             // copy the new residual to a temp to check if newton has converged
             // without losing residual
             Math::copy<T>(Constants::DOF, res, 1, temp, 1);
             Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
             delta_norm2 = Math::nrm2<T>(Constants::DOF, temp, 1);
-        } while (*res_norm > *tolerance && delta_norm2 < delta_norm &&
-                 *count < *maxNewtonIteratins);
+        } while (res_norm > tolerance && delta_norm2 < delta_norm && count < maxNewtonIterations);
     }
 
     /**

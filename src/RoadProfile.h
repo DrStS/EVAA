@@ -98,7 +98,7 @@ public:
      * \return externalTorque torque acting on the car system [GC: Z]
      */
     virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj,
-                                            T* externalTorque) = 0;
+                                            T& externalTorque) = 0;
     virtual ~Lagrange() {}
 };
 
@@ -183,8 +183,8 @@ public:
 		carObj->setInitialAngleGlobalZ(carObj->_currentAngleLagrangian);
     }
 
-    virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj, T* externalTorque) {
-        *externalTorque = 0;
+    virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj, T& externalTorque) {
+        externalTorque = 0;
     }
 
     /**
@@ -307,8 +307,8 @@ public:
      * \return externalTorque torque acting on the car system [GC: Z]
      */
     virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj,
-                                            T* externalTorque) {
-        *externalTorque =
+                                            T& externalTorque) {
+        externalTorque =
             _trajectory->getLagrangianTorque(_iterationCount, carObj->getMomentOfInertiaLagrangian());
     }
     virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
@@ -341,8 +341,8 @@ public:
     virtual void ApplyProfileInitialCondition(Car<T>* carObj) {}
 
     virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj,
-                                            T* externalTorque) {
-        *externalTorque = 0;
+                                            T& externalTorque) {
+        externalTorque = 0;
     }
 
     /**
@@ -470,8 +470,11 @@ public:
 		
 
 		/* Get the angles */
-		carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
-		carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
+        if (_rotationMatrix[3 * Constants::DIM - 1] != 0)
+            carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
+        else
+            carObj->_currentDisplacementTwoTrackModel[1]  = std::atan2(-_rotationMatrix[2 * Constants::DIM - 1], _rotationMatrix[3 * Constants::DIM - 1]);
+        carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
 
 
         // update velocities
@@ -479,7 +482,6 @@ public:
             T& tyreVelocity = carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i]];
             tyreVelocity = 0;
         }
-
 
         carObj->UpdateLengthsTwoTrackModel();
     }
@@ -602,7 +604,10 @@ public:
 
 
 		/* Get the angles */
-		carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
+        if (_rotationMatrix[3 * Constants::DIM - 1] != 0)
+            carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
+        else
+            carObj->_currentDisplacementTwoTrackModel[1] = std::atan2(-_rotationMatrix[2 * Constants::DIM - 1], _rotationMatrix[3 * Constants::DIM - 1]);
 		carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
 		
         carObj->UpdateLengthsTwoTrackModel();

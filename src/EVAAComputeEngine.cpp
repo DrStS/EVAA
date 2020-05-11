@@ -46,6 +46,10 @@ using Eigen::VectorXd;
 #include <blaze/Math.h>
 #endif
 
+#ifdef USE_HDF5
+#include <IO/OutputHDF5.h>
+#endif
+
 //#define DAMPING 1  // TODO remove
 
 namespace EVAA {
@@ -65,7 +69,6 @@ void EVAAComputeEngine::printInfo(void) {
     std::cout << "\n\nCalculate the solution after " << db.getNumberOfTimeIterations() * db.getTimeStepSize() << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations() << " iterations\n\n\n";
 }
 
-size_t count_interp_debug = 0;
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
     if (true) {  // TODO remove this
@@ -77,7 +80,6 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
         TwoTrackModelFull<Constants::floatEVAA> solver(car, load);
         euler->ApplyProfileInitialCondition(car);
 
-        count_interp_debug = 0;
         solver.Solve(sol);
 
         solver.PrintFinalResults(sol);
@@ -119,6 +121,12 @@ void EVAAComputeEngine::computeMBD(void) {
 
     solver.Solve(sol);
     solver.PrintFinalResult(sol);
+
+#ifdef USE_HDF5
+    solver.WriteFinalResult(sol);
+    solver.WriteFinalResultFormatted(sol);
+#endif  // USE_HDF5
+
     Math::free<Constants::floatEVAA>(sol);
 }
 
@@ -166,17 +174,23 @@ void EVAAComputeEngine::computeALE(void) {
 		std::cout << "BDF2 type eulerain solver" << std::endl;
         TwoTrackModel_obj = new TwoTrackModelBDF2<Constants::floatEVAA>(car, loadModule);
     }
+    
+#ifndef USE_HDF5
     ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
+#else
+    std::string fileName = "ALE_Checkpoints.hdf5";
+    std::string filePath = "";
+    ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj, filePath, fileName);
+#endif  // ! USE_HDF5
 
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;
     Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(solutionDim);
 
-    count_interp_debug = 0;
     ale->Solve(sol);
 
     ale->PrintFinalResults();
 
-#ifndef  DAMPING
+#ifndef DAMPING
 
     static const Constants::floatEVAA referenceSol10000[27]{
         -2.080734004508660e+01, 4.546487545598364e+01, -3.139735789643002e-01,

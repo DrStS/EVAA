@@ -2,8 +2,6 @@
 
 #pragma once
 
-extern size_t count_interp_debug;
-
 namespace EVAA {
 namespace Constants {
 /** alignment for mkl malloc */
@@ -52,10 +50,10 @@ constexpr size_t REAR_LEFT = 2;
 constexpr int REAR_RIGHT = 3;
 
 /** Tyre index in Euler Frame 11DOF */
-constexpr int TYRE_INDEX_EULER[4] {4, 6, 8, 10};
+constexpr int TYRE_INDEX_EULER[4]{4, 6, 8, 10};
 
 /** Tyre index in the Lagrangian Frame Start position*/
-constexpr int TYRE_INDEX_LAGRANGE[4] { 4, 8, 12, 16 };
+constexpr int TYRE_INDEX_LAGRANGE[4]{4, 8, 12, 16};
 
 /** It's PI come on */
 constexpr floatEVAA PI = 3.141592653589793238463;

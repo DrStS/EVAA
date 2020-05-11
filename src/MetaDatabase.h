@@ -17,9 +17,9 @@
 #endif
 
 #include "IP_EVAA_XML.h"
-#include "VEHICLE_EVAA_XML.h"
 #include "LOAD_EVAA_XML.h"
 #include "LOOKUP_EVAA_XML.h"
+#include "VEHICLE_EVAA_XML.h"
 
 namespace EVAA {
 
@@ -292,7 +292,9 @@ public:
             const auto horizontalProfile = load_data->lagrangianRoadProfile().arbitraryRoadProfile().get();
             _lagrangianBoundaryCondition = LagrangianBoundaryConditionRoad::ARBITRARY;
             std::cout << "Run the simulation on an arbitrary road" << std::endl;
-            if (_trajectory != nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter + 1, _timestep);
+            if (_trajectory == nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter + 1, _timestep);
+            
+            _trajectory->initializeHorizontalProfile(_initial_upper_spring_length, _initial_lower_spring_length, _l_lat, _l_long);
 
             std::vector<T> wayPointsX;
             std::vector<T> wayPointsY;

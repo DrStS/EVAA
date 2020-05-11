@@ -244,7 +244,7 @@ public:
         GetEulerianForce(_iterationCount, eulerForce);
     }
 
-    void GetTorqueLagrange(const size_t& _iterationCount, T* torque) {
+    void GetTorqueLagrange(const size_t& _iterationCount, T& torque) {
         _lagrangianProfile->GetProfileTorqueLagrangian(_iterationCount, _carObj, torque);
     }
 };
