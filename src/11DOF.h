@@ -379,7 +379,10 @@ public:
      *
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
-    void SetJacobianTyreLineToFixed(const int& tyreNumber) { Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1); }
+    void SetJacobianTyreLineToFixed(const int& tyreNumber) { 
+		std::cout << "inside euler SetJacobianTyreLineToFixed" << std::endl;
+		Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1); 
+	}
 
     /**
      * \brief construct Jacobian for that one time step when the tyre hits the road
@@ -877,6 +880,12 @@ public:
         _u_n_m_3 = Math::malloc<T>(Constants::DOF);
         _bVec = Math::malloc<T>(Constants::DOF);
         _activeExecutor = &TwoTrackModelBDF2<T>::FirstTwoSteps;
+		if (_loadModuleObj->GetEulerProfileName() == "Fixed") {
+			_JacobianAdjustment = &TwoTrackModelBDF2<T>::ConstructFixedJacobian;
+		}
+		else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed" || _loadModuleObj->GetEulerProfileName() == "Sinusoidal") {
+			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructNonFixedJacobian;
+		}
     }
 
     void FirstTwoSteps(size_t currentIter, T* solution) {
@@ -986,7 +995,7 @@ public:
         Math::copy<T>(Constants::DOFDOF, _A, 1, _J, 1);
         // _J += dKdx * x[n+1]
         Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
-
+		(this->*_JacobianAdjustment)();
 #ifdef DAMPING
         db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
         // temp = x[n+1]
@@ -1013,6 +1022,7 @@ public:
      * - _K + 1/h dDdx * x[n]] therefore _J = _M_h2 for the tyre positions
      */
     void ConstructFixedJacobian() {
+		std::cout << "Adjusting to fix" << std::endl;
         for (auto i = 0; i < Constants::NUM_LEGS; i++) {
             SetJacobianTyreLineToFixed(i);
         }
@@ -1024,10 +1034,12 @@ public:
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
     void SetJacobianTyreLineToFixed(const int& tyreNumber) {
-        // _J = _M_h2
-        Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, _J + (4 + 2 * tyreNumber) * Constants::DOF, 1);
-        // _J = 9/4 _M_h2
-        Math::scal<T>(Constants::DOF, 2.25, _J + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1);
+		std::cout << "inside bdf2 SetJacobianTyreLineToFixed" << std::endl;
+		// _J = _M_h2
+        //Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1);
+		TwoTrackModelBE<T>::SetJacobianTyreLineToFixed(tyreNumber);
+		// _J = 9/4 _M_h2
+        Math::scal<T>(Constants::DOF, 2.25, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1);
     }
 
     /*

@@ -354,8 +354,9 @@ for i = 1: length(t)
             if fixed
                J(idx,:) = (9.0/4.0) * M_div_h2(idx,:);
             end
+            J
         end
-                
+        
         Delta = -J\r;
         u_n_p_1 = Delta + u_n_p_1; 
         
