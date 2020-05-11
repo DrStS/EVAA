@@ -141,11 +141,13 @@ void checkFileExists(const std::string& filename);
 template <typename T>
 class MyFile {
 public:
-    MyFile(std::string filename) {
+    MyFile(std::string filename){
         myfile.open(filename);
         myfile << std::setprecision(15);
     };
-    ~MyFile() { myfile.close(); };
+    ~MyFile(){
+        myfile.close();
+    };
     /**
     * \brief write one time step to the file ALE
     */
@@ -253,9 +255,9 @@ public:
         myfile << solVec[18 + 1 * Constants::DIM + 2] << ",";      // 29 vt_fr[z]
         myfile << solVec[18 + 1 * Constants::DIM + 1] << ",";      // 30 vt_fr[y]
         myfile << solVec[30] << ",";                               // 31 qc[0] 
-        myfile << -solVec[32] << ",";                               // 32 qc[1] 
-        myfile << -solVec[31] << ",";                               // 33 qc[2] 
-        myfile << solVec[33] << ",";                               // 34 qc[3]
+        myfile << solVec[31] << ",";                               // 32 qc[1] 
+        myfile << solVec[32] << ",";                               // 33 qc[2] 
+        myfile << solVec[33] << ",";                              // 34 qc[3]
         myfile << solVec[34] << ",";                               // 35 pcc[x]
         myfile << solVec[36] << ",";                               // 36 pcc[z]
         myfile << solVec[35] << ",";                               // 37 pcc[y]
@@ -291,8 +293,9 @@ public:
     void writeSingleValue(size_t value) { myfile << value << ","; }
 
     void newLine() { myfile << "\n"; }
+    
 
-    void writeParameters() {
+    void writeParameters() { 
         writeSingleValue(MetaDatabase<T>::getDatabase().getTimeStepSize());
 
         writeSingleValue(-MetaDatabase<T>::getDatabase().getLongitudalLegPositionRearRight());
@@ -314,10 +317,16 @@ public:
         writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthRearLeft());
         writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthFrontLeft());
         writeSingleValue(MetaDatabase<T>::getDatabase().getTyreSpringLengthFrontRight());
+
     }
 
-    void writeSolutionMatrix(T* solVec, /**< of size sol_size * Constants::VEC_DIM * Constants::DIM = 27 */
-                             T* velVec, T* angVec, size_t sol_size) {
+
+    void writeSolutionMatrix(
+         T* solVec, /**< of size sol_size * Constants::VEC_DIM * Constants::DIM = 27 */
+        T* velVec,
+        T* angVec,
+        size_t sol_size
+    ) {
         for (auto i = 0; i < sol_size; i++) {
             writeSoltionVector(
                 solVec + i * Constants::VEC_DIM * Constants::DIM,
@@ -333,9 +342,11 @@ public:
         }
     };
 
+
 private:
     std::ofstream myfile;
 };
 
 }  // namespace IO
 }  // namespace EVAA
+

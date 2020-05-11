@@ -34,10 +34,10 @@ delta_t = parameters(1);
 numIterations = size(mdbSolution, 1);
 
 % car parameters
-r1 = [parameters(2); 0; parameters(6)];
-r2 = [parameters(3); 0; parameters(7)];
-r3 = [parameters(4); 0; parameters(8)];
-r4 = [parameters(5); 0; parameters(9)];
+r1 = [parameters(2); parameters(6); 0];
+r2 = [parameters(3); parameters(7); 0];
+r3 = [parameters(4); parameters(8); 0];
+r4 = [parameters(5); parameters(9); 0];
 
 upper_spring_length = [parameters(10); parameters(11); parameters(12); parameters(13)];
 lower_spring_length = [parameters(14); parameters(15); parameters(16); parameters(17)];
@@ -53,6 +53,6 @@ end
 
 % visualize
 vis_fig = figure(1);
-visualizer3D(vis_fig, adaptedSolution, traj_rr', traj_rl', plot_traj, false,  delta_t, vel_norms);
+visualizer3D(vis_fig, adaptedSolution, traj_rr', traj_rl', plot_traj, false, delta_t, vel_norms);
 
 

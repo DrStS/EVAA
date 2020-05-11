@@ -43,3 +43,6 @@ dump/*
 
 # Visual Studio Code Analysis
 *.sarif
+
+# binary files
+bin64/*
