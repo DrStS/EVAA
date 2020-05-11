@@ -76,6 +76,12 @@ void ComputeDenseVectorAddition(double* vec1, double* vec2, const double _alpha,
  */
 void PrintMKLInfo(void);
 
+template <typename T>
+void SetValueToZero(T* arr, size_t n) { 
+    for (size_t i = 0; i < n; ++i) arr[i] = 0;
+    //Math::scal<T>(n, 0, arr, Constants::INCX);
+}
+
 /**
  * Replaces all values in an array which are below a threshold to a value
  * \param arr vector to be adapted
@@ -528,21 +534,21 @@ public:
      */
     static void BroydenEuler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = Math::malloc<T>(x_len);
-        T* f_new = Math::malloc<T>(x_len);
-        T* dx = Math::malloc<T>(x_len);
-        T* dx_inv = Math::malloc<T>(x_len);
-        T* df = Math::malloc<T>(x_len);
-        T* x = Math::malloc<T>(x_len);
-        T* F = Math::malloc<T>(x_len);
-        T* F_new = Math::malloc<T>(x_len);
-        T* dF = Math::malloc<T>(x_len);
+        T* f_old = Math::calloc<T>(x_len);
+        T* f_new = Math::calloc<T>(x_len);
+        T* dx = Math::calloc<T>(x_len);
+        T* dx_inv = Math::calloc<T>(x_len);
+        T* df = Math::calloc<T>(x_len);
+        T* x = Math::calloc<T>(x_len);
+        T* F = Math::calloc<T>(x_len);
+        T* F_new = Math::calloc<T>(x_len);
+        T* dF = Math::calloc<T>(x_len);
         T* J = Math::calloc<T>(x_len * x_len);
         T* J_tmp = Math::calloc<T>(x_len * x_len);
-        lapack_int* piv = Math::malloc<lapack_int>(x_len);
+        lapack_int* piv = Math::calloc<lapack_int>(x_len);
 
         T *it_start, *curr_time_start_pos;
-        T* x_new = Math::malloc<T>(x_len);
+        T* x_new = Math::calloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
@@ -671,21 +677,21 @@ public:
      */
     static void BroydenBDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = Math::malloc<T>(x_len);
-        T* f_new = Math::malloc<T>(x_len);
-        T* dx = Math::malloc<T>(x_len);
-        T* dx_inv = Math::malloc<T>(x_len);
-        T* df = Math::malloc<T>(x_len);
-        T* x = Math::malloc<T>(x_len);
-        T* F = Math::malloc<T>(x_len);
-        T* F_new = Math::malloc<T>(x_len);
-        T* dF = Math::malloc<T>(x_len);
+        T* f_old = Math::calloc<T>(x_len);
+        T* f_new = Math::calloc<T>(x_len);
+        T* dx = Math::calloc<T>(x_len);
+        T* dx_inv = Math::calloc<T>(x_len);
+        T* df = Math::calloc<T>(x_len);
+        T* x = Math::calloc<T>(x_len);
+        T* F = Math::calloc<T>(x_len);
+        T* F_new = Math::calloc<T>(x_len);
+        T* dF = Math::calloc<T>(x_len);
         T* J = Math::calloc<T>(x_len * x_len);
         T* J_tmp = Math::calloc<T>(x_len * x_len);
-        lapack_int* piv = Math::malloc<lapack_int>(x_len);
+        lapack_int* piv = Math::calloc<lapack_int>(x_len);
 
         T *it_start, *curr_time_start_pos, *prev_prev_pos;
-        T* x_new = Math::malloc<T>(x_len);
+        T* x_new = Math::calloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
@@ -918,21 +924,21 @@ public:
         // std::cout << "Broyden started!\n" << std::endl;
 
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = Math::malloc<T>(x_len);
-        T* f_new = Math::malloc<T>(x_len);
-        T* dx = Math::malloc<T>(x_len);
-        T* dx_inv = Math::malloc<T>(x_len);
-        T* df = Math::malloc<T>(x_len);
-        T* x = Math::malloc<T>(x_len);
-        T* F = Math::malloc<T>(x_len);
-        T* F_new = Math::malloc<T>(x_len);
-        T* dF = Math::malloc<T>(x_len);
+        T* f_old = Math::calloc<T>(x_len);
+        T* f_new = Math::calloc<T>(x_len);
+        T* dx = Math::calloc<T>(x_len);
+        T* dx_inv = Math::calloc<T>(x_len);
+        T* df = Math::calloc<T>(x_len);
+        T* x = Math::calloc<T>(x_len);
+        T* F = Math::calloc<T>(x_len);
+        T* F_new = Math::calloc<T>(x_len);
+        T* dF = Math::calloc<T>(x_len);
         T* J = Math::calloc<T>(x_len * x_len);
         T* J_tmp = Math::calloc<T>(x_len * x_len);
-        lapack_int* piv = Math::malloc<lapack_int>(x_len);
+        lapack_int* piv = Math::calloc<lapack_int>(x_len);
 
         T *it_start, *curr_time_start_pos;
-        T* x_new = Math::malloc<T>(x_len);
+        T* x_new = Math::calloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-3;
         double nrm = 0.01;
@@ -1112,12 +1118,12 @@ public:
      */
     static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = Math::malloc<T>(x_len);
-        T* k1 = Math::malloc<T>(x_len);
-        T* k2 = Math::malloc<T>(x_len);
-        T* k3 = Math::malloc<T>(x_len);
-        T* k4 = Math::malloc<T>(x_len);
-        T* x = Math::malloc<T>(x_len);
+        T* f_old = Math::calloc<T>(x_len);
+        T* k1 = Math::calloc<T>(x_len);
+        T* k2 = Math::calloc<T>(x_len);
+        T* k3 = Math::calloc<T>(x_len);
+        T* k4 = Math::calloc<T>(x_len);
+        T* x = Math::calloc<T>(x_len);
 
         T *it_start, *curr_time_start_pos;
         T* switcher;  // used for interchanging adresses between F and F_new
