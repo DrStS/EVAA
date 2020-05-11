@@ -435,15 +435,17 @@ public:
 		
 
 		/* Get the angles */
-		carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
-		carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
+        if (_rotationMatrix[3 * Constants::DIM - 1] != 0)
+            carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
+        else
+            carObj->_currentDisplacementTwoTrackModel[1]  = std::atan2(-_rotationMatrix[2 * Constants::DIM - 1], _rotationMatrix[3 * Constants::DIM - 1]);
+        carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
 
         // update velocities
         for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
             T& tyreVelocity = carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i]];
             tyreVelocity = 0;
         }
-
 
         carObj->UpdateLengthsTwoTrackModel();
     }
@@ -566,7 +568,10 @@ public:
 
 
 		/* Get the angles */
-		carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
+        if (_rotationMatrix[3 * Constants::DIM - 1] != 0)
+            carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
+        else
+            carObj->_currentDisplacementTwoTrackModel[1] = std::atan2(-_rotationMatrix[2 * Constants::DIM - 1], _rotationMatrix[3 * Constants::DIM - 1]);
 		carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
 		
         carObj->UpdateLengthsTwoTrackModel();
