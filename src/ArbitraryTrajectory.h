@@ -475,6 +475,7 @@ public:
             T c = std::cos(_roadAngles[i]);
             T s = std::sin(_roadAngles[i]);
 
+
             _legPointsX_fl[i] = _roadPointsX[i] + localXcoordinates[0] * c - localYcoordinates[0] * s;
             _legPointsY_fl[i] = _roadPointsY[i] + localXcoordinates[0] * s + localYcoordinates[0] * c;
 
@@ -689,7 +690,7 @@ public:
         angle[0] = 0;
         angle[1] = 0;
         angle[2] = _roadAngles[0];
-
+        
         // angular velocity
         wc[0] = 0;
         wc[1] = 0;
