@@ -444,6 +444,7 @@ public:
 #ifdef DAMPING
         ConstructDampingMatrix();
 #endif
+		UpdateVelocity();
 		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructAMatrix();
         ConstructBMatrix();
@@ -968,6 +969,7 @@ public:
 #ifdef DAMPING
         ConstructDampingMatrix();
 #endif
+		UpdateVelocity();
 		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructAMatrix();
         ConstructbVec();

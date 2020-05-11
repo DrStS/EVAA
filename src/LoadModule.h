@@ -44,7 +44,7 @@ private:
 
         // compute torque around X-axis
         for (auto i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-            Torque[0] += c * F_vec[i * (Constants::DIM - 1) + 1] *
+            Torque[0] -= c * F_vec[i * (Constants::DIM - 1) + 1] *
                              _carObj->getCurrentCIRTwoTrackModel()[i * Constants::DIM + 2] -
                          s * F_vec[i * (Constants::DIM - 1) + 0] *
                              _carObj->getCurrentCIRTwoTrackModel()[i * Constants::DIM + 2];
@@ -52,7 +52,7 @@ private:
 
         // compute torque around Y-axis
         for (auto i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-            Torque[1] += c * F_vec[i * (Constants::DIM - 1) + 0] *
+            Torque[1] -= c * F_vec[i * (Constants::DIM - 1) + 0] *
                              _carObj->getCurrentCIRTwoTrackModel()[i * Constants::DIM + 2] +
                          s * F_vec[i * (Constants::DIM - 1) + 1] *
                              _carObj->getCurrentCIRTwoTrackModel()[i * Constants::DIM + 2];
