@@ -2,8 +2,6 @@
 
 #pragma once
 
-extern size_t count_interp_debug;
-
 namespace EVAA {
 namespace Constants {
 /** alignment for mkl malloc */

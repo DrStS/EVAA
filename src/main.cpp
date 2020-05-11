@@ -52,10 +52,6 @@
  * \version alpha
  */
 
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-
 #ifdef EVAA_COMMANDLINE_ON
 #include <iostream>
 #include <string>
@@ -78,41 +74,54 @@ int main(int argc, char **argv) {
     for (std::vector<std::string>::iterator it = allArgs.begin(); it != allArgs.end(); ++it) {
         std::cout << *it << std::endl;
     }
-    // allArgs[0] = "EVAA.exe" TODO : Do we need this?
+
+    /** Define the paths to xml configuration files */
+    std::string simulationParametersFileNameXML;
+    std::string carSettingsFileNameXML;
+    std::string loadProfileFileNameXML;
+
     if (allArgs.size() > 3) {
-        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2], allArgs[3]);
+        /** Take arguments from command line */
+        simulationParametersFileNameXML = allArgs[1];
+        carSettingsFileNameXML = allArgs[2];
+        loadProfileFileNameXML = allArgs[3];
     }
+    else {
+        /** Hardcoded paths*/
+
+        /** Hardcoded paths for car settings */
+        const std::string carWithInterpolationFileNameXML =
+            "C:\\software\\repos\\EVAA\\inputFiles\\CarWithInterpolation.xml";
+        const std::string carConstantStiffnessFileNameXML =
+            "C:\\software\\repos\\EVAA\\inputFiles\\CarConstantStiffness.xml";
 #ifdef INTERPOLATION
-    std::string carSettingsFileNameXML = "C:\\software\\repos\\EVAA\\inputFiles\\CarWithInterpolation.xml";
+        carSettingsFileNameXML = carWithInterpolationFileNameXML;
 #else
-    std::string carSettingsFileNameXML = "C:\\software\\repos\\EVAA\\inputFiles\\CarConstantStiffness.xml";
+        carSettingsFileNameXML = carConstantStiffnessFileNameXML;
 #endif
+        /** Hardcoded path for simulation parameters*/
+        simulationParametersFileNameXML =
+            "C:\\software\\repos\\EVAA\\inputFiles\\SimulationParameters.xml";
+        /** Hardcoded paths for load profiles*/
+        const std::string loadArbitraryFileNameXML =
+            "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml";
+        const std::string loadCircularFileNameXML =
+            "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml";
+        const std::string loadStraightFileNameXML =
+            "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml";
+        loadProfileFileNameXML = loadCircularFileNameXML;
+    }
+
+    /** Construct the car*/
     EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(
-        "C:\\software\\repos\\EVAA\\inputFiles\\SimulationParameters.xml", carSettingsFileNameXML,
-//        "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml");
-       "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
-//        "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml");
+        simulationParametersFileNameXML, carSettingsFileNameXML, loadProfileFileNameXML);
     myComputeEngine->printInfo();
 
     auto &timer1 = EVAA::anaysisTimer01;
-#if MIGHT_BE_USEFUL
-    timer1.start();
-    myComputeEngine->computeMKL11DOF();
-    timer1.stop();
-    std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(MKL) .\n\n\n " << std::endl;
-    timer1.start();
-    myComputeEngine->computeEigen11DOF();
-    timer1.stop();
-    std::cout << "\nIt took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Eigen) .\n\n\n " << std::endl;
-    timer1.start();
-    myComputeEngine->computeBlaze11DOF();
-    timer1.stop();
-    std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
-#endif
-    const size_t numIterations = 1;
+    constexpr size_t numIterations = 1;
 
     std::cout << std::defaultfloat;
-    double timeMBD = 0.;    
+    unsigned long timeMBD = 0.;    
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
         myComputeEngine->computeMBD();
@@ -121,17 +130,17 @@ int main(int argc, char **argv) {
     }
     std::cout << "It took " << std::defaultfloat << timeMBD / numIterations << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
     
-    double time11DOF = 0.;
+    /*unsigned long time11DOF = 0.;
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-//        myComputeEngine->computeMKLTwoTrackModelBE();
+        myComputeEngine->computeMKLTwoTrackModelBE();
         timer1.stop();
         time11DOF += timer1.getDurationMilliSec();
     }
-    std::cout << "It took " << std::defaultfloat << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
+    std::cout << "It took " << std::defaultfloat << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;*/
 
-    double timeALE = 0.;
-    for (auto i = 0; i < 100; ++i) {
+    unsigned long timeALE = 0.;
+    for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
         myComputeEngine->computeALE();
         timer1.stop();
@@ -142,7 +151,9 @@ int main(int argc, char **argv) {
     delete myComputeEngine;
 
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
+
 #endif  // EVAA_COMMANDLINE_ON
+
 #ifndef EVAA_COMMANDLINE_ON
 #ifdef __linux
     putenv((char *)"MESA_GL_VERSION_OVERRIDE=3.2");
@@ -153,6 +164,5 @@ int main(int argc, char **argv) {
     EVAAMainWindow(argc, argv);
 #endif  // EVAA_COMMANDLINE_ON
 
-    _CrtDumpMemoryLeaks();
     return 0;
 }
