@@ -608,7 +608,7 @@ public:
      * \param Z-component of the moment of inertia
      * \return the Z component [GC:Z]
      */
-    T getLagrangianTorque(const size_t& iteration, T& momentOfInertia) {
+    T getLagrangianTorque(const size_t& iteration, T momentOfInertia) {
         return momentOfInertia * _roadAngularAcceleration[iteration];
     }
 

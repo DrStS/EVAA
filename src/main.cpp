@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
     std::cout << "It took " << std::defaultfloat << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
 
     double timeALE = 0.;
-    for (auto i = 0; i < numIterations; ++i) {
+    for (auto i = 0; i < 100; ++i) {
         timer1.start();
         myComputeEngine->computeALE();
         timer1.stop();

@@ -234,7 +234,7 @@ public:
     void PrintFinalResults() {
         const T* sln = _carObj->getPositionVector();
         std::cout.precision(15);
-        IO::writeVector(sln, 27);
+        //IO::writeVector(sln, 27);
 
         std::cout << "ALE: orientation angles =\n\t[" << _carObj->getAngleCG()[0] << "\n\t " << _carObj->getAngleCG()[1] << "\n\t " << _carObj->getAngleCG()[2] << "]" << std::endl;
         std::cout << "ALE: car body position pc =\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
