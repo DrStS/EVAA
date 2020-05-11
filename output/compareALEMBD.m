@@ -4,7 +4,7 @@
 
 
 mbdSolution_filename = "mbdSolution.txt";
-mdbSolution = [];
+mbdSolution = [];
 
 aleSolution_filename = "aleSolution.txt";
 aleSolution = []; 
@@ -13,7 +13,7 @@ parameters = [];
 
 
 if isfile(mbdSolution_filename)
-    mdbSolution = csvread(mbdSolution_filename);
+    mbdSolution = csvread(mbdSolution_filename);
     parameters = csvread('simulationParameters.txt');
 else
     disp("Cound not generate any visualization! No output file available!");
@@ -33,7 +33,7 @@ end
 delta_t = parameters(1);
 numIterations = size(aleSolution, 1);
 
-Zdiff = aleSolution(1,60) - mbdSolution(1,60);
+Zdiff = aleSolution(2,60) - mbdSolution(2,60);
 
 % adapt results
 mbdSolution(:,60) = mbdSolution(:,60) + Zdiff;
@@ -48,7 +48,15 @@ mbdSolution(:,39) = mbdSolution(:,39) + Zdiff;
 
 mbdSolution(:,36) = mbdSolution(:,36) + Zdiff;
 
-diff_all = (mbdSolution - aleSolution) ./ mbdSolution;
+diff_all = (mbdSolution - aleSolution);
 
+index = 35;
 
-
+normed_pos = vecnorm(diff_all(2:end,index:index+2),2,2);
+figure
+plot(diff_all(2:end,index + 0))
+hold on
+plot(diff_all(2:end,index + 2))
+plot(diff_all(2:end,index + 1))
+plot(normed_pos)
+legend('X', 'Y', 'Z','norm')

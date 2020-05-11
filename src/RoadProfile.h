@@ -164,7 +164,22 @@ public:
         carObj->setInitialAngularVelocityGlobalZ(carObj->getCurrentAngularVelocityLagrangian());
 
         // apply angle condition on z angle
-		carObj->_currentAngleLagrangian = std::atan2(carObj->_currentVelocityLagrangian[1], carObj->_currentVelocityLagrangian[0]);
+        T directionNorm = std::sqrt(carObj->_currentVelocityLagrangian[1] *
+                                        carObj->_currentVelocityLagrangian[1] +
+            carObj->_currentVelocityLagrangian[0] * carObj->_currentVelocityLagrangian[0]);
+
+        if (directionNorm == 0) {
+            carObj->_currentAngleLagrangian = 0;
+        }
+        else if (carObj->_currentVelocityLagrangian[1] >= 0) {
+            carObj->_currentAngleLagrangian =
+                std::acos(carObj->_currentVelocityLagrangian[0] / directionNorm);
+        }
+        else {
+            carObj->_currentAngleLagrangian =
+                -std::acos(carObj->_currentVelocityLagrangian[0] / directionNorm);
+        }
+
 		carObj->setInitialAngleGlobalZ(carObj->_currentAngleLagrangian);
     }
 
@@ -189,8 +204,8 @@ public:
 
             Math::scal<T>((Constants::DIM - 1), inverseRadiusOfCircle, centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
             // Cross product to get tangential velocity component
-            tangentialVelocityDirection[0] = *(centrifugalForce + (Constants::DIM - 1) * i + 1);
-            tangentialVelocityDirection[1] = -*(centrifugalForce + (Constants::DIM - 1) * i);
+            tangentialVelocityDirection[0] = -*(centrifugalForce + (Constants::DIM - 1) * i + 1);
+            tangentialVelocityDirection[1] = *(centrifugalForce + (Constants::DIM - 1) * i);
             velocityMagnitude = Math::dot<T>((Constants::DIM - 1), velocityLagrangian + (Constants::DIM - 1) * i, Constants::INCX, tangentialVelocityDirection, Constants::INCX);
             // Force computation
             Math::scal<T>(Constants::DIM - 1, mass[i] * velocityMagnitude * velocityMagnitude * inverseRadiusOfCircle, centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);

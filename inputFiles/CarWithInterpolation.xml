@@ -4,16 +4,16 @@
     <TwoTrackModelXML>
       <GeometryXML>
         <LateralReferenceToWheelXML>
-          <ReerRight>1.68</ReerRight>
-          <ReerLeft>1.68</ReerLeft>
+          <ReerRight>1.6916</ReerRight>
+          <ReerLeft>1.6916</ReerLeft>
           <FrontLeft>1.6916</FrontLeft>
           <FrontRight>1.6916</FrontRight>
         </LateralReferenceToWheelXML>
         <LongitudinalReferenceToWheelXML>
           <ReerRight>1.596</ReerRight>
           <ReerLeft>1.596</ReerLeft>
-          <FrontLeft>1.395</FrontLeft>
-          <FrontRight>1.395</FrontRight>
+          <FrontLeft>1.596</FrontLeft>
+          <FrontRight>1.596</FrontRight>
         </LongitudinalReferenceToWheelXML>
         <RelativeCenterOfInstanteneousRotation>
           <x>0</x>
@@ -55,8 +55,8 @@
       <MassXML>
         <BodyXML>1936</BodyXML>
         <UnsprungMassXML>
-          <ReerRight>67.5</ReerRight>
-          <ReerLeft>67.5</ReerLeft>
+          <ReerRight>72.5</ReerRight>
+          <ReerLeft>72.5</ReerLeft>
           <FrontLeft>72.5</FrontLeft>
           <FrontRight>72.5</FrontRight>
         </UnsprungMassXML>

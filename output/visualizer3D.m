@@ -108,7 +108,6 @@ for i = 2 : vis_step : num_iter
         if fancy_road    
                 
             % road itself
-
                 caxis(axis_gray); 
                 s = surf([road_left(1,road_vis_range); stripe_1(1,road_vis_range)],...
                         [road_left(2,road_vis_range); stripe_1(2,road_vis_range)],...

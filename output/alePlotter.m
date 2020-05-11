@@ -52,7 +52,6 @@ lower_spring_length = [parameters(14); parameters(15); parameters(16); parameter
 % rearrange vectors and tyre position
 adaptedSolution = calculateCorners(aleSolution, r1, r2, r3, r4);
 
-
 % calculate velocity norms
 vel_norms = zeros(1, numIterations);
 for i=1:numIterations

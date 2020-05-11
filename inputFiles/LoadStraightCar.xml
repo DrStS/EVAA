@@ -20,50 +20,50 @@
           <z>0</z>
         </AngularVelocity>
         <Body>
-          <x>0</x>
+          <x>2</x>
           <y>3</y>
           <z>0</z>
         </Body>
       <UnsprungMass>
         <ReerRight>
-          <x>0</x>
+          <x>2</x>
           <y>3</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
-          <x>0</x>
+          <x>2</x>
           <y>3</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
-          <x>0</x>
+          <x>2</x>
           <y>3</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
-          <x>0</x>
+          <x>2</x>
           <y>3</y>
           <z>0</z>
         </FrontRight>
       </UnsprungMass>
       <Tyre>
         <ReerRight>
-          <x>0</x>
+          <x>2</x>
           <y>3</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
-          <x>0</x>
+          <x>2</x>
           <y>3</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
-          <x>0</x>
+          <x>2</x>
           <y>3</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
-          <x>0</x>
+          <x>2</x>
           <y>3</y>
           <z>0</z>
         </FrontRight>
@@ -73,11 +73,11 @@
   </lagrangianRoadProfile>
 
   <eulerianRoadProfile>
-	<!--fixedTyre></fixedTyre-->
-	<sinusoidalProfile>
+	<fixedTyre></fixedTyre>
+    <!--sinusoidalProfile>
       <rightTyre amplitude="0.01" period="10" shift="0"/>
       <leftTyre amplitude="0.01" period="7" shift="5"/>
-    </sinusoidalProfile>
+    </sinusoidalProfile-->
     <!--detachedTyre></detachedTyre-->
   </eulerianRoadProfile>
 
