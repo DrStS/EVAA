@@ -40,8 +40,8 @@ protected:
     size_t _currentIter;
 
     T _tolerance;
-    int _maxNewtonIteration;
-    int _newtonIteration;
+    size_t _maxNewtonIteration;
+    size_t _newtonIteration;
 
     // solution in next timestep
     T* _u_n_p_1 = nullptr;
@@ -380,7 +380,7 @@ public:
      *
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
-    void SetJacobianTyreLineToFixed(int tyreNumber) { Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1); }
+    void SetJacobianTyreLineToFixed(const int& tyreNumber) { Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1); }
 
     /**
      * \brief construct Jacobian for that one time step when the tyre hits the road
@@ -405,7 +405,7 @@ public:
      *
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
-    void SetJacobianTyreLineToTransition(int tyreNumber) {
+    void SetJacobianTyreLineToTransition(const int& tyreNumber) {
         // _matrixTmp = _D
         Math::copy(Constants::DOFDOF, _D, 1, _matrixTmp, 1);
         // Jacobian has already been called -> _dDdxx wit (x[n+1]-x[n]) can be directly accessed
@@ -422,7 +422,7 @@ public:
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      * \param[in] JNew precalculated Jacobian
      */
-    void SetJacobianTyreLineToTransition(int tyreNumber, T* JNew) { Math::copy<T>(Constants::DOF, JNew + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1); }
+    void SetJacobianTyreLineToTransition(const int& tyreNumber, const T* JNew) { Math::copy<T>(Constants::DOF, JNew + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1); }
 
     /**
      * \brief construct Jacobian for non-fixed to road
@@ -1012,7 +1012,7 @@ public:
      *
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
-    void SetJacobianTyreLineToFixed(int tyreNumber) {
+    void SetJacobianTyreLineToFixed(const int& tyreNumber) {
         // _J = _M_h2
         Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, _J + (4 + 2 * tyreNumber) * Constants::DOF, 1);
         // _J = 9/4 _M_h2

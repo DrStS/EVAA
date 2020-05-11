@@ -288,9 +288,9 @@ public:
 
     }
 
-    void writeSingleValue(T value) { myfile << value << ","; }
-    void writeSingleValue(float value) { myfile << value << ","; }
+    void writeSingleValue(T value) { myfile << value << ","; }    
     void writeSingleValue(int value) { myfile << value << ","; }
+    void writeSingleValue(size_t value) { myfile << value << ","; }
 
     void newLine() { myfile << "\n"; }
     

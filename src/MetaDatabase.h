@@ -699,13 +699,13 @@ private:
     bool _initial_leg_flag = false;
     bool _interpolation = false;
     MBDSolver _MBD_solver;
-    int _max_num_iter;
+    size_t _max_num_iter;
     T _tolerance;
     T _timestep;
-    int _num_time_iter;
+    size_t _num_time_iter;
     ALESolver _ALE_solver;
     T _newtonTolerance;
-    int _maxNewtonIterations;
+    size_t _maxNewtonIterations;
 
     ArbitraryTrajectory<T>* _trajectory = nullptr;
 
