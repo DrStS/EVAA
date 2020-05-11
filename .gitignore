@@ -34,3 +34,6 @@ proposed_xml/*
 main.cpp
 dump/*
 /enc_temp_folder
+
+# clang-format
+.clang-format

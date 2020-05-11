@@ -58,7 +58,7 @@ std::string getInfo();
  * \return The newly allocated buffer.
  */
 template <typename T>
-T* malloc(size_t count) {
+__declspec(allocator) T* malloc(size_t count) { // TODO __declspec only for debug 
     if (count == 0) {
         throw std::invalid_argument("count cannot be 0 for malloc");
     }
@@ -77,7 +77,7 @@ T* malloc(size_t count) {
  * newly allocated buffer.
  */
 template <typename T>
-T* calloc(size_t count) {
+__declspec(allocator) T* calloc(size_t count) { // TODO __declspec only for debug 
     if (count == 0) {
         throw std::invalid_argument("count cannot be 0 for calloc");
     }
