@@ -14,7 +14,7 @@
       </centerOfCircle>
       <initialVelocity>
         <x>0</x>
-        <y>10</y>
+        <y>20</y>
         <z>0</z>
       </initialVelocity>
       <directionRotation>clockwise</directionRotation>
