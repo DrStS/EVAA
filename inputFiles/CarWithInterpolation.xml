@@ -40,16 +40,16 @@
       </StiffnessXML>
       <DampingCoefficientsXML>
         <TyreXML>
-          <ReerRight>0</ReerRight>
-          <ReerLeft>0</ReerLeft>
-          <FrontLeft>0</FrontLeft>
-          <FrontRight>0</FrontRight>
+          <ReerRight>1000</ReerRight>
+          <ReerLeft>1000</ReerLeft>
+          <FrontLeft>1000</FrontLeft>
+          <FrontRight>1000</FrontRight>
         </TyreXML>
         <BodyXML>
-          <ReerRight>0</ReerRight>
-          <ReerLeft>0</ReerLeft>
-          <FrontLeft>0</FrontLeft>
-          <FrontRight>0</FrontRight>
+          <ReerRight>100</ReerRight>
+          <ReerLeft>100</ReerLeft>
+          <FrontLeft>100</FrontLeft>
+          <FrontRight>100</FrontRight>
         </BodyXML>
       </DampingCoefficientsXML>
       <MassXML>
