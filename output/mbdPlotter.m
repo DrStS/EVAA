@@ -24,6 +24,11 @@ if isfile('LegFl.txt') && isfile('LegFr.txt') && isfile('LegRl.txt') && isfile('
     plot_traj= true;
 end
 
+    traj_fl(:,3) = traj_fl(:,3) - traj_fl(2,3) + mdbSolution(2,57);
+    traj_fr(:,3) = traj_fr(:,3) - traj_fr(2,3) + mdbSolution(2,60);
+    traj_rl(:,3) = traj_rl(:,3) - traj_rl(2,3) + mdbSolution(2,54);
+    traj_rr(:,3) = traj_rr(:,3) - traj_rr(2,3) + mdbSolution(2,51);
+
 % Simulation parameters
 delta_t = parameters(1);
 numIterations = size(mdbSolution, 1);

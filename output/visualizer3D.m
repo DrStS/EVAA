@@ -197,7 +197,7 @@ for i = 2 : vis_step : num_iter
     zlabel('Z')
     timestring=['time=',num2str(floor(delta_t*i/60)),'min',num2str(mod(delta_t*i,60),4),'sec'];
     title(timestring)
-     view(-90,0)
+    % view(-90,0)
     hold off
 
     %% axis
