@@ -380,7 +380,6 @@ public:
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
     void SetJacobianTyreLineToFixed(const int& tyreNumber) { 
-		std::cout << "inside euler SetJacobianTyreLineToFixed" << std::endl;
 		Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1); 
 	}
 
@@ -789,6 +788,7 @@ private:
     T *_u_n_m_2, *_u_n_m_3;
     size_t _timeStepCount = 0;
     void (TwoTrackModelBDF2<T>::*_activeExecutor)(size_t, T*);
+	void (TwoTrackModelBDF2<T>::*_JacobianAdjustmentBDF2)();
 
     /**
      * \brief construct _A
@@ -881,10 +881,10 @@ public:
         _bVec = Math::malloc<T>(Constants::DOF);
         _activeExecutor = &TwoTrackModelBDF2<T>::FirstTwoSteps;
 		if (_loadModuleObj->GetEulerProfileName() == "Fixed") {
-			_JacobianAdjustment = &TwoTrackModelBDF2<T>::ConstructFixedJacobian;
+			_JacobianAdjustmentBDF2 = &TwoTrackModelBDF2<T>::ConstructFixedJacobian;
 		}
 		else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed" || _loadModuleObj->GetEulerProfileName() == "Sinusoidal") {
-			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructNonFixedJacobian;
+			_JacobianAdjustmentBDF2 = &TwoTrackModelBDF2<T>::ConstructNonFixedJacobian;
 		}
     }
 
@@ -907,7 +907,7 @@ public:
         (this->*_activeExecutor)(_currentIter, solution);
         _timeStepCount += 1;
     }
-
+	void ConstructNonFixedJacobian(){}
     /**
      * Performs one timestep of the 11DOF solver
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
@@ -918,20 +918,13 @@ public:
         // cblas_dscal(DOF,0, force, 1);
         // compute Force
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
-		std::cout << "Force for BDF2, iter = " << currentIter<< std::endl;
-		Math::write_vector(_twoTrackModelForce, 11);
 		GetInitialGuess(_twoTrackModelForce);
-		std::cout << "Initial guess for BDF2, iter = " << currentIter << std::endl;
-		Math::write_vector(_u_n_p_1, 11);
 		
 #ifdef INTERPOLATION
         UpdateSystem();
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
 #endif
-		std::cout << "Results for BDF2, iter = " << currentIter << std::endl;
-		Math::write_vector(_u_n_p_1, 11);
-		exit(5);
-
+		
 
 		Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
         // _u_n_m_2 points to _u_n_m_3 and _u_n_m_3 points to _u_n_m_2
@@ -995,7 +988,7 @@ public:
         Math::copy<T>(Constants::DOFDOF, _A, 1, _J, 1);
         // _J += dKdx * x[n+1]
         Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
-		(this->*_JacobianAdjustment)();
+		(this->*_JacobianAdjustmentBDF2)();
 #ifdef DAMPING
         db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
         // temp = x[n+1]
@@ -1011,8 +1004,6 @@ public:
         // _J += 1/_h * _dDdxx
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _dDdxx, 1, _J, 1);
 #endif
-		std::cout << "Jacobian for BDF2, iter = " << _currentIter << std::endl;
-		Math::write_matrix(_J, 11);
     }
 
     /**
@@ -1022,8 +1013,7 @@ public:
      * - _K + 1/h dDdx * x[n]] therefore _J = _M_h2 for the tyre positions
      */
     void ConstructFixedJacobian() {
-		std::cout << "Adjusting to fix" << std::endl;
-        for (auto i = 0; i < Constants::NUM_LEGS; i++) {
+		for (auto i = 0; i < Constants::NUM_LEGS; i++) {
             SetJacobianTyreLineToFixed(i);
         }
     }
@@ -1034,7 +1024,6 @@ public:
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
     void SetJacobianTyreLineToFixed(const int& tyreNumber) {
-		std::cout << "inside bdf2 SetJacobianTyreLineToFixed" << std::endl;
 		// _J = _M_h2
         //Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1);
 		TwoTrackModelBE<T>::SetJacobianTyreLineToFixed(tyreNumber);
