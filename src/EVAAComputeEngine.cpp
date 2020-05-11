@@ -158,7 +158,13 @@ void EVAAComputeEngine::computeALE(void) {
     lagrangeProfile->ApplyProfileInitialCondition(car);
     eulerProfile->ApplyProfileInitialCondition(car);
     LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
-    TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car, loadModule);
+    TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj;
+    if (db.getALESolver() == ALESolver::IMPLICIT_EULER) {
+        TwoTrackModel_obj = new TwoTrackModelBDF2<Constants::floatEVAA>(car, loadModule);
+    }
+    else if (db.getALESolver() == ALESolver::BDF2) {
+        TwoTrackModel_obj = new TwoTrackModelBDF2<Constants::floatEVAA>(car, loadModule);
+    }
     ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
 
     size_t solutionDim = Constants::DIM * (size_t)Constants::VEC_DIM;

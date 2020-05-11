@@ -785,7 +785,7 @@ private:
     T* _bVec;
     T *_u_n_m_2, *_u_n_m_3;
     size_t _timeStepCount = 0;
-    void (TwoTrackModelBDF2<T>::*_activeExecutor)(T, T*);
+    void (TwoTrackModelBDF2<T>::*_activeExecutor)(size_t, T*);
 
     /**
      * \brief construct _A

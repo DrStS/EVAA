@@ -363,11 +363,26 @@ template <typename T>
 class Fixed : public Euler<T> {
 private:
     // bla bla
+    void (Fixed<T>::*_activeExecutor)(const size_t&, Car<T>*, T*);
+
 public:
-    Fixed(T& g) : Euler<T>(g) { Name = "Fixed"; }
+    Fixed(T& g) : Euler<T>(g) {
+        Name = "Fixed";
+        auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
+        if (db.getALESolver() == ALESolver::IMPLICIT_EULER) {
+            _activeExecutor = &Fixed<T>::GetProfileForceEulerianBE;
+        }
+        else if (db.getALESolver() == ALESolver::BDF2) {
+            _activeExecutor = &Fixed<T>::GetProfileForceEulerianBDF2;
+        }
+    }
     virtual ~Fixed() {}
 
-    virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj,
+    virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj, T* profileInducedForce) {
+        (this->*_activeExecutor)(_iterationCount, carObj, profileInducedForce);
+    }
+
+    void GetProfileForceEulerianBE(const size_t& _iterationCount, Car<T>* carObj,
                                          T* profileInducedForce) {
         // TODO optimize it // TODO add const on carObj
         //Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
@@ -380,6 +395,26 @@ public:
                 carObj->getkVec()[2 * i + 1] * (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
                      carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1])  //
                 + carObj->getdVec()[2 * i + 1] * (carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
+                     carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1]);
+        }
+    }
+
+    void GetProfileForceEulerianBDF2(const size_t& _iterationCount, Car<T>* carObj, T* profileInducedForce) {
+        // TODO optimize it // TODO add const on carObj
+        // Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+        Math::SetValueToZero(profileInducedForce, Constants::DOF);
+
+        AddGravity(carObj, profileInducedForce);
+#pragma loop(ivdep)
+        for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
+            profileInducedForce[Constants::TYRE_INDEX_EULER[i]] =  //
+                carObj->getkVec()[2 * i + 1] *
+                    (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
+                     carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] -
+                                                                   1])  //
+                +
+                carObj->getdVec()[2 * i + 1] *
+                    (carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
                      carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1]);
         }
     }
