@@ -178,8 +178,8 @@ public:
     /**
     * \brief write trajectory for circular path
     */
-    void writeTrajectoryForCircularPath(T* init_position, T* profile_center, T* init_vel, T delta_t,
-                                        int timesteps, T* latitudes, T* longitudes) {
+    void writeTrajectoryForCircularPath(T* init_position, T* profile_center, T* init_vel, const T& delta_t,
+                                        const size_t& timesteps, T* latitudes, T* longitudes) {
         T radius[3];
         T omega[3];
         T RotMatrix[9];
