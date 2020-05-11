@@ -39,7 +39,7 @@ dump/*
 /enc_temp_folder
 
 # clang-format
-#.clang-format
+.clang-format
 
 # Visual Studio Code Analysis
 *.sarif
