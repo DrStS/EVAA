@@ -20,9 +20,9 @@ L8 = 0.2;
 global k_grid d_grid size_grid l_min l_max dl;
 % calc min and max length to evaluate (just for now)
 l_min = 0.01;
-l_max = 1;
+l_max = 2;
 % grid size
-size_grid = 101;
+size_grid = 1001;
 % grid value allocation
 global X;
 X = zeros(size_grid, 1);
@@ -30,8 +30,8 @@ k_grid = zeros(8*size_grid,1);
 d_grid = zeros(8*size_grid,1);
 dl = (l_max-l_min)/(size_grid-1);
 % k response function
-%k = @(l,a)(c*l*l + b*l + a);
-k = @(l,a)(a);
+k = @(l,a)(c*l*l + b*l + a);
+%k = @(l,a)(a);
 % fill in grid values
 for i = 0:size_grid-1
     X(i+1) = l_min+i*dl;
@@ -182,7 +182,7 @@ num_iter = 1e3;
 delta_t = 1e-3; 
 t = 0:delta_t:(num_iter - 1)*delta_t;
 
-tol = 1e-8;
+tol = 1e-7;
 y = zeros(length(t),11);
 order = zeros(length(t),1);
 err_arr = zeros(length(t),1);
@@ -240,7 +240,7 @@ M_div_h2 = M / (delta_t * delta_t);
 %%
 fixed = true;
 euler = true;
-bdf2 = false;
+bdf2 = true;
 if bdf2
   %  A = (9/4)*M_div_h2 + K;
     B = (6)*M_div_h2;

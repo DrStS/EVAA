@@ -72,7 +72,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
         Constants::floatEVAA* sol = Math::malloc<Constants::floatEVAA>(Constants::DOF);
         Car<Constants::floatEVAA>* car = new Car<Constants::floatEVAA>();
         Lagrange<Constants::floatEVAA>* lagrange = new Straight<Constants::floatEVAA>();
-        Euler<Constants::floatEVAA>* euler = new Nonfixed<Constants::floatEVAA>(db.getGravityField()[2]);
+        Euler<Constants::floatEVAA>* euler = new Fixed<Constants::floatEVAA>(db.getGravityField()[2]);
         LoadModule<Constants::floatEVAA>* load = new LoadModule<Constants::floatEVAA>(lagrange, euler, car);
         TwoTrackModelFull<Constants::floatEVAA> solver(car, load);
         euler->ApplyProfileInitialCondition(car);
@@ -80,7 +80,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
         count_interp_debug = 0;
         solver.Solve(sol);
 
-        //solver.PrintFinalResults(sol);
+        solver.PrintFinalResults(sol);
 
          static const Constants::floatEVAA referenceSol10000[11]{
             -4.905058321191742e+02, -1.234530958929979e-11, -6.280776657038311e-04,
