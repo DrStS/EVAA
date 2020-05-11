@@ -1,7 +1,8 @@
-function [road_left, road_right, stripe_1, stripe_2, stripe_3, stripe_4, gaps_left, gaps_right] = plotPhysicalRoad(traj_left, traj_right)
+function [road_left, road_right, road_middle, stripe_1, stripe_2, stripe_3, stripe_4, gaps_left, gaps_right] = plotPhysicalRoad(traj_left, traj_right)
 n = size(traj_left,2);
 
 road_left = zeros(3, n);
+road_middle = zeros(3, n, 16);
 road_right = zeros(3, n);
 stripe_1 = zeros(3, n);
 stripe_2 = zeros(3, n);
@@ -22,12 +23,17 @@ gaps = 2;
 for i=1:n
     road_left(:,i) = traj_left(:,i) + 0.6 * (traj_left(:,i) - traj_right(:,i));
     road_right(:,i) = traj_right(:,i) + 0.6 * (traj_right(:,i) - traj_left(:,i));
-    
+        
     stripe_1(:,i) = traj_left(:,i) + 0.45 * (traj_left(:,i) - traj_right(:,i));
     stripe_2(:,i) = traj_left(:,i) + 0.38 * (traj_left(:,i) - traj_right(:,i));
     
     stripe_3(:,i) = traj_right(:,i) + 0.45 * (traj_right(:,i) - traj_left(:,i));
     stripe_4(:,i) = traj_right(:,i) + 0.38 * (traj_right(:,i) - traj_left(:,i));
+    
+    for j=1:16
+        road_middle(:,i,j) = stripe_2(:,i) - j / 17 * (stripe_2(:,i) - stripe_4(:,i));
+    end
+
     
     % gap handling
     if (i>1)
