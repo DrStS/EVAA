@@ -163,6 +163,7 @@ void EVAAComputeEngine::computeALE(void) {
         TwoTrackModel_obj = new TwoTrackModelBDF2<Constants::floatEVAA>(car, loadModule);
     }
     else if (db.getALESolver() == ALESolver::BDF2) {
+		std::cout << "BDF2 type eulerain solver" << std::endl;
         TwoTrackModel_obj = new TwoTrackModelBDF2<Constants::floatEVAA>(car, loadModule);
     }
     ALE<Constants::floatEVAA>* ale = new ALE<Constants::floatEVAA>(car, loadModule, TwoTrackModel_obj);
