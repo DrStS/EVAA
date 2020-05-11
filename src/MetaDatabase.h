@@ -281,7 +281,12 @@ public:
                 _trajectory->calculateVerticalPositionsLegs();
                 _trajectory->calculateVerticalAccelerations();
             }
-
+#ifdef WRITECSV
+            if (_trajectory == nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter + 1, _timestep);
+            _trajectory->writeTrajectoryForCircularPath(_initial_pos_body, _profile_center,
+                                                        _initial_vel_body, _timestep,
+                                                        _num_time_iter + 1);
+#endif  // WRITECSV
         }
         else if (load_data->lagrangianRoadProfile().arbitraryRoadProfile().present()) {
             const auto horizontalProfile = load_data->lagrangianRoadProfile().arbitraryRoadProfile().get();
