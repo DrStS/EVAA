@@ -285,7 +285,7 @@ public:
             if (_trajectory == nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter + 1, _timestep);
             _trajectory->writeTrajectoryForCircularPath(_initial_pos_body, _profile_center,
                                                         _initial_vel_body, _timestep,
-                                                        _num_time_iter + 1);
+                                                        _num_time_iter + 1, _l_lat, _l_long);
 #endif  // WRITECSV
         }
         else if (load_data->lagrangianRoadProfile().arbitraryRoadProfile().present()) {

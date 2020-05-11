@@ -189,8 +189,8 @@ public:
 
             Math::scal<T>((Constants::DIM - 1), inverseRadiusOfCircle, centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
             // Cross product to get tangential velocity component
-            tangentialVelocityDirection[0] = *(centrifugalForce + (Constants::DIM - 1) * i + 1);
-            tangentialVelocityDirection[1] = -*(centrifugalForce + (Constants::DIM - 1) * i);
+            tangentialVelocityDirection[0] = -*(centrifugalForce + (Constants::DIM - 1) * i + 1);
+            tangentialVelocityDirection[1] = *(centrifugalForce + (Constants::DIM - 1) * i);
             velocityMagnitude = Math::dot<T>((Constants::DIM - 1), velocityLagrangian + (Constants::DIM - 1) * i, Constants::INCX, tangentialVelocityDirection, Constants::INCX);
             // Force computation
             Math::scal<T>(Constants::DIM - 1, mass[i] * velocityMagnitude * velocityMagnitude * inverseRadiusOfCircle, centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);

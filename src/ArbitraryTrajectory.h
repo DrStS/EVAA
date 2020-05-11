@@ -178,7 +178,8 @@ public:
     /**
     * \brief write trajectory for circular path
     */
-    void writeTrajectoryForCircularPath(T* init_position, T* profile_center, T* init_vel, T delta_t, int timesteps) {
+    void writeTrajectoryForCircularPath(T* init_position, T* profile_center, T* init_vel, T delta_t,
+                                        int timesteps, T* latitudes, T* longitudes) {
         T radius[3];
         T omega[3];
         T RotMatrix[9];
@@ -196,15 +197,25 @@ public:
         // dtheta = w*delta_t
         Math::GetRotationMatrix<T>(omega[2], omega[1], omega[0], RotMatrix);
 
-        // get true local coordinates 
+        // get true local coordinates
+        _l_lat_fl = latitudes[Constants::FRONT_LEFT];
+        _l_lat_fr = latitudes[Constants::FRONT_RIGHT];
+        _l_lat_rl = latitudes[Constants::REAR_LEFT];
+        _l_lat_rr = latitudes[Constants::REAR_RIGHT];
+
+        _l_long_fl = longitudes[Constants::FRONT_LEFT];
+        _l_long_fr = longitudes[Constants::FRONT_RIGHT];
+        _l_long_rl = longitudes[Constants::REAR_LEFT];
+        _l_long_rr = longitudes[Constants::REAR_RIGHT];
+
         T localXcoordinates[Constants::NUM_LEGS] = {_l_long_fl, _l_long_fr, -_l_long_rl, -_l_long_rr};
         T localYcoordinates[Constants::NUM_LEGS] = {-_l_lat_fl, _l_lat_fr, -_l_lat_rl, _l_lat_rr};
 
         T temp[3];
         Math::CrossProduct<T>(radius, init_vel, temp);
 
-        T c = Math::nrm2<T>(Constants::DIM, temp, 1) / (Math::nrm2<T>(Constants::DIM, radius, 1) * Math::nrm2<T>(Constants::DIM, init_vel, 1));
-        T s = sqrt(1-c*c);
+        T s = Math::nrm2<T>(Constants::DIM, temp, 1) / (Math::nrm2<T>(Constants::DIM, radius, 1) * Math::nrm2<T>(Constants::DIM, init_vel, 1));
+        T c = sqrt(1-s*s);
 
         T posfl[3], posfr[3], posrl[3], posrr[3];
 

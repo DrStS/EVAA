@@ -30,7 +30,7 @@ if plot_traj
     global_min_z = min(min(traj_1(2,:)), min(traj_2(2,:)));
     [road_left, road_right, road_middle, stripe_1, stripe_2, stripe_3, stripe_4, gaps_left, gaps_right] = plotPhysicalRoad(traj_1, traj_2);
     colormap(gray);
-    amplitude_gray = max(road_left(3,:)) - min(road_left(3,:));
+    amplitude_gray = max(road_left(3,:)) - min(road_left(3,:)) + 0.000001;
     axis_gray = [min(road_left(3,:)) - 0.1 * amplitude_gray, max(road_left(3,:)) + 1 * amplitude_gray];
 end
 axis_min_z = global_min_z;
