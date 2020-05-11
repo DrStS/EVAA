@@ -57,6 +57,6 @@ constexpr int TYRE_INDEX_EULER[4] {4, 6, 8, 10};
 constexpr int TYRE_INDEX_LAGRANGE[4] { 4, 8, 12, 16 };
 
 /** It's PI come on */
-const floatEVAA PI = 3.141592653589793238463;
+constexpr floatEVAA PI = 3.141592653589793238463;
 };  // namespace Constants
 }  // namespace EVAA

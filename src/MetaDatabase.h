@@ -562,13 +562,10 @@ private:
         const auto lookupHandler = LookupHandler(filename, xml_schema::flags::dont_validate);
         if (lookupHandler->LookupTableGenerator().present()) {
             const auto lookupTable = lookupHandler->LookupTableGenerator().get();
-            T *a, *_k_body, *_k_tyre;
+            T a[8], _k_body[8], _k_tyre[8];
             T b, c, l_min, l_max;
-            int size, k, type, order;
+            size_t size, k, type, order;
 
-            a = new (T[8]);
-            _k_body = new (T[8]);
-            _k_tyre = new (T[8]);
 
             std::cout << "Generate look up table from parameters." << std::endl;
 
@@ -602,10 +599,6 @@ private:
             }
 
             if (_lookupDamping == nullptr) _lookupDamping = new EVAALookup<Constants::floatEVAA>(size, a, b, c, l_min, l_max, k, type, order);
-
-            delete[] a;
-            delete[] _k_body;
-            delete[] _k_tyre;
         }
     }
 
