@@ -3,7 +3,7 @@
   <SimulationParametersXML>
     <GeneralSettingsXML>
       <TimestepSizeXML>1e-3</TimestepSizeXML>
-      <NumberOfIterationsXML>100000</NumberOfIterationsXML>
+      <NumberOfIterationsXML>10000</NumberOfIterationsXML>
     </GeneralSettingsXML>
     <MultyBodyDynamicsXML>
       <SolverXML>RK4</SolverXML>
@@ -11,7 +11,7 @@
       <ToleranceXML>1e-7</ToleranceXML>
     </MultyBodyDynamicsXML>
     <LinearALEXML>
-      <Method>BDF2</Method>
+      <Method>IMPLICIT_EULER</Method>
       <Tolerance>1e-7</Tolerance>
       <MaximumNumNewtonIterations>10</MaximumNumNewtonIterations>
     </LinearALEXML>

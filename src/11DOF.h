@@ -922,7 +922,7 @@ public:
 		
 #ifdef INTERPOLATION
         UpdateSystem();
-        Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
+        Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, _twoTrackModelForce, _J, _residual, _residualNorm, _u_n_p_1, _temp, _tolerance, _maxNewtonIteration, _newtonIteration);
 #endif
 		
 

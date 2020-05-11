@@ -20,51 +20,51 @@
           <z>0</z>
         </AngularVelocity>
         <Body>
-          <x>0</x>
-          <y>0</y>
+          <x>5</x>
+          <y>10</y>
           <z>0</z>
         </Body>
       <UnsprungMass>
         <ReerRight>
-          <x>0</x>
-          <y>0</y>
+          <x>5</x>
+          <y>10</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
-          <x>0</x>
-          <y>0</y>
+          <x>5</x>
+          <y>10</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
-          <x>0</x>
-          <y>0</y>
+          <x>5</x>
+          <y>10</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
-          <x>0</x>
-          <y>0</y>
+          <x>5</x>
+          <y>10</y>
           <z>0</z>
         </FrontRight>
       </UnsprungMass>
       <Tyre>
         <ReerRight>
-          <x>0</x>
-          <y>0</y>
+          <x>5</x>
+          <y>10</y>
           <z>0</z>
         </ReerRight>
         <ReerLeft>
-          <x>0</x>
-          <y>0</y>
+          <x>5</x>
+          <y>10</y>
           <z>0</z>
         </ReerLeft>
         <FrontLeft>
-          <x>0</x>
-          <y>0</y>
+          <x>5</x>
+          <y>10</y>
           <z>0</z>
         </FrontLeft>
         <FrontRight>
-          <x>0</x>
-          <y>0</y>
+          <x>5</x>
+          <y>10</y>
           <z>0</z>
         </FrontRight>
       </Tyre>
@@ -73,12 +73,12 @@
   </lagrangianRoadProfile>
 
   <eulerianRoadProfile>
-    <!--fixedTyre></fixedTyre-->
+    <fixedTyre></fixedTyre>
     <!--sinusoidalProfile>
       <rightTyre amplitude="0.01" period="10" shift="0"/>
       <leftTyre amplitude="0.01" period="7" shift="5"/>
     </sinusoidalProfile-->
-    <detachedTyre></detachedTyre>
+    <!--detachedTyre></detachedTyre-->
   </eulerianRoadProfile>
 
 
@@ -86,7 +86,7 @@
     <forceBody>
       <x>0</x>
       <y>0</y>
-      <z>1.1e3</z>
+      <z>0</z>
     </forceBody>
     <forceWheel>
       <ReerRight>
@@ -137,7 +137,7 @@
   <GravityField>
     <x>0</x>
     <y>0</y>
-    <z>0</z>
+    <z>-9.81</z>
   </GravityField>
 
 </EVAA_load_module>
