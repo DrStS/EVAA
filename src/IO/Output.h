@@ -149,7 +149,7 @@ public:
         myfile.close();
     };
     /**
-    * \brief write one time step to the file
+    * \brief write one time step to the file ALE
     */
     void writeSoltionVector(
         T* solVec, /**< of size Constants::VEC_DIM * Constants::DIM = 27 */

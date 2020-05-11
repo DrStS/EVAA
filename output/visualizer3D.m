@@ -28,12 +28,15 @@ max_y = mid_y + fixed_range_y / 2;
 global_min_z = min(min(min(y(:,33)), min(y(:,36))), min(min(y(:,39)), min(y(:,42)))); 
 if plot_traj
     global_min_z = min(min(traj_1(2,:)), min(traj_2(2,:)));
+    [road_left, road_right, stripe_1, stripe_2, stripe_3, stripe_4, gaps_left, gaps_right] = plotPhysicalRoad(traj_1, traj_2);
+    colormap(gray);
+    amplitude_gray = max(road_left(3,:)) - min(road_left(3,:));
+    axis_gray = [min(road_left(3,:)) - 0.1 * amplitude_gray, max(road_left(3,:)) + 1 * amplitude_gray];
 end
 axis_min_z = global_min_z;
 
 tic
 for i = 1 : vis_step : num_iter   
-    
     %% get components
     pcc = [y(i,5), y(i,7), y(i,6)];
     
@@ -101,14 +104,67 @@ for i = 1 : vis_step : num_iter
 
         % road
         if plot_traj
-            road_vis_range = max(1,i-50000):min(i+50000,num_iter);
-            plot3(traj_1(1,road_vis_range),...
-                  traj_1(2,road_vis_range),...
-                  traj_1(3,road_vis_range), 'b')
+            road_vis_range = max(3,i-10000):min(i+10000,num_iter-3);      
+            % road itself
+            caxis(axis_gray); 
+            s = surf([road_left(1,road_vis_range); stripe_1(1,road_vis_range)],...
+                    [road_left(2,road_vis_range); stripe_1(2,road_vis_range)],...
+                    [road_left(3,road_vis_range); stripe_1(3,road_vis_range)]);
+            s.EdgeColor = 'none';
+            
+            s = surf([stripe_2(1,road_vis_range); stripe_4(1,road_vis_range)],...
+                    [stripe_2(2,road_vis_range); stripe_4(2,road_vis_range)],...
+                    [stripe_2(3,road_vis_range); stripe_4(3,road_vis_range)]);
+            s.EdgeColor = 'none';
 
-              plot3(traj_2(1,road_vis_range),...
-                    traj_2(2,road_vis_range),...
-                    traj_2(3,road_vis_range), 'b')
+            s = surf([road_right(1,road_vis_range); stripe_3(1,road_vis_range)],...
+                    [road_right(2,road_vis_range); stripe_3(2,road_vis_range)],...
+                    [road_right(3,road_vis_range); stripe_3(3,road_vis_range)]);
+            s.EdgeColor = 'none';
+            
+        % stripes
+        for j = 1:2:length(gaps_right)-2
+            range_elems = gaps_right(j):gaps_right(j+1);
+            white_right = ones(2,length(range_elems),3);
+            
+             s = surf([stripe_3(1,range_elems); stripe_4(1,range_elems)],...
+                    [stripe_3(2,range_elems); stripe_4(2,range_elems)],...
+                    [stripe_3(3,range_elems); stripe_4(3,range_elems)], white_right);
+            s.EdgeColor = 'none';
+            
+            range_elems = gaps_right(j+1):gaps_right(j+2);
+            
+            if (length(range_elems)>1)
+                caxis(axis_gray);
+                s = surf([stripe_3(1,range_elems); stripe_4(1,range_elems)],...
+                        [stripe_3(2,range_elems); stripe_4(2,range_elems)],...
+                        [stripe_3(3,range_elems); stripe_4(3,range_elems)]);
+                s.EdgeColor = 'none';
+            end
+
+        end
+            
+        for j = 1:2:length(gaps_left)-2
+            range_elems = gaps_left(j):gaps_left(j+1);
+            white_left = ones(2,length(range_elems),3);
+            
+             s = surf([stripe_1(1,range_elems); stripe_2(1,range_elems)],...
+                    [stripe_1(2,range_elems); stripe_2(2,range_elems)],...
+                    [stripe_1(3,range_elems); stripe_2(3,range_elems)], white_left);
+            s.EdgeColor = 'none';
+            
+            range_elems = gaps_left(j+1):gaps_left(j+2);
+            if (length(range_elems)>1)
+                caxis(axis_gray);
+                s = surf([stripe_1(1,range_elems); stripe_2(1,range_elems)],...
+                        [stripe_1(2,range_elems); stripe_2(2,range_elems)],...
+                        [stripe_1(3,range_elems); stripe_2(3,range_elems)]);
+                s.EdgeColor = 'none';
+            end
+
+        end
+
+            
         end
     xlabel('X')
     ylabel('Y')
@@ -282,6 +338,69 @@ for i = 1 : vis_step : num_iter
         % road
     if plot_traj
         road_vis_range = max(1,i-2000):min(i+2000,num_iter);
+                
+        % road itself
+        caxis(axis_gray); 
+        s = surf([road_left(1,road_vis_range); stripe_1(1,road_vis_range)],...
+                [road_left(2,road_vis_range); stripe_1(2,road_vis_range)],...
+                [road_left(3,road_vis_range); stripe_1(3,road_vis_range)]);
+        s.EdgeColor = 'none';
+
+        caxis(axis_gray);
+        s = surf([stripe_2(1,road_vis_range); stripe_4(1,road_vis_range)],...
+                [stripe_2(2,road_vis_range); stripe_4(2,road_vis_range)],...
+                [stripe_2(3,road_vis_range); stripe_4(3,road_vis_range)]);
+        s.EdgeColor = 'none';
+        
+        caxis(axis_gray);
+        s = surf([stripe_3(1,road_vis_range); road_right(1,road_vis_range)],...
+                [stripe_3(2,road_vis_range); road_right(2,road_vis_range)],...
+                [stripe_3(3,road_vis_range); road_right(3,road_vis_range)]);
+        s.EdgeColor = 'none';
+
+        % stripes
+        for j = 1:2:length(gaps_right)-2
+            range_elems = gaps_right(j):gaps_right(j+1);
+            white_right = ones(2,length(range_elems),3);
+            
+             s = surf([stripe_3(1,range_elems); stripe_4(1,range_elems)],...
+                    [stripe_3(2,range_elems); stripe_4(2,range_elems)],...
+                    [stripe_3(3,range_elems); stripe_4(3,range_elems)], white_right);
+            s.EdgeColor = 'none';
+            
+            range_elems = gaps_right(j+1):gaps_right(j+2);
+            
+            if (length(range_elems)>1)
+                caxis(axis_gray);
+                s = surf([stripe_3(1,range_elems); stripe_4(1,range_elems)],...
+                        [stripe_3(2,range_elems); stripe_4(2,range_elems)],...
+                        [stripe_3(3,range_elems); stripe_4(3,range_elems)]);
+                s.EdgeColor = 'none';
+            end
+
+        end
+            
+        for j = 1:2:length(gaps_left)-2
+            range_elems = gaps_left(j):gaps_left(j+1);
+            white_left = ones(2,length(range_elems),3);
+            
+             s = surf([stripe_1(1,range_elems); stripe_2(1,range_elems)],...
+                    [stripe_1(2,range_elems); stripe_2(2,range_elems)],...
+                    [stripe_1(3,range_elems); stripe_2(3,range_elems)], white_left);
+            s.EdgeColor = 'none';
+            
+            range_elems = gaps_left(j+1):gaps_left(j+2);
+            if (length(range_elems)>1)
+                caxis(axis_gray);
+                s = surf([stripe_1(1,range_elems); stripe_2(1,range_elems)],...
+                        [stripe_1(2,range_elems); stripe_2(2,range_elems)],...
+                        [stripe_1(3,range_elems); stripe_2(3,range_elems)]);
+                s.EdgeColor = 'none';
+            end
+
+        end
+        
+        
         plot3(traj_1(1,road_vis_range),...
               traj_1(2,road_vis_range),...
               traj_1(3,road_vis_range), 'b')
@@ -293,10 +412,9 @@ for i = 1 : vis_step : num_iter
     %view(0,0)
     hold off
 
-    axis([y(i,5) - 2.5, y(i,5) + 2.5, ...
-          y(i,7) - 2.5, y(i,7) + 2.5, ...
-          min_z, min_z + 2.5])
-
+    axis([y(i,5) - 3.5, y(i,5) + 3.5, ...
+          y(i,7) - 3.5, y(i,7) + 3.5, ...
+          min_z-0.5, min_z + 2.5])
     
     drawnow
         
