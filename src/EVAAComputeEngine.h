@@ -47,7 +47,7 @@ public:
      * \param[in] file name of xml file to call singelton constructor of
      * metadatabase \author Stefan Sicklinger
      */
-    EVAAComputeEngine(std::string xmlCarFileName, std::string xmlLoadFileName);
+    EVAAComputeEngine(std::string xmlSimulationFileName, std::string xmlCarFileName, std::string xmlLoadFileName);
 
     /**
      * \brief print info

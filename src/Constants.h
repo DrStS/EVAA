@@ -2,10 +2,15 @@
 
 #pragma once
 
+extern size_t count_interp_debug;
+
 namespace EVAA {
 namespace Constants {
 /** alignment for mkl malloc */
 constexpr size_t ALIGNMENT = 64;
+
+/** MBD solution vector size */
+constexpr size_t MBD_SOLUTION_SIZE = 61;
 
 // consider Constants::DIM = 4 for efficiency!!!
 // 10 Constants::DIMensions because of torque of the body
@@ -53,6 +58,6 @@ constexpr int TYRE_INDEX_EULER[4]{4, 6, 8, 10};
 constexpr int TYRE_INDEX_LAGRANGE[4]{4, 8, 12, 16};
 
 /** It's PI come on */
-const floatEVAA PI = 3.141592653589793238463;
+constexpr floatEVAA PI = 3.141592653589793238463;
 };  // namespace Constants
 }  // namespace EVAA

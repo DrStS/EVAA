@@ -1,4 +1,4 @@
-function [] = visualizer3D(fig, y, traj_1, traj_2, plot_traj, delta_t, vel_norms)
+function [] = visualizer3D(fig, y, traj_1, traj_2, plot_traj, fancy_road, delta_t, vel_norms)
 
 set(0,'CurrentFigure',fig)
 set(fig,'units','normalized','outerpos',[0 0 1 1.2]);
@@ -6,7 +6,7 @@ grid on
 
 num_iter = size(y,1) - 1;
 
-frames_per_second = 5;   % change this to what your graphic card is able
+frames_per_second = 15;   % change this to what your graphic card is able
 vis_step = ceil(1 / (delta_t * frames_per_second)); % visualization step
 
 % axis handler
@@ -28,12 +28,15 @@ max_y = mid_y + fixed_range_y / 2;
 global_min_z = min(min(min(y(:,33)), min(y(:,36))), min(min(y(:,39)), min(y(:,42)))); 
 if plot_traj
     global_min_z = min(min(traj_1(2,:)), min(traj_2(2,:)));
+    [road_left, road_right, road_middle, stripe_1, stripe_2, stripe_3, stripe_4, gaps_left, gaps_right] = plotPhysicalRoad(traj_1, traj_2);
+    colormap(gray);
+    amplitude_gray = max(road_left(3,:)) - min(road_left(3,:)) + 0.000001;
+    axis_gray = [min(road_left(3,:)) - 0.1 * amplitude_gray, max(road_left(3,:)) + 1 * amplitude_gray];
 end
 axis_min_z = global_min_z;
 
 tic
-for i = 1 : vis_step : num_iter   
-    
+for i = 2 : vis_step : num_iter   
     %% get components
     pcc = [y(i,5), y(i,7), y(i,6)];
     
@@ -58,64 +61,143 @@ for i = 1 : vis_step : num_iter
     set(0,'CurrentFigure',fig)
     subplot(1,2,1)
     %car body
-    plot3(pcc(1), pcc(2), pcc(3),'gx');
+    plot3(pcc(1), pcc(2), pcc(3),'gx','LineWidth',2);
      grid on
      hold on
-    plot3(pc1(1), pc1(2), pc1(3),'gx');
-    plot3(pc2(1), pc2(2), pc2(3),'gx');
-    plot3(pc3(1), pc3(2), pc3(3),'gx');
-    plot3(pc4(1), pc4(2), pc4(3),'gx');
+    plot3(pc1(1), pc1(2), pc1(3),'gx','LineWidth',2);
+    plot3(pc2(1), pc2(2), pc2(3),'gx','LineWidth',2);
+    plot3(pc3(1), pc3(2), pc3(3),'gx','LineWidth',2);
+    plot3(pc4(1), pc4(2), pc4(3),'gx','LineWidth',2);
     plot3(  [pc1(1), pcc(1), pc3(1), pc4(1), pcc(1), pc2(1), pc1(1), pc4(1)], ...
             [pc1(2), pcc(2), pc3(2), pc4(2), pcc(2), pc2(2), pc1(2), pc4(2)], ...
-            [pc1(3), pcc(3), pc3(3), pc4(3), pcc(3), pc2(3), pc1(3), pc4(3)],'g');
+            [pc1(3), pcc(3), pc3(3), pc4(3), pcc(3), pc2(3), pc1(3), pc4(3)],'g','LineWidth',2);
     plot3(  [pc2(1), pc3(1)], ...
             [pc2(2), pc3(2)], ...
-            [pc2(3), pc3(3)],'g');
+            [pc2(3), pc3(3)],'g','LineWidth',2);
 
     %legs
-    plot3(pw1(1), pw1(2), pw1(3),'ro');
-    plot3(pw2(1), pw2(2), pw2(3),'ro');
-    plot3(pw3(1), pw3(2), pw3(3),'ro');
-    plot3(pw4(1), pw4(2), pw4(3),'ro');
+    plot3(pw1(1), pw1(2), pw1(3),'ro','LineWidth',1);
+    plot3(pw2(1), pw2(2), pw2(3),'ro','LineWidth',1);
+    plot3(pw3(1), pw3(2), pw3(3),'ro','LineWidth',1);
+    plot3(pw4(1), pw4(2), pw4(3),'ro','LineWidth',1);
 
-    plot3(pt1(1), pt1(2), pt1(3),'ro');
-    plot3(pt2(1), pt2(2), pt2(3),'ro');
-    plot3(pt3(1), pt3(2), pt3(3),'ro');
-    plot3(pt4(1), pt4(2), pt4(3),'ro');
+    plot3(pt1(1), pt1(2), pt1(3),'ro','LineWidth',1);
+    plot3(pt2(1), pt2(2), pt2(3),'ro','LineWidth',1);
+    plot3(pt3(1), pt3(2), pt3(3),'ro','LineWidth',1);
+    plot3(pt4(1), pt4(2), pt4(3),'ro','LineWidth',1);
 
     plot3(  [pc1(1), pw1(1), pt1(1)],...
             [pc1(2), pw1(2), pt1(2)],...
-            [pc1(3), pw1(3), pt1(3)],'r');
+            [pc1(3), pw1(3), pt1(3)],'r','LineWidth',2);
 
     plot3(  [pc2(1), pw2(1), pt2(1)],...
             [pc2(2), pw2(2), pt2(2)],...
-            [pc2(3), pw2(3), pt2(3)],'r');
+            [pc2(3), pw2(3), pt2(3)],'r','LineWidth',2);
 
     plot3(  [pc3(1), pw3(1), pt3(1)],...
             [pc3(2), pw3(2), pt3(2)],...
-            [pc3(3), pw3(3), pt3(3)],'r');
+            [pc3(3), pw3(3), pt3(3)],'r','LineWidth',2);
 
     plot3(  [pc4(1), pw4(1), pt4(1)],...
             [pc4(2), pw4(2), pt4(2)],...
-            [pc4(3), pw4(3), pt4(3)],'r');
+            [pc4(3), pw4(3), pt4(3)],'r','LineWidth',2);
 
         % road
-        if plot_traj
-            road_vis_range = max(1,i-50000):min(i+50000,num_iter);
-            plot3(traj_1(1,road_vis_range),...
+    if plot_traj
+        road_vis_range = max(3,i-10000):vis_step:min(i+10000,num_iter-3);      
+        if fancy_road    
+                
+            % road itself
+                caxis(axis_gray); 
+                s = surf([road_left(1,road_vis_range); stripe_1(1,road_vis_range)],...
+                        [road_left(2,road_vis_range); stripe_1(2,road_vis_range)],...
+                        [road_left(3,road_vis_range); stripe_1(3,road_vis_range)]);
+                s.EdgeColor = 'none';
+
+                s = surf([stripe_2(1,road_vis_range); road_middle(1,road_vis_range,1)],...
+                        [stripe_2(2,road_vis_range); road_middle(2,road_vis_range,1)],...
+                        [stripe_2(3,road_vis_range); road_middle(3,road_vis_range,1)]);
+                s.EdgeColor = 'none';
+
+                for j=1:size(road_middle,3)-1
+                        s = surf([road_middle(1,road_vis_range,j); road_middle(1,road_vis_range,j+1)],...
+                                 [road_middle(2,road_vis_range,j); road_middle(2,road_vis_range,j+1)],...
+                                 [road_middle(3,road_vis_range,j); road_middle(3,road_vis_range,j+1)]);
+                        s.EdgeColor = 'none';
+                end
+
+                s = surf([road_middle(1,road_vis_range,end); stripe_4(1,road_vis_range)],...
+                         [road_middle(2,road_vis_range,end); stripe_4(2,road_vis_range)],...
+                         [road_middle(3,road_vis_range,end); stripe_4(3,road_vis_range)]);
+                s.EdgeColor = 'none';
+
+
+                s = surf([road_right(1,road_vis_range); stripe_3(1,road_vis_range)],...
+                        [road_right(2,road_vis_range); stripe_3(2,road_vis_range)],...
+                        [road_right(3,road_vis_range); stripe_3(3,road_vis_range)]);
+                s.EdgeColor = 'none';
+
+            % stripes
+            for j = 1:2:length(gaps_right)-2
+                range_elems = gaps_right(j):10:gaps_right(j+1);
+                white_right = ones(2,length(range_elems),3);
+                if (length(range_elems)>1)
+                     s = surf([stripe_3(1,range_elems); stripe_4(1,range_elems)],...
+                            [stripe_3(2,range_elems); stripe_4(2,range_elems)],...
+                            [stripe_3(3,range_elems); stripe_4(3,range_elems)], white_right);
+                    s.EdgeColor = 'none';
+                end
+
+                range_elems = gaps_right(j+1):10:gaps_right(j+2);
+
+                if (length(range_elems)>1)
+                    caxis(axis_gray);
+                    s = surf([stripe_3(1,range_elems); stripe_4(1,range_elems)],...
+                            [stripe_3(2,range_elems); stripe_4(2,range_elems)],...
+                            [stripe_3(3,range_elems); stripe_4(3,range_elems)]);
+                    s.EdgeColor = 'none';
+                end
+
+            end
+
+            for j = 1:2:length(gaps_left)-2
+                range_elems = gaps_left(j):10:gaps_left(j+1);
+                white_left = ones(2,length(range_elems),3);
+                if (length(range_elems)>1)
+                     s = surf([stripe_1(1,range_elems); stripe_2(1,range_elems)],...
+                            [stripe_1(2,range_elems); stripe_2(2,range_elems)],...
+                            [stripe_1(3,range_elems); stripe_2(3,range_elems)], white_left);
+                    s.EdgeColor = 'none';
+                end
+
+                range_elems = gaps_left(j+1):10:gaps_left(j+2);
+                if (length(range_elems)>1)
+                    caxis(axis_gray);
+                    s = surf([stripe_1(1,range_elems); stripe_2(1,range_elems)],...
+                            [stripe_1(2,range_elems); stripe_2(2,range_elems)],...
+                            [stripe_1(3,range_elems); stripe_2(3,range_elems)]);
+                    s.EdgeColor = 'none';
+                end
+
+            end
+        
+        else
+          plot3(traj_1(1,road_vis_range),...
                   traj_1(2,road_vis_range),...
                   traj_1(3,road_vis_range), 'b')
 
-              plot3(traj_2(1,road_vis_range),...
-                    traj_2(2,road_vis_range),...
-                    traj_2(3,road_vis_range), 'b')
+            plot3(traj_2(1,road_vis_range),...
+                  traj_2(2,road_vis_range),...
+                  traj_2(3,road_vis_range), 'b')
         end
+          
+    end
     xlabel('X')
     ylabel('Y')
     zlabel('Z')
     timestring=['time=',num2str(floor(delta_t*i/60)),'min',num2str(mod(delta_t*i,60),4),'sec'];
     title(timestring)
-     %view(0,0)
+    % view(-90,0)
     hold off
 
     %% axis
@@ -231,47 +313,46 @@ for i = 1 : vis_step : num_iter
     set(0,'CurrentFigure',fig)
     subplot(1,2,2)
     
-    %car body
-    plot3(pcc(1), pcc(2), pcc(3),'gx');
+    plot3(pcc(1), pcc(2), pcc(3),'gx','LineWidth',2);
      grid on
      hold on
-    plot3(pc1(1), pc1(2), pc1(3),'gx');
-    plot3(pc2(1), pc2(2), pc2(3),'gx');
-    plot3(pc3(1), pc3(2), pc3(3),'gx');
-    plot3(pc4(1), pc4(2), pc4(3),'gx');
+    plot3(pc1(1), pc1(2), pc1(3),'gx','LineWidth',2);
+    plot3(pc2(1), pc2(2), pc2(3),'gx','LineWidth',2);
+    plot3(pc3(1), pc3(2), pc3(3),'gx','LineWidth',2);
+    plot3(pc4(1), pc4(2), pc4(3),'gx','LineWidth',2);
     plot3(  [pc1(1), pcc(1), pc3(1), pc4(1), pcc(1), pc2(1), pc1(1), pc4(1)], ...
             [pc1(2), pcc(2), pc3(2), pc4(2), pcc(2), pc2(2), pc1(2), pc4(2)], ...
-            [pc1(3), pcc(3), pc3(3), pc4(3), pcc(3), pc2(3), pc1(3), pc4(3)],'g');
+            [pc1(3), pcc(3), pc3(3), pc4(3), pcc(3), pc2(3), pc1(3), pc4(3)],'g','LineWidth',2);
     plot3(  [pc2(1), pc3(1)], ...
             [pc2(2), pc3(2)], ...
-            [pc2(3), pc3(3)],'g');
+            [pc2(3), pc3(3)],'g','LineWidth',2);
 
     %legs
-    plot3(pw1(1), pw1(2), pw1(3),'ro');
-    plot3(pw2(1), pw2(2), pw2(3),'ro');
-    plot3(pw3(1), pw3(2), pw3(3),'ro');
-    plot3(pw4(1), pw4(2), pw4(3),'ro');
+    plot3(pw1(1), pw1(2), pw1(3),'ro','LineWidth',2);
+    plot3(pw2(1), pw2(2), pw2(3),'ro','LineWidth',2);
+    plot3(pw3(1), pw3(2), pw3(3),'ro','LineWidth',2);
+    plot3(pw4(1), pw4(2), pw4(3),'ro','LineWidth',2);
 
-    plot3(pt1(1), pt1(2), pt1(3),'ro');
-    plot3(pt2(1), pt2(2), pt2(3),'ro');
-    plot3(pt3(1), pt3(2), pt3(3),'ro');
-    plot3(pt4(1), pt4(2), pt4(3),'ro');
+    plot3(pt1(1), pt1(2), pt1(3),'ro','LineWidth',2);
+    plot3(pt2(1), pt2(2), pt2(3),'ro','LineWidth',2);
+    plot3(pt3(1), pt3(2), pt3(3),'ro','LineWidth',2);
+    plot3(pt4(1), pt4(2), pt4(3),'ro','LineWidth',2);
 
     plot3(  [pc1(1), pw1(1), pt1(1)],...
             [pc1(2), pw1(2), pt1(2)],...
-            [pc1(3), pw1(3), pt1(3)],'r');
+            [pc1(3), pw1(3), pt1(3)],'r','LineWidth',2);
 
     plot3(  [pc2(1), pw2(1), pt2(1)],...
             [pc2(2), pw2(2), pt2(2)],...
-            [pc2(3), pw2(3), pt2(3)],'r');
+            [pc2(3), pw2(3), pt2(3)],'r','LineWidth',2);
 
     plot3(  [pc3(1), pw3(1), pt3(1)],...
             [pc3(2), pw3(2), pt3(2)],...
-            [pc3(3), pw3(3), pt3(3)],'r');
+            [pc3(3), pw3(3), pt3(3)],'r','LineWidth',2);
 
     plot3(  [pc4(1), pw4(1), pt4(1)],...
             [pc4(2), pw4(2), pt4(2)],...
-            [pc4(3), pw4(3), pt4(3)],'r');
+            [pc4(3), pw4(3), pt4(3)],'r','LineWidth',2);
  
     xlabel('X')
     ylabel('Y')
@@ -279,24 +360,103 @@ for i = 1 : vis_step : num_iter
     velstring = ['speed=',num2str(vel_norms(i)*3.6,3),'km/h'];
     title(velstring)
 
-        % road
+    % road
     if plot_traj
-        road_vis_range = max(1,i-2000):min(i+2000,num_iter);
-        plot3(traj_1(1,road_vis_range),...
-              traj_1(2,road_vis_range),...
-              traj_1(3,road_vis_range), 'b')
+        road_vis_range = max(1,i-2000):vis_step:min(i+2000,num_iter);
+        
+        if fancy_road    
+                
+            % road itself
 
-          plot3(traj_2(1,road_vis_range),...
-                traj_2(2,road_vis_range),...
-                traj_2(3,road_vis_range), 'b')
+                caxis(axis_gray); 
+                s = surf([road_left(1,road_vis_range); stripe_1(1,road_vis_range)],...
+                        [road_left(2,road_vis_range); stripe_1(2,road_vis_range)],...
+                        [road_left(3,road_vis_range); stripe_1(3,road_vis_range)]);
+                s.EdgeColor = 'none';
+
+                s = surf([stripe_2(1,road_vis_range); road_middle(1,road_vis_range,1)],...
+                        [stripe_2(2,road_vis_range); road_middle(2,road_vis_range,1)],...
+                        [stripe_2(3,road_vis_range); road_middle(3,road_vis_range,1)]);
+                s.EdgeColor = 'none';
+
+                for j=1:size(road_middle,3)-1
+                        s = surf([road_middle(1,road_vis_range,j); road_middle(1,road_vis_range,j+1)],...
+                                 [road_middle(2,road_vis_range,j); road_middle(2,road_vis_range,j+1)],...
+                                 [road_middle(3,road_vis_range,j); road_middle(3,road_vis_range,j+1)]);
+                        s.EdgeColor = 'none';
+                end
+
+                s = surf([road_middle(1,road_vis_range,end); stripe_4(1,road_vis_range)],...
+                         [road_middle(2,road_vis_range,end); stripe_4(2,road_vis_range)],...
+                         [road_middle(3,road_vis_range,end); stripe_4(3,road_vis_range)]);
+                s.EdgeColor = 'none';
+
+
+                s = surf([road_right(1,road_vis_range); stripe_3(1,road_vis_range)],...
+                        [road_right(2,road_vis_range); stripe_3(2,road_vis_range)],...
+                        [road_right(3,road_vis_range); stripe_3(3,road_vis_range)]);
+                s.EdgeColor = 'none';
+
+            % stripes
+            for j = 1:2:length(gaps_right)-2
+                range_elems = gaps_right(j):10:gaps_right(j+1);
+                white_right = ones(2,length(range_elems),3);
+                if (length(range_elems)>1)
+                     s = surf([stripe_3(1,range_elems); stripe_4(1,range_elems)],...
+                            [stripe_3(2,range_elems); stripe_4(2,range_elems)],...
+                            [stripe_3(3,range_elems); stripe_4(3,range_elems)], white_right);
+                    s.EdgeColor = 'none';
+                end
+
+                range_elems = gaps_right(j+1):10:gaps_right(j+2);
+
+                if (length(range_elems)>1)
+                    caxis(axis_gray);
+                    s = surf([stripe_3(1,range_elems); stripe_4(1,range_elems)],...
+                            [stripe_3(2,range_elems); stripe_4(2,range_elems)],...
+                            [stripe_3(3,range_elems); stripe_4(3,range_elems)]);
+                    s.EdgeColor = 'none';
+                end
+
+            end
+
+            for j = 1:2:length(gaps_left)-2
+                range_elems = gaps_left(j):10:gaps_left(j+1);
+                white_left = ones(2,length(range_elems),3);
+                if (length(range_elems)>1)
+                     s = surf([stripe_1(1,range_elems); stripe_2(1,range_elems)],...
+                            [stripe_1(2,range_elems); stripe_2(2,range_elems)],...
+                            [stripe_1(3,range_elems); stripe_2(3,range_elems)], white_left);
+                    s.EdgeColor = 'none';
+                end
+
+                range_elems = gaps_left(j+1):10:gaps_left(j+2);
+                if (length(range_elems)>1)
+                    caxis(axis_gray);
+                    s = surf([stripe_1(1,range_elems); stripe_2(1,range_elems)],...
+                            [stripe_1(2,range_elems); stripe_2(2,range_elems)],...
+                            [stripe_1(3,range_elems); stripe_2(3,range_elems)]);
+                    s.EdgeColor = 'none';
+                end
+
+            end
+        
+        else
+          plot3(traj_1(1,road_vis_range),...
+                  traj_1(2,road_vis_range),...
+                  traj_1(3,road_vis_range), 'b')
+
+            plot3(traj_2(1,road_vis_range),...
+                  traj_2(2,road_vis_range),...
+                  traj_2(3,road_vis_range), 'b')
+        end
     end
     %view(0,0)
     hold off
 
-    axis([y(i,5) - 2.5, y(i,5) + 2.5, ...
-          y(i,7) - 2.5, y(i,7) + 2.5, ...
-          min_z, min_z + 2.5])
-
+    axis([y(i,5) - 3.5, y(i,5) + 3.5, ...
+          y(i,7) - 3.5, y(i,7) + 3.5, ...
+          min_z-0.5, min_z + 2.5])
     
     drawnow
         

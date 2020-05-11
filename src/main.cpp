@@ -53,8 +53,8 @@
  */
 
 #define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
 #include <stdlib.h>
+#include <crtdbg.h>
 
 #ifdef EVAA_COMMANDLINE_ON
 #include <iostream>
@@ -79,11 +79,20 @@ int main(int argc, char **argv) {
         std::cout << *it << std::endl;
     }
     // allArgs[0] = "EVAA.exe" TODO : Do we need this?
-    if (allArgs.size() > 2) {
-        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2]);
+    if (allArgs.size() > 3) {
+        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(allArgs[1], allArgs[2], allArgs[3]);
     }
-    /*EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
-    myComputeEngine->printInfo();*/
+#ifdef INTERPOLATION
+    std::string carSettingsFileNameXML = "C:\\software\\repos\\EVAA\\inputFiles\\CarWithInterpolation.xml";
+#else
+    std::string carSettingsFileNameXML = "C:\\software\\repos\\EVAA\\inputFiles\\CarConstantStiffness.xml";
+#endif
+    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(
+        "C:\\software\\repos\\EVAA\\inputFiles\\SimulationParameters.xml", carSettingsFileNameXML,
+//        "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml");
+       "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
+//        "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml");
+    myComputeEngine->printInfo();
 
     auto &timer1 = EVAA::anaysisTimer01;
 #if MIGHT_BE_USEFUL
@@ -100,21 +109,22 @@ int main(int argc, char **argv) {
     timer1.stop();
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec() << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
 #endif
-    const size_t numIterations = 1000;
+    const size_t numIterations = 1;
 
-    double timeMBD = 0.;
+    std::cout << std::defaultfloat;
+    double timeMBD = 0.;    
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-        //myComputeEngine->computeMBD();
+        myComputeEngine->computeMBD();
         timer1.stop();
         timeMBD += timer1.getDurationMilliSec();
     }
     std::cout << "It took " << std::defaultfloat << timeMBD / numIterations << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
-
+    
     double time11DOF = 0.;
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-        //myComputeEngine->computeMKLTwoTrackModelBE();
+//        myComputeEngine->computeMKLTwoTrackModelBE();
         timer1.stop();
         time11DOF += timer1.getDurationMilliSec();
     }
@@ -122,17 +132,14 @@ int main(int argc, char **argv) {
 
     double timeALE = 0.;
     for (auto i = 0; i < numIterations; ++i) {
-        EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine("C:\\software\\repos\\EVAA\\inputFiles\\car.xml", "C:\\software\\repos\\EVAA\\inputFiles\\load.xml");
-        std::cout << "\n\n\tRun #" << i << "\n";
         timer1.start();
         myComputeEngine->computeALE();
         timer1.stop();
         timeALE += timer1.getDurationMilliSec();
-        delete myComputeEngine;
     }
     std::cout << "It took " << std::defaultfloat << timeALE / numIterations << " ms to run the solver(computeALE).\n\n\n" << std::endl;
 
-    
+    delete myComputeEngine;
 
     std::cout << "\nWe did a great job! Awesome!" << std::endl;
 #endif  // EVAA_COMMANDLINE_ON

@@ -27,16 +27,14 @@ private:
     size_t num_iter;
     int max_iter;
     T tol;
-    size_t solution_dim;  /// this is by the formulation
     std::string solver_name;
     MBDSolver used_solver;
 
     // Environment conditions
-
-    BoundaryConditionRoad boundary_conditions;
+    LagrangianBoundaryConditionRoad lagrangian_boundary_conditions;
+    EulerianBoundaryConditionRoad eulerian_boundary_conditions;
 
     // Car Definition
-
     T* Ic;
     T *upper_spring_length, *lower_spring_length;
     T *upper_spring_stiffness, *lower_spring_stiffness, *upper_spring_damping, *lower_spring_damping;
@@ -85,6 +83,12 @@ private:
     T norm_r_up_fl, norm_r_up_fr, norm_r_up_rl, norm_r_up_rr;
     T norm_r_low_fl, norm_r_low_fr, norm_r_low_rl, norm_r_low_rr;
 
+    // solution vector from the previous iteration (for the flying car)
+    T* _previousSolution;
+    T* _previousTyreForces;
+    bool _iterationBegin;
+    size_t _currentIteration;
+
 #ifdef USE_HDF5
 #ifdef USE_CHECKPOINTS
     HDF5::OutputHDF5<T>* _checkpointsMBD;
@@ -129,8 +133,8 @@ private:
         const T* initial_upper_spring_length = db.getBodySpringInitialLengthVector();
         const T* initial_lower_spring_length = db.getTyreSpringInitialLengthVector();
 
-        T* global_z = Math::malloc<T>(Constants::DIM);
-        T* C_Nc = Math::malloc<T>(Constants::DIMDIM);
+        T* global_z = Math::calloc<T>(Constants::DIM);
+        T* C_Nc = Math::calloc<T>(Constants::DIMDIM);
 
         // 1. qc = qc/norm(qc); This is in quaternions
         T nrm = Math::nrm2<T>(Constants::NUM_LEGS, initial_orientation_, 1);
@@ -261,6 +265,8 @@ private:
         A_Ic = Math::calloc<T>(Constants::DIMDIM);
         A_rem = Math::calloc<T>(Constants::DIMDIM * Constants::DIM);
         accelerations = Math::calloc<T>(Constants::DIMDIM * Constants::DIM);
+        _previousSolution = Math::calloc<T>(Constants::MBD_SOLUTION_SIZE);
+        _previousTyreForces = Math::calloc<T>(Constants::NUM_LEGS);
     }
 
     void ReadFromXML() {
@@ -271,13 +277,14 @@ private:
         num_iter = db.getNumberOfTimeIterations();
         max_iter = db.getMaxNumberOfBroydenIterationForMBD();
         tol = db.getToleranceBroydenIterationForMBD();
-        solution_dim = db.getSolutionVectorSize();  /// this is by the formulation
         used_solver = db.getUsedSolverForMBD();
-        boundary_conditions = db.getRoadConditions();
+        lagrangian_boundary_conditions = db.getLagrangianRoadConditions();
+        eulerian_boundary_conditions = db.getEulerianRoadConditions();
 
         // Car Definition
-
-        T g = db.getGravityField()[2];
+        T gx = db.getGravityField()[0];
+        T gy = db.getGravityField()[1];
+        T gz = db.getGravityField()[2];
 
         // Fill up vectors
         Math::copy(Constants::NUM_LEGS, db.getBodyStiffnessVector(), 1, upper_spring_stiffness, 1);
@@ -325,27 +332,45 @@ private:
         r_fr[i] = db.getLongitudalLegPositionFrontRight();
         r_rl[i] = -db.getLongitudalLegPositionRearLeft();
         r_rr[i] = -db.getLongitudalLegPositionRearRight();
+        FC[i] += db.getBodyMass() * gx;
+        FT_fl[i] += db.getTyreMassFrontLeft() * gx;
+        FT_fr[i] += db.getTyreMassFrontRight() * gx;
+        FT_rl[i] += db.getTyreMassRearLeft() * gx;
+        FT_rr[i] += db.getTyreMassRearRight() * gx;
+        FW_fl[i] += db.getWheelMassFrontLeft() * gx;
+        FW_fr[i] += db.getWheelMassFrontRight() * gx;
+        FW_rl[i] += db.getWheelMassRearLeft() * gx;
+        FW_rr[i] += db.getWheelMassRearRight() * gx;
 
         i = 1;
         r_fl[i] = -db.getLatidudalLegPositionFrontLeft();
         r_fr[i] = db.getLatidudalLegPositionFrontRight();
         r_rl[i] = -db.getLatidudalLegPositionRearLeft();
         r_rr[i] = db.getLatidudalLegPositionRearRight();
+        FC[i] += db.getBodyMass() * gy;
+        FT_fl[i] += db.getTyreMassFrontLeft() * gy;
+        FT_fr[i] += db.getTyreMassFrontRight() * gy;
+        FT_rl[i] += db.getTyreMassRearLeft() * gy;
+        FT_rr[i] += db.getTyreMassRearRight() * gy;
+        FW_fl[i] += db.getWheelMassFrontLeft() * gy;
+        FW_fr[i] += db.getWheelMassFrontRight() * gy;
+        FW_rl[i] += db.getWheelMassRearLeft() * gy;
+        FW_rr[i] += db.getWheelMassRearRight() * gy;
 
         i = 2;
         r_fl[i] = 0;
         r_fr[i] = 0;
         r_rl[i] = 0;
         r_rr[i] = 0;
-        FC[i] -= db.getBodyMass() * g;
-        FT_fl[i] -= db.getTyreMassFrontLeft() * g;
-        FT_fr[i] -= db.getTyreMassFrontRight() * g;
-        FT_rl[i] -= db.getTyreMassRearLeft() * g;
-        FT_rr[i] -= db.getTyreMassRearRight() * g;
-        FW_fl[i] -= db.getWheelMassFrontLeft() * g;
-        FW_fr[i] -= db.getWheelMassFrontRight() * g;
-        FW_rl[i] -= db.getWheelMassRearLeft() * g;
-        FW_rr[i] -= db.getWheelMassRearRight() * g;
+        FC[i] += db.getBodyMass() * gz;
+        FT_fl[i] += db.getTyreMassFrontLeft() * gz;
+        FT_fr[i] += db.getTyreMassFrontRight() * gz;
+        FT_rl[i] += db.getTyreMassRearLeft() * gz;
+        FT_rr[i] += db.getTyreMassRearRight() * gz;
+        FW_fl[i] += db.getWheelMassFrontLeft() * gz;
+        FW_fr[i] += db.getWheelMassFrontRight() * gz;
+        FW_rl[i] += db.getWheelMassRearLeft() * gz;
+        FW_rr[i] += db.getWheelMassRearRight() * gz;
     }
 
     void getCholeskyDecomposition() {
@@ -355,6 +380,27 @@ private:
     }
 
     /* Road Profile and Load module */
+
+    void circular_path_initialization_quaternion(T* vcc, T* q) {
+        T* unit_x_vector = Math::calloc<T>(Constants::DIM);
+        T* normal_quaternion_vector = Math::calloc<T>(Constants::DIM);
+        T quaternion_angle = 0;
+
+        // unit x vector
+        unit_x_vector[0] = 1;
+        unit_x_vector[1] = 0;
+        unit_x_vector[2] = 0;
+
+        // calculate quaternion
+        Math::GetQuaternion<T>(unit_x_vector, vcc, &quaternion_angle, normal_quaternion_vector);
+        q[0] = normal_quaternion_vector[0] * std::sin(0.5 * quaternion_angle);
+        q[1] = normal_quaternion_vector[1] * std::sin(0.5 * quaternion_angle);
+        q[2] = normal_quaternion_vector[2] * std::sin(0.5 * quaternion_angle);
+        q[3] = std::cos(0.5 * quaternion_angle);
+
+        Math::free<T>(normal_quaternion_vector);
+        Math::free<T>(unit_x_vector);
+    }
 
     /** Updates the velocity of the 4 wheels and tyres as well as the angular
      * velocity, such that the car is already in the trajectory of the circle
@@ -384,18 +430,6 @@ private:
 
         // vector out of the XY-plane (unit Z direction)
         perpendicular_dir[2] = 1;
-
-        if (abs(radius - db.getCircularRoadRadius()) > 0.1)
-            std::cout << "Warning! the initial position of the car is not on the "
-                         "trajectory "
-                         "provided in the circular path. \n The expected radius is "
-                      << db.getCircularRoadRadius() << ", but the car is at an initial distance of " << radius
-                      << " from the center of the circle.\n The execution procedes "
-                         "with the "
-                         "current spatial configuration and with the current "
-                         "distance to the "
-                         "center of the circle."
-                      << std::endl;
 
         T inv_radius = 1. / radius;
 
@@ -477,10 +511,9 @@ private:
         unit_z_vector = Math::calloc<T>(Constants::DIM);
         velocity_direction_tyre = Math::calloc<T>(Constants::DIM);
 
-        // the force is in the same direction as the position vector
-        // TODO: take care of situation when the center of the circle is not at
-        // the origin!! ///// RAFFI
+        // the direction vector from the center to the car in Fr
         Math::copy<T>(Constants::DIM, p, 1, Fr, 1);
+        Math::axpy<T>(Constants::DIM, -1, MetaDatabase<T>::getDatabase().getCircularRoadCenter(), 1, Fr, 1);
 
         Fr[2] = 0;  // path only in XZ-plane
 
@@ -516,21 +549,57 @@ private:
      * \brief set the road forces to the one from the trajectory
      */
     void getArbitraryRoadForces(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr, size_t i) {
+        if (_iterationBegin) {
+            _previousTyreForces[Constants::FRONT_LEFT] = Fr_fl[2];
+            _previousTyreForces[Constants::FRONT_RIGHT] = Fr_fr[2];
+            _previousTyreForces[Constants::REAR_LEFT] = Fr_rl[2];
+            _previousTyreForces[Constants::REAR_RIGHT] = Fr_rr[2];
+            _iterationBegin = false;
+        }
+
         auto& db = MetaDatabase<T>::getDatabase();
 
         db.getArbitraryTrajectory()->getLagrangianForcesFrontLeft(i, db.getTyreMassFrontLeft(), Fr_fl);
-        Fr_fl[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesFrontLeft(i, db.getTyreMassFrontLeft());
-
         db.getArbitraryTrajectory()->getLagrangianForcesFrontRight(i, db.getTyreMassFrontRight(), Fr_fr);
-        Fr_fr[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesFrontRight(i, db.getTyreMassFrontRight());
-
         db.getArbitraryTrajectory()->getLagrangianForcesRearLeft(i, db.getTyreMassRearLeft(), Fr_rl);
-        Fr_rl[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesRearLeft(i, db.getTyreMassRearLeft());
-
         db.getArbitraryTrajectory()->getLagrangianForcesRearRight(i, db.getTyreMassRearRight(), Fr_rr);
-        Fr_rr[2] = db.getArbitraryTrajectory()->getVerticalRoadForcesRearRight(i, db.getTyreMassRearRight());
+
+        T delta_t = db.getTimeStepSize();
+
+        flyingCarRoadForces(db.getTyreMassFrontLeft(), Fr_fl[2], Fr_fl[2], Constants::FRONT_LEFT, db.getArbitraryTrajectory()->getVerticalPositionFrontLeft(i - 1), (db.getArbitraryTrajectory()->getVerticalPositionFrontLeft(i) - db.getArbitraryTrajectory()->getVerticalPositionFrontLeft(i - 1)) / delta_t, db.getArbitraryTrajectory()->getVerticalRoadForcesFrontLeft(i, db.getTyreMassFrontLeft()), delta_t);
+
+        flyingCarRoadForces(db.getTyreMassFrontRight(), Fr_fr[2], Fr_fr[2], Constants::FRONT_RIGHT, db.getArbitraryTrajectory()->getVerticalPositionFrontRight(i - 1), (db.getArbitraryTrajectory()->getVerticalPositionFrontRight(i) - db.getArbitraryTrajectory()->getVerticalPositionFrontRight(i - 1)) / delta_t, db.getArbitraryTrajectory()->getVerticalRoadForcesFrontRight(i, db.getTyreMassFrontRight()), delta_t);
+
+        flyingCarRoadForces(db.getTyreMassRearLeft(), Fr_rl[2], Fr_rl[2], Constants::REAR_LEFT, db.getArbitraryTrajectory()->getVerticalPositionRearLeft(i - 1), (db.getArbitraryTrajectory()->getVerticalPositionRearLeft(i) - db.getArbitraryTrajectory()->getVerticalPositionRearLeft(i - 1)) / delta_t, db.getArbitraryTrajectory()->getVerticalRoadForcesRearLeft(i, db.getTyreMassRearLeft()), delta_t);
+
+        flyingCarRoadForces(db.getTyreMassRearRight(), Fr_rr[2], Fr_rr[2], Constants::REAR_RIGHT, db.getArbitraryTrajectory()->getVerticalPositionRearRight(i - 1), (db.getArbitraryTrajectory()->getVerticalPositionRearRight(i) - db.getArbitraryTrajectory()->getVerticalPositionRearRight(i - 1)) / delta_t, db.getArbitraryTrajectory()->getVerticalRoadForcesRearRight(i, db.getTyreMassRearRight()), delta_t);
     }
 
+    void flyingCarRoadForces(T mass, T FT, T& FR, size_t leg_index, T traj_pos, T traj_vel, T traj_force, T& delta_t) {
+        T& previous_velocity = _previousSolution[20 + Constants::DIM * leg_index];
+        T& previous_position = _previousSolution[51 + Constants::DIM * leg_index];
+
+        T nothing = 0.0;
+
+        // tyre is below or on the road
+        if (previous_position <= traj_pos) {
+            FR = traj_force;
+
+           //push the car up (NOT PHYSICAL, just for nice output) TODO: make the collision physical
+            FR += mass * (traj_pos - previous_position) / delta_t;
+
+
+           // add a bump if the car has a velocity inside the road
+            if (previous_velocity < std::min(nothing, traj_vel)) {
+                FR += mass * (std::min(nothing, traj_vel) - previous_velocity) / delta_t;
+            }
+
+            // do not pull the car downwards
+            if (traj_force < _previousTyreForces[leg_index]) {
+                FR = FT;
+            }
+        }
+    }
     /** Functions needed for compute_f */
 
     /**
@@ -751,6 +820,7 @@ private:
         pt_fr_ = x + 52;
         pt_rl_ = x + 55;
         pt_rr_ = x + 58;
+        //        std::cout << "wc: " << wc_[0] << ", " << wc_[1] << ", " << wc_[2] << std::endl;
     }
 
     void compute_spring_lengths(T* pcc_, T* pw_, T* pt_, T* cf_r_up_, T* cf_r_low_, T* r_, T& norm_r_up, T& inv_norm_r_up, T& norm_r_low, T& inv_norm_r_low) {
@@ -939,11 +1009,13 @@ private:
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, this->r_fl_tilda, Constants::DIM, wc_, 1, 0, cf_temp, 1);
         Math::copy<T>(Constants::DIM, vc_, 1, cf_upper_dampf_fl, 1);
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN, Constants::DIM, cf_temp, 1, 1, cf_upper_dampf_fl, 1);
+
         // dot((vc - C_cN' * (r1_tilda * wc)), r_up1)
         // std::cout << Math::dot<T>(Constants::DIM, upper_dampf1, 1, r_up1, 1)
         // << std::endl; std::cout << Math::dot_product<T>(upper_dampf1, r_up1,
         // Constants::DIM) << std::endl;
         scale = Math::dot<T>(Constants::DIM, cf_upper_dampf_fl, Constants::INCX, cf_r_up_fl, Constants::INCX);
+
         // scale = Math::dot_product<T>(upper_dampf1, r_up1, Constants::DIM);
 
         // dot((vc - C_cN' * (r1_tilda * wc)), r_up1) - dot(vw1, r_up1)
@@ -953,6 +1025,7 @@ private:
         // inv_norm_r_up1 * inv_norm_r_up1
         scale = scale * inv_norm_r_up_fl * inv_norm_r_up_fl * this->upper_spring_damping[0];
         Math::copy<T>(Constants::DIM, cf_r_up_fl, 1, cf_upper_dampf_fl, 1);
+
         Math::scal<T>(Constants::DIM, scale, cf_upper_dampf_fl, 1);
 
         //// upper_dampf_fr
@@ -1561,9 +1634,9 @@ public:
     void Solve(T* solution_vector) {
         // From the formulation we have 61 dimensions in the solution vector
         auto& db = MetaDatabase<T>::getDatabase();
-        size_t solution_size = (this->num_iter + 1) * this->solution_dim;
-        T* complete_vector = Math::malloc<T>(solution_size);
-        x_vector = Math::malloc<T>(solution_dim);
+        size_t solution_size = (this->num_iter + 1) * Constants::MBD_SOLUTION_SIZE;
+        T* complete_vector = Math::calloc<T>(solution_size);
+        x_vector = Math::calloc<T>(Constants::MBD_SOLUTION_SIZE);
         Math::GetTilda<T>(r_fl, r_fl_tilda);
         Math::GetTilda<T>(r_fr, r_fr_tilda);
         Math::GetTilda<T>(r_rl, r_rl_tilda);
@@ -1628,11 +1701,14 @@ public:
         // pt_rr
         pt_rr_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
 
+        // compute correct quaternion
+        if (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::CIRCULAR) circular_path_initialization_quaternion(vc, qc_);
+
         get_initial_length(qc_, r_fl, r_fr, r_rl, r_rr, pcc, pw_fl_, pw_fr_, pw_rl_, pw_rr_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
 
         // overwrites the initial velocity values
-        if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
-        if (boundary_conditions == BoundaryConditionRoad::ARBITRARY) {
+        if (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::CIRCULAR) circular_path_initialization(vc, vw_fl, vw_fr, vw_rl, vw_rr, vt_fl, vt_fr, vt_rl, vt_rr, initial_angular_velocity, pcc_, pt_fl_, pt_fr_, pt_rl_, pt_rr_);
+        if (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::ARBITRARY) {
             T angle[3];
             db.getArbitraryTrajectory()->updateInitialConditions(angle, initial_angular_velocity, pcc_, vc, pt_fl_, pt_fr_, pt_rl_, pt_rr_, pw_fl_, pw_fr_, pw_rl_, pw_rr_, vt_fl, vt_fr, vt_rl, vt_rr, vw_fl, vw_fr, vw_rl, vw_rr);
             // update quaternion
@@ -1643,6 +1719,7 @@ public:
         }
         i = 0;
         j = 0;
+
         // wc
         wc_ = x_vector + i * (Constants::DIM) + j * (Constants::NUM_LEGS);
         Math::copy<T>(Constants::DIM, initial_angular_velocity, 1, wc_, 1);
@@ -1700,6 +1777,10 @@ public:
         parametersCSV.writeParameters();
 #endif  // WRITECSV
 
+        Math::copy<T>(Constants::MBD_SOLUTION_SIZE, x_vector, 1, _previousSolution, 1);
+        _currentIteration = 1;
+        _iterationBegin = true;
+
         if (used_solver == MBDSolver::BROYDEN_CN) {
             Math::Solvers<T, MBDMethod>::BroydenCN(this, x_vector, complete_vector, this->h, this->num_iter, this->tol, this->max_iter);
         }
@@ -1730,7 +1811,7 @@ public:
 #endif  // WRITECSV
 
 #ifdef USE_HDF5
-        WriteBulkResults(complete_vector, num_iter + 1, solution_dim);
+        WriteBulkResults(complete_vector, num_iter + 1, Constants::MBD_SOLUTION_SIZE);
 #endif  // USE_HDF5
 
 #ifdef USE_HDF5  // TODO should be USE_CHECKPOINTS
@@ -1745,7 +1826,7 @@ public:
 
         for (auto i = 0; i < numCheckpoints; ++i) {
             _checkpointsMBD->CreateContainer(false, _groupNameCheckpoints + std::to_string((T)checkpoints[i] * h));
-            _checkpointsMBD->WriteVector("MBD Checkpoint t = " + std::to_string((T)checkpoints[i] * h), &complete_vector[checkpoints[i]], solution_dim, HDF5FileHandle::GROUP);
+            _checkpointsMBD->WriteVector("MBD Checkpoint t = " + std::to_string((T)checkpoints[i] * h), &complete_vector[checkpoints[i]], Constants::MBD_SOLUTION_SIZE, HDF5FileHandle::GROUP);
             _checkpointsMBD->CloseContainer();
             // TODO : decide if we want with format or without
             _checkpointsMBDFormatted->CreateContainer(false, _groupNameCheckpoints + std::to_string((T)checkpoints[i] * h));
@@ -1754,9 +1835,10 @@ public:
         }
 #endif
 #endif
-
-        T* start = complete_vector + (this->num_iter) * this->solution_dim;
-        Math::copy<T>(this->solution_dim, start, 1, solution_vector, 1);
+        
+        T* start = complete_vector + (this->num_iter) * Constants::MBD_SOLUTION_SIZE;
+        Math::copy<T>(Constants::MBD_SOLUTION_SIZE, start, 1, solution_vector, 1);
+        //	std::cout << "Solution copied!\n" << std::endl;
         Math::free<T>(complete_vector);
         Math::free<T>(x_vector);
     }
@@ -1764,7 +1846,11 @@ public:
     /**
      * \brief here comes everything which has to be done at the end of one time iteration
      */
-    void postprocessingTimeIteration(size_t iteration) {}
+    void postprocessingTimeIteration(size_t iteration, T* solutionPreviousTimestep) {
+        _currentIteration = iteration + 1;
+        Math::copy<T>(Constants::MBD_SOLUTION_SIZE, solutionPreviousTimestep, 1, _previousSolution, 1);
+        _iterationBegin = true;
+    }
 
     /**
      * Solver which is called at each time step
@@ -1808,21 +1894,29 @@ public:
 
         compute_external_forces();
         // TODO change this if else shit to something nice (function pointers maybe)
-        if (boundary_conditions == BoundaryConditionRoad::FIXED) {
+        if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::FIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::STRAIGHT)) {
             get_fixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
-        else if (boundary_conditions == BoundaryConditionRoad::NONFIXED) {
+        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::NONFIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::STRAIGHT)) {
             get_nonfixed_road_force(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr);
         }
-        else if (boundary_conditions == BoundaryConditionRoad::CIRCULAR) {
+        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::FIXED) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::CIRCULAR)) {
             auto& db = MetaDatabase<T>::getDatabase();
             get_circular_road_force(cf_local_FR_fl, vt_fl_, db.getTyreMassFrontLeft(), pt_fl_);
             get_circular_road_force(cf_local_FR_fr, vt_fr_, db.getTyreMassFrontRight(), pt_fr_);
             get_circular_road_force(cf_local_FR_rl, vt_rl_, db.getTyreMassRearLeft(), pt_rl_);
             get_circular_road_force(cf_local_FR_rr, vt_rr_, db.getTyreMassRearRight(), pt_rr_);
         }
-        else if (boundary_conditions == BoundaryConditionRoad::ARBITRARY) {
+        else if ((eulerian_boundary_conditions == EulerianBoundaryConditionRoad::SINUSOIDAL) && (lagrangian_boundary_conditions == LagrangianBoundaryConditionRoad::ARBITRARY)) {
             getArbitraryRoadForces(cf_local_FR_fl, cf_local_FR_fr, cf_local_FR_rl, cf_local_FR_rr, iteration);
+        }
+        else {
+            throw std::logic_error(
+                "The MBD simulation currently only supports following combinations of road conditions: \n"
+                "   - fixed / circular \n"
+                "   - fixed / straight\n"
+                "   - detached / straight\n"
+                "   - sinusoidal / arbitrary");
         }
 
         compute_car_body_total_torque();
@@ -1836,10 +1930,7 @@ public:
         construct_f_vector(f_);
     }
 
-    /**
-     * Returns the dimension of the solution vector (=61)
-     */
-    size_t get_solution_dimension() { return this->solution_dim; }
+    size_t get_solution_dimension() { return Constants::MBD_SOLUTION_SIZE; }
 
 #ifdef USE_HDF5
     /** Write a solution vector in formatted fashion.
@@ -1908,7 +1999,7 @@ public:
         HDF5::OutputHDF5<Constants::floatEVAA> finalMBD(filePath, fileName);
         std::string datasetName = "MBD final solution";
         finalMBD.CreateContainer(true);
-        finalMBD.WriteVector(datasetName, &sln[0], solution_dim);
+        finalMBD.WriteVector(datasetName, &sln[0], Constants::MBD_SOLUTION_SIZE);
         finalMBD.CloseContainer();
     }
 #endif  // USE_HDF5
@@ -1928,8 +2019,8 @@ public:
      * \param sln solution vector
      */
     void PrintFinalResult(T* sln) {
-        std::cout << std::scientific;
-        std::cout << std::setprecision(15);
+        /*std::cout << std::scientific;
+        std::cout << std::setprecision(15);*/
 
         std::cout << "MBD: angular velocity w =\n\t[" << sln[0] << "\n\t " << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
         std::cout << "MBD: car body velocity vc =\n\t[" << sln[3] << "\n\t " << sln[4] << "\n\t " << sln[5] << "]" << std::endl;
@@ -1999,6 +2090,8 @@ public:
         Math::free<T>(FT_rr);
         Math::free<T>(A_Ic);
         Math::free<T>(A_rem);
+        Math::free<T>(_previousTyreForces);
+        Math::free<T>(_previousSolution);
 
 #ifdef USE_HDF5  // TODO: use USE_CHECKPOINT
 #ifdef USE_CHECKPOINTS

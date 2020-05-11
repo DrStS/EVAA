@@ -24,6 +24,11 @@ if isfile('LegFl.txt') && isfile('LegFr.txt') && isfile('LegRl.txt') && isfile('
     plot_traj= true;
 end
 
+    traj_fl(:,3) = traj_fl(:,3) - traj_fl(2,3) + mdbSolution(2,57);
+    traj_fr(:,3) = traj_fr(:,3) - traj_fr(2,3) + mdbSolution(2,60);
+    traj_rl(:,3) = traj_rl(:,3) - traj_rl(2,3) + mdbSolution(2,54);
+    traj_rr(:,3) = traj_rr(:,3) - traj_rr(2,3) + mdbSolution(2,51);
+
 % Simulation parameters
 delta_t = parameters(1);
 numIterations = size(mdbSolution, 1);
@@ -48,4 +53,6 @@ end
 
 % visualize
 vis_fig = figure(1);
-visualizer3D(vis_fig, adaptedSolution, traj_rr', traj_rl', plot_traj, delta_t, vel_norms);
+visualizer3D(vis_fig, adaptedSolution, traj_rr', traj_rl', plot_traj, false,  delta_t, vel_norms);
+
+

@@ -8,18 +8,18 @@ c = 1.2;
 %c = 0;
 %% zero lengths
 
-L1 = 0.2;
+L1 = 0.7;
 L2 = 0.2;
-L3 = 0.2;
+L3 = 0.7;
 L4 = 0.2;
-L5 = 0.2;
+L5 = 0.7;
 L6 = 0.2;
-L7 = 0.2;
+L7 = 0.7;
 L8 = 0.2;
 %%
 global k_grid d_grid size_grid l_min l_max dl;
 % calc min and max length to evaluate (just for now)
-l_min = 0.02;
+l_min = 0.01;
 l_max = 1;
 % grid size
 size_grid = 101;
@@ -30,7 +30,8 @@ k_grid = zeros(8*size_grid,1);
 d_grid = zeros(8*size_grid,1);
 dl = (l_max-l_min)/(size_grid-1);
 % k response function
-k = @(l,a)(c*l*l + b*l + a);
+%k = @(l,a)(c*l*l + b*l + a);
+k = @(l,a)(a);
 % fill in grid values
 for i = 0:size_grid-1
     X(i+1) = l_min+i*dl;
@@ -177,7 +178,7 @@ x11)	d8*(x10 - x11)];
 
 %% parameters
 % time
-num_iter = 5;
+num_iter = 1e3;
 delta_t = 1e-3; 
 t = 0:delta_t:(num_iter - 1)*delta_t;
 
@@ -231,11 +232,13 @@ u_n_m_1 = u_n;
 u_n_m_1(1)=u_n(1);
 u_n_p_1=u_n;
 
-rhs =[1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 M = diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
+%rhs =[-1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
+rhs = diag(M)*(-9.81);
+rhs(2:3) = 0;
 M_div_h2 = M / (delta_t * delta_t);
 %%
-fixed = false;
+fixed = true;
 euler = true;
 bdf2 = false;
 if bdf2
@@ -381,6 +384,16 @@ for i = 1: length(t)
         l7 = eval(l7_sym);
         l8 = eval(l8_sym);
         len = [l1;l2;l3;l4;l5;l6;l7;l8];
+%        for l=1:8
+%            if len(l)<l_min
+%                disp(len(l))
+%                return
+%            elseif len(l)>l_max
+%                disp(len(l))
+%                return
+%            end
+%        end
+            
         K = get_K();
         if fixed
             newForce = K * u_n_p_1;
@@ -397,8 +410,8 @@ for i = 1: length(t)
             
         %( M_div_h2 + K )\(2 * M_div_h2 * u_n - M_div_h2 * u_n_m_1 + rhs)-u_n_p_1
         err(iter) = norm(r);
-        if (iter == 10)
-            d = d + 1;
+        if (iter == 20)
+            d = d + 1
         end
         if (err(iter) < tol || iter == 10 || norm(J\r) > norm(Delta))
             err_arr(i) = norm(r);
