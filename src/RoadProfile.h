@@ -180,7 +180,7 @@ public:
      * of form [CG, W1, T1, ... ] \param[out] centrifugalForce: Computed centrifugal force on each
      * component of the car
      */
-    void ComputeCentrifugalForceLagrangian(const T* distanceFromCenter, const T* velocityLagrangian, const T* mass, size_t numComponents, T* centrifugalForce) {
+    void ComputeCentrifugalForceLagrangian(const T* distanceFromCenter, const T* velocityLagrangian, const T* mass, const size_t& numComponents, T* centrifugalForce) {
         // Copy the radius vector to the force to extract direction
         Math::copy<T>((Constants::DIM - 1) * numComponents, distanceFromCenter, Constants::INCX, centrifugalForce, Constants::INCX);
         T velocityMagnitude;
@@ -229,6 +229,7 @@ public:
      * T3: XY, T4: XY]
      */
     virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj, T* profileInducedForce, T* reactionOnTyre) {
+        // TODO add const on carObj
 
         // CoG
         _trajectory->getLagrangianForcesCenterOfGravity(_iterationCount, profileInducedForce,
@@ -334,9 +335,11 @@ public:
      */
     virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj,
                                            T* profileInducedForce, T* reactionOnTyre) {
-        Math::scal<T>(Constants::VEC_DIM * (Constants::DIM - 1), 0, profileInducedForce,
-                      Constants::INCX);
-        Math::scal<T>((Constants::DIM - 1), 0, reactionOnTyre, Constants::INCX);
+        // TODO add const on carObj
+        /*Math::scal<T>(Constants::VEC_DIM * (Constants::DIM - 1), 0, profileInducedForce, Constants::INCX);*/
+        Math::SetValueToZero(profileInducedForce, Constants::VEC_DIM * Constants::lagrangianForceDimension);
+        //Math::scal<T>((Constants::DIM - 1), 0, reactionOnTyre, Constants::INCX);
+        Math::SetValueToZero(reactionOnTyre, Constants::lagrangianForceDimension);
     }
 };  // Straight Road
 
@@ -351,8 +354,10 @@ public:
 
     virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj,
                                          T* profileInducedForce) {
-        // TODO optimize it
-        Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+        // TODO optimize it // TODO add const on carObj
+        //Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+        Math::SetValueToZero(profileInducedForce, Constants::DOF);
+
         AddGravity(carObj, profileInducedForce);
 		#pragma loop(ivdep)
         for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
@@ -438,8 +443,11 @@ public:
     Nonfixed(T& g) : Euler<T>(g) { Name = "Nonfixed"; }
     virtual ~Nonfixed() {}
     virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj,
-                                         T* profileInducedForce) {
-        Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+                                         T* profileInducedForce) {        
+        // TODO add const on carObj
+
+        //Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+        Math::SetValueToZero(profileInducedForce, Constants::DOF);
         AddGravity(carObj, profileInducedForce);
     }
     virtual void ApplyProfileInitialCondition(Car<T>* carObj) {}
@@ -458,8 +466,9 @@ public:
 
     virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj,
                                          T* profileInducedForce) {
-        // TODO optimize it
-        Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+        // TODO optimize it // TOOD const on carObj
+        //Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+        Math::SetValueToZero(profileInducedForce, Constants::DOF);
         AddGravity(carObj, profileInducedForce);
         profileInducedForce[Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT]] =
             _trajectory->getVerticalRoadForcesFrontLeft(
