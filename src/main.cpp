@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
     std::cout << "It took " << anaysisTimer01.getDurationMilliSec()
               << " ms to run the solver(Blaze) .\n\n\n " << std::endl;
 #endif
-    const size_t numIterations = 1;
+    const size_t numIterations = 1000;
 
     // std::cout << std::defaultfloat;
     // double timeMBD = 0.;
