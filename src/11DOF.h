@@ -785,7 +785,7 @@ private:
     T* _bVec;
     T *_u_n_m_2, *_u_n_m_3;
     size_t _timeStepCount = 0;
-    void (TwoTrackModelBDF2<T>::*_activeExecutor)(T, T*);
+    void (TwoTrackModelBDF2<T>::*_activeExecutor)(size_t, T*);
 
     /**
      * \brief construct _A
@@ -910,11 +910,12 @@ public:
         // cblas_dscal(DOF,0, force, 1);
         // compute Force
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
-
         GetInitialGuess(_twoTrackModelForce);
 #ifdef INTERPOLATION
+        UpdateSystem();
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
 #endif
+        IO::writeVector<T>(_u_n_p_1, Constants::DOF);
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
         // _u_n_m_2 points to _u_n_m_3 and _u_n_m_3 points to _u_n_m_2
 
@@ -951,7 +952,6 @@ public:
      * only needed in case of lookup Tables
      */
     void UpdateSystem() {
-        // constructSpringLengths();
         _car->UpdateLengthsTwoTrackModel();
         _loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructStiffnessMatrix();
@@ -1035,9 +1035,10 @@ public:
  * For testing purposes.
  */
 template <typename T>
-class TwoTrackModelFull : public TwoTrackModelBE<T> {
+class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
 public:
-    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBE<T>(inputCar, loadModel) {       
+    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) :
+        TwoTrackModelBDF2<T>(inputCar, loadModel) {       
         size_t sol_size = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations();
         _tend = sol_size * _h;
         _uSolution = Math::calloc<T>((sol_size + 1) * Constants::DOF);
