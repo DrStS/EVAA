@@ -915,7 +915,7 @@ public:
         UpdateSystem();
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, _twoTrackModelForce, _J, _residual, &_residualNorm, _u_n_p_1, _temp, &_tolerance, &_maxNewtonIteration, &_newtonIteration);
 #endif
-        IO::writeVector<T>(_u_n_p_1, Constants::DOF);
+        //IO::writeVector<T>(_u_n_p_1, Constants::DOF);
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
         // _u_n_m_2 points to _u_n_m_3 and _u_n_m_3 points to _u_n_m_2
 

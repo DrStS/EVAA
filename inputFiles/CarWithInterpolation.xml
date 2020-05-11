@@ -21,10 +21,10 @@
           <z>-0.3</z>
         </RelativeCenterOfInstanteneousRotation>
         <SuspensionSpringsXML>
-          <ReerRight>0.70</ReerRight>
-          <ReerLeft>0.70</ReerLeft>
-          <FrontLeft>0.70</FrontLeft>
-          <FrontRight>0.70</FrontRight>
+          <ReerRight>0.80</ReerRight>
+          <ReerLeft>0.80</ReerLeft>
+          <FrontLeft>0.80</FrontLeft>
+          <FrontRight>0.80</FrontRight>
         </SuspensionSpringsXML>
         <TyreSpringsXML>
           <ReerRight>0.2</ReerRight>
