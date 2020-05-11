@@ -176,6 +176,123 @@ public:
     }
 
     /**
+    * \brief write trajectory for circular path
+    */
+    void writeTrajectoryForCircularPath(T* init_position, T* profile_center, T* init_vel, T delta_t,
+                                        int timesteps, T* latitudes, T* longitudes) {
+        T radius[3];
+        T omega[3];
+        T RotMatrix[9];
+        T newX[3];
+
+        // radius = init_pos
+        Math::copy<T>(Constants::DIM, init_position, 1, radius, 1);
+        // radius = init_pos - profile_center
+        Math::axpy<T>(Constants::DIM, -1, profile_center, 1, radius, 1);
+        // omega = r x v / r^2
+        Math::CrossProduct<T>(radius, init_vel, omega);
+        T rnorm = Math::nrm2<T>(Constants::DIM, radius, 1);
+        // dTheta = (rxv)/r^2 * delta_t
+        Math::scal<T>(Constants::DIM, delta_t / (rnorm * rnorm), omega, 1);
+        // dtheta = w*delta_t
+        Math::GetRotationMatrix<T>(omega[2], omega[1], omega[0], RotMatrix);
+
+        // get true local coordinates
+        _l_lat_fl = latitudes[Constants::FRONT_LEFT];
+        _l_lat_fr = latitudes[Constants::FRONT_RIGHT];
+        _l_lat_rl = latitudes[Constants::REAR_LEFT];
+        _l_lat_rr = latitudes[Constants::REAR_RIGHT];
+
+        _l_long_fl = longitudes[Constants::FRONT_LEFT];
+        _l_long_fr = longitudes[Constants::FRONT_RIGHT];
+        _l_long_rl = longitudes[Constants::REAR_LEFT];
+        _l_long_rr = longitudes[Constants::REAR_RIGHT];
+
+        T localXcoordinates[Constants::NUM_LEGS] = {_l_long_fl, _l_long_fr, -_l_long_rl, -_l_long_rr};
+        T localYcoordinates[Constants::NUM_LEGS] = {-_l_lat_fl, _l_lat_fr, -_l_lat_rl, _l_lat_rr};
+
+        T temp[3];
+        Math::CrossProduct<T>(radius, init_vel, temp);
+
+        T s = Math::nrm2<T>(Constants::DIM, temp, 1) / (Math::nrm2<T>(Constants::DIM, radius, 1) * Math::nrm2<T>(Constants::DIM, init_vel, 1));
+        T c = sqrt(1-s*s);
+
+        T posfl[3], posfr[3], posrl[3], posrr[3];
+
+        posfl[0] = init_position[0] + localXcoordinates[0] * c - localYcoordinates[0] * s;
+        posfl[1] = init_position[1] + localXcoordinates[0] * s + localYcoordinates[0] * c;
+
+        posfr[0] = init_position[0] + localXcoordinates[1] * c - localYcoordinates[1] * s;
+        posfr[1] = init_position[1] + localXcoordinates[1] * s + localYcoordinates[1] * c;
+
+        posrl[0] = init_position[0] + localXcoordinates[2] * c - localYcoordinates[2] * s;
+        posrl[1] = init_position[1] + localXcoordinates[2] * s + localYcoordinates[2] * c;
+
+        posrr[0] = init_position[0] + localXcoordinates[3] * c - localYcoordinates[3] * s;
+        posrr[1] = init_position[1] + localXcoordinates[3] * s + localYcoordinates[3] * c;
+
+        // write the first initial position
+        _roadPointsX[0] = radius[0];
+        _roadPointsY[0] = radius[1];
+        _legPointsX_fl[0] = posfl[0];
+        _legPointsY_fl[0] = posfl[1];
+        _legPointsX_fr[0] = posfr[0];
+        _legPointsY_fr[0] = posfr[1];
+        _legPointsX_rl[0] = posrl[0];
+        _legPointsY_rl[0] = posrl[1];
+        _legPointsX_rr[0] = posrr[0];
+        _legPointsY_rr[0] = posrr[1];
+
+        for (auto i = 1; i < timesteps; i++) {
+            Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, RotMatrix,
+                          Constants::DIM, radius, 1, 0, newX, 1);
+            Math::copy<T>(Constants::DIM, newX, 1, radius, 1);
+            _roadPointsX[i] = newX[0];
+            _roadPointsY[i] = newX[1];
+
+            Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, RotMatrix,
+                         Constants::DIM, posfl, 1, 0, newX, 1);
+            Math::copy<T>(Constants::DIM, newX, 1, posfl, 1);
+            _legPointsX_fl[i] = posfl[0];
+            _legPointsY_fl[i] = posfl[1];
+
+            Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, RotMatrix,
+                          Constants::DIM, posfr, 1, 0, newX, 1);
+            Math::copy<T>(Constants::DIM, newX, 1, posfr, 1);
+            _legPointsX_fr[i] = posfr[0];
+            _legPointsY_fr[i] = posfr[1];
+
+            Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, RotMatrix,
+                          Constants::DIM, posrl, 1, 0, newX, 1);
+            Math::copy<T>(Constants::DIM, newX, 1, posrl, 1);
+            _legPointsX_rl[i] = posrl[0];
+            _legPointsY_rl[i] = posrl[1];
+
+            Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, RotMatrix,
+                          Constants::DIM, posrr, 1, 0, newX, 1);
+            Math::copy<T>(Constants::DIM, newX, 1, posrr, 1);
+            _legPointsX_rr[i] = posrr[0];
+            _legPointsY_rr[i] = posrr[1];
+
+        }
+        T* noZComponent = nullptr;
+        IO::writeRoadTrajectoryCSV(_roadPointsX, _roadPointsY, noZComponent, _numIterations + 1,
+                                   "C:\\software\\repos\\EVAA\\output\\Trajectory.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_fl, _legPointsY_fl, _legPointsZ_fl,
+                                   _numIterations + 1,
+                                   "C:\\software\\repos\\EVAA\\output\\LegFl.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_fr, _legPointsY_fr, _legPointsZ_fr,
+                                   _numIterations + 1,
+                                   "C:\\software\\repos\\EVAA\\output\\LegFr.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_rl, _legPointsY_rl, _legPointsZ_rl,
+                                   _numIterations + 1,
+                                   "C:\\software\\repos\\EVAA\\output\\LegRl.txt");
+        IO::writeRoadTrajectoryCSV(_legPointsX_rr, _legPointsY_rr, _legPointsZ_rr,
+                                   _numIterations + 1,
+                                   "C:\\software\\repos\\EVAA\\output\\LegRr.txt");
+    }
+
+    /**
     * \brief interpolate all intermediate road points @Felix, help me out
     * \param numProvidedPoints number of road points from the XML
     * \param providedPointsX array of all X-coordinates of the points from the

@@ -16,6 +16,7 @@ constexpr size_t MBD_SOLUTION_SIZE = 61;
 // 10 Constants::DIMensions because of torque of the body
 /** dimension of solution space */
 constexpr size_t DIM = 3;
+constexpr size_t lagrangianForceDimension = 2;
 
 /** [CG, Wi, Ti] (9 positions / vectors for CG, wheels and tyres) */
 constexpr size_t VEC_DIM = 9;

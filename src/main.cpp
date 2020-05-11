@@ -89,8 +89,8 @@ int main(int argc, char **argv) {
 #endif
     EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(
         "C:\\software\\repos\\EVAA\\inputFiles\\SimulationParameters.xml", carSettingsFileNameXML,
-//        "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml");
-        "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
+        "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml");
+//       "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml");
 //        "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml");
     myComputeEngine->printInfo();
 

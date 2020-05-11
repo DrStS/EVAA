@@ -14,7 +14,7 @@
 #include "MathLibrary.h"
 #include "MetaDatabase.h"
 
-//#define DAMPING 1
+//#define DAMPING 1 // TODO REMOVE
 
 namespace EVAA {
 
@@ -131,7 +131,8 @@ private:
      * _B = 2/(h*h) * M + 1/h * _D
      */
     void ConstructBMatrix() {
-        Math::scal<T>(Constants::DOFDOF, 0, _B, 1);
+        //Math::scal<T>(Constants::DOFDOF, 0, _B, 1);
+        Math::SetValueToZero(_B, Constants::DOFDOF);
         Math::axpy<T>(Constants::DOFDOF, 2, _M_h2, 1, _B, 1);
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _D, 1, _B, 1);
     }
@@ -287,7 +288,7 @@ public:
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
      */
     virtual void UpdateStep(size_t currentIter, T* solution) {
-        // Math::scal<T>(Constants::DOF, -1, _u_n_m_1, Constants::INCX);
+        // Math::scal<T>(Constants::DOF, -1, _u_n_m_1, Constants::INCX); // TODO what is this?
         // Get the force
         _currentIter = currentIter;
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);

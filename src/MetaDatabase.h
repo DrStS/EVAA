@@ -281,7 +281,12 @@ public:
                 _trajectory->calculateVerticalPositionsLegs();
                 _trajectory->calculateVerticalAccelerations();
             }
-
+#ifdef WRITECSV
+            if (_trajectory == nullptr) _trajectory = new ArbitraryTrajectory<T>(_num_time_iter + 1, _timestep);
+            _trajectory->writeTrajectoryForCircularPath(_initial_pos_body, _profile_center,
+                                                        _initial_vel_body, _timestep,
+                                                        _num_time_iter + 1, _l_lat, _l_long);
+#endif  // WRITECSV
         }
         else if (load_data->lagrangianRoadProfile().arbitraryRoadProfile().present()) {
             const auto horizontalProfile = load_data->lagrangianRoadProfile().arbitraryRoadProfile().get();
@@ -511,34 +516,34 @@ public:
 private:
     /** Private constructor for the singleton instance. */
     MetaDatabase() : _lookup_filename("") {
-		SetValueToZero(_k_tyre, Constants::NUM_LEGS);
-		SetValueToZero(_k_body, Constants::NUM_LEGS);
-		SetValueToZero(_c_tyre, Constants::NUM_LEGS);
-		SetValueToZero(_c_body, Constants::NUM_LEGS);
-		SetValueToZero(_l_long, Constants::NUM_LEGS);
-		SetValueToZero(_l_lat, Constants::NUM_LEGS);
-		SetValueToZero(_vehicleCIR, Constants::DIM);
+		Math::SetValueToZero(_k_tyre, Constants::NUM_LEGS);
+        Math::SetValueToZero(_k_body, Constants::NUM_LEGS);
+		Math::SetValueToZero(_c_tyre, Constants::NUM_LEGS);
+        Math::SetValueToZero(_c_body, Constants::NUM_LEGS);
+        Math::SetValueToZero(_l_long, Constants::NUM_LEGS);
+        Math::SetValueToZero(_l_lat, Constants::NUM_LEGS);
+        Math::SetValueToZero(_vehicleCIR, Constants::DIM);
 		_mass_body = 0;
-		SetValueToZero(_I_body, Constants::DIMDIM);
-		SetValueToZero(_mass, 2 * Constants::NUM_LEGS);
-		SetValueToZero(_lower_spring_length, Constants::NUM_LEGS);
-		SetValueToZero(_upper_spring_length, Constants::NUM_LEGS);
-		SetValueToZero(_initial_lower_spring_length, Constants::NUM_LEGS);
-		SetValueToZero(_initial_upper_spring_length, Constants::NUM_LEGS);
-		SetValueToZero(_initial_vel_body, Constants::DIM);
-		SetValueToZero(_initial_vel_wheel, Constants::DIM * Constants::NUM_LEGS);
-		SetValueToZero(_initial_vel_tyre, Constants::DIM * Constants::NUM_LEGS);
-		SetValueToZero(_initial_ang_vel_body, Constants::DIM);
-		SetValueToZero(_gravity, Constants::DIM);
-		SetValueToZero(_initial_pos_body, Constants::DIM);
-		SetValueToZero(_initialAngleGlobal, Constants::DIM + 1);
-		SetValueToZero(_initial_pos_wheel, Constants::DIM * Constants::NUM_LEGS);
-		SetValueToZero(_initial_pos_tyre, Constants::DIM * Constants::NUM_LEGS);
-		SetValueToZero(_external_force_wheel, Constants::DIM * Constants::NUM_LEGS);
-		SetValueToZero(_external_force_tyre, Constants::DIM * Constants::NUM_LEGS);
-		SetValueToZero(_external_force_body, Constants::DIM);
-		SetValueToZero(_profile_center, Constants::DIM);
-		_tolerance = 0;
+        Math::SetValueToZero(_I_body, Constants::DIMDIM);
+        Math::SetValueToZero(_mass, 2 * Constants::NUM_LEGS);
+        Math::SetValueToZero(_lower_spring_length, Constants::NUM_LEGS);
+        Math::SetValueToZero(_upper_spring_length, Constants::NUM_LEGS);
+        Math::SetValueToZero(_initial_lower_spring_length, Constants::NUM_LEGS);
+        Math::SetValueToZero(_initial_upper_spring_length, Constants::NUM_LEGS);
+        Math::SetValueToZero(_initial_vel_body, Constants::DIM);
+        Math::SetValueToZero(_initial_vel_wheel, Constants::DIM * Constants::NUM_LEGS);
+        Math::SetValueToZero(_initial_vel_tyre, Constants::DIM * Constants::NUM_LEGS);
+        Math::SetValueToZero(_initial_ang_vel_body, Constants::DIM);
+        Math::SetValueToZero(_gravity, Constants::DIM);
+        Math::SetValueToZero(_initial_pos_body, Constants::DIM);
+        Math::SetValueToZero(_initialAngleGlobal, Constants::DIM + 1);
+        Math::SetValueToZero(_initial_pos_wheel, Constants::DIM * Constants::NUM_LEGS);
+        Math::SetValueToZero(_initial_pos_tyre, Constants::DIM * Constants::NUM_LEGS);
+        Math::SetValueToZero(_external_force_wheel, Constants::DIM * Constants::NUM_LEGS);
+        Math::SetValueToZero(_external_force_tyre, Constants::DIM * Constants::NUM_LEGS);
+        Math::SetValueToZero(_external_force_body, Constants::DIM);
+        Math::SetValueToZero(_profile_center, Constants::DIM);
+        _tolerance = 0;
 		_timestep = 0;
 		_num_time_iter = 0;
 		
@@ -547,10 +552,6 @@ private:
 
 		_initialVelocityCircular = 0;
 
-	}
-
-	void SetValueToZero(T* arr, size_t n) {
-		Math::scal<T>(n, 0, arr, Constants::INCX);
 	}
 
     /**

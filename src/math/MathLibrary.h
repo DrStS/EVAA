@@ -76,6 +76,12 @@ void ComputeDenseVectorAddition(double* vec1, double* vec2, const double _alpha,
  */
 void PrintMKLInfo(void);
 
+template <typename T>
+void SetValueToZero(T* arr, const size_t n) { 
+    for (size_t i = 0; i < n; ++i) arr[i] = 0;
+    //Math::scal<T>(n, 0, arr, Constants::INCX);
+}
+
 /**
  * Replaces all values in an array which are below a threshold to a value
  * \param arr vector to be adapted
@@ -443,7 +449,7 @@ void GetQuaternion(const T* v1, const T* v2, T* q, T* angle, T* rotation_axis) {
  * \return transformed_basis the basis vectors in matrix form
  */
 template <typename T>
-void GetBasis(const T* initial_orientation, T* transfrormed_basis) {
+void GetBasis(const T* initial_orientation, T* transformed_basis) {
     // quaternion initial_orientation yields basis(calculates basically the
     // matrix rotation the euclidian basis to the local basis)
 
@@ -453,8 +459,9 @@ void GetBasis(const T* initial_orientation, T* transfrormed_basis) {
     size_t quad_dim = 4;
     size_t dim = 3;
     T nrm = Math::nrm2<T>(quad_dim, initial_orientation, 1);
-    T s = 1. / (nrm * nrm);
-    Math::scal<T>(dim * dim, 0, transfrormed_basis, 1);
+    T s = 1. / (nrm * nrm); // TODO : replace with dot
+    Math::SetValueToZero(transformed_basis, Constants::DIMDIM);
+    //Math::scal<T>(dim * dim, 0, transformed_basis, 1);
     size_t i, j;
 
     T quad_sum = 0;
@@ -463,25 +470,25 @@ void GetBasis(const T* initial_orientation, T* transfrormed_basis) {
     }
     i = 0;
     j = 0;
-    transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transformed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
     j = 1;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
+    transformed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 2] * initial_orientation[j + 2]);
     j = 2;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
+    transformed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j + 1]);
     i = 1;
     j = 0;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
+    transformed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 2] * initial_orientation[j + 2]);
     j = 1;
-    transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transformed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
     j = 2;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
+    transformed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i - 1] * initial_orientation[j + 1]);
     i = 2;
     j = 0;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
+    transformed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] - initial_orientation[i + 1] * initial_orientation[j + 1]);
     j = 1;
-    transfrormed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
+    transformed_basis[i * dim + j] = 2 * s * (initial_orientation[i] * initial_orientation[j] + initial_orientation[i + 1] * initial_orientation[j - 1]);
     j = 2;
-    transfrormed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
+    transformed_basis[i * dim + j] = 1 - 2 * s * (quad_sum - initial_orientation[i] * initial_orientation[i]);
 }
 
 /**
@@ -527,22 +534,24 @@ public:
      *  \return new solution
      */
     static void BroydenEuler(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
+        // TODO change to const 
+
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = Math::malloc<T>(x_len);
-        T* f_new = Math::malloc<T>(x_len);
-        T* dx = Math::malloc<T>(x_len);
-        T* dx_inv = Math::malloc<T>(x_len);
-        T* df = Math::malloc<T>(x_len);
-        T* x = Math::malloc<T>(x_len);
-        T* F = Math::malloc<T>(x_len);
-        T* F_new = Math::malloc<T>(x_len);
-        T* dF = Math::malloc<T>(x_len);
+        T* f_old = Math::calloc<T>(x_len);
+        T* f_new = Math::calloc<T>(x_len);
+        T* dx = Math::calloc<T>(x_len);
+        T* dx_inv = Math::calloc<T>(x_len);
+        T* df = Math::calloc<T>(x_len);
+        T* x = Math::calloc<T>(x_len);
+        T* F = Math::calloc<T>(x_len);
+        T* F_new = Math::calloc<T>(x_len);
+        T* dF = Math::calloc<T>(x_len);
         T* J = Math::calloc<T>(x_len * x_len);
         T* J_tmp = Math::calloc<T>(x_len * x_len);
-        lapack_int* piv = Math::malloc<lapack_int>(x_len);
+        lapack_int* piv = Math::calloc<lapack_int>(x_len);
 
         T *it_start, *curr_time_start_pos;
-        T* x_new = Math::malloc<T>(x_len);
+        T* x_new = Math::calloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
@@ -580,7 +589,8 @@ public:
 
             // approximate J(x_0)
             // J = eye(length(df)) - delta_t*((1./dx)'*df)';
-            Math::scal<T>(x_len * x_len, 0, J, 1);
+            //Math::scal<T>(x_len * x_len, 0, J, 1);
+            Math::SetValueToZero(J, x_len * x_len);
             ConstructDiagonalMatrix<T>(J, x_len, 1);
             Math::copy<T>(x_len, dx, 1, dx_inv, 1);
             Math::vInv<T>(x_len, dx_inv, dx_inv);
@@ -671,21 +681,21 @@ public:
      */
     static void BroydenBDF2(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = Math::malloc<T>(x_len);
-        T* f_new = Math::malloc<T>(x_len);
-        T* dx = Math::malloc<T>(x_len);
-        T* dx_inv = Math::malloc<T>(x_len);
-        T* df = Math::malloc<T>(x_len);
-        T* x = Math::malloc<T>(x_len);
-        T* F = Math::malloc<T>(x_len);
-        T* F_new = Math::malloc<T>(x_len);
-        T* dF = Math::malloc<T>(x_len);
+        T* f_old = Math::calloc<T>(x_len);
+        T* f_new = Math::calloc<T>(x_len);
+        T* dx = Math::calloc<T>(x_len);
+        T* dx_inv = Math::calloc<T>(x_len);
+        T* df = Math::calloc<T>(x_len);
+        T* x = Math::calloc<T>(x_len);
+        T* F = Math::calloc<T>(x_len);
+        T* F_new = Math::calloc<T>(x_len);
+        T* dF = Math::calloc<T>(x_len);
         T* J = Math::calloc<T>(x_len * x_len);
         T* J_tmp = Math::calloc<T>(x_len * x_len);
-        lapack_int* piv = Math::malloc<lapack_int>(x_len);
+        lapack_int* piv = Math::calloc<lapack_int>(x_len);
 
         T *it_start, *curr_time_start_pos, *prev_prev_pos;
-        T* x_new = Math::malloc<T>(x_len);
+        T* x_new = Math::calloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-4;
         double nrm = 0.01;
@@ -724,7 +734,8 @@ public:
 
         // approximate J(x_0)
         // J = eye(length(df)) - delta_t*((1./dx)'*df)';
-        Math::scal<T>(x_len * x_len, 0, J, 1);
+        //Math::scal<T>(x_len * x_len, 0, J, 1);
+        Math::SetValueToZero(J, x_len * x_len);
         ConstructDiagonalMatrix<T>(J, x_len, 1);
         Math::copy<T>(x_len, dx, 1, dx_inv, 1);
         Math::vInv<T>(x_len, dx_inv, dx_inv);
@@ -819,7 +830,8 @@ public:
 
                 // approximate J(x_0)
                 // J = eye(length(df)) - delta_t*((1./dx)'*df)';
-                Math::scal<T>(x_len * x_len, 0, J, 1);
+                //Math::scal<T>(x_len * x_len, 0, J, 1);
+                Math::SetValueToZero(J, x_len * x_len);
                 ConstructDiagonalMatrix<T>(J, x_len, 1);
                 Math::copy<T>(x_len, dx, 1, dx_inv, 1);
                 Math::vInv<T>(x_len, dx_inv, dx_inv);
@@ -918,21 +930,21 @@ public:
         // std::cout << "Broyden started!\n" << std::endl;
 
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = Math::malloc<T>(x_len);
-        T* f_new = Math::malloc<T>(x_len);
-        T* dx = Math::malloc<T>(x_len);
-        T* dx_inv = Math::malloc<T>(x_len);
-        T* df = Math::malloc<T>(x_len);
-        T* x = Math::malloc<T>(x_len);
-        T* F = Math::malloc<T>(x_len);
-        T* F_new = Math::malloc<T>(x_len);
-        T* dF = Math::malloc<T>(x_len);
+        T* f_old = Math::calloc<T>(x_len);
+        T* f_new = Math::calloc<T>(x_len);
+        T* dx = Math::calloc<T>(x_len);
+        T* dx_inv = Math::calloc<T>(x_len);
+        T* df = Math::calloc<T>(x_len);
+        T* x = Math::calloc<T>(x_len);
+        T* F = Math::calloc<T>(x_len);
+        T* F_new = Math::calloc<T>(x_len);
+        T* dF = Math::calloc<T>(x_len);
         T* J = Math::calloc<T>(x_len * x_len);
         T* J_tmp = Math::calloc<T>(x_len * x_len);
-        lapack_int* piv = Math::malloc<lapack_int>(x_len);
+        lapack_int* piv = Math::calloc<lapack_int>(x_len);
 
         T *it_start, *curr_time_start_pos;
-        T* x_new = Math::malloc<T>(x_len);
+        T* x_new = Math::calloc<T>(x_len);
         T* switcher;  // used for interchanging adresses between F and F_new
         T eps = 1e-3;
         double nrm = 0.01;
@@ -972,7 +984,8 @@ public:
 
             // approximate J(x_0)
             // J = eye(length(df)) - delta_t*0.5 *((1./dx)'*df)';
-            Math::scal<T>(x_len * x_len, 0, J, 1);
+            //Math::scal<T>(x_len * x_len, 0, J, 1);
+            Math::SetValueToZero(J, x_len * x_len);
             ConstructDiagonalMatrix<T>(J, x_len, 1);
             Math::copy<T>(x_len, dx, 1, dx_inv, 1);
             Math::vInv<T>(x_len, dx_inv, dx_inv);
@@ -1112,12 +1125,12 @@ public:
      */
     static void RK4(C* obj, T* x_previous, T* x_vector_new, T dt, size_t num_time_iter, T tol, size_t max_iter) {
         size_t x_len = obj->get_solution_dimension();
-        T* f_old = Math::malloc<T>(x_len);
-        T* k1 = Math::malloc<T>(x_len);
-        T* k2 = Math::malloc<T>(x_len);
-        T* k3 = Math::malloc<T>(x_len);
-        T* k4 = Math::malloc<T>(x_len);
-        T* x = Math::malloc<T>(x_len);
+        T* f_old = Math::calloc<T>(x_len);
+        T* k1 = Math::calloc<T>(x_len);
+        T* k2 = Math::calloc<T>(x_len);
+        T* k3 = Math::calloc<T>(x_len);
+        T* k4 = Math::calloc<T>(x_len);
+        T* x = Math::calloc<T>(x_len);
 
         T *it_start, *curr_time_start_pos;
         T* switcher;  // used for interchanging adresses between F and F_new
