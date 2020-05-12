@@ -14,7 +14,7 @@
 #include "MathLibrary.h"
 #include "MetaDatabase.h"
 
-//#define DAMPING 1 // TODO REMOVE
+#define DAMPING 1 // TODO REMOVE
 
 namespace EVAA {
 
@@ -1000,7 +1000,7 @@ public:
         // temp += 1/2 * x[n-1]
         Math::axpy<T>(Constants::DOF, 0.5, _u_n_m_1, 1, _temp, 1);
         // calc _dDdxx with (3/2 * x[n+1] - 2 * x[n] + 1/2 * x[n-1])
-        ConstructLookupDerivativeX(_dddl, temp, _dDdxx);
+        ConstructLookupDerivativeX(_dddl, _temp, _dDdxx);
         // _J += 1/_h * _dDdxx
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _dDdxx, 1, _J, 1);
 #endif
