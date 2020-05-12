@@ -136,7 +136,7 @@ void EVAAComputeEngine::computeALE(void) {
     LoadModule<Constants::floatEVAA>* loadModule = new LoadModule<Constants::floatEVAA>(lagrangeProfile, eulerProfile, car);
     TwoTrackModelParent<Constants::floatEVAA>* TwoTrackModel_obj = nullptr;
     if (db.getALESolver() == ALESolver::IMPLICIT_EULER) {
-        TwoTrackModel_obj = new TwoTrackModelBDF2<Constants::floatEVAA>(car, loadModule);
+        TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car, loadModule);
     }
     else if (db.getALESolver() == ALESolver::BDF2) {
 		std::cout << "BDF2 type eulerain solver" << std::endl;

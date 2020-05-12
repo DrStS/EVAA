@@ -1,8 +1,8 @@
-#include <benchmark/benchmark.h>
-#include <mkl.h>
-#include <iostream>
+#pragma once 
 
-#include <EVAAComputeEngine.h>
+#include <benchmark/benchmark.h>
+
+#include "../../src/EVAAComputeEngine.h"
 
 using namespace EVAA;
 
@@ -41,6 +41,6 @@ static void BM_MBD(benchmark::State& state) {
     for (auto _ : state) {
         // ...-
     }
-    BENCHMARK(BM_MBD)->UseRealTime()->Arg(10)->Arg(15)->Arg(20);
     delete myComputeEngine;
 }
+BENCHMARK(BM_MBD)->UseRealTime()->Arg(10)->Arg(15)->Arg(20);
