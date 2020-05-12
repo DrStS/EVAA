@@ -21,37 +21,6 @@
 
 #include "EVAAComputeEngine.h"
 
-#include <fstream>
-#include <iostream>
-#include <limits>
-#include <vector>
-
-#include "11DOF.h"
-#include "Car.h"
-#include "Constants.h"
-#include "LoadModule.h"
-#include "MathLibrary.h"
-#include "MetaDatabase.h"
-#include "Output.h"
-
-#ifdef USE_EIGEN
-#include <Eigen/Dense>
-using Eigen::IOFormat;
-using Eigen::Matrix3d;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-#endif
-
-#ifdef USE_BLAZE
-#include <blaze/Math.h>
-#endif
-
-#ifdef USE_HDF5
-#include <IO/OutputHDF5.h>
-#endif
-
-//#define DAMPING 1  // TODO remove
-
 namespace EVAA {
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlSimulationFileName, std::string xmlCarFileName, std::string xmlLoadFileName) {
     IO::checkFileExists(xmlSimulationFileName);
@@ -83,20 +52,19 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
         solver.Solve(sol);
 
         solver.PrintFinalResults(sol);
-
-         static const Constants::floatEVAA referenceSol10000[11]{
-            -4.905058321191742e+02, -1.234530958929979e-11, -6.280776657038311e-04,
-            -4.905050915672644e+02, -4.905050944956259e+02, -4.905050915672049e+02,
-            -4.905050944955660e+02, -4.904771375679942e+02, -4.904766703982466e+02,
-            -4.904771375679734e+02, -4.904766703982280e+02};
+        
+        // solution for 10,000 iterations, dt = 1e-3 => t = 10sec
+        static const Constants::floatEVAA refSolStraightFixed[11]{
+            -2.857594795257409e-02, 3.103609667343786e-11, -1.781939846572105e-02, 2.606202178817649e-01, 2.830000001221397e-01, 2.606202177281093e-01, 2.829999999648761e-01, 2.642462719927013e-01, 2.830000001833303e-01, 2.642462719576703e-01, 2.830000001517805e-01
+        };
 
         static size_t tmp = 0;
         size_t count = 0;
         for (auto i = 0; i < 11; ++i) {
-            if (std::abs(referenceSol10000[i] - sol[i]) > 1e-13) {
+            if (std::abs(refSolStraightFixed[i] - sol[i]) > 1e-13) {
                 count++;
                 tmp++;
-                std::cout << i << ": " << std::abs(sol[i] - referenceSol10000[i]) << "\n";
+                std::cout << i << ": " << std::abs(sol[i] - refSolStraightFixed[i]) << "\n";
             }
         }
 
@@ -203,16 +171,7 @@ void EVAAComputeEngine::computeALE(void) {
         -1.865735998970482e+01, 4.460124978395771e+01, -7.261445267890266e-01,
         -1.865735998970482e+01, 4.460124978395771e+01, -9.068999987423678e-01};
 #else
-    static const Constants::floatEVAA referenceSol10000[27]{
-        -2.080734004508660e+01, 4.546487545598364e+01, -3.101613187334162e-01,
-        -2.277956189887464e+01, 4.642261061379381e+01, -7.320839397322884e-01,
-        -2.277956189887464e+01, 4.642261061379381e+01, -9.070662832319989e-01,
-        -2.137205801214248e+01, 4.334609062420750e+01, -7.281186146976768e-01,
-        -2.137205801214248e+01, 4.334609062420750e+01, -9.067499935810238e-01,
-        -2.005502737744314e+01, 4.765675731766618e+01, -7.258110666586721e-01,
-        -2.005502737744314e+01, 4.765675731766618e+01, -9.065677839150816e-01,
-        -1.865717532630220e+01, 4.460133429655894e+01, -7.230710600249602e-01,
-        -1.865717532630220e+01, 4.460133429655894e+01, -9.063492284766947e-01};
+    static const Constants::floatEVAA referenceSol10000[27]{-2.080734004508660e+01, 4.546487545598364e+01, -3.115758548353433e-01, -2.278023469533989e+01, 4.642230270340894e+01, -7.272668308078089e-01, -2.278023469533989e+01, 4.642230270340894e+01, -9.068999999925623e-01, -2.137138521567723e+01, 4.334639853459237e+01, -7.312925657635747e-01, -2.137138521567723e+01, 4.334639853459237e+01, -9.069000000016965e-01, -2.005569556026510e+01, 4.765645151875001e+01, -7.242654770287074e-01, -2.005569556026510e+01, 4.765645151875001e+01, -9.068999999177775e-01, -1.865650714348024e+01, 4.460164009547510e+01, -7.270421696854118e-01, -1.865650714348024e+01, 4.460164009547510e+01, -9.069000000166272e-01};
 #endif  // ! DAMPING
 
     static size_t tmp = 0;
@@ -225,10 +184,6 @@ void EVAAComputeEngine::computeALE(void) {
     }   
     if (count) tmp++;    
     if (tmp) std::cout<< "\n\n \t # of Wrong solutions" << tmp << " \n";
- /*   if (tmp) {
-        std::cout << "count: " << count << "\n";
-        throw "BREEAK!!!";
-    }*/
 
     delete TwoTrackModel_obj;
     delete car;

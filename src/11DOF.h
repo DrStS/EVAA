@@ -1086,6 +1086,7 @@ public:
     void PrintFinalResults(T* sln) {
         std::cout.precision(15);
         std::cout << std::scientific;
+        IO::writeVector(sln, 11);
         std::cout << "linear11DOF: orientation angles=\n\t[" << sln[1] << "\n\t " << sln[2] << "]" << std::endl;
         std::cout << "linear11DOF: car body position pc=\n\t[" << sln[0] << "]" << std::endl;
         std::cout << "linear11DOF: front-left wheel position pw3=\n\t[" << sln[3] << "]" << std::endl;
