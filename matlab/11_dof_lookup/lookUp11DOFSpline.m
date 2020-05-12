@@ -241,6 +241,7 @@ M_div_h2 = M / (delta_t * delta_t);
 fixed = true;
 euler = true;
 bdf2 = true;
+interpolation = false;
 if bdf2
     B = (6)*M_div_h2;
     C = (-11/2)*M_div_h2;
@@ -258,9 +259,35 @@ condition = [];
 d = 0;
 %write to output csv
 iterationsRES = zeros(length(t),2);
+if (~interpolation)
+    k_body_fl=28e3*0.69;
+    k_tyre_fl=260e3;%260
+    k_body_fr=28e3*0.69;
+    k_tyre_fr=260e3;
+    k_body_rl=16e3*0.82;
+    k_tyre_rl=260e3;
+    k_body_rr=16e3*0.82;
+    k_tyre_rr=260e3;
+    
+    K=[k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_fr+k_body_rl*l_lat_rl-k_body_rr*l_lat_rr, -k_body_fl*l_long_fl-k_body_fr*l_long_fr+k_body_rl*l_long_rl+k_body_rr*l_long_rr,  -k_body_fl, 0, -k_body_fr, 0, -k_body_rl, 0, -k_body_rr, 0;
+   0  l_lat_fl*l_lat_fl*k_body_fl+l_lat_fr*l_lat_fr*k_body_fr+l_lat_rl*l_lat_rl*k_body_rl+l_lat_rr*l_lat_rr*k_body_rr, -l_long_fl*l_lat_fl*k_body_fl+l_lat_fr*l_long_fr*k_body_fr+l_long_rl*l_lat_rl*k_body_rl-l_long_rr*l_lat_rr*k_body_rr, -l_lat_fl*k_body_fl, 0, l_lat_fr*k_body_fr, 0, -l_lat_rl*k_body_rl, 0, l_lat_rr*k_body_rr, 0;
+   0 0 l_long_fl*l_long_fl*k_body_fl+l_long_fr*l_long_fr*k_body_fr+l_long_rl*l_long_rl*k_body_rl+l_long_rr*l_long_rr*k_body_rr, l_long_fl*k_body_fl, 0 l_long_fr*k_body_fr 0 -l_long_rl*k_body_rl 0 -l_long_rr*k_body_rr 0; 
+   0 0 0 k_body_fl+k_tyre_fl -k_tyre_fl 0 0 0 0 0 0;
+   0 0 0 0 k_tyre_fl 0 0 0 0 0 0;
+   0 0 0 0 0 k_body_fr+k_tyre_fr -k_tyre_fr 0 0 0 0;
+   0 0 0 0 0 0 k_tyre_fr 0 0 0 0;
+   0 0 0 0 0 0 0 k_body_rl+k_tyre_rl -k_tyre_rl 0 0;
+   0 0 0 0 0 0 0 0 k_tyre_rl 0 0;
+   0 0 0 0 0 0 0 0 0 k_body_rr+k_tyre_rr -k_tyre_rr;
+   0 0 0 0 0 0 0 0 0 0 k_tyre_rr];
+   K=K+K'-diag(diag(K));
+end
+%K = get_K();
 tic
 for i = 1: length(t)
-    K = get_K();
+    if interpolation
+        K = get_K();
+    end
     % J += -(K(tidx,tidx)+ dKdx(tidx,tidx)*u_n_p_1)
     if fixed
         newForce = K * u_n_p_1;
@@ -273,27 +300,29 @@ for i = 1: length(t)
         elseif bdf2
             u_n_p_1 = ((9/4)*M_div_h2 + K)\ (B*u_n + C*u_n_m_1 + D*u_n_m_2 + E*u_n_m_3 + rhs);
         end
-        x1 = u_n_p_1(1);
-        x2 = u_n_p_1(2);
-        x3 = u_n_p_1(3);
-        x4 = u_n_p_1(4);
-        x5 = u_n_p_1(5);
-        x6 = u_n_p_1(6);
-        x7 = u_n_p_1(7);
-        x8 = u_n_p_1(8);
-        x9 = u_n_p_1(9);
-        x10 = u_n_p_1(10);
-        x11 = u_n_p_1(11);
-        l1 = eval(l1_sym);
-        l2 = eval(l2_sym);
-        l3 = eval(l3_sym);
-        l4 = eval(l4_sym);
-        l5 = eval(l5_sym);
-        l6 = eval(l6_sym);
-        l7 = eval(l7_sym);
-        l8 = eval(l8_sym);
-        len = [l1;l2;l3;l4;l5;l6;l7;l8];
-        K = get_K();
+        if interpolation
+            x1 = u_n_p_1(1);
+            x2 = u_n_p_1(2);
+            x3 = u_n_p_1(3);
+            x4 = u_n_p_1(4);
+            x5 = u_n_p_1(5);
+            x6 = u_n_p_1(6);
+            x7 = u_n_p_1(7);
+            x8 = u_n_p_1(8);
+            x9 = u_n_p_1(9);
+            x10 = u_n_p_1(10);
+            x11 = u_n_p_1(11);
+            l1 = eval(l1_sym);
+            l2 = eval(l2_sym);
+            l3 = eval(l3_sym);
+            l4 = eval(l4_sym);
+            l5 = eval(l5_sym);
+            l6 = eval(l6_sym);
+            l7 = eval(l7_sym);
+            l8 = eval(l8_sym);
+            len = [l1;l2;l3;l4;l5;l6;l7;l8];
+            K = get_K();
+        end
         newForce = K * u_n_p_1;
         rhs(5) = newForce(5);
         rhs(7) = newForce(7);
@@ -306,27 +335,29 @@ for i = 1: length(t)
             vec_rhs = B*u_n + C*u_n_m_1 + D*u_n_m_2 + E*u_n_m_3;
             u_n_p_1 = ((9/4)*M_div_h2 + K)\ (vec_rhs + rhs);
         end
-        x1 = u_n_p_1(1);
-        x2 = u_n_p_1(2);
-        x3 = u_n_p_1(3);
-        x4 = u_n_p_1(4);
-        x5 = u_n_p_1(5);
-        x6 = u_n_p_1(6);
-        x7 = u_n_p_1(7);
-        x8 = u_n_p_1(8);
-        x9 = u_n_p_1(9);
-        x10 = u_n_p_1(10);
-        x11 = u_n_p_1(11);
-        l1 = eval(l1_sym);
-        l2 = eval(l2_sym);
-        l3 = eval(l3_sym);
-        l4 = eval(l4_sym);
-        l5 = eval(l5_sym);
-        l6 = eval(l6_sym);
-        l7 = eval(l7_sym);
-        l8 = eval(l8_sym);
-        len = [l1;l2;l3;l4;l5;l6;l7;l8];
-        K = get_K();
+        if interpolation
+            x1 = u_n_p_1(1);
+            x2 = u_n_p_1(2);
+            x3 = u_n_p_1(3);
+            x4 = u_n_p_1(4);
+            x5 = u_n_p_1(5);
+            x6 = u_n_p_1(6);
+            x7 = u_n_p_1(7);
+            x8 = u_n_p_1(8);
+            x9 = u_n_p_1(9);
+            x10 = u_n_p_1(10);
+            x11 = u_n_p_1(11);
+            l1 = eval(l1_sym);
+            l2 = eval(l2_sym);
+            l3 = eval(l3_sym);
+            l4 = eval(l4_sym);
+            l5 = eval(l5_sym);
+            l6 = eval(l6_sym);
+            l7 = eval(l7_sym);
+            l8 = eval(l8_sym);
+            len = [l1;l2;l3;l4;l5;l6;l7;l8];
+            K = get_K();
+        end
     end
     
     if euler
@@ -342,45 +373,52 @@ for i = 1: length(t)
     while 1
         iter = iter + 1;
         temp = [];
-        getdk_dx();
-        dKdx_x = eval(dKdx_x_symb);
+        if interpolation
+            getdk_dx();
+            dKdx_x = eval(dKdx_x_symb);
+        end
         if euler
-            J = M_div_h2 + K + dKdx_x;
+            J = M_div_h2 + K;
+            if interpolation
+                J = J + dKdx_x;
+            end
             if fixed
                J(idx,:) = M_div_h2(idx,:);
             end
         elseif bdf2
-            J = (9.0/4.0) * M_div_h2 + K + dKdx_x;
+            J = (9.0/4.0) * M_div_h2 + K;
+            if interpolation
+                J = J + dKdx_x;
+            end
             if fixed
                J(idx,:) = (9.0/4.0) * M_div_h2(idx,:);
             end
-            J
         end
-        
+        J
         Delta = -J\r;
         u_n_p_1 = Delta + u_n_p_1; 
-        
-        % update values
-        x1 = u_n_p_1(1);
-        x2 = u_n_p_1(2);
-        x3 = u_n_p_1(3);
-        x4 = u_n_p_1(4);
-        x5 = u_n_p_1(5);
-        x6 = u_n_p_1(6);
-        x7 = u_n_p_1(7);
-        x8 = u_n_p_1(8);
-        x9 = u_n_p_1(9);
-        x10 = u_n_p_1(10);
-        x11 = u_n_p_1(11);
-        l1 = eval(l1_sym);
-        l2 = eval(l2_sym);
-        l3 = eval(l3_sym);
-        l4 = eval(l4_sym);
-        l5 = eval(l5_sym);
-        l6 = eval(l6_sym);
-        l7 = eval(l7_sym);
-        l8 = eval(l8_sym);
-        len = [l1;l2;l3;l4;l5;l6;l7;l8];
+        if interpolation
+            % update values
+            x1 = u_n_p_1(1);
+            x2 = u_n_p_1(2);
+            x3 = u_n_p_1(3);
+            x4 = u_n_p_1(4);
+            x5 = u_n_p_1(5);
+            x6 = u_n_p_1(6);
+            x7 = u_n_p_1(7);
+            x8 = u_n_p_1(8);
+            x9 = u_n_p_1(9);
+            x10 = u_n_p_1(10);
+            x11 = u_n_p_1(11);
+            l1 = eval(l1_sym);
+            l2 = eval(l2_sym);
+            l3 = eval(l3_sym);
+            l4 = eval(l4_sym);
+            l5 = eval(l5_sym);
+            l6 = eval(l6_sym);
+            l7 = eval(l7_sym);
+            l8 = eval(l8_sym);
+            len = [l1;l2;l3;l4;l5;l6;l7;l8];
 %        for l=1:8
 %            if len(l)<l_min
 %                disp(len(l))
@@ -391,7 +429,8 @@ for i = 1: length(t)
 %            end
 %        end
             
-        K = get_K();
+            K = get_K();
+        end
         if fixed
             newForce = K * u_n_p_1;
             rhs(5) = newForce(5);

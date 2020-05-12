@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
             "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml";
         const std::string loadStraightFileNameXML =
             "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml";
-        loadProfileFileNameXML = loadCircularFileNameXML;
+        loadProfileFileNameXML = loadStraightFileNameXML;
     }
 
     /** Construct the car*/
@@ -130,14 +130,14 @@ int main(int argc, char **argv) {
     }
     std::cout << "It took " << std::defaultfloat << timeMBD / numIterations << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
     
-    /*unsigned long time11DOF = 0.;
+    unsigned long time11DOF = 0.;
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
         myComputeEngine->computeMKLTwoTrackModelBE();
         timer1.stop();
         time11DOF += timer1.getDurationMilliSec();
     }
-    std::cout << "It took " << std::defaultfloat << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;*/
+    std::cout << "It took " << std::defaultfloat << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
 
     unsigned long timeALE = 0.;
     for (auto i = 0; i < numIterations; ++i) {
