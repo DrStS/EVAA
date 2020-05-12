@@ -1083,7 +1083,16 @@ public:
      * \brief newton loop for the 11 Dof system
      */
     // TODO write the documentation above
-    static void Newton(C* obj /**< instance of 11dof class*/, T* force /**< pointer to force vector (not from 11dof class)*/, T* J /**< pointer to Jacobian from 11dofClass*/, T* res /**< residual from 11Dof class*/, T& res_norm /**< reference to norm of the residual from the 11 Dof class*/, T* u_n_p_1 /**< current position vector*/, T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/, T& tolerance /**< reference to tolerance from 11 dof class for stopping criteria*/, size_t& maxNewtonIterations /**< reference to maxiumum number of Newton iterations*/, size_t& count /**< reference to iteration count */
+    static void Newton(C* obj /**< instance of 11dof class*/, 
+		T* force /**< pointer to force vector (not from 11dof class)*/, 
+		T* J /**< pointer to Jacobian from 11dofClass*/, 
+		T* res /**< residual from 11Dof class*/, 
+		T& res_norm /**< reference to norm of the residual from the 11 Dof class*/, 
+		T* u_n_p_1 /**< current position vector*/, 
+		T* temp /**< pointer to temp vector from 11 dof class for stopping criteria*/, 
+		T& tolerance /**< reference to tolerance from 11 dof class for stopping criteria*/, 
+		size_t& maxNewtonIterations /**< reference to maxiumum number of Newton iterations*/, 
+		size_t& count /**< reference to iteration count */
     ) {
         count = 0;
         T delta_norm = 1, delta_norm2 = 0;
@@ -1117,7 +1126,8 @@ public:
             // copy the new residual to a temp to check if newton has converged
             // without losing residual
             Math::copy<T>(Constants::DOF, res, 1, temp, 1);
-            Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
+            //Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, J, Constants::DOF, temp, 1);
+			Math::getrs<T>(LAPACK_ROW_MAJOR, 'N', Constants::DOF, 1, J, Constants::DOF, pivNewton, temp, 1);
             delta_norm2 = Math::nrm2<T>(Constants::DOF, temp, 1);
         } while (res_norm > tolerance && delta_norm2 < delta_norm && count < maxNewtonIterations);
     }

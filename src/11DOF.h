@@ -14,7 +14,9 @@
 #include "MathLibrary.h"
 #include "MetaDatabase.h"
 
-#define DAMPING 1 // TODO REMOVE
+#define IMPLICIT 1
+
+//#define DAMPING 1 // TODO REMOVE
 
 namespace EVAA {
 
@@ -39,9 +41,7 @@ protected:
     T _h;
     size_t _currentIter;
 
-    T _tolerance;
-    size_t _maxNewtonIteration;
-    size_t _newtonIteration;
+    
 
     // solution in next timestep
     T* _u_n_p_1 = nullptr;
@@ -68,15 +68,22 @@ protected:
     /** used for the constructStiffnesMatrix and ConstructDampingMatrix as well as for the BE. */
     T* _temp = nullptr;
 
+#ifdef IMPLICIT
+	T* _J = nullptr;
+	T* _residual = nullptr;
+	T _residualNorm;
+	T _tolerance;
+	size_t _maxNewtonIteration;
+	size_t _newtonIteration;
+#endif
+
 #ifdef INTERPOLATION
-    T* _J = nullptr;
+    
     T* _dKdxx = nullptr;
 #ifdef DAMPING
     T* _dDdxx = nullptr;
     T* _dddl = nullptr;
 #endif  // DAMPING
-    T* _residual = nullptr;
-    T _residualNorm;
     T* _dkdl = nullptr;
 #endif  // INTERPOLATION
 
@@ -216,14 +223,24 @@ public:
 
         _temp = Math::malloc<T>(Constants::DOF);
         _matrixTmp = Math::calloc<T>(Constants::DOFDOF);
+
+
+#ifdef IMPLICIT
+		if (_loadModuleObj->GetEulerProfileName() == "Fixed") {
+			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructFixedJacobian;
+		}
+		else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed" || _loadModuleObj->GetEulerProfileName() == "Sinusoidal") {
+			_JacobianAdjustment = &TwoTrackModelBE<T>::ConstructNonFixedJacobian;
+		}
+		_J = Math::calloc<T>(Constants::DOFDOF);
+		_residual = Math::malloc<T>(Constants::DOF);
+		_tolerance = MetaDatabase<T>::getDatabase().getNewtonTolerance();
+		_maxNewtonIteration = MetaDatabase<T>::getDatabase().getMaxNewtonIterations();
+#endif // IMPLICIT
+
+
 #ifdef INTERPOLATION
-        if (_loadModuleObj->GetEulerProfileName() == "Fixed") {
-            _JacobianAdjustment = &TwoTrackModelBE<T>::ConstructFixedJacobian;
-        }
-        else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed" || _loadModuleObj->GetEulerProfileName() == "Sinusoidal") {
-            _JacobianAdjustment = &TwoTrackModelBE<T>::ConstructNonFixedJacobian;
-        }
-        _J = Math::calloc<T>(Constants::DOFDOF);
+        
         _dKdxx = Math::calloc<T>(Constants::DOFDOF);
         _dkdl = Math::malloc<T>(2 * Constants::NUM_LEGS);
 
@@ -231,10 +248,9 @@ public:
         _dddl = Math::calloc<T>(2 * Constants::NUM_LEGS);
         _dDdxx = Math::calloc<T>(Constants::DOFDOF);
 #endif
-        _residual = Math::malloc<T>(Constants::DOF);
+        
 #endif
-        _tolerance = MetaDatabase<T>::getDatabase().getNewtonTolerance();
-        _maxNewtonIteration = MetaDatabase<T>::getDatabase().getMaxNewtonIterations();
+        
         _h = MetaDatabase<T>::getDatabase().getTimeStepSize();
         _factor_h = 1 / _h;
 
@@ -270,8 +286,13 @@ public:
         Math::free<T>(_D);
         Math::free<T>(_temp);
         Math::free<T>(_matrixTmp);
+
+#ifdef IMPLICIT
+		Math::free<T>(_J);
+		Math::free<T>(_residual);
+#endif // IMPLICIT
+
 #ifdef INTERPOLATION
-        Math::free<T>(_J);
         Math::free<T>(_dkdl);
         Math::free<T>(_dKdxx);
 #ifdef DAMPING
@@ -279,7 +300,7 @@ public:
         Math::free<T>(_dddl);
         Math::free<T>(_dDdxx);
 #endif
-        Math::free<T>(_residual);
+        
 #endif
     }
 
@@ -292,16 +313,18 @@ public:
         // Get the force
         _currentIter = currentIter;
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
+		Math::Solvers<T, TwoTrackModelBE<T>>::LinearBackwardEuler(_A, _B, _C, _u_n, _u_n_m_1, _twoTrackModelForce, _u_n_p_1, Constants::DOF);
 		
-        Math::Solvers<T, TwoTrackModelBE<T>>::LinearBackwardEuler(_A, _B, _C, _u_n, _u_n_m_1, _twoTrackModelForce, _u_n_p_1, Constants::DOF);
-#ifdef INTERPOLATION
+#ifndef INTERPOLATION
+		ConstructAMatrix();
+#endif // !INTERPOLATION
+
+#ifdef IMPLICIT
         UpdateSystem();
         Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, _twoTrackModelForce, _J, _residual, _residualNorm, _u_n_p_1, _temp, _tolerance, _maxNewtonIteration, _newtonIteration);
-#else
-        ConstructAMatrix();
 #endif
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
-        // update two track velocity in car
+		// update two track velocity in car
         UpdateVelocity();
 
         // _u_n_m_1 points to _u_n and _u_n points to _u_n_m_1
@@ -341,15 +364,25 @@ public:
      */
     void ConstructJacobian() {
         // first update the derivative
-        auto& db = MetaDatabase<T>::getDatabase();
-        db.getLookupStiffness().getDerivative(_car->getCurrentSpringsLengths(), _dkdl);
-        // construct the derivative (tensor) times a pos vector
-        ConstructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
+#ifdef INTERPOLATION
+		auto& db = MetaDatabase<T>::getDatabase();
+		db.getLookupStiffness().getDerivative(_car->getCurrentSpringsLengths(), _dkdl);
+		// construct the derivative (tensor) times a pos vector
+		ConstructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
+#endif // INTERPOLATION
+        
         // J = A = M_h2 + D / h + K
         Math::copy<T>(Constants::DOFDOF, _A, 1, _J, 1);
-        // _J += dKdx * x[n+1]
-        Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
+
+#ifdef INTERPOLATION
+		// _J += dKdx * x[n+1]
+		Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
+#endif // INTERPOLATION
+		
+		// This is dependent on the boundary condition
         (this->*_JacobianAdjustment)();
+
+#ifdef INTERPOLATION
 #ifdef DAMPING
         db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
         // temp = x[n+1]
@@ -361,6 +394,7 @@ public:
         // _J += 1/_h * _dDdxx
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _dDdxx, 1, _J, 1);
 #endif
+#endif // INTERPOLATION
     }
     /**
      * \brief construct Jacobian for fixed to road
@@ -439,15 +473,24 @@ public:
      */
     void UpdateSystem() {
         _car->UpdateLengthsTwoTrackModel();
+
+#ifdef INTERPOLATION
 		ConstructStiffnessMatrix();
-        
 #ifdef DAMPING
-        ConstructDampingMatrix();
-#endif
+		ConstructDampingMatrix();
+#endif // DAMPING
+#endif // INTERPOLATION
+
 		UpdateVelocity();
 		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
-        ConstructAMatrix();
-        ConstructBMatrix();
+        
+#ifdef INTERPOLATION
+		ConstructAMatrix();
+#ifdef DAMPING
+		ConstructBMatrix();
+#endif // DAMPING
+
+#endif // INTERPOLATION
     }
     /**
      * \brief construct Stiffness Matrix
@@ -848,8 +891,10 @@ private:
         Math::vAdd<T>(Constants::DOF, _bVec, forces, _u_n_p_1);
         // _u_n_p_1=_A\(b+f)
         Math::potrs<T>(LAPACK_ROW_MAJOR, 'L', Constants::DOF, 1, _A, Constants::DOF, _u_n_p_1, 1);
-        // reconstruct _A
-        ConstructAMatrix();
+#ifndef INTERPOLATION
+		// reconstruct _A
+		ConstructAMatrix();
+#endif // !INTERPOLATION
     }
 
     /**
@@ -921,7 +966,7 @@ public:
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
 		GetInitialGuess(_twoTrackModelForce);
 		
-#ifdef INTERPOLATION
+#ifdef IMPLICIT
         UpdateSystem();
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, _twoTrackModelForce, _J, _residual, _residualNorm, _u_n_p_1, _temp, _tolerance, _maxNewtonIteration, _newtonIteration);
 #endif
@@ -964,15 +1009,24 @@ public:
      */
     void UpdateSystem() {
         _car->UpdateLengthsTwoTrackModel();
+#ifdef INTERPOLATION
 		ConstructStiffnessMatrix();
-        
+
 #ifdef DAMPING
-        ConstructDampingMatrix();
+		ConstructDampingMatrix();
 #endif
+
+#endif // INTERPOLATION
 		UpdateVelocity();
 		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
-        ConstructAMatrix();
-        ConstructbVec();
+
+#ifdef INTERPOLATION
+		ConstructAMatrix();
+#ifdef DAMPING
+		ConstructbVec();
+#endif // DAMPING
+
+#endif // INTERPOLATION
     }
     /**
      * \brief construct Jacobian
@@ -983,29 +1037,40 @@ public:
      */
     void ConstructJacobian() {
         // first update the derivative
-        auto& db = MetaDatabase<T>::getDatabase();
-        db.getLookupStiffness().getDerivative(_car->getCurrentSpringsLengths(), _dkdl);
-        ConstructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
+#ifdef INTERPOLATION
+		auto& db = MetaDatabase<T>::getDatabase();
+		db.getLookupStiffness().getDerivative(_car->getCurrentSpringsLengths(), _dkdl);
+		ConstructLookupDerivativeX(_dkdl, _u_n_p_1, _dKdxx);
+#endif // INTERPOLATION
+
         // _J = _A
         Math::copy<T>(Constants::DOFDOF, _A, 1, _J, 1);
-        // _J += dKdx * x[n+1]
-        Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
+        
+#ifdef INTERPOLATION
+		// _J += dKdx * x[n+1]
+		Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
+#endif // INTERPOLATION
+
 		(this->*_JacobianAdjustmentBDF2)();
+#ifdef INTERPOLATION
 #ifdef DAMPING
-        db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
-        // temp = x[n+1]
-        Math::copy<T>(Constants::DOF, _u_n_p_1, 1, _temp, 1);
-        // temp *= 3/2
-        Math::scal<T>(Constants::DOF, 1.5, _temp, 1);
-        // temp += -2 * x[n]
-        Math::axpy<T>(Constants::DOF, -2, _u_n, 1, _temp, 1);
-        // temp += 1/2 * x[n-1]
-        Math::axpy<T>(Constants::DOF, 0.5, _u_n_m_1, 1, _temp, 1);
-        // calc _dDdxx with (3/2 * x[n+1] - 2 * x[n] + 1/2 * x[n-1])
-        ConstructLookupDerivativeX(_dddl, _temp, _dDdxx);
-        // _J += 1/_h * _dDdxx
-        Math::axpy<T>(Constants::DOFDOF, _factor_h, _dDdxx, 1, _J, 1);
+		db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
+		// temp = x[n+1]
+		Math::copy<T>(Constants::DOF, _u_n_p_1, 1, _temp, 1);
+		// temp *= 3/2
+		Math::scal<T>(Constants::DOF, 1.5, _temp, 1);
+		// temp += -2 * x[n]
+		Math::axpy<T>(Constants::DOF, -2, _u_n, 1, _temp, 1);
+		// temp += 1/2 * x[n-1]
+		Math::axpy<T>(Constants::DOF, 0.5, _u_n_m_1, 1, _temp, 1);
+		// calc _dDdxx with (3/2 * x[n+1] - 2 * x[n] + 1/2 * x[n-1])
+		ConstructLookupDerivativeX(_dddl, _temp, _dDdxx);
+		// _J += 1/_h * _dDdxx
+		Math::axpy<T>(Constants::DOFDOF, _factor_h, _dDdxx, 1, _J, 1);
 #endif
+#endif // INTERPOLATION
+
+
     }
 
     /**
@@ -1051,7 +1116,7 @@ public:
 template <typename T>
 class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
 public:
-    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBDF2<T>(inputCar, loadModel) {       
+    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBDF2<T>(inputCar, loadModel) {
         size_t sol_size = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations();
         _tend = sol_size * _h;
         _uSolution = Math::calloc<T>((sol_size + 1) * Constants::DOF);
@@ -1059,9 +1124,9 @@ public:
 
     void Solve(T* sol_vect) {
 #ifdef WRITECSV
-#ifdef INTERPOLATION
+#ifdef IMPLICIT
         IO::MyFile<T> newtonFile("C:\\software\\repos\\EVAA\\output\\newtonOutput.txt");
-#endif  // INTERPOLATION
+#endif  // IMPLICIT
 #endif
         size_t iter = 1;
         T t = _h;
@@ -1072,7 +1137,7 @@ public:
             // solution_vect = _uSolution + iter * (DOF);
             UpdateStep(iter, sol_vect);
 #ifdef WRITECSV
-#ifdef INTERPOLATION
+#ifdef IMPLICIT
             newtonFile.writeSingleValue(_newtonIteration);
             newtonFile.writeSingleValue(_residualNorm);
             newtonFile.newLine();

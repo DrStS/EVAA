@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
             "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml";
         const std::string loadStraightFileNameXML =
             "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml";
-        loadProfileFileNameXML = loadCircularFileNameXML;
+        loadProfileFileNameXML = loadStraightFileNameXML;
     }
 
     /** Construct the car*/
