@@ -11,6 +11,8 @@ close all;
 % plot line size
 line_size_dataset_1 = 2;
 line_size_dataset_2 = 2;
+color_MBD_green = 'g';
+color_ALE_red = 'r';
 
 % title entries
 title_name = 'Title Name';
@@ -26,15 +28,15 @@ y_lim_down = 0;
 y_lim_up = 1;
 
 % legend entries
-legend_name_1 = '$entry_1$';
-legend_name_2 = '$entry_2$';
+legend_name_1 = '$entry_1$MBD';
+legend_name_2 = '$entry_2$ALE';
 legend_size = 17;
 
 % where to use stuff
 figure(1); hold on; grid on;
 
-plot(x1, y1, 'LineWidth', line_size_dataset_1);
-plot(x2, y2, 'LineWidth', line_size_dataset_2);
+plot(x1, y1, 'LineWidth', line_size_dataset_1, 'color', color_MBD_green);
+plot(x2, y2, 'LineWidth', line_size_dataset_2, 'color', color_ALE_red);
 
 title(title_name, 'Interpreter', 'latex', 'Fontsize', title_fontsize); 
 
@@ -44,7 +46,7 @@ ylim([y_lim_down, y_lim_up]);
 xlabel(xlabel_name, 'Interpreter', 'latex', 'Fontsize', label_fontsize);
 ylabel(ylabel_name, 'Interpreter', 'latex', 'Fontsize', label_fontsize);
 
-leg1 = legend('$entry_1$','$entry_2$');
+leg1 = legend(legend_name_1, legend_name_2);
 set(leg1,'Interpreter','latex');
 set(leg1,'FontSize', legend_size);
 leg1.Location = 'best';
