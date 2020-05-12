@@ -28,12 +28,37 @@
 #pragma once
 
 #include <chrono>
+#include <fstream>
+#include <iostream>
+#include <limits>
 #include <string>
+#include <vector>
 
 #include "11DOF.h"
 #include "ALE.h"
+#include "Car.h"
+#include "Constants.h"
+#include "LoadModule.h"
 #include "MBDMethod.h"
 #include "MathLibrary.h"
+#include "MetaDatabase.h"
+#include "Output.h"
+
+#ifdef USE_EIGEN
+#include <Eigen/Dense>
+using Eigen::IOFormat;
+using Eigen::Matrix3d;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+#endif
+
+#ifdef USE_BLAZE
+#include <blaze/Math.h>
+#endif
+
+#ifdef USE_HDF5
+#include <IO/OutputHDF5.h>
+#endif
 
 namespace EVAA {
 
