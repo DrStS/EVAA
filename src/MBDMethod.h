@@ -845,6 +845,7 @@ private:
 
         Math::copy<T>(Constants::DIM, pcc_, 1, cf_r_up_, 1);
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, cf_C_cN, Constants::DIM, r_, 1, 1, cf_r_up_, 1);
+       // std::cout << cf_r_up_[2] << ", ";
         Math::axpy<T>(Constants::DIM, -1, pw_, 1, cf_r_up_, 1);
 
         // r_low
@@ -1011,9 +1012,6 @@ private:
         Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, -1, cf_C_cN, Constants::DIM, cf_temp, 1, 1, cf_upper_dampf_fl, 1);
 
         // dot((vc - C_cN' * (r1_tilda * wc)), r_up1)
-        // std::cout << Math::dot<T>(Constants::DIM, upper_dampf1, 1, r_up1, 1)
-        // << std::endl; std::cout << Math::dot_product<T>(upper_dampf1, r_up1,
-        // Constants::DIM) << std::endl;
         scale = Math::dot<T>(Constants::DIM, cf_upper_dampf_fl, Constants::INCX, cf_r_up_fl, Constants::INCX);
 
         // scale = Math::dot_product<T>(upper_dampf1, r_up1, Constants::DIM);
@@ -1838,7 +1836,6 @@ public:
         
         T* start = complete_vector + (this->num_iter) * Constants::MBD_SOLUTION_SIZE;
         Math::copy<T>(Constants::MBD_SOLUTION_SIZE, start, 1, solution_vector, 1);
-        //	std::cout << "Solution copied!\n" << std::endl;
         Math::free<T>(complete_vector);
         Math::free<T>(x_vector);
     }
@@ -1871,10 +1868,12 @@ public:
 
         get_car_orientation();
 
+  //      std::cout << "positions: ";
         compute_spring_lengths(pcc_, pw_fl_, pt_fl_, cf_r_up_fl, cf_r_low_fl, this->r_fl, norm_r_up_fl, inv_norm_r_up_fl, norm_r_low_fl, inv_norm_r_low_fl);
         compute_spring_lengths(pcc_, pw_fr_, pt_fr_, cf_r_up_fr, cf_r_low_fr, this->r_fr, norm_r_up_fr, inv_norm_r_up_fr, norm_r_low_fr, inv_norm_r_low_fr);
         compute_spring_lengths(pcc_, pw_rl_, pt_rl_, cf_r_up_rl, cf_r_low_rl, this->r_rl, norm_r_up_rl, inv_norm_r_up_rl, norm_r_low_rl, inv_norm_r_low_rl);
         compute_spring_lengths(pcc_, pw_rr_, pt_rr_, cf_r_up_rr, cf_r_low_rr, this->r_rr, norm_r_up_rr, inv_norm_r_up_rr, norm_r_low_rr, inv_norm_r_low_rr);
+    //    std::cout << std::endl;
 
 #ifdef INTERPOLATION
         apply_stiffness_interpolation();

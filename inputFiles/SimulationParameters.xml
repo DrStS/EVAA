@@ -11,7 +11,7 @@
       <ToleranceXML>1e-7</ToleranceXML>
     </MultyBodyDynamicsXML>
     <LinearALEXML>
-      <Method>IMPLICIT_EULER</Method>
+      <Method>BDF2</Method>
       <Tolerance>1e-7</Tolerance>
       <MaximumNumNewtonIterations>10</MaximumNumNewtonIterations>
     </LinearALEXML>

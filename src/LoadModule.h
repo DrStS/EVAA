@@ -44,7 +44,7 @@ private:
 
         // compute torque around X-axis
         for (auto i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-            Torque[0] += c * F_vec[i * (Constants::DIM - 1) + 1] *
+            Torque[0] -= c * F_vec[i * (Constants::DIM - 1) + 1] *
                              _carObj->getCurrentCIRTwoTrackModel()[i * Constants::DIM + 2] -
                          s * F_vec[i * (Constants::DIM - 1) + 0] *
                              _carObj->getCurrentCIRTwoTrackModel()[i * Constants::DIM + 2];
@@ -52,7 +52,7 @@ private:
 
         // compute torque around Y-axis
         for (auto i = 0; i < 2 * Constants::NUM_LEGS + 1; ++i) {
-            Torque[1] += c * F_vec[i * (Constants::DIM - 1) + 0] *
+            Torque[1] -= c * F_vec[i * (Constants::DIM - 1) + 0] *
                              _carObj->getCurrentCIRTwoTrackModel()[i * Constants::DIM + 2] +
                          s * F_vec[i * (Constants::DIM - 1) + 1] *
                              _carObj->getCurrentCIRTwoTrackModel()[i * Constants::DIM + 2];
@@ -159,7 +159,7 @@ public:
 
         // read External_force
         externalForce = Math::calloc<T>(Constants::VEC_DIM * Constants::DIM);
-        reactionForce = Math::malloc<T>(Constants::DIM);
+        reactionForce = Math::calloc<T>(Constants::DIM);
         _lagrangianForce = Math::calloc<T>(Constants::VEC_DIM * (Constants::DIM - 1));
         _eulerianForce = Math::calloc<T>(Constants::DOF);
         // set_External_force();
@@ -231,7 +231,7 @@ public:
             eulerForce[2 + i] += externalForce[i * Constants::DIM + 2];
         }
         Math::copy<T>(Constants::DOF, eulerForce, Constants::INCX, _eulerianForce, Constants::INCX);
-        ComputeInternalTorqueFromEulerianForces(eulerForce + 1);
+        //ComputeInternalTorqueFromEulerianForces(eulerForce + 1);
     }
 
     /* First Lagrangian, then Eulerian!

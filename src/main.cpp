@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
             "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml";
         const std::string loadStraightFileNameXML =
             "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml";
-        loadProfileFileNameXML = loadStraightFileNameXML;
+        loadProfileFileNameXML = loadCircularFileNameXML;
     }
 
     /** Construct the car*/
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
     unsigned long timeMBD = 0.;    
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-        myComputeEngine->computeMBD();
+        //myComputeEngine->computeMBD();
         timer1.stop();
         timeMBD += timer1.getDurationMilliSec();
     }

@@ -14,7 +14,7 @@
 #include "MathLibrary.h"
 #include "MetaDatabase.h"
 
-//#define DAMPING 1 // TODO REMOVE
+#define DAMPING 1 // TODO REMOVE
 
 namespace EVAA {
 
@@ -292,8 +292,8 @@ public:
         // Get the force
         _currentIter = currentIter;
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
+		
         Math::Solvers<T, TwoTrackModelBE<T>>::LinearBackwardEuler(_A, _B, _C, _u_n, _u_n_m_1, _twoTrackModelForce, _u_n_p_1, Constants::DOF);
-
 #ifdef INTERPOLATION
         UpdateSystem();
         Math::Solvers<T, TwoTrackModelBE<T>>::Newton(this, _twoTrackModelForce, _J, _residual, _residualNorm, _u_n_p_1, _temp, _tolerance, _maxNewtonIteration, _newtonIteration);
@@ -301,7 +301,6 @@ public:
         ConstructAMatrix();
 #endif
         Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
-
         // update two track velocity in car
         UpdateVelocity();
 
@@ -380,7 +379,9 @@ public:
      *
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
-    void SetJacobianTyreLineToFixed(const int& tyreNumber) { Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1); }
+    void SetJacobianTyreLineToFixed(const int& tyreNumber) { 
+		Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1); 
+	}
 
     /**
      * \brief construct Jacobian for that one time step when the tyre hits the road
@@ -438,11 +439,13 @@ public:
      */
     void UpdateSystem() {
         _car->UpdateLengthsTwoTrackModel();
-        _loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
-        ConstructStiffnessMatrix();
+		ConstructStiffnessMatrix();
+        
 #ifdef DAMPING
         ConstructDampingMatrix();
 #endif
+		UpdateVelocity();
+		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructAMatrix();
         ConstructBMatrix();
     }
@@ -785,7 +788,8 @@ private:
     T* _bVec;
     T *_u_n_m_2, *_u_n_m_3;
     size_t _timeStepCount = 0;
-    void (TwoTrackModelBDF2<T>::*_activeExecutor)(T, T*);
+    void (TwoTrackModelBDF2<T>::*_activeExecutor)(size_t, T*);
+	void (TwoTrackModelBDF2<T>::*_JacobianAdjustmentBDF2)();
 
     /**
      * \brief construct _A
@@ -877,6 +881,12 @@ public:
         _u_n_m_3 = Math::malloc<T>(Constants::DOF);
         _bVec = Math::malloc<T>(Constants::DOF);
         _activeExecutor = &TwoTrackModelBDF2<T>::FirstTwoSteps;
+		if (_loadModuleObj->GetEulerProfileName() == "Fixed") {
+			_JacobianAdjustmentBDF2 = &TwoTrackModelBDF2<T>::ConstructFixedJacobian;
+		}
+		else if (_loadModuleObj->GetEulerProfileName() == "Nonfixed" || _loadModuleObj->GetEulerProfileName() == "Sinusoidal") {
+			_JacobianAdjustmentBDF2 = &TwoTrackModelBDF2<T>::ConstructNonFixedJacobian;
+		}
     }
 
     void FirstTwoSteps(size_t currentIter, T* solution) {
@@ -890,7 +900,6 @@ public:
             TwoTrackModelBE<T>::UpdateStep(currentIter, solution);
             // construct _A
             ConstructAMatrix();
-            ConstructAMatrix();
             _activeExecutor = &TwoTrackModelBDF2<T>::UpdateStepBDF2;
         }
     }
@@ -899,7 +908,7 @@ public:
         (this->*_activeExecutor)(_currentIter, solution);
         _timeStepCount += 1;
     }
-
+	void ConstructNonFixedJacobian(){}
     /**
      * Performs one timestep of the 11DOF solver
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
@@ -910,12 +919,15 @@ public:
         // cblas_dscal(DOF,0, force, 1);
         // compute Force
         _loadModuleObj->GetEulerianForce(currentIter, _twoTrackModelForce);
-
-        GetInitialGuess(_twoTrackModelForce);
+		GetInitialGuess(_twoTrackModelForce);
+		
 #ifdef INTERPOLATION
+        UpdateSystem();
         Math::Solvers<T, TwoTrackModelBDF2<T>>::Newton(this, _twoTrackModelForce, _J, _residual, _residualNorm, _u_n_p_1, _temp, _tolerance, _maxNewtonIteration, _newtonIteration);
 #endif
-        Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
+		
+
+		Math::copy<T>(Constants::DOF, _u_n_p_1, 1, solution, 1);
         // _u_n_m_2 points to _u_n_m_3 and _u_n_m_3 points to _u_n_m_2
 
         // update velocity inside car class
@@ -951,13 +963,14 @@ public:
      * only needed in case of lookup Tables
      */
     void UpdateSystem() {
-        // constructSpringLengths();
         _car->UpdateLengthsTwoTrackModel();
-        _loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
-        ConstructStiffnessMatrix();
+		ConstructStiffnessMatrix();
+        
 #ifdef DAMPING
         ConstructDampingMatrix();
 #endif
+		UpdateVelocity();
+		_loadModuleObj->GetEulerianForce(_currentIter, _twoTrackModelForce);
         ConstructAMatrix();
         ConstructbVec();
     }
@@ -977,7 +990,7 @@ public:
         Math::copy<T>(Constants::DOFDOF, _A, 1, _J, 1);
         // _J += dKdx * x[n+1]
         Math::axpy<T>(Constants::DOFDOF, 1, _dKdxx, 1, _J, 1);
-
+		(this->*_JacobianAdjustmentBDF2)();
 #ifdef DAMPING
         db.getLookupDamping().getDerivative(_car->getCurrentSpringsLengths(), _dddl);
         // temp = x[n+1]
@@ -989,7 +1002,7 @@ public:
         // temp += 1/2 * x[n-1]
         Math::axpy<T>(Constants::DOF, 0.5, _u_n_m_1, 1, _temp, 1);
         // calc _dDdxx with (3/2 * x[n+1] - 2 * x[n] + 1/2 * x[n-1])
-        ConstructLookupDerivativeX(_dddl, temp, _dDdxx);
+        ConstructLookupDerivativeX(_dddl, _temp, _dDdxx);
         // _J += 1/_h * _dDdxx
         Math::axpy<T>(Constants::DOFDOF, _factor_h, _dDdxx, 1, _J, 1);
 #endif
@@ -1002,7 +1015,7 @@ public:
      * - _K + 1/h dDdx * x[n]] therefore _J = _M_h2 for the tyre positions
      */
     void ConstructFixedJacobian() {
-        for (auto i = 0; i < Constants::NUM_LEGS; i++) {
+		for (auto i = 0; i < Constants::NUM_LEGS; i++) {
             SetJacobianTyreLineToFixed(i);
         }
     }
@@ -1013,10 +1026,11 @@ public:
      * \param[in] tyreNumber fl: 0, fr: 1, rl: 2, rr: 3
      */
     void SetJacobianTyreLineToFixed(const int& tyreNumber) {
-        // _J = _M_h2
-        Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1, _J + (4 + 2 * tyreNumber) * Constants::DOF, 1);
-        // _J = 9/4 _M_h2
-        Math::scal<T>(Constants::DOF, 2.25, _J + Constants::TYRE_INDEX_EULER[i] * Constants::DOF, 1);
+		// _J = _M_h2
+        //Math::copy<T>(Constants::DOF, _M_h2 + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1);
+		TwoTrackModelBE<T>::SetJacobianTyreLineToFixed(tyreNumber);
+		// _J = 9/4 _M_h2
+        Math::scal<T>(Constants::DOF, 2.25, _J + Constants::TYRE_INDEX_EULER[tyreNumber] * Constants::DOF, 1);
     }
 
     /*
@@ -1035,9 +1049,9 @@ public:
  * For testing purposes.
  */
 template <typename T>
-class TwoTrackModelFull : public TwoTrackModelBE<T> {
+class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
 public:
-    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBE<T>(inputCar, loadModel) {       
+    TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBDF2<T>(inputCar, loadModel) {       
         size_t sol_size = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations();
         _tend = sol_size * _h;
         _uSolution = Math::calloc<T>((sol_size + 1) * Constants::DOF);
