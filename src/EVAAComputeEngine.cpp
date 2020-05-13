@@ -88,7 +88,7 @@ void EVAAComputeEngine::computeMBD(void) {
     MBDMethod<Constants::floatEVAA> solver;
 
     solver.Solve(sol);
-    solver.PrintFinalResult(sol);
+    //solver.PrintFinalResult(sol);
 
 #ifdef USE_HDF5
     solver.WriteFinalResult(sol);
@@ -139,10 +139,8 @@ void EVAAComputeEngine::computeALE(void) {
         TwoTrackModel_obj = new TwoTrackModelBE<Constants::floatEVAA>(car, loadModule);
     }
     else if (db.getALESolver() == ALESolver::BDF2) {
-		std::cout << "BDF2 type eulerain solver" << std::endl;
         TwoTrackModel_obj = new TwoTrackModelBDF2<Constants::floatEVAA>(car, loadModule);
     }
-
     else {
         throw "Only Backward Euler (IMPLICIT_EULER) and BDF2 (BDF2) implemented!";
     }
@@ -160,34 +158,7 @@ void EVAAComputeEngine::computeALE(void) {
 
     ale->Solve(sol);
 
-    ale->PrintFinalResults();
-
-#ifndef DAMPING
-
-    static const Constants::floatEVAA referenceSol10000[27]{
-        -2.080734004508660e+01, 4.546487545598364e+01, -3.139735789643002e-01,
-        -2.277937596041519e+01, 4.642269570993442e+01, -7.291467887135016e-01,
-        -2.277937596041519e+01, 4.642269570993442e+01, -9.069000002374381e-01,
-        -2.137224395060193e+01, 4.334600552806688e+01, -7.272225898769764e-01,
-        -2.137224395060193e+01, 4.334600552806688e+01, -9.069000014894851e-01,
-        -2.005484271404052e+01, 4.765684183026740e+01, -7.274584751808845e-01,
-        -2.005484271404052e+01, 4.765684183026740e+01, -9.068999977574306e-01,
-        -1.865735998970482e+01, 4.460124978395771e+01, -7.261445267890266e-01,
-        -1.865735998970482e+01, 4.460124978395771e+01, -9.068999987423678e-01};
-#else
-    static const Constants::floatEVAA referenceSol10000[27]{-2.080734004508660e+01, 4.546487545598364e+01, -3.115758548353433e-01, -2.278023469533989e+01, 4.642230270340894e+01, -7.272668308078089e-01, -2.278023469533989e+01, 4.642230270340894e+01, -9.068999999925623e-01, -2.137138521567723e+01, 4.334639853459237e+01, -7.312925657635747e-01, -2.137138521567723e+01, 4.334639853459237e+01, -9.069000000016965e-01, -2.005569556026510e+01, 4.765645151875001e+01, -7.242654770287074e-01, -2.005569556026510e+01, 4.765645151875001e+01, -9.068999999177775e-01, -1.865650714348024e+01, 4.460164009547510e+01, -7.270421696854118e-01, -1.865650714348024e+01, 4.460164009547510e+01, -9.069000000166272e-01};
-#endif  // ! DAMPING
-
-    static size_t tmp = 0;
-    size_t count = 0;
-    for (auto i = 0; i < 27; ++i) {
-        if (std::abs(referenceSol10000[i] - sol[i]) > 1e-14) {
-            count++;
-            std::cout << i << ": " << std::abs(sol[i] - referenceSol10000[i]) << "\n";
-        }        
-    }   
-    if (count) tmp++;    
-    if (tmp) std::cout<< "\n\n \t # of Wrong solutions" << tmp << " \n";
+    //ale->PrintFinalResults();
 
     delete TwoTrackModel_obj;
     delete car;
