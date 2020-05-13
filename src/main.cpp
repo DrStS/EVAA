@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
     unsigned long timeMBD = 0.;    
     for (auto i = 0; i < numIterations; ++i) {
         timer1.start();
-        //myComputeEngine->computeMBD();
+        myComputeEngine->computeMBD();
         timer1.stop();
         timeMBD += timer1.getDurationMilliSec();
     }
