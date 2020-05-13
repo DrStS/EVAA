@@ -58,14 +58,17 @@ MESSAGE("Current source dir is" ${EVAA_SOURCE_DIR})
 #1. Option
 ######################################################################################
 option(USE_INTEL_MKL           "Use Intel MKL"  ON)
-option(USE_EIGEN               "Use Eigen"  ON)
-option(USE_BLAZE               "Use Blaze"  ON)
+option(USE_EIGEN               "Use Eigen"  OFF)
+option(USE_BLAZE               "Use Blaze"  OFF)
 option(USE_XSD                 "Use XSD with XERCES"  ON)
 option(USE_HDF5                "Use HDF5"  OFF)
 option(USE_MATLAB              "Build Matlab API"  OFF)
 option(EVAA_COMMANDLINE        "Build EVAA COMMANDLINE"  ON)
 option(BUILD_UNITTEST          "Build EVAA UNITEST"  OFF)
 option(BUILD_BENCHMARK         "Build EVAA MICRO BENCHMARKS"  OFF)
+option(INTERPOLATION           "Use Interpolation"  ON)
+option(WRITECSV                "Write the solution into a CSV"  OFF)
+option(USE_CHECKPOINTS         	   "Writing to HDF5 at checkpoints"  OFF)
 set(DataType_Precision "DOUBLE" CACHE STRING "DataType_Precision chosen by the user at CMake configure time")
 set_property(CACHE DataType_Precision PROPERTY STRINGS DOUBLE SINGLE INVALID)
 ######################################################################################
@@ -167,12 +170,12 @@ MESSAGE("MKL status: ${MKL_FOUND}")
    # Get OpenMP activated and use Intel link library
    IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
       IF(USE_INTEL_COMPILER)
-         SET(CMAKE_C_FLAGS   "/MD /Qopenmp")
-         SET(CMAKE_CXX_FLAGS "/MD /Qopenmp")
+         SET(CMAKE_C_FLAGS   "/MT /Qopenmp /EHsc")
+         SET(CMAKE_CXX_FLAGS "/MT /Qopenmp /EHsc")
       ELSE()
-         SET(CMAKE_C_FLAGS   "/MT /openmp")
-         SET(CMAKE_CXX_FLAGS "/MT /openmp")
-         SET(CMAKE_EXE_LINKER_FLAGS "/nodefaultlib:vcomp ${MKL_OMP_LIBRARY}")
+         SET(CMAKE_C_FLAGS   "/MT /openmp /EHsc")
+         SET(CMAKE_CXX_FLAGS "/MT /openmp /EHsc")
+         SET(CMAKE_EXE_LINKER_FLAGS "/nodefaultlib:vcomp ${MKL_OMP_LIBRARY}" )
       ENDIF()
    ENDIF()
    IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -236,12 +239,18 @@ IF (${USE_XSD})
       COMMAND ${XSD_EXE} cxx-tree --type-naming knr --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/LOOKUP_EVAA_XML.xsd
       WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
    )
+   execute_process(  
+      COMMAND ${XSD_EXE} cxx-tree --type-naming knr --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/VEHICLE_EVAA_XML.xsd
+      WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
+   )
    
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find HDF5
 IF (${USE_HDF5})
    add_definitions(-DUSE_HDF5)
+   SET(CMAKE_C_FLAGS   "/MT")
+   SET(CMAKE_CXX_FLAGS "/MT")
    find_package(HDF5 REQUIRED)
    MESSAGE("HDF5 status: ${HDF5_FOUND}")
    include_directories(${HDF5_INCLUDE_DIR})
@@ -254,6 +263,24 @@ IF (${USE_MATLAB})
    MESSAGE("Matlab status: ${MATLAB_FOUND}")
 ENDIF()
 #------------------------------------------------------------------------------------#
+# Check Interpolation
+IF (${INTERPOLATION}) 
+   MESSAGE("Using Interpolation")
+   add_definitions(-DINTERPOLATION)
+ENDIF()
+#------------------------------------------------------------------------------------#
+# Check WRITECSV
+IF (${WRITECSV}) 
+   MESSAGE("Writing to CSV")
+   add_definitions(-DWRITECSV)
+ENDIF()
+#------------------------------------------------------------------------------------#
+# Check USE_CHECKPOINTS
+IF (${USE_CHECKPOINTS}) 
+   MESSAGE("Writing to HDF5 at checkpoints")
+   add_definitions(-DUSE_CHECKPOINTS)
+ENDIF()
+#------------------------------------------------------------------------------------#
 # Check DataType_Precision
 IF (${DataType_Precision} MATCHES "DOUBLE") 
    MESSAGE("Compiling with DOUBLE Precision")
@@ -261,9 +288,8 @@ IF (${DataType_Precision} MATCHES "DOUBLE")
 ELSEIF(${DataType_Precision} MATCHES "SINGLE")
    MESSAGE("Compiling with SINGLE Precision")
    add_definitions(-DSINGLE_PRECISION)
-ELSEIF(${DataType_Precision} MATCHES "INVALID")
-   MESSAGE("Compiling with INVALID Precision")
-   add_definitions(-DINVALID_PRECISION)
+ELSE()
+   MESSAGE( SEND_ERROR "Compilation attempted with INVALID datatype" )
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Global compiler flags

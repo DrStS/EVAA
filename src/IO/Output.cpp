@@ -1,19 +1,23 @@
+// TODO: Copright check
+
 #include "Output.h"
-#include <fstream>
+
+#include <exception>
 #include <iostream>
-#include <limits>
-#include <iomanip>
-#include <string>
 
-void IO::write_matrix(double* T, std::string fname, size_t rows, size_t cols) {
-	std::ofstream myfile(fname);
-	for (size_t i = 0; i < rows; i++)
-	{
-		for (size_t j = 0; j < cols; j++)
-		{
-			myfile << T[i*cols + j] << std::setprecision(15) << " ";
-		}
-		myfile << "\n";
-	}
+namespace EVAA {
+namespace IO {
 
+void checkFileExists(const std::string& filename) {
+    std::ifstream f(filename);
+
+    if (f.good()) {
+        std::cout << "Filename exists: " << filename << std::endl;
+        return;
+    }
+
+    throw std::runtime_error("File " + filename + " does not exist");
 }
+
+}  // namespace IO
+}  // namespace EVAA

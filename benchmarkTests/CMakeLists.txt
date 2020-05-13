@@ -7,7 +7,7 @@ MACRO_APPEND_GLOBAL_VARIABLE(EVAA_BenchTest_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR
 #------------------------------------------------------------------------------------#
 FILE(GLOB EVAA_src_subdirectories "*")
 FOREACH(f ${EVAA_src_subdirectories})
-	IF(NOT f MATCHES "\\.txt" AND IS_DIRECTORY ${f} )
+	IF(NOT f MATCHES "\\.txt" AND IS_DIRECTORY ${f} AND NOT f MATCHES "out")
 		add_subdirectory(${f})
 	ENDIF()
 ENDFOREACH()
@@ -21,6 +21,8 @@ set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Suppressing benchmark's tests" FORC
 add_subdirectory("C:/software/libs/GBENCH" ${CMAKE_BINARY_DIR}/gbench)
 include_directories(${EVAA_INCLUDES})
 include_directories(${EVAA_BenchTest_INCLUDES})
+#MultiThreaded Compile with -MT 
+#MultiThreadedDLL Compile with -MD
 IF (CMAKE_SYSTEM_NAME MATCHES "Windows") 
 	set_property(TARGET benchmark PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 ENDIF()

@@ -1,93 +1,99 @@
-/*  Copyright &copy; 2018, Stefan Sicklinger, Munich
-*
-*  All rights reserved.
-*
-*  This file is part of EVAA.
-*
-*  EVAA is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  (at your option) any later version.
-*
-*  EVAA is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with EVAA.  If not, see http://www.gnu.org/licenses/.
-*/
-/*************************************************************************************************
-* \file MemWatcher.h
-* This file holds the class of MemWatcher.
-* \date 19/4/2018
-**************************************************************************************************/
+/*
+ * Copyright &copy; 2018, Stefan Sicklinger, Munich
+ *
+ *  All rights reserved.
+ *
+ *  This file is part of EVAA.
+ *
+ *  EVAA is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  EVAA is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
+ */
+
+/**
+ * \file MemWatcher.h
+ * This file holds the class of MemWatcher.
+ * \date 19/4/2018
+ */
+
 #pragma once
 
 #include <cstddef>
 
-#if defined(_WIN32) || defined(__WIN32__) 
+#if defined(_WIN32) || defined(__WIN32__)
+// clang-format off
 #include <windows.h>
 #include <psapi.h>
+// clang-format on
 #endif
 
-#if defined(__linux__) 
+#if defined(__linux__)
 
 #endif
 
-/********//**
+namespace EVAA {
+
+/**
  * \brief This helps to analyse the memory footprint
- **************************************************************************************************/
+ */
 class MemWatcher {
 public:
-	/***********************************************************************************************
-	* \brief Constructor
-	* \author Stefan Sicklinger
-	***********/
-	MemWatcher(void){
-	}
-    /***********************************************************************************************
+    /**
+     * \brief Constructor
+     * \author Stefan Sicklinger
+     */
+    MemWatcher(void) {}
+
+    /**
      * \brief Destructor
      * \author Stefan Sicklinger
-     ***********/
-	virtual ~MemWatcher() {
-	}
-	/***********************************************************************************************
-	* \brief Physical memory currently used by current process in bytes
-	* \author Stefan Sicklinger
-	***********/
-	size_t getCurrentUsedPhysicalMemory (void) {
-        #if defined(_WIN32) || defined(__WIN32__) 
-		PROCESS_MEMORY_COUNTERS_EX pmc;
-		GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc), sizeof(pmc));
-		SIZE_T physMemUsedByMe = pmc.WorkingSetSize;
-		return physMemUsedByMe;
-        #endif
-        #if defined(__linux__) 
-        return 0;
-        #endif
-	}
-	/***********************************************************************************************
-	* \brief Physical memory currently used by current process in bytes
-	* \author Stefan Sicklinger
-	***********/
-	size_t getCurrentUsedVirtualMemory(void) {
-        #if defined(_WIN32) || defined(__WIN32__) 
-		PROCESS_MEMORY_COUNTERS_EX pmc;
-		GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc), sizeof(pmc));
-		SIZE_T virtualMemUsedByMe = pmc.PrivateUsage;
-		return virtualMemUsedByMe;
-        #endif
-        #if defined(__linux__) 
-        return 0;
-        #endif
-	}
+     */
+    virtual ~MemWatcher() {}
 
+    /**
+     * \brief Physical memory currently used by current process in bytes
+     * \author Stefan Sicklinger
+     */
+    size_t getCurrentUsedPhysicalMemory(void) {
+#if defined(_WIN32) || defined(__WIN32__)
+        PROCESS_MEMORY_COUNTERS_EX pmc;
+        GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc), sizeof(pmc));
+        SIZE_T physMemUsedByMe = pmc.WorkingSetSize;
+        return physMemUsedByMe;
+#endif
+#if defined(__linux__)
+        return 0;
+#endif
+    }
+
+    /**
+     * \brief Physical memory currently used by current process in bytes
+     * \author Stefan Sicklinger
+     */
+    size_t getCurrentUsedVirtualMemory(void) {
+#if defined(_WIN32) || defined(__WIN32__)
+        PROCESS_MEMORY_COUNTERS_EX pmc;
+        GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PPROCESS_MEMORY_COUNTERS>(&pmc), sizeof(pmc));
+        SIZE_T virtualMemUsedByMe = pmc.PrivateUsage;
+        return virtualMemUsedByMe;
+#endif
+#if defined(__linux__)
+        return 0;
+#endif
+    }
 
 private:
-
-
-
 };
 
 extern MemWatcher memWatcher;
+
+}  // namespace EVAA

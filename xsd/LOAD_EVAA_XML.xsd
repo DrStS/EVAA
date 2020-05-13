@@ -17,38 +17,110 @@
      </xs:sequence>
    </xs:complexType>
 
+   <xs:complexType name="quad">
+     <xs:sequence>
+       <xs:element name="x" type="xs:double"/>
+       <xs:element name="y" type="xs:double"/>
+       <xs:element name="z" type="xs:double"/>
+       <xs:element name="w" type="xs:double"/>
+     </xs:sequence>
+   </xs:complexType>
+
+
    <xs:complexType name="load_t">
     <xs:sequence>
-      <xs:element name="boundary_description">
-        <xs:complexType>
-          <xs:sequence>
-    		    <xs:element name="BoundaryConditions" type="xs:string" />
-            <xs:element name="circular" minOccurs="0" maxOccurs="1">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element name="radius" type="xs:double" />
-                <xs:element name="center" type="load_vector_t" />
-              </xs:sequence>
-            </xs:complexType>
-          </xs:element>
-		</xs:sequence>
+      <xs:element name="lagrangianRoadProfile">
+        <xs:complexType>          
+          <xs:choice>
+            <xs:element name="straightRoadProfile">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="initialPosition" type="load_vector_t" />
+                  <xs:element name="initialOrientation" type="quad" />
+                  <xs:element name="initialVelocity">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="AngularVelocity" type="load_vector_t" />
+                        <xs:element name="Body" type="load_vector_t" />
+                        <xs:element name="UnsprungMass" type="load_legs_vector_t" />
+                        <xs:element name="Tyre" type="load_legs_vector_t" />
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="circularRoadProfile">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name = "centerOfCircle" type="load_vector_t" />
+                  <xs:element name = "initialPosition" type="load_vector_t" />
+                  <xs:element name = "initialVelocity" type="load_vector_t" />
+                  <xs:element name = "directionRotation" type="xs:string" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="arbitraryRoadProfile">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="wayPoint" minOccurs="4" maxOccurs="unbounded">
+                    <xs:complexType>
+                      <xs:attribute name="X" type="xs:double" use="required" />
+                      <xs:attribute name="Y" type="xs:double" use="required" />
+                      <xs:attribute name="time" type="xs:double" use="required" />
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:choice>
         </xs:complexType>
       </xs:element>
-	  
-	  <xs:element name="forces">
-		<xs:complexType>
-		  <xs:sequence>
-			<xs:element name="force_body" type="load_vector_t" />
-			<xs:element name="force_wheel" type="load_legs_vector_t" />
-			<xs:element name="force_tyre" type="load_legs_vector_t" />
-		  </xs:sequence>
-		</xs:complexType>
-	  </xs:element>
-         
-		 
-    </xs:sequence>
-  </xs:complexType>
+      
+      <xs:element name="eulerianRoadProfile">
+        <xs:complexType>
+          <xs:choice>
+            <xs:element name="fixedTyre" type="xs:string" />
+            <xs:element name="detachedTyre" type="xs:string" />
+            <xs:element name="sinusoidalProfile">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="rightTyre">
+                    <xs:complexType>
+                      <xs:attribute name="amplitude" type="xs:double" use="required" />
+                      <xs:attribute name="period" type="xs:double" use="required" />
+                      <xs:attribute name="shift" type="xs:double" use="required" />
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="leftTyre">
+                    <xs:complexType>
+                      <xs:attribute name="amplitude" type="xs:double" use="required" />
+                      <xs:attribute name="period" type="xs:double" use="required" />
+                      <xs:attribute name="shift" type="xs:double" use="required" />
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:choice>
+        </xs:complexType>
+      </xs:element>
 
-  <xs:element name="EVAA_load_module" type="load_t"/>
+      <xs:element name="externalForces">
+		    <xs:complexType>
+		      <xs:sequence>
+			      <xs:element name="forceBody" type="load_vector_t" />
+			      <xs:element name="forceWheel" type="load_legs_vector_t" />
+			      <xs:element name="forceTyre" type="load_legs_vector_t" />
+		      </xs:sequence>
+		    </xs:complexType>
+	    </xs:element>
+      
+      <xs:element name="GravityField" type="load_vector_t" />
+    </xs:sequence>
+   </xs:complexType>
+
+
+   <xs:element name="EVAA_load_module" type="load_t"/>
 
 </xs:schema>

@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<EVAA_load_module>
+  <lagrangianRoadProfile>
+    <circularRoadProfile>
+      <initialPosition>
+        <x>50</x>
+        <y>0</y>
+        <z>0</z>
+      </initialPosition>
+      <centerOfCircle>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </centerOfCircle>
+      <initialVelocity>
+        <x>0</x>
+        <y>10</y>
+        <z>0</z>
+      </initialVelocity>
+      <directionRotation>clockwise</directionRotation>
+    </circularRoadProfile>
+  </lagrangianRoadProfile>
+
+  <eulerianRoadProfile>
+    <fixedTyre></fixedTyre>
+  </eulerianRoadProfile>
+
+
+  <externalForces>
+    <forceBody>
+      <x>0</x>
+      <y>0</y>
+      <z>0</z>
+    </forceBody>
+    <forceWheel>
+      <ReerRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerRight>
+      <ReerLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerLeft>
+      <FrontLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontLeft>
+      <FrontRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontRight>
+    </forceWheel>
+    <forceTyre>
+      <ReerRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerRight>
+      <ReerLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </ReerLeft>
+      <FrontLeft>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontLeft>
+      <FrontRight>
+        <x>0</x>
+        <y>0</y>
+        <z>0</z>
+      </FrontRight>
+    </forceTyre>
+  </externalForces>
+
+  <GravityField>
+    <x>0</x>
+    <y>0</y>
+    <z>-9.81</z>
+  </GravityField>
+</EVAA_load_module>

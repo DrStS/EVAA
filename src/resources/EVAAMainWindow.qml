@@ -3,7 +3,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Dialogs 1.2
 import QtQuick.Window 2.3
 import QtQuick.Controls.Material 2.2
-import QtVTK 1.0
+import QtVTK 1.
 
 
 ApplicationWindow {
@@ -76,7 +76,7 @@ ApplicationWindow {
             value: 1
             from: 0.1
             to: 1
-            stepSize: 0.01
+            stepSize: 0.1
             anchors.left: parent.left
             anchors.top: representationCombobox.bottom
             anchors.leftMargin: 40

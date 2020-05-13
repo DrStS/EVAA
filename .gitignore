@@ -1,6 +1,8 @@
 # Generated code for XML read
 src/database/IP_EVAA_XML.cpp
 src/database/IP_EVAA_XML.h
+src/database/VEHICLE_EVAA_XML.cpp
+src/database/VEHICLE_EVAA_XML.h
 src/database/LOAD_EVAA_XML.cpp
 src/database/LOAD_EVAA_XML.h
 src/database/LOOKUP_EVAA_XML.cpp
@@ -13,6 +15,9 @@ src/tools/AuxiliaryParameters.cpp
 build*
 out/
 *.cmake
+
+# HDF5
+*.hdf5
 
 # Matlab
 *.asv
@@ -32,3 +37,12 @@ proposed_xml/*
 main.cpp
 dump/*
 /enc_temp_folder
+
+# clang-format
+.clang-format
+
+# Visual Studio Code Analysis
+*.sarif
+
+# binary files
+bin64/*

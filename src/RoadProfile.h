@@ -1,401 +1,588 @@
+// TODO: Copyright header
+
 #pragma once
 
-#include "BLAS.h"
-#include "car.h"
-#include "Constants.h"
-#include "MathLibrary.h"
 #include <string>
 
-/*
-Parent class for generic road profiles
-*/
+#include "ArbitraryTrajectory.h"
+#include "Car.h"
+#include "Constants.h"
+#include "MathLibrary.h"
+#include "MetaDataBase.h"
+
+namespace EVAA {
+
+/**
+ * Parent class for generic road profiles
+ */
 template <typename T>
 class Profile {
 protected:
-	std::string Name;
+    std::string Name;
+    T* massOfComponents;  // [GC, W1, T1, ... ]						size: 9
 
 public:
-	/*
-	Get external force acting on the car system
-	\param Car
-	\return F_vec forces acting on each component [GC:XYZ,W1:XYZ,T1:XYZ, ...]
-	\return Normal_ext on the car as a whole [XYZ]
-	*/
-	virtual void get_Profile_force(Car<T>* Car1, T* F_vec, T* Normal_ext) {};
-	virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext) {};
+    Profile() { massOfComponents = Math::malloc<T>(Constants::VEC_DIM); }
 
-	/*
-	Get external torque acting on the car system
-	\param Car
-	\return F_vec torque acting on teh car system [XYZ]
-	*/
-	virtual void get_Profile_torque(Car<T>* Car1, T* Torque_vec) {};
+    /**
+     * In case the initial conditions have to be specific to a road profile
+     * \param Car
+     */
+    virtual void ApplyProfileInitialCondition(Car<T>* carObj) = 0;
 
-	/*
-	In case the initial conditions have to be specific to a road profile
-	\param Car
-	*/
-	virtual void update_initial_condition(Car<T>* Car1) { std::cout << "No update of initial conditions" << std::endl; };
-	virtual void set_fixed_index(size_t* index) {};
+    std::string GetName() { return Name; }
 
-	virtual ~Profile() {};
+    virtual ~Profile() { Math::free<T>(massOfComponents); };
 };
 
-// ===============================   Circular class =================================//
-/*
-Follow a circular road profile with radius R and center C
-*/
+/**Eulerian Profile*/
 template <typename T>
-class Circular : public Profile<T> {
-private:
-	// Center of the Circle (if the motion is a Circle)
-	T* Position = NULL; 
-	
-	// Radius of the Circle (if the motion is a Circle)
-	T Radius = 0; 
-
-	// vectors used in computations inside the methods
-	T* unit_y_vector;
-	T* velocity_direction; // arrow from center towards object
-
-	// distance vector between center of circle and the car = 
-	//		Positions of points from the car vs Center of Circle, seen as 0
-	T* dist_car_center; // 3 x 9
-	T* Velocity_vec;
-	T* Mass_vec;
+class Euler : public Profile<T> {
+protected:
+    T* eulerianVelocity;  // [GC: Z, Angle: XY, W1: Z, T1: Z, ... ]   size: 11
+    T gravity;
 
 public:
-	Circular(T* Pos, T Rad) {
-		Name = "Circular";
+    Euler(T& g) : Profile<T>() {
+        eulerianVelocity = Math::malloc<T>(Constants::DOF);
+        gravity = g;
+    }
 
-		// Position
-		Position = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT);
-		mkl<T>::copy(Constants::DIM, Pos, 1, Position, 1);
+    virtual ~Euler() { Math::free<T>(eulerianVelocity); }
 
-		Radius = Rad;
+    /**
+    Add Gravity force in the z direction
+    */
+    void AddGravity(Car<T>* carObj, T* profileInducedForce) {
+        profileInducedForce[0] += carObj->getMassComponents()[0] * gravity;
+#pragma loop(ivdep)
+        for (auto i = Constants::DIM; i < Constants::DOF; ++i) {
+            profileInducedForce[i] +=
+                carObj->getMassComponents()[i - (Constants::DIM - 1)] * gravity;
+        }
+    }
 
-		// auxiliary vectors
-		velocity_direction = (T*)mkl_calloc(Constants::DIM, sizeof(T), Constants::ALIGNMENT);
-		Velocity_vec = (T*)mkl_malloc(sizeof(T) * Constants::DIM * Constants::VEC_DIM, Constants::ALIGNMENT);
-		Mass_vec = (T*)mkl_malloc(sizeof(T) * Constants::VEC_DIM, Constants::ALIGNMENT);
-		dist_car_center = (T*)mkl_malloc(sizeof(T) * (Constants::DIM - 1) * Constants::VEC_DIM, Constants::ALIGNMENT);
-	}
-
-	virtual ~Circular() {
-		mkl_free(Position);
-		mkl_free(velocity_direction);
-		mkl_free(Velocity_vec);
-		mkl_free(Mass_vec);
-		mkl_free(dist_car_center);
-	}
-
-	void get_Position(T* Pos) {
-		mkl<T>::copy(Constants::DIM, Position, 1, pos, 1);
-	}
-
-	inline T get_Radius() const {
-		return Radius;
-	}
-
-	inline void set_Radius(const T& Rad) {
-		Radius = rad;
-	}
-
-	void set_Position(const T* Pos) {
-		mkl<T>::copy(Constants::DIM, pos, 1, Position, 1);
-	}
-
-	void get_centrifugal_force(T* Fr, T* v, T& m, T* p) {
-		// calculates the force in a body only with respect to its velocity, mass and Position
-		// v is the velocity of the body
-		// m is the mass of the body
-		// p is the global Position of the body
-		// fr - the centripetal force
-		// the rotation is always around the origin!
-
-		mkl<T>::copy(Constants::DIM, p, 1, Fr, 1);
-
-		Fr[2] = 0;		// path only in xy-plane
-
-		T inv_radius = 1.0 / mkl<T>::nrm2(Constants::DIM, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered body
-
-		// Raffi: mkl<T>::scal(Constants::DIM, -inv_radius, fr, 1); - centripetal force 
-		mkl<T>::scal(Constants::DIM, inv_radius, Fr, 1); // centrifugal force
-
-		MathLibrary::crossProduct_unitvecZ(Fr, velocity_direction);
-
-		//T velocity_magnitude = mkl<T>::dot(Constants::DIM, v, 1, velocity_direction, 1);
-		T velocity_magnitude = mkl<T>::nrm2(Constants::DIM, v, 1);
-
-		T force_magnitude = m * velocity_magnitude * velocity_magnitude * inv_radius;
-
-		mkl<T>::scal(Constants::DIM, force_magnitude, Fr, 1);
-	}
-
-	void get_centrifugal_force_ALE(T* Fr, T* v, T& m, T* p) {
-		// REFACTOR TO GENERAL DIRECTIONS *
-
-		// Adapted for the 2D now!!!
-
-		// calculates the force in a body only with respect to its velocity, mass and Position
-		// v is the velocity of the body
-		// m is the mass of the body
-		// p is the global Position of the body (arrow to the body)
-		// fr - the centripetal force
-		// the rotation is always around the origin!
-
-		mkl<T>::copy(Constants::DIM - 1, p, 1, Fr, 1);
-
-		T inv_radius = 1.0 / mkl<T>::nrm2(Constants::DIM - 1, p, 1);		// corresponds to the (inverse) Radius of the trajectory at the considered body
-
-		mkl<T>::scal(Constants::DIM - 1, inv_radius, Fr, 1); // centrifugal force
-
-		// MathLibrary::crossProduct(Fr, unit_y_vector, velocity_direction);
-		// * REFACTOR TO GENERAL DIRECTIONS * this is only for z direction
-		velocity_direction[0] = Fr[1];
-		velocity_direction[1] = -Fr[0];
-
-		//const MKL_INT int_ddot = DIM - 1;
-		//T velocity_magnitude = mkl<T>::dot(int_ddot, v, 1, velocity_direction, 1);
-		T velocity_magnitude = mkl<T>::nrm2(Constants::DIM - 1, v, 1);
-
-		T force_magnitude = m * velocity_magnitude * velocity_magnitude * inv_radius;
-
-		mkl<T>::scal(Constants::DIM - 1, force_magnitude, Fr, 1);
-	}
-
-
-	/*
-	Get external force acting on the car system
-	\param Car
-	\return F_vec forces acting on each component [GC:XYZ,W1:XYZ,T1:XYZ, ...] centripetals on each component
-	\return Normal_ext on the car as a whole [XYZ]
-	*/
-	virtual void get_Profile_force(Car<T>* Car1, T* F_vec, T* Normal_ext) {
-		// WRONG =========== - suitable for 2D (BROKEN)
-		// REFACTOR (MAYBE another Profile class smth)
-
-		// out: F_vec = [f_cg, f_w1, f_t1, f_w2, f_t2, f_w3, f_t3, f_w4, f_t4] (centripetal components of the force)
-		// out: normal_ext - normal over the full body; updated in this function from the centripetal forces
-
-		// get distance vector between center of circle and the car = positions of points from the car vs center of circle, which is seen as 0
-		Car1->get_dist_vector_xy(Position, dist_car_center);
-
-		//// the distance to [cg<->center of circle] must be equal with the Radius of the circle - place an assert here!!!!
-		//if (abs(Car1->get_dist_vector_abs_val(Position) - Radius * Radius) > 1e-12) {
-		//	std::cout << "\n\n error (in Circular.update_normal_force): the Radius of the circle is different than the distance  \\
-		//		between the car and center of the circle!!!!please take care!!!";
-		//}
-
-		// vectors with velocities and masses
-		Car1->get_Velocity_vec_xy(Velocity_vec);
-		Velocity_vec[2] = 0;
-		Car1->get_Mass_vec(Mass_vec);
-
-		// compute each of the 9 centripetal forces
-		for (int i = 0; i < Constants::VEC_DIM; ++i) {
-			get_centrifugal_force(&F_vec[Constants::DIM * i], &Velocity_vec[Constants::DIM * i], Mass_vec[i], &dist_car_center[Constants::DIM * i]);
-		}
-
-		// compute centripetal part of the global normal force 
-		// n = f_cg + f_w1 + f_t1 + f_w2 + f_t2 + f_w3 + f_t3 + f_w4 + f_t4
-		mkl<T>::copy(Constants::DIM, F_vec, 1, Normal_ext, 1);
-		for (auto i = 1; i < Constants::VEC_DIM; ++i) {
-			mkl<T>::vAdd(Constants::DIM, Normal_ext, &F_vec[Constants::DIM * i], Normal_ext);
-		}
-
-	}
-
-	virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext) {
-		// out: F_vec = [f_cg, f_w1, f_t1, f_w2, f_t2, f_w3, f_t3, f_w4, f_t4] (centripetal components of the force)
-		// out: normal_ext - normal over the full body; updated in this function from the centripetal forces
-
-		// get distance vector between center of circle and the car = positions of points from the car vs center of circle, which is seen as 0
-		Car1->get_dist_vector_xy(Position, dist_car_center);
-
-		//// the distance to [cg<->center of circle] must be equal with the Radius of the circle - place an assert here!!!!
-		//if (abs(Car1->get_dist_vector_abs_val(Position) - Radius * Radius) > 1e-12) {
-		//	std::cout << "\n\n error (in Circular.update_normal_force): the Radius of the circle is different than the distance  \\
-		//		between the car and center of the circle!!!!please take care!!!";
-		//}
-
-		// vectors with velocities and masses
-		Car1->get_Velocity_vec_xy(Velocity_vec);
-
-		//std::cout << "Velocity vec: \n\n";
-		//MathLibrary::write_vector(Velocity_vec, 18);
-		Car1->get_Mass_vec(Mass_vec);
-
-		// compute each of the 9 centripetal forces
-		for (int i = 0; i < Constants::VEC_DIM; ++i) {
-			get_centrifugal_force_ALE(&F_vec[Constants::DIM * i], &Velocity_vec[(Constants::DIM - 1) * i], Mass_vec[i], &dist_car_center[(Constants::DIM - 1) * i]);
-			F_vec[Constants::DIM * i + 2] = 0; // z direction is 0 !!! Have to be generalized to general directions
-		}
-
-		// compute centripetal part of the global normal force 
-		get_centrifugal_force_ALE(Normal_ext, Velocity_vec, *(Car1->global_mass), dist_car_center);
-	}
-
-
-	/*
-	Get external torque acting on the car system
-	\param Car
-	\return F_vec torque acting on teh car system [XYZ]
-	*/
-	virtual void get_Profile_torque(Car<T>* Car1, T* Torque) {
-		Torque[2] = 0; // Torque on z direction
-	}
-
-	/*
-	overwrites all initial velocities but the one from the main car body
-	Calculates the initial angular velocity such that the car perfectly rotates around its own axis as it follows the circle
-	\param Car
-	*/
-	virtual void update_initial_condition(Car<T>* Car1) {
-
-		std::cout << "Update initial conditions to circular motion" << std::endl;
-
-		T* tangential_dir = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT);
-		T* radial_vector = (T*)mkl_malloc(Constants::DIM * sizeof(T), Constants::ALIGNMENT);
-		radial_vector[0] = Car1->Position_vec[0] - this->Position[0];
-		radial_vector[1] = Car1->Position_vec[1] - this->Position[1];
-		radial_vector[2] = 0;
-
-		T radius = mkl<T>::nrm2(Constants::DIM, radial_vector, 1);
-		if (abs(radius - this->Radius) > 0.01)
-			std::cout << "Warning! the initial position of the car is not on the trajectory provided in \
-					the circular path. \n The expected radius is "
-			<< this->Radius << ", but the car is at an initial distance of " << radius
-			<< " from the center of the circle.\n The execution procedes with the current spatial "
-			<< "configuration and with the current distance to the center of the circle." << std::endl;
-
-		T inv_radius = 1. / radius;
-
-		mkl<T>::scal(Constants::DIM, inv_radius, radial_vector, 1);
-		MathLibrary::crossProduct_unitvecZ(radial_vector, tangential_dir);
-		T magnitude = mkl<T>::dot(Constants::DIM, Car1->Velocity_vec, 1, tangential_dir, 1);
-		mkl<T>::copy(Constants::DIM, tangential_dir, 1, Car1->Velocity_vec, 1);
-		mkl<T>::scal(Constants::DIM, magnitude, Car1->Velocity_vec, 1);
-		mkl<T>::scal(Constants::DIM, radius, radial_vector, 1);
-		MathLibrary::crossProduct(radial_vector, Car1->Velocity_vec, Car1->w_CG);
-		mkl<T>::scal(Constants::DIM, inv_radius * inv_radius, Car1->w_CG, 1);
-
-		MKL_free(tangential_dir);
-		MKL_free(radial_vector);
-	}
+    /**
+     * Get external force acting on the car system in the Eulerian Frame
+     * \param Car
+     * \return profileInducedForce forces and torque acting on each component [GC: Z, GC(Torque):XY,
+     * W1: Z, T1: Z, ...]
+     */
+    virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj,
+                                         T* profileInducedForce) = 0;
 
 };
-// ============================ end of Circular class ============================= //
 
-
-// ===============================   Fixed class ================================== //
+/** Lagrangian profiles*/
 template <typename T>
-class Fixed : public Profile<T> {
-public:
-	Fixed(const T& g) {
-		Name = "fixed";
-		linear_idx = (size_t*)mkl_malloc(num_tyre * sizeof(size_t), Constants::ALIGNMENT);
-		dx = (T*)mkl_malloc(sizeof(T) * num_tyre, Constants::ALIGNMENT);
-		k_vec = (T*)mkl_malloc(sizeof(T) * num_tyre, Constants::ALIGNMENT);
-		gravity = g;
-	};
-	virtual void get_Profile_force_ALE(Car<T>* Car1, T* F_vec, T* Normal_ext) {
-		if (index_set) {
-			Car1->get_k_vec_tyre(k_vec);
-			Car1->compute_dx_tyre(dx);
-			for (size_t i = 0; i < num_tyre; ++i) {
-				F_vec[linear_idx[i] * Constants::DIM + 2] = -k_vec[i] * dx[i];
-			}
-		}
-		else {
-			std::cout << "Please Provide Tyre Index" << std::endl;
-			exit(2);
-		}
-	}
-
-	virtual void get_Profile_torque(Car<T>* Car1, T* Torque_vec) {
-		Torque_vec[2] = 0; // Torque on z direction
-	}
-
-	virtual void set_fixed_index(size_t* index) {
-		for (size_t i = 0; i < num_tyre; ++i) {
-			linear_idx[i] = index[i];
-		}
-		index_set = 1;
-	}
-
-	~Fixed() {
-		mkl_free(linear_idx);
-		mkl_free(dx);
-		mkl_free(k_vec);
-	}
+class Lagrange : public Profile<T> {
 private:
-	size_t* linear_idx;
-	T *k_vec, *dx;
-	T* external_force;
-	size_t num_tyre = 4;
-	bool index_set = 0;
-	T gravity;
+    // bla bla
+
+public:
+    Lagrange() : Profile<T>() {}
+
+    /**
+     * Get external force acting on the car system in the Lagrangian Frame
+     * \param Car
+     * \return profileInducedForce forces acting on each component [GC: XY, W1: XY, T1: XY, ...]
+     * \return reactionOnTyre reaction force on the tyre induced by profile forcce [T: XY, T2: XY,
+     * T3: XY, T4: XY]
+     */
+    virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj,
+                                           T* profileInducedForce, T* reactionOnTyre) = 0;
+
+    /**
+     * Get external torque acting on the car system in Lagrangian Frame
+     * \param Car
+     * \return externalTorque torque acting on the car system [GC: Z]
+     */
+    virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj,
+                                            T& externalTorque) = 0;
+    virtual ~Lagrange() {}
 };
 
-
-// =============================== Nonfixed class ===================================//
-/*
-Follow a circular road profile with radius R and center C
-*/
+/** Follow a circular road profile with radius R and center C */
 template <typename T>
-class Nonfixed : public Profile<T> {
+class Circular : public Lagrange<T> {
 private:
+    /** Center of the Circle (if the motion is a Circle) */
+    T* centerOfCircle = NULL;
+
+    /** Radius of the Circle (if the motion is a Circle) */
+    T inverseRadiusOfCircle = std::numeric_limits<T>::infinity();
+
+    // vectors used in computations inside the methods
+    T* tangentialVelocityDirection;  // arrow from center towards object
+
+    // distance vector between center of circle and the car =
+    // Positions of points from the car vs Center of Circle, seen as 0
+    T* radiusVector;  // 3 x 9
 
 public:
-	Nonfixed(T* Pos, T Rad) {
-		Name = "Nonfixed";
-	}
+    Circular(T* circleCenter) : Lagrange<T>() {
+        Name = "Circular";
 
-	virtual ~Nonfixed() {};
+        // Position
+        centerOfCircle = Math::malloc<T>(Constants::DIM);
+        Math::copy<T>(Constants::DIM, circleCenter, 1, centerOfCircle, 1);
 
-	void get_centrifugal_force(T* Fr, T* v, T& m, T* p) {
-		// No external forces from a path are acting on the body
-		Fr[0] = 0;
-		Fr[1] = 0;
-		Fr[2] = 0;
-	}
+        // auxiliary vectors
+        tangentialVelocityDirection = Math::calloc<T>(Constants::DIM);
+        radiusVector = Math::malloc<T>((Constants::DIM - 1) * Constants::VEC_DIM);
+    }
 
-	/*
-	Get external force acting on the car system
-	\param Car
-	\return F_vec forces acting on each component [GC:XYZ,W1:XYZ,T1:XYZ, ...]
-	\return Normal_ext on the car as a whole [XYZ]
-	*/
-	virtual void get_Profile_force(Car<T>* Car1, T* F_vec, T* Normal_ext) {
-		for (int i = 0; i < Constants::VEC_DIM; ++i) {
-			F_vec[Constants::DIM * i + 0] = 0;
-			F_vec[Constants::DIM * i + 1] = 0;
-			F_vec[Constants::DIM * i + 2] = 0;
-		}
+    virtual ~Circular() {
+        Math::free<T>(centerOfCircle);
+        Math::free<T>(tangentialVelocityDirection);
+        Math::free<T>(radiusVector);
+    }
 
-	}
+    /**
+     * In case the initial conditions have to be specific to a road profile
+     * \param Car
+     */
+    virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
+        // Compute Radius Vector based on the position of origin of euler frame
+        radiusVector[0] = carObj->getCurrentPositionLagrangian()[0] - centerOfCircle[0];
+        radiusVector[1] = carObj->getCurrentPositionLagrangian()[1] - centerOfCircle[1];
+        inverseRadiusOfCircle =
+            1.0 / Math::nrm2<T>(Constants::DIM - 1, radiusVector, Constants::INCX);
+        Math::scal<T>(Constants::DIM - 1, inverseRadiusOfCircle, radiusVector, Constants::INCX);
+		
+        // Compute the tangential direction of the velocity to compute angular velocity
+        tangentialVelocityDirection[0] = -radiusVector[1];
+        tangentialVelocityDirection[1] = radiusVector[0];
+
+        // Compute Angular velocity using w = v * sin(theta) / r = dot_product(v,
+        // tangential_unit_vector) / r
+        carObj->_currentAngularVelocityLagrangian =
+            Math::dot<T>(Constants::DIM - 1, tangentialVelocityDirection, Constants::INCX,
+                         carObj->getCurrentVelocityLagrangian(), Constants::INCX);
+        carObj->_currentAngularVelocityLagrangian *= inverseRadiusOfCircle;
+        // Copy this to initial vector too
+        carObj->setInitialAngularVelocityGlobalZ(carObj->getCurrentAngularVelocityLagrangian());
+
+        // apply angle condition on z angle
+        T directionNorm = std::sqrt(carObj->_currentVelocityLagrangian[1] *
+                                        carObj->_currentVelocityLagrangian[1] +
+            carObj->_currentVelocityLagrangian[0] * carObj->_currentVelocityLagrangian[0]);
+
+        if (directionNorm == 0) {
+            carObj->_currentAngleLagrangian = 0;
+        }
+        else if (carObj->_currentVelocityLagrangian[1] >= 0) {
+            carObj->_currentAngleLagrangian =
+                std::acos(carObj->_currentVelocityLagrangian[0] / directionNorm);
+        }
+        else {
+            carObj->_currentAngleLagrangian =
+                -std::acos(carObj->_currentVelocityLagrangian[0] / directionNorm);
+        }
+
+		carObj->setInitialAngleGlobalZ(carObj->_currentAngleLagrangian);
+    }
+
+    virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj, T& externalTorque) {
+        externalTorque = 0;
+    }
+
+    /**
+     * Computes centrifugal force component in the Lagrangian Frame
+     * \param[in] distanceFromCenter: Distance of each component of the car from center of circle
+     * \param[in] velocityLagrangian: Velocity vector of the components of the car in the Lagrangian
+     * Frame \param[in] mass: Mass vector containing mass of each component of the car in the array
+     * of form [CG, W1, T1, ... ] \param[out] centrifugalForce: Computed centrifugal force on each
+     * component of the car
+     */
+    void ComputeCentrifugalForceLagrangian(const T* distanceFromCenter, const T* velocityLagrangian, const T* mass, const size_t& numComponents, T* centrifugalForce) {
+        // Copy the radius vector to the force to extract direction
+        Math::copy<T>((Constants::DIM - 1) * numComponents, distanceFromCenter, Constants::INCX, centrifugalForce, Constants::INCX);
+        T velocityMagnitude;
+        for (auto i = 0; i < numComponents; ++i) {
+            inverseRadiusOfCircle = 1.0 / Math::nrm2<T>((Constants::DIM - 1), centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
+
+            Math::scal<T>((Constants::DIM - 1), inverseRadiusOfCircle, centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
+            // Cross product to get tangential velocity component
+            tangentialVelocityDirection[0] = -*(centrifugalForce + (Constants::DIM - 1) * i + 1);
+            tangentialVelocityDirection[1] = *(centrifugalForce + (Constants::DIM - 1) * i);
+            velocityMagnitude = Math::dot<T>((Constants::DIM - 1), velocityLagrangian + (Constants::DIM - 1) * i, Constants::INCX, tangentialVelocityDirection, Constants::INCX);
+            // Force computation
+            Math::scal<T>(Constants::DIM - 1, mass[i] * velocityMagnitude * velocityMagnitude * inverseRadiusOfCircle, centrifugalForce + (Constants::DIM - 1) * i, Constants::INCX);
+        }
+    }
+
+    /**
+     * Get Lagrangian forces acting due to the road profile
+     */
+    virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj,
+                                           T* profileInducedForce, T* reactionOnTyre) {
+        carObj->ComputeDisplacementToPointLagrangian(centerOfCircle, radiusVector);
+        // compute centrifugal force on each component
+        ComputeCentrifugalForceLagrangian(radiusVector, carObj->getCurrentVelocityLagrangian(), carObj->getMassComponents(), Constants::VEC_DIM, profileInducedForce);
+		T totalMass = carObj->getMassCarFull();
+		ComputeCentrifugalForceLagrangian(radiusVector, carObj->getCurrentVelocityLagrangian(), &totalMass, 1, reactionOnTyre);
+		Math::scal<T>(Constants::DIM - 1, -1, reactionOnTyre, Constants::INCX);
+    }
+};  // Circular
+
+template <typename T>
+class Arbitrary : public Lagrange<T> {
+private:
+    ArbitraryTrajectory<T>* _trajectory;
+
+public:
+    Arbitrary(ArbitraryTrajectory<T>* trajectory) : Lagrange<T>(), _trajectory(trajectory) {
+        Name = "Arbitrary";
+    }
+
+    /**
+     * Get external force acting on the car system in the Lagrangian Frame
+     * \param Car
+     * \return profileInducedForce forces acting on each component [GC: XY, W1: XY, T1: XY, ...]
+     * \return reactionOnTyre reaction force on the tyre induced by profile forcce [T: XY, T2: XY,
+     * T3: XY, T4: XY]
+     */
+    virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj, T* profileInducedForce, T* reactionOnTyre) {
+        // TODO add const on carObj
+
+        // CoG
+        _trajectory->getLagrangianForcesCenterOfGravity(_iterationCount, profileInducedForce,
+                                                        carObj->getMassComponents()[0]);
+
+        // wheel fl
+        _trajectory->getLagrangianForcesFrontLeft(
+            _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::FRONT_LEFT],
+            profileInducedForce + (1 + 2 * Constants::FRONT_LEFT) * (Constants::DIM - 1));
+
+        // tyre fl
+        _trajectory->getLagrangianForcesFrontLeft(
+            _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_LEFT],
+            profileInducedForce + (2 + 2 * Constants::FRONT_LEFT) * (Constants::DIM - 1));
 
 
-	/*
-	Get external torque acting on the car system
-	\param Car
-	\return F_vec torque acting on teh car system [XYZ]
-	*/
-	virtual void get_Profile_torque(Car<T>* Car1, T* Torque) {
-		Torque[0] = 0; // Torque on x direction
-		Torque[1] = 0; // Torque on y direction
-		Torque[2] = 0; // Torque on z direction
-	}
+        // wheel fr
+        _trajectory->getLagrangianForcesFrontRight(
+            _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::FRONT_RIGHT],
+            profileInducedForce + (1 + 2 * Constants::FRONT_RIGHT) * (Constants::DIM - 1));
 
-	/*
-	overwrites all initial velocities but the one from the main car body
-	Calculates the initial angular velocity such that the car perfectly rotates around its own axis as it follows the circle
-	\param Car
-	*/
-	virtual void update_initial_condition(Car<T>* Car1) {
-		// don't change them
-	};
+        // tyre fr
+        _trajectory->getLagrangianForcesFrontRight(
+            _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_RIGHT],
+            profileInducedForce + (2 + 2 * Constants::FRONT_RIGHT) * (Constants::DIM - 1));
+
+        // wheel rl
+        _trajectory->getLagrangianForcesRearLeft(
+            _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::REAR_LEFT],
+            profileInducedForce + (1 + 2 * Constants::REAR_LEFT) * (Constants::DIM - 1));
+
+        // tyre fl
+        _trajectory->getLagrangianForcesRearLeft(
+            _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_LEFT],
+            profileInducedForce + (2 + 2 * Constants::REAR_LEFT) * (Constants::DIM - 1));
+
+        // wheel rr
+        _trajectory->getLagrangianForcesRearRight(
+            _iterationCount, carObj->getMassComponents()[1 + 2 * Constants::REAR_RIGHT],
+            profileInducedForce + (1 + 2 * Constants::REAR_RIGHT) * (Constants::DIM - 1));
+
+        // tyre rr
+        _trajectory->getLagrangianForcesRearRight(
+            _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_RIGHT],
+            profileInducedForce + (2 + 2 * Constants::REAR_RIGHT) * (Constants::DIM - 1));
+
+        // Compute the reaction on tyre due to centrifugal force
+		// CoG
+		_trajectory->getLagrangianForcesCenterOfGravity(_iterationCount, reactionOnTyre, carObj->getMassCarFull());
+        
+
+        Math::scal<T>((Constants::DIM - 1) * Constants::VEC_DIM, -1, profileInducedForce, Constants::INCX);
+		
+
+    }
+
+    /**
+     * Get external torque acting on the car system in Lagrangian Frame
+     * \param Car
+     * \return externalTorque torque acting on the car system [GC: Z]
+     */
+    virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj,
+                                            T& externalTorque) {
+        externalTorque =
+            _trajectory->getLagrangianTorque(_iterationCount, carObj->getMomentOfInertiaLagrangian());
+    }
+    virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
+        T* angle = &(carObj->_currentAngleLagrangian);
+        T* wc = &(carObj->_currentAngularVelocityLagrangian);
+        T* pcc = carObj->_currentPositionLagrangian;
+        T* vcc = carObj->_currentVelocityLagrangian;
+        _trajectory->updateInitialConditionsLagrange(angle, wc, pcc, vcc);
+
+        carObj->setInitialAngleGlobalZ(*angle);
+        carObj->setInitialAngularVelocityGlobalZ(*wc);
+
+    }
+    virtual ~Arbitrary() {}
 };
 
-// =============================== end of Nonfixed class ==============================
+/** Follow a circular road profile with radius R and center C */
+template <typename T>
+class Straight : public Lagrange<T> {
+private:
+public:
+    Straight() : Lagrange<T>() { Name = "Straight"; }
+
+    virtual ~Straight() {}
+
+    /**
+     * In case the initial conditions have to be specific to a road profile
+     * \param Car
+     */
+    virtual void ApplyProfileInitialCondition(Car<T>* carObj) {}
+
+    virtual void GetProfileTorqueLagrangian(const size_t& _iterationCount, Car<T>* carObj,
+                                            T& externalTorque) {
+        externalTorque = 0;
+    }
+
+    /**
+     * Get Lagrangian forces acting due to the road profile
+     */
+    virtual void GetProfileForceLagrangian(const size_t& _iterationCount, Car<T>* carObj,
+                                           T* profileInducedForce, T* reactionOnTyre) {
+        // TODO add const on carObj
+        /*Math::scal<T>(Constants::VEC_DIM * (Constants::DIM - 1), 0, profileInducedForce, Constants::INCX);*/
+        Math::SetValueToZero(profileInducedForce, Constants::VEC_DIM * Constants::lagrangianForceDimension);
+        //Math::scal<T>((Constants::DIM - 1), 0, reactionOnTyre, Constants::INCX);
+        Math::SetValueToZero(reactionOnTyre, Constants::lagrangianForceDimension);
+    }
+};  // Straight Road
+
+/* Eulerian profile type with fixed boundary condition */
+template <typename T>
+class Fixed : public Euler<T> {
+private:
+    // bla bla
+    void (Fixed<T>::*_activeExecutor)(const size_t&, Car<T>*, T*);
+
+public:
+    Fixed(T& g) : Euler<T>(g) {
+        Name = "Fixed";  
+    }
+    virtual ~Fixed() {}
+
+    void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj,
+                                         T* profileInducedForce) {
+        // TODO optimize it // TODO add const on carObj
+        //Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+        Math::SetValueToZero(profileInducedForce, Constants::DOF);
+
+        AddGravity(carObj, profileInducedForce);
+		#pragma loop(ivdep)
+        for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
+            profileInducedForce[Constants::TYRE_INDEX_EULER[i]] =  //
+                carObj->getkVec()[2 * i + 1] * (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
+                     carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1])  //
+                + carObj->getdVec()[2 * i + 1] * (carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
+                     carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1]);
+        }
+    }
+
+
+    virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
+
+		/*construct legs
+		
+		For fixed leg the tyre displacement has to be zeros without changing the reference level of the system. 
+		This implies that the four legs when constructed the CG position can be uniquely determined satisfying the constraint.
+		*/
+		
+		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
+			carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] = 0;
+			carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] = (carObj->getCurrentSpringsLengths()[2 * i + 1] + carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]]) - carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1];
+			//std::cout << "unexcited position = " << carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1] << ", displacement = " << carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] << ", upper spring length = " << carObj->getCurrentSpringsLengths()[2 * i] << std::endl;
+			carObj->_currentCornerPositions[(Constants::DIM - 1)*Constants::NUM_LEGS + i] = carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1] + carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] + carObj->getCurrentSpringsLengths()[2 * i];
+		}
+		
+		/*Make the plane from corners to get CG position angles and displacement*/
+		T _planeNormal[Constants::DIM];
+		T _point1[Constants::DIM];
+		T _point2[Constants::DIM];
+		T _point3[Constants::DIM];
+		T _point4[Constants::DIM];
+		T _pointCG[Constants::DIM];
+		T _testlinesegment[Constants::DIM];
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions, Constants::NUM_LEGS, _point1, Constants::INCX);
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions + 1, Constants::NUM_LEGS, _point2, Constants::INCX);
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions + 2, Constants::NUM_LEGS, _point3, Constants::INCX);
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions + 3, Constants::NUM_LEGS, _point4, Constants::INCX);
+		Math::ConstructPlane<T>(_point1, _point2, _point3, _planeNormal);
+		/* Test for the 4th point and CG */
+		Math::copy<T>(Constants::DIM, _point4, Constants::INCX, _testlinesegment, Constants::INCX);
+		Math::axpy<T>(Constants::DIM, -1, _point1, Constants::INCX, _testlinesegment, Constants::INCX);
+		T eps = 1e-8;
+		if (Math::dot<T>(Constants::DIM, _testlinesegment, Constants::INCX, _planeNormal, Constants::INCX) > eps) {
+			throw "conditions are not good for rear right spring";
+		}
+		
+		T _rotationMatrix[Constants::DIMDIM];
+		Math::ConstructPlaneFixedCoordinateSystem<T>(_point1, _point2, _point3, _rotationMatrix);
+		// construct corner relative to CG and then inverse the sign to make untilted vector from FL corner to CG and rotate it to get final position
+		T _tempCorners[Constants::DIM * Constants::NUM_LEGS];
+		carObj->ConstructCornerRelativeToCG(_tempCorners);
+		Math::copy<T>(Constants::DIM, _tempCorners, Constants::NUM_LEGS, _testlinesegment, Constants::INCX);
+		
+		Math::scal<T>(Constants::DIM, -1, _testlinesegment, Constants::INCX);
+
+		Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, _rotationMatrix, Constants::DIM, _testlinesegment, Constants::INCX, 0, _pointCG, Constants::INCX);
+		
+		carObj->_currentDisplacementTwoTrackModel[0] = (_pointCG[2]+ _point1[2]) - carObj->_unexcitedPositionTwoTrackModel[0];
+		
+
+		/* Get the angles */
+        if (_rotationMatrix[3 * Constants::DIM - 1] != 0)
+            carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
+        else
+            carObj->_currentDisplacementTwoTrackModel[1]  = std::atan2(-_rotationMatrix[2 * Constants::DIM - 1], _rotationMatrix[3 * Constants::DIM - 1]);
+        carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
+
+
+        // update velocities
+        for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
+            T& tyreVelocity = carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[i]];
+            tyreVelocity = 0;
+        }
+
+        carObj->UpdateLengthsTwoTrackModel();
+    }
+};
+
+/* Eulerian profile type with fixed boundary condition */
+template <typename T>
+class Nonfixed : public Euler<T> {
+private:
+    /// Bla Bla
+public:
+    Nonfixed(T& g) : Euler<T>(g) { Name = "Nonfixed"; }
+    virtual ~Nonfixed() {}
+    virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj,
+                                         T* profileInducedForce) {        
+        // TODO add const on carObj
+
+        //Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+        Math::SetValueToZero(profileInducedForce, Constants::DOF);
+        AddGravity(carObj, profileInducedForce);
+    }
+    virtual void ApplyProfileInitialCondition(Car<T>* carObj) {}
+};
+
+template <typename T>
+class Sinusoidal : public Euler<T> {
+private:
+    ArbitraryTrajectory<T>* _trajectory;
+
+public:
+    Sinusoidal(ArbitraryTrajectory<T>* trajectory, T& g) : Euler<T>(g), _trajectory(trajectory) {
+        Name = "Sinusoidal";
+    }
+    virtual ~Sinusoidal() {}
+
+    virtual void GetProfileForceEulerian(const size_t& _iterationCount, Car<T>* carObj,
+                                         T* profileInducedForce) {
+        // TODO optimize it // TOOD const on carObj
+        //Math::scal<T>(Constants::DOF, 0, profileInducedForce, Constants::INCX);
+        Math::SetValueToZero(profileInducedForce, Constants::DOF);
+        AddGravity(carObj, profileInducedForce);
+        profileInducedForce[Constants::TYRE_INDEX_EULER[Constants::FRONT_LEFT]] =
+            _trajectory->getVerticalRoadForcesFrontLeft(
+                _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_LEFT]);
+        profileInducedForce[Constants::TYRE_INDEX_EULER[Constants::FRONT_RIGHT]] =
+            _trajectory->getVerticalRoadForcesFrontRight(
+                _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::FRONT_RIGHT]);
+        profileInducedForce[Constants::TYRE_INDEX_EULER[Constants::REAR_LEFT]] =
+            _trajectory->getVerticalRoadForcesRearLeft(
+                _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_LEFT]);
+        profileInducedForce[Constants::TYRE_INDEX_EULER[Constants::REAR_RIGHT]] =
+            _trajectory->getVerticalRoadForcesRearRight(
+                _iterationCount, carObj->getMassComponents()[2 + 2 * Constants::REAR_RIGHT]);
+
+        for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
+            profileInducedForce[Constants::TYRE_INDEX_EULER[i]] +=  //
+                carObj->getkVec()[2 * i + 1] *
+                    (carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
+                     carObj->getCurrentDisplacementTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] -
+                                                                   1])  //
+                +
+                carObj->getdVec()[2 * i + 1] *
+                    (carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] -
+                     carObj->getCurrentVelocityTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1]);
+        }
+		
+    }
+
+    virtual void ApplyProfileInitialCondition(Car<T>* carObj) {
+        
+		T _amplitude[Constants::NUM_LEGS];
+
+		T* vcc = &(carObj->_currentVelocityTwoTrackModel[0]);
+		
+		T* vw_fl = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[0] - 1]);
+		T* vw_fr = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[1] - 1]);
+		T* vw_rl = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[2] - 1]);
+		T* vw_rr = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[3] - 1]);
+
+		T* vt_fl = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[0]]);
+		T* vt_fr = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[1]]);
+		T* vt_rl = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[2]]);
+		T* vt_rr = &(carObj->_currentVelocityTwoTrackModel[Constants::TYRE_INDEX_EULER[3]]);
+
+		_trajectory->updateInitialConditionsEuler(&(_amplitude[0]), &(_amplitude[1]), &(_amplitude[2]), &(_amplitude[3]), vcc, vt_fl, vt_fr, vt_rl, vt_rr, vw_fl, vw_fr, vw_rl, vw_rr);
+		
+		
+		for (auto i = 0; i < Constants::NUM_LEGS; ++i) {
+			carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i]] = _amplitude[i];
+			carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] = (carObj->getCurrentSpringsLengths()[2 * i + 1] + carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i]] + carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i]]) - carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1];
+			carObj->_currentCornerPositions[(Constants::DIM - 1)*Constants::NUM_LEGS + i] = carObj->getUnexcitedPositionTwoTrackModel()[Constants::TYRE_INDEX_EULER[i] - 1] + carObj->_currentDisplacementTwoTrackModel[Constants::TYRE_INDEX_EULER[i] - 1] + carObj->getCurrentSpringsLengths()[2 * i];
+		}
+
+		T _planeNormal[Constants::DIM];
+		T _point1[Constants::DIM];
+		T _point2[Constants::DIM];
+		T _point3[Constants::DIM];
+		T _point4[Constants::DIM];
+		T _pointCG[Constants::DIM];
+		T _testlinesegment[Constants::DIM];
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions, Constants::NUM_LEGS, _point1, Constants::INCX);
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions + 1, Constants::NUM_LEGS, _point2, Constants::INCX);
+		Math::copy<T>(Constants::DIM, carObj->_currentCornerPositions + 2, Constants::NUM_LEGS, _point3, Constants::INCX);
+		Math::ConstructPlane<T>(_point1, _point2, _point3, _planeNormal);
+
+		carObj->_currentCornerPositions[(Constants::DIM - 1)*Constants::NUM_LEGS + 3] = (Math::dot(Constants::DIM, _point1, Constants::INCX, _planeNormal, Constants::INCX) - Math::dot(Constants::DIM - 1, carObj->_currentCornerPositions + 3, Constants::NUM_LEGS, _planeNormal, Constants::INCX)) / _planeNormal[2];
+		
+		T _rotationMatrix[Constants::DIMDIM];
+		Math::ConstructPlaneFixedCoordinateSystem<T>(_point1, _point2, _point3, _rotationMatrix);
+		// construct corner relative to CG and then inverse the sign to make untilted vector from FL corner to CG and rotate it to get final position
+		T _tempCorners[Constants::DIM * Constants::NUM_LEGS];
+		carObj->ConstructCornerRelativeToCG(_tempCorners);
+		Math::copy<T>(Constants::DIM, _tempCorners, Constants::NUM_LEGS, _testlinesegment, Constants::INCX);
+
+		Math::scal<T>(Constants::DIM, -1, _testlinesegment, Constants::INCX);
+
+		Math::gemv<T>(CblasRowMajor, CblasNoTrans, Constants::DIM, Constants::DIM, 1, _rotationMatrix, Constants::DIM, _testlinesegment, Constants::INCX, 0, _pointCG, Constants::INCX);
+		
+		carObj->_currentDisplacementTwoTrackModel[0] = (_pointCG[2] + _point1[2]) - carObj->_unexcitedPositionTwoTrackModel[0];
+
+
+		/* Get the angles */
+        if (_rotationMatrix[3 * Constants::DIM - 1] != 0)
+            carObj->_currentDisplacementTwoTrackModel[1] = -_rotationMatrix[2 * Constants::DIM - 1] / _rotationMatrix[3 * Constants::DIM - 1];
+        else
+            carObj->_currentDisplacementTwoTrackModel[1] = std::atan2(-_rotationMatrix[2 * Constants::DIM - 1], _rotationMatrix[3 * Constants::DIM - 1]);
+		carObj->_currentDisplacementTwoTrackModel[2] = _rotationMatrix[Constants::DIM - 1];
+		
+        carObj->UpdateLengthsTwoTrackModel();
+
+    }
+};
+
+}  // namespace EVAA

@@ -1,4 +1,4 @@
-<!DOCTYPE RCC><RCC version="1.0">
+<!DOCTYPE RCC><RCC version="1.">
    <qresource prefix="/">
       <file>resources/EVAAMainWindow.qml</file>
       <file>resources/EVAA.ico</file>

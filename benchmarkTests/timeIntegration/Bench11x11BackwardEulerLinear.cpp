@@ -17,9 +17,14 @@
 *  You should have received a copy of the GNU General Public License
 *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
 */
+
+#pragma once
+
 #include <benchmark/benchmark.h>
 #include <mkl.h>
 #include <iostream>
+
+#include "../../src/EVAAComputeEngine.h"
 
 #ifdef USE_INTEL_MKL
 #include <mkl.h>
@@ -32,7 +37,6 @@ using namespace Eigen;
 #ifdef USE_BLAZE
 #include <blaze/Math.h>
 #endif
-
 
 #ifdef USE_INTEL_MKL
 static void BM_MKL11x11BackwardEulerLinear(benchmark::State& state) {
