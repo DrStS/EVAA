@@ -89,7 +89,7 @@ plot(t,diff_all(2:end,index + 0))
 hold on
 plot(t,mbdSolution(2:end,36)-mbdSolution(1,36))
 legend('X','Z')
-title('Deviation from the straight trajectory for MBD')
+title('Deviation from the trajectory for MBD')
 ylabel('difference [m]')
 xlabel('time [s]')
 axis([0 50 -0.08 0.01])
@@ -99,7 +99,7 @@ plot(t,zeros(length(t),1))  % zero due to the Lagrangiabn formulation
 hold on
 plot(t,aleSolution(2:end,36)-aleSolution(2,36))
 legend('X','Z')
-title('Deviation from the straight trajectory for ALE')
+title('Deviation from the trajectory for ALE')
 ylabel('difference [m]')
 xlabel('time [s]')
 axis([0 50 -0.08 0.01])

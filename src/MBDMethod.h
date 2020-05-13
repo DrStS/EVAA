@@ -515,11 +515,11 @@ private:
         Math::copy<T>(Constants::DIM, p, 1, Fr, 1);
         Math::axpy<T>(Constants::DIM, -1, MetaDatabase<T>::getDatabase().getCircularRoadCenter(), 1, Fr, 1);
 
-        Fr[2] = 0;  // path only in XZ-plane
+        Fr[2] = 0;  // path only in XY-plane
 
         // inverse radius of the trajectory at the considered tyre (see TODO
         // above)
-        inv_radius = 1. / Math::nrm2<T>(Constants::DIM, p, 1);
+        inv_radius = 1. / Math::nrm2<T>(Constants::DIM, Fr, 1);
 
         // normalize the force vector -- minus sign because the force points to
         // the center
