@@ -135,10 +135,10 @@ max_iter = 10000;   % for Broyden
 %FR4 = @(t, y, pcc, vt, vb, F) F;
 
 %fix the car on the ground (initial velocities very small) -> MOST SIMULATIONS WITH THIS 
-% FR1 = @(t, y, pcc, vt, vb, F) zeros(3,1);
-% FR2 = @(t, y, pcc, vt, vb, F) zeros(3,1);
-% FR3 = @(t, y, pcc, vt, vb, F) zeros(3,1);
-% FR4 = @(t, y, pcc, vt, vb, F) zeros(3,1);
+% FR1 = @(t, y, pcc, vt, vb, F) [F(1); 0; F(3)];
+% FR2 = @(t, y, pcc, vt, vb, F) [F(1); 0; F(3)];
+% FR3 = @(t, y, pcc, vt, vb, F) [F(1); 0; F(3)];
+% FR4 = @(t, y, pcc, vt, vb, F) [F(1); 0; F(3)];
 
 FR1 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(1), y); % If you don't use circular path, uncomment line 10 in main_nasa_car
 FR2 = @(t, y, pcc, vt, vc, F) Circular_path(vt, mass_tyre(2), y);

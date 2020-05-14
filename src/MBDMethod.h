@@ -479,12 +479,10 @@ private:
      * \param[out] Fr_rr The force acting on the rr tyre
      */
     void get_fixed_road_force(T* Fr_fl, T* Fr_fr, T* Fr_rl, T* Fr_rr) {
-        for (auto i = 0; i < Constants::DIM; i++) {
-            Fr_fl[i] = 0;
-            Fr_fr[i] = 0;
-            Fr_rl[i] = 0;
-            Fr_rr[i] = 0;
-        }
+        Fr_fl[2] = 0;
+        Fr_fr[2] = 0;
+        Fr_rl[2] = 0;
+        Fr_rr[2] = 0;
     }
 
     /**
