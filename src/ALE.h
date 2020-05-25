@@ -187,21 +187,27 @@ public:
 #ifdef USE_HDF5
 #ifdef USE_CHECKPOINTS
             // Call this only at checkpoints
-            _checkpointsALE->CreateContainer(false, _groupNameCheckpoints + std::to_string(t));
-            // Write whatever vectors / matrices
-            _checkpointsALE->WriteVector("Solution Vector; iter " + std::to_string(iter), solutionVector, Constants::VEC_DIM * Constants::DIM, HDF5FileHandle::GROUP);
-            // TODO Write specialised vectors
-            // TODO Write vectors for points of interest
-            _checkpointsALE->CloseContainer();
+            if (iter % 1000 == 0) {
+                _checkpointsALE->CreateContainer(false, _groupNameCheckpoints + std::to_string(t));
+                // Write whatever vectors / matrices
+                _checkpointsALE->WriteVector("Solution Vector; iter " + std::to_string(iter),
+                                             solutionVector, Constants::VEC_DIM * Constants::DIM,
+                                             HDF5FileHandle::GROUP);
+                // TODO Write specialised vectors
+                // TODO Write vectors for points of interest
+                _checkpointsALE->CloseContainer();
 
-            _checkpointsALEFormatted->CreateContainer(false, _groupNameCheckpoints + std::to_string(t));
-            // Write whatever vectors / matrices
-            WriteFormattedSolution(_checkpointsALEFormatted, solutionVector, HDF5FileHandle::GROUP);
-            // TODO Write specialised vectors
-            // TODO Write vectors for points of interest
-            _checkpointsALEFormatted->CloseContainer();
-#endif  // USE_HDF5
+                _checkpointsALEFormatted->CreateContainer(
+                    false, _groupNameCheckpoints + std::to_string(t));
+                // Write whatever vectors / matrices
+                WriteFormattedSolution(_checkpointsALEFormatted, solutionVector,
+                                       HDF5FileHandle::GROUP);
+                // TODO Write specialised vectors
+                // TODO Write vectors for points of interest
+                _checkpointsALEFormatted->CloseContainer();
+            }
 #endif  // USE_CHECKPOINTS
+#endif  // USE_HDF5
 
         }  // end time iterations
 
@@ -304,14 +310,14 @@ public:
 
 /** Write the Formatted Final Solution for MBD*/
 #ifdef USE_HDF5
-void WriteFinalResultFormatted(T* sln, const std::string filePath = "",
-                        const std::string fileName = "ALE_final_solution_formatted.hdf5") {
-    HDF5::OutputHDF5<Constants::floatEVAA> finalALE(filePath, fileName);
-    finalALE.CreateContainer(true);
-    WriteFormattedSolution(
-        &finalALE, &_fullSolution[(_solutionVectorSize - 1) * Constants::VEC_DIM * Constants::DIM],
-        HDF5FileHandle::FILE);
-    finalALE.CloseContainer();
+    void WriteFinalResultFormatted(T* sln, const std::string filePath = "",
+                            const std::string fileName = "ALE_final_solution_formatted.hdf5") {
+        HDF5::OutputHDF5<Constants::floatEVAA> finalALE(filePath, fileName);
+        finalALE.CreateContainer(true);
+        WriteFormattedSolution(
+            &finalALE, &_fullSolution[(_solutionVectorSize - 1) * Constants::VEC_DIM * Constants::DIM],
+            HDF5FileHandle::FILE);
+        finalALE.CloseContainer();
 }
 #endif  // USE_HDF5
 };

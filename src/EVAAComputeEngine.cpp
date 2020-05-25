@@ -160,6 +160,7 @@ void EVAAComputeEngine::computeALE(void) {
 
     //ale->PrintFinalResults();
 #ifdef USE_HDF5
+    ale->WriteBulkResults();
     ale->WriteFinalResult(sol);
     ale->WriteFinalResultFormatted(sol);
 #endif  // USE_HDF5
