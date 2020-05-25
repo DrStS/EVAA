@@ -248,6 +248,7 @@ public:
         std::cout << "ALE: rear-right tyre position pt4 =\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
     }
 
+/** Write the an ALE solution in formatted fashion*/
 #ifdef USE_HDF5
     void WriteFormattedSolution(HDF5::OutputHDF5<T>* writeALE, T* sln, const HDF5FileHandle& handle = HDF5FileHandle::FILE) {
         std::string datasetName = "ALE: orientation angles";
@@ -276,6 +277,7 @@ public:
     }
 #endif
 
+/** Write the Bulk Full Solution for ALE*/
 #ifdef USE_HDF5
     void WriteBulkResults(std::string filePath = "", std::string fileName = "ALE_full_solution.hdf5", std::string datasetName = "ALE Final Solution") {
         HDF5::OutputHDF5<Constants::floatEVAA> fullALE(filePath, fileName);
@@ -283,6 +285,34 @@ public:
         fullALE.WriteMatrix(datasetName, _fullSolution, _solutionVectorSize, Constants::VEC_DIM * Constants::DIM);
         fullALE.CloseContainer();
     }
+#endif  // USE_HDF5
+
+/** Write the Bulk Final Solution for ALE*/
+#ifdef USE_HDF5
+    void WriteFinalResult(T* sln, const std::string filePath = "",
+                          const std::string fileName = "ALE_final_solution_bulk.hdf5",
+                          std::string datasetName = "ALE final solution") {
+        HDF5::OutputHDF5<Constants::floatEVAA> finalALE(filePath, fileName);       
+        finalALE.CreateContainer(true);
+        finalALE.WriteVector(
+            datasetName,
+            &_fullSolution[(_solutionVectorSize - 1) * Constants::VEC_DIM * Constants::DIM],
+            Constants::VEC_DIM * Constants::DIM);
+        finalALE.CloseContainer();
+    }
+#endif  // USE_HDF5
+
+/** Write the Formatted Final Solution for MBD*/
+#ifdef USE_HDF5
+void WriteFinalResultFormatted(T* sln, const std::string filePath = "",
+                        const std::string fileName = "ALE_final_solution_formatted.hdf5") {
+    HDF5::OutputHDF5<Constants::floatEVAA> finalALE(filePath, fileName);
+    finalALE.CreateContainer(true);
+    WriteFormattedSolution(
+        &finalALE, &_fullSolution[(_solutionVectorSize - 1) * Constants::VEC_DIM * Constants::DIM],
+        HDF5FileHandle::FILE);
+    finalALE.CloseContainer();
+}
 #endif  // USE_HDF5
 };
 

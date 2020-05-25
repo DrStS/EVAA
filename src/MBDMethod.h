@@ -1982,6 +1982,7 @@ public:
     }
 #endif
 
+/** Write the Formatted Final Solution for MBD*/
 #ifdef USE_HDF5
     void WriteFinalResultFormatted(T* sln, const std::string filePath = "", const std::string fileName = "MBD_final_solution_formatted.hdf5") {
         HDF5::OutputHDF5<T> finalMBD(filePath, fileName);
@@ -1991,8 +1992,9 @@ public:
     }
 #endif  // USE_HDF5
 
+/** Write the Bulk Final Solution for MBD*/
 #ifdef USE_HDF5
-    void WriteFinalResult(T* sln, const std::string filePath = "", const std::string fileName = "MBD_final_solution_formatted.hdf5") {
+    void WriteFinalResult(T* sln, const std::string filePath = "", const std::string fileName = "MBD_final_solution_bulk.hdf5") {
         HDF5::OutputHDF5<Constants::floatEVAA> finalMBD(filePath, fileName);
         std::string datasetName = "MBD final solution";
         finalMBD.CreateContainer(true);

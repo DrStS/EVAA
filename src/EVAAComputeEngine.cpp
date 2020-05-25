@@ -159,6 +159,10 @@ void EVAAComputeEngine::computeALE(void) {
     ale->Solve(sol);
 
     //ale->PrintFinalResults();
+#ifdef USE_HDF5
+    ale->WriteFinalResult(sol);
+    ale->WriteFinalResultFormatted(sol);
+#endif  // USE_HDF5
 
     delete TwoTrackModel_obj;
     delete car;
