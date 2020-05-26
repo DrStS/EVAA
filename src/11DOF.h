@@ -114,7 +114,7 @@ public:
 template <typename T>
 class TwoTrackModelBE : public TwoTrackModelParent<T> {
 private:
-    /** For pperformance benefit we keep it here */
+    /** For performance benefit we keep it here */
     void (TwoTrackModelBE<T>::*_JacobianAdjustment)();
 
     /**
@@ -934,6 +934,10 @@ public:
 		}
     }
 
+    /** Function called for the first two initial steps in BDF-2 method.
+    * \param[in] currentIter Current iteration in BDF-2 method.
+    * \param[out] solution Pointer to the solution vector.
+    */
     void FirstTwoSteps(size_t currentIter, T* solution) {
         if (_timeStepCount == 0) {
             Math::copy<T>(Constants::DOF, _u_n_m_1, 1, _u_n_m_2, 1);
@@ -948,12 +952,23 @@ public:
             _activeExecutor = &TwoTrackModelBDF2<T>::UpdateStepBDF2;
         }
     }
+    
+    /**
+     * Performs one timestep of the 11DOF solver
+     * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
+     */
     virtual void UpdateStep(size_t currentIter, T* solution) {
         _currentIter = currentIter;
         (this->*_activeExecutor)(_currentIter, solution);
         _timeStepCount += 1;
     }
-	void ConstructNonFixedJacobian(){}
+	
+    /**
+     * \brief construct Jacobian for non-fixed to road
+     *
+     * No Modification in the Jacobian*
+     */
+    void ConstructNonFixedJacobian(){}
     /**
      * Performs one timestep of the 11DOF solver
      * \param load vector [angle:Z,GC:Y,W1:Y,T1:Y,W2:Y,T2:Y,...]
@@ -1116,12 +1131,14 @@ public:
 template <typename T>
 class TwoTrackModelFull : public TwoTrackModelBDF2<T> {
 public:
+    /** Constructor for the full simulation of two-track model only. */
     TwoTrackModelFull(Car<T>* inputCar, LoadModule<T>* loadModel) : TwoTrackModelBDF2<T>(inputCar, loadModel) {
         size_t sol_size = MetaDatabase<T>::getDatabase().getNumberOfTimeIterations();
         _tend = sol_size * _h;
         _uSolution = Math::calloc<T>((sol_size + 1) * Constants::DOF);
     }
 
+    /** Solve routine.*/
     void Solve(T* sol_vect) {
 #ifdef WRITECSV
 #ifdef IMPLICIT
@@ -1148,6 +1165,7 @@ public:
         }
     }
 
+    /** Print function */
     void PrintFinalResults(T* sln) {
         std::cout.precision(15);
         std::cout << std::scientific;
@@ -1164,6 +1182,7 @@ public:
         std::cout << "linear11DOF: rear-right tyre position pt1=\n\t[" << sln[10] << "]" << std::endl;
     }
 
+    /** Destructor */
     virtual ~TwoTrackModelFull() { Math::free<T>(_uSolution); }
 
 private:

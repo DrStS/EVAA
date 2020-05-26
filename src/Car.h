@@ -139,7 +139,7 @@ private:
         }
     }
 
-    // TODO: Was ist das? Maybe to Math with name 2D to 3D
+    // TODO: Maybe to Math with name 2D to 3D
     void ConvertALEToGlobal(T* vector, T* globalVector) {
 #pragma loop(ivdep)
         for (size_t i = 0; i < Constants::VEC_DIM; ++i) {
@@ -148,7 +148,7 @@ private:
         }
     }
 
-    // TODO: Was ist das? Maybe to Math Sure!!!!!!!
+    // TODO: Maybe to Math
     void Convert11DOFToGlobal(T* vector, T* globalVector) {
         globalVector[2] = vector[0];
 #pragma loop(ivdep)
@@ -163,7 +163,7 @@ private:
      * \param Global_angle with three angles [X,Y,Z]
      * \return Position_11dof in the format [GC:Y,angle:XY,W_fl:Y,T_fl:Y,W_fr:Y,T_fr:Y,...]
      */
-    // TODO move to 11DOF ?
+    // TODO move to 11DOF
     void Construct11DOFVector(T* Global_position, T* Global_angle, T* Position_11dof) {
         Position_11dof[0] = Global_position[2];  // z coordinate of CG
         Position_11dof[1] = Global_angle[0];     // x angle of the CG

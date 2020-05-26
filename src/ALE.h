@@ -99,6 +99,7 @@ public:
 #endif
     }
 
+    /** Destructor of ALE*/
     ~ALE() {
         Math::free<T>(_fullSolution);
         Math::free<T>(_timeArray);
@@ -215,7 +216,7 @@ public:
         IO::MyFile<T> solutionCSV("C:\\software\\repos\\EVAA\\output\\aleSolution.txt");
         solutionCSV.writeSolutionMatrix(posVecCSV, velVecCSV, angleVecCSV, _solutionVectorSize);
 #endif  // WRITECSV
-        // TODO How do we put the initial solution in _fullSolution?
+        // TODO How do we put the initial solution in _fullSolution vector?
         Math::copy<T>(Constants::VEC_DIM * Constants::DIM, _fullSolution + (_solutionVectorSize - 1) * (Constants::VEC_DIM * Constants::DIM), 1, finalSolution, 1);
         _carObj->CombineResults();
     }
@@ -254,8 +255,8 @@ public:
         std::cout << "ALE: rear-right tyre position pt4 =\n\t[" << sln[24] << "\n\t " << sln[25] << "\n\t " << sln[26] << "]" << std::endl;
     }
 
-/** Write the an ALE solution in formatted fashion*/
 #ifdef USE_HDF5
+    /** Write an ALE solution in formatted fashion*/
     void WriteFormattedSolution(HDF5::OutputHDF5<T>* writeALE, T* sln, const HDF5FileHandle& handle = HDF5FileHandle::FILE) {
         std::string datasetName = "ALE: orientation angles";
         writeALE->WriteVector(datasetName, _carObj->getAngleCG(), Constants::DIM, handle);
@@ -283,8 +284,8 @@ public:
     }
 #endif
 
-/** Write the Bulk Full Solution for ALE*/
 #ifdef USE_HDF5
+    /** Write the Bulk Full Solution for ALE*/
     void WriteBulkResults(std::string filePath = "", std::string fileName = "ALE_full_solution.hdf5", std::string datasetName = "ALE Final Solution") {
         HDF5::OutputHDF5<Constants::floatEVAA> fullALE(filePath, fileName);
         fullALE.CreateContainer(true);
@@ -293,8 +294,9 @@ public:
     }
 #endif  // USE_HDF5
 
-/** Write the Bulk Final Solution for ALE*/
+
 #ifdef USE_HDF5
+    /** Write the Bulk Final Solution for ALE*/
     void WriteFinalResult(T* sln, const std::string filePath = "",
                           const std::string fileName = "ALE_final_solution_bulk.hdf5",
                           std::string datasetName = "ALE final solution") {
@@ -308,8 +310,9 @@ public:
     }
 #endif  // USE_HDF5
 
-/** Write the Formatted Final Solution for MBD*/
+
 #ifdef USE_HDF5
+    /** Write the Formatted Final Solution for MBD*/
     void WriteFinalResultFormatted(T* sln, const std::string filePath = "",
                             const std::string fileName = "ALE_final_solution_formatted.hdf5") {
         HDF5::OutputHDF5<Constants::floatEVAA> finalALE(filePath, fileName);

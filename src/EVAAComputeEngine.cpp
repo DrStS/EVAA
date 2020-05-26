@@ -22,6 +22,8 @@
 #include "EVAAComputeEngine.h"
 
 namespace EVAA {
+
+/** Constructor to instantiate the singletone and create the engine.*/
 EVAAComputeEngine::EVAAComputeEngine(std::string xmlSimulationFileName, std::string xmlCarFileName, std::string xmlLoadFileName) {
     IO::checkFileExists(xmlSimulationFileName);
     IO::checkFileExists(xmlCarFileName);
@@ -32,12 +34,14 @@ EVAAComputeEngine::EVAAComputeEngine(std::string xmlSimulationFileName, std::str
     MetaDatabase<Constants::floatEVAA>::getDatabase().readLoadParameters(xmlLoadFileName);
 }
 
+/** Print information about the simulation.*/
 void EVAAComputeEngine::printInfo(void) {
     Math::PrintMKLInfo();
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
     std::cout << "\n\nCalculate the solution after " << db.getNumberOfTimeIterations() * db.getTimeStepSize() << "s with dt = " << db.getTimeStepSize() << " for " << db.getNumberOfTimeIterations() << " iterations\n\n\n";
 }
 
+/** Method to perform the two-track model full simulation.*/
 void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     auto& db = MetaDatabase<Constants::floatEVAA>::getDatabase();
     if (true) {  // TODO remove this
@@ -82,6 +86,7 @@ void EVAAComputeEngine::computeMKLTwoTrackModelBE(void) {
     }
 }
 
+/** Method to perform the MBD simulation.*/
 void EVAAComputeEngine::computeMBD(void) {
     size_t num_iter = MetaDatabase<Constants::floatEVAA>::getDatabase().getNumberOfTimeIterations();
     Constants::floatEVAA* sol = Math::calloc<Constants::floatEVAA>(Constants::MBD_SOLUTION_SIZE);
@@ -98,7 +103,7 @@ void EVAAComputeEngine::computeMBD(void) {
     Math::free<Constants::floatEVAA>(sol);
 }
 
-
+/** Method to perform the ALE simulation.*/
 void EVAAComputeEngine::computeALE(void) {    
     
     Lagrange<Constants::floatEVAA>* lagrangeProfile;
