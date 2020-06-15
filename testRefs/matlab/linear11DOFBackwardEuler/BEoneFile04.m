@@ -1,6 +1,43 @@
-%to compare nonlinear spring code with linear results
-
-clear; %clc; %close all;
+%%
+% Copyright &copy; 2020, Nicola Zimmermann, Munich \n
+% All rights reserved. \n
+% 
+% This file is part of EVAA.
+% 
+% EVAA is free software: you can redistribute it and/or modify \n
+% it under the terms of the GNU General Public  License as published by \n
+% the Free Software Foundation, either version 3 of the License, or \n
+% (at your option) any later version. \n
+% 
+% EVAA is distributed in the hope that it will be useful, \n
+% but WITHOUT ANY WARRANTY; without even the implied warranty of \n
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the \n
+% GNU General Public License for more details. \n
+% 
+% You should have received a copy of the GNU General Public License \n
+% along with EVAA.  If not, see <a
+% href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.
+% 
+% Additional permission under GNU GPL version 3 section 7
+% 
+% If you modify this Program, or any covered work, by linking or combining it
+% with Intel Math Kernel Libraries(MKL) (or a modified version of that
+% library), containing parts covered by the terms of the license of the MKL,
+% the licensors of this Program grant you additional permission to convey the
+% resulting work.
+% 
+% DESCRIPTION
+% This file is used to compute displacements/ rotations
+% of the 11-Dof 2-track-model
+% with a backward Euler time integration scheme 
+% for nonlinear spring stiffness, 
+% with parameters set to constant stiffness
+% compared to BEoneFile03:
+%  - nonlinear stiffness
+%%
+clear; 
+%clc;
+%close all;
 format long e;
 %% stiffness params (quadratic)
 a = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3] ;
@@ -29,14 +66,6 @@ l_lat_rr=1.68;
 mass_Body=1936;
 I_body_xx=640;
 I_body_yy=4800;
-% mass_wheel_fl=67.5;
-% mass_tyre_fl=30;
-% mass_wheel_fr=67.5;
-% mass_tyre_fr=30;
-% mass_wheel_rl=67.5;
-% mass_tyre_rl=30;
-% mass_wheel_rr=67.5;
-% mass_tyre_rr=30;
 mass_wheel_fl=145/2;
 mass_tyre_fl=0;
 mass_wheel_fr=145/2;
@@ -105,7 +134,7 @@ f_n_p_1=[1.1e3; zeros(10,1)];
 %% Time loop
 j=2;
 tic
-for i = 0:h:tend
+for i = h:h:tend
     K = get_K(u_n);
     A=A_pre+K;
     rhs = B*u_n-((1/(h*h))*M)*u_n_m_1 + f_n_p_1;
