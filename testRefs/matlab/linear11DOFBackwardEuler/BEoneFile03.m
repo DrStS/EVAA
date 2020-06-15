@@ -1,6 +1,44 @@
-clc;
-clear all;
-close all;
+%%
+% Copyright &copy; 2020, Nicola Zimmermann, Munich \n
+% All rights reserved. \n
+% 
+% This file is part of EVAA.
+% 
+% EVAA is free software: you can redistribute it and/or modify \n
+% it under the terms of the GNU General Public  License as published by \n
+% the Free Software Foundation, either version 3 of the License, or \n
+% (at your option) any later version. \n
+% 
+% EVAA is distributed in the hope that it will be useful, \n
+% but WITHOUT ANY WARRANTY; without even the implied warranty of \n
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the \n
+% GNU General Public License for more details. \n
+% 
+% You should have received a copy of the GNU General Public License \n
+% along with EVAA.  If not, see <a
+% href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.
+% 
+% Additional permission under GNU GPL version 3 section 7
+% 
+% If you modify this Program, or any covered work, by linking or combining it
+% with Intel Math Kernel Libraries(MKL) (or a modified version of that
+% library), containing parts covered by the terms of the license of the MKL,
+% the licensors of this Program grant you additional permission to convey the
+% resulting work.
+% 
+% DESCRIPTION
+% This file is used to compute displacements/ rotations
+% of the 11-Dof 2-track-model
+% with a backward Euler time integration scheme 
+% for linear spring stiffness
+% compared to BEoneFile02:
+%  - different parameter values (stiffness, mass, dimension, force)
+%  - algo for reduced solution (tyres fixed to ground) (doesn't work!)
+
+%%
+% clc;
+clear;
+% close all;
 format long e;
 % Dynamic Backward Euler problem 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,16 +59,16 @@ l_lat_fr=2*0.8458;
 l_lat_rl=2*0.84;
 l_lat_rr=2*0.84;
 mass_Body=1936;
-I_body_xx=6400;
+I_body_xx=640;
 I_body_yy=4800;
 mass_wheel_fl=145/2;
-mass_tyre_fl=30;
+mass_tyre_fl=0;
 mass_wheel_fr=145/2;
-mass_tyre_fr=30;
+mass_tyre_fr=0;
 mass_wheel_rl=135/2;
-mass_tyre_rl=30;
+mass_tyre_rl=0;
 mass_wheel_rr=135/2;
-mass_tyre_rr=30;
+mass_tyre_rr=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tend=1;
 u_init=0;
@@ -161,4 +199,4 @@ figure();
 plot(t,u_sol(:,1)); grid on;
 %plot(t,u_sol_red(:,1)); grid on;
 legend;
-disp(u_sol(end,1:11)')
+disp(u_sol(end,1:3))
