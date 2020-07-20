@@ -1,6 +1,41 @@
-clc;
-clear all;
-close all;
+%%
+% Copyright &copy; 2020, Nicola Zimmermann, Munich \n
+% All rights reserved. \n
+% 
+% This file is part of EVAA.
+% 
+% EVAA is free software: you can redistribute it and/or modify \n
+% it under the terms of the GNU General Public  License as published by \n
+% the Free Software Foundation, either version 3 of the License, or \n
+% (at your option) any later version. \n
+% 
+% EVAA is distributed in the hope that it will be useful, \n
+% but WITHOUT ANY WARRANTY; without even the implied warranty of \n
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the \n
+% GNU General Public License for more details. \n
+% 
+% You should have received a copy of the GNU General Public License \n
+% along with EVAA.  If not, see <a
+% href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.
+% 
+% Additional permission under GNU GPL version 3 section 7
+% 
+% If you modify this Program, or any covered work, by linking or combining it
+% with Intel Math Kernel Libraries(MKL) (or a modified version of that
+% library), containing parts covered by the terms of the license of the MKL,
+% the licensors of this Program grant you additional permission to convey the
+% resulting work.
+% 
+% DESCRIPTION
+% This file is used to compute displacements/ rotations
+% of the 11-Dof 2-track-model
+% with a backward Euler time integration scheme 
+% for linear spring stiffness
+
+%%
+% clc;
+clear;
+% close all;
 format long e;
 % Dynamic Backward Euler problem 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,6 +68,7 @@ mass_wheel_rr=135/2;
 mass_tyre_rr=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tend=1;
+no_timesteps=1000;
 u_init=0;
 du_init=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,120 +88,40 @@ K=[k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_f
 K=K+K'-diag(diag(K));
 D = K *0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Reduced System due to Dirichlet BC (fixed to road)
-Kred = K;
-Kred(:,11) = [];
-Kred(11,:) = [];
-Kred(:,9) = [];
-Kred(9,:) = [];
-Kred(:,7) = [];
-Kred(7,:) = [];
-Kred(:,5) = [];
-Kred(5,:) = [];
-Dred = D;
-Dred(:,11) = [];
-Dred(11,:) = [];
-Dred(:,9) = [];
-Dred(9,:) = [];
-Dred(:,7) = [];
-Dred(7,:) = [];
-Dred(:,5) = [];
-Dred(5,:) = [];
-Mred = M;
-Mred(:,11) = [];
-Mred(11,:) = [];
-Mred(:,9) = [];
-Mred(9,:) = [];
-Mred(:,7) = [];
-Mred(7,:) = [];
-Mred(:,5) = [];
-Mred(5,:) = [];
-
-% K(:,11) = [];
-% K(11,:) = [];
-% K(:,9) = [];
-% K(9,:) = [];
-% K(:,7) = [];
-% K(7,:) = [];
-% K(:,5) = [];
-% K(5,:) = [];
-% D(:,11) = [];
-% D(11,:) = [];
-% D(:,9) = [];
-% D(9,:) = [];
-% D(:,7) = [];
-% D(7,:) = [];
-% D(:,5) = [];
-% D(5,:) = [];
-% M(:,11) = [];
-% M(11,:) = [];
-% M(:,9) = [];
-% M(9,:) = [];
-% M(:,7) = [];
-% M(7,:) = [];
-% M(:,5) = [];
-% M(5,:) = [];
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Allocate memory
 dim_system = length(M);
-t=zeros(1000+1,1);
+t=zeros(no_timesteps+1,1);
 u_sol=zeros(1000+1,dim_system);
 u_n_p_1=zeros(dim_system,1);
-u_sol_red=zeros(1000+1,7);
-u_n_p_1_red=zeros(7,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-h=1/(1000);
+h=1/no_timesteps;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 u_n=[u_init; zeros(dim_system-1,1)];
-u_n_m_1=[u_init; zeros(dim_system-1,1)]-h*[du_init; zeros(dim_system-1,1)];
-u_n_red=[u_init; zeros(6,1)];
-u_n_m_1_red=[u_init; zeros(6,1)]-h*[du_init; zeros(6,1)];
+u_n_m_1=u_n-h*[du_init; zeros(dim_system-1,1)];
 A=((1/(h*h))*M+(1/h)*D+K);
 B=((2/(h*h))*M+(1/h)*D);
-Ared=((1/(h*h))*Mred+(1/h)*Dred+Kred);
-Bred=((2/(h*h))*Mred+(1/h)*Dred);
-f_n_p_1=[-1.1e3; zeros(dim_system-1,1)];
-f_n_p_1_red=[1.1e3; zeros(6,1)];
-% gives only positive reaction in the force field on tire
-f_update = @(f, idx)( (f(idx)>0).*f(idx) );
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Static solution
-u_stat=Kred\f_n_p_1(1:7);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Eigenfrequency solution with bc
-eigFreq=sqrt(eig(Kred,Mred))/2/pi;
+f_n_p_1=[1.1e3; zeros(dim_system-1,1)];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Time loop
 j=2;
-idx = [5, 7, 9, 11];
 tic
 for i = h:h:tend
-    u_n_p_1=A\(B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
-    u_n_p_1_red=Ared\(Bred*u_n_red-((1/(h*h))*Mred)*u_n_m_1_red+f_n_p_1_red);
-   % Get solution
-    t(j)=i;
-    %% application of normal reaction from the road
-    f_n_p_1(idx) = -K(idx,idx)*u_n_p_1(idx);
-    f_n_p_1(idx) = f_update(f_n_p_1, idx);
-    u_n_p_1(idx) = f_update(u_n_p_1, idx);
-    %% regular solution
-    u_sol(j,:)=u_n_p_1;
-    u_n_m_1=u_n;
-    u_n    =u_n_p_1;
-    u_sol_red(j,:)=u_n_p_1_red;
-    u_n_m_1_red=u_n_red;
-    u_n_red    =u_n_p_1_red;
-    j=j+1;
+    rhs = (B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
+    u_n_p_1 = A\rhs;
+    t(j)=i;   
+    u_sol(j,:) = u_n_p_1;
+    u_n_m_1 = u_n;
+    u_n = u_n_p_1;
+    j = j+1;
 end
 toc
+final_displacement = u_n_p_1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Some plots
-vis_idx=1;
-sol_steps = floor(tend/h)+1;
 figure();
-plot(t,u_sol(:,vis_idx)); grid on;
+plot(t,u_sol(:,1)); grid on;
 %plot(t,u_sol_red(:,1)); grid on;
-legend;
-disp(u_sol(sol_steps,1:11))
-disp(u_sol_red(sol_steps,1:3))
+% legend;
+disp(u_sol(end,1:3))
+
+writematrix([t,u_sol],'Matlab_11Dof_1.dat','Delimiter',',');
