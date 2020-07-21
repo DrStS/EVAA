@@ -33,7 +33,6 @@
 % for nonlinear spring stiffness (depends on length)
 % stiffness values (and derivatives) are obtained from lookup table (precomputed)
 % with linear or spline interpolation
-% stiffness set to constant
 
 %%
 clear; 
@@ -93,7 +92,7 @@ global K dKdxx
 num_timesteps = 1000;
 delta_t = 1/num_timesteps; 
 
-tol = 1e-8;
+tol = 1e-7;
 
 l_long_fl=1.395;
 l_long_fr=1.395;
@@ -269,6 +268,10 @@ for i = 2: length(t)
     u_n_m_1 = u_n;
     u_n = u_n_p_1;
     sol_mat(i,:) = u_n_p_1;
+    
+    if sum([eval(l1),eval(l2),eval(l3),eval(l4),eval(l5),eval(l6),eval(l7),eval(l8)]>l_max)
+        disp('Warning: l larger than l_max in iteration'); disp(i);
+    end
 end
 
 disp(sol_mat(1001,1:3))
@@ -366,7 +369,7 @@ function dk_du = kderivfun(k,l,idx)
     global X k_grid size_grid 
 
     k_grid_tmp=k_grid((idx-1)*size_grid+1:idx*size_grid);
-    knext=interp1(X,k_grid_tmp,l,'next',k_grid(1));
+    knext=interp1(X,k_grid_tmp,l,'next',k_grid_tmp(end));
 
     if k==knext && k_grid_tmp(1)==k_grid_tmp(2)
         dk_du=0;
@@ -377,8 +380,9 @@ function dk_du = kderivfun(k,l,idx)
         lprev=X(find(k_grid_tmp==kprev));
         dk_du=(knext-kprev)/(lnext-lprev); 
     else
-        lnext=X(find(k_grid_tmp==knext));
+        lnext=X(k_grid_tmp==knext);
         dk_du=(knext-k)/(lnext-l);
     end
+   
 end
 
