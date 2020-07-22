@@ -9,7 +9,7 @@ from odbAccess import openOdb
 name_inputfile_old='11Dof_1.inp'
 name_inputfile_new='11Dof_2.inp' 
 name_outputfile='Abaqus_11Dof_2.dat'
-name_job='Job2b'
+name_job='Job2'
 
 print('script started')
 
@@ -72,8 +72,6 @@ with open(name_inputfile_old, 'r') as file:
 				idx=6	
 			elif re.split(',',line)[1] == ' name=tyre_rr-spring-beh\n':
 				idx=7
-			else:
-				print('unknown behavior name')
 			newline = line
 			line2 = file.readline() 
 			newline = newline + re.split('\n',line2)[0] + ', nonlinear\n'	

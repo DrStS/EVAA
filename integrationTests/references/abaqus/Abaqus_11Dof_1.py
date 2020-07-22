@@ -2,7 +2,7 @@ import re
 from odbAccess import openOdb
 
 #names
-name_inputfile='11Dof_1s.inp' 
+name_inputfile='11Dof_1.inp' 
 name_outputfile='Abaqus_11Dof_1.dat'
 name_job='Job1'
 

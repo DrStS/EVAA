@@ -35,7 +35,9 @@
 %%
 % clc;
 clear;
-% close all;
+close all;
+
+%%
 format long e;
 % Dynamic Backward Euler problem 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -86,7 +88,7 @@ K=[k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_f
    0 0 0 0 0 0 0 0 0 k_body_rr+k_tyre_rr -k_tyre_rr;
    0 0 0 0 0 0 0 0 0 0 k_tyre_rr];
 K=K+K'-diag(diag(K));
-D = K *0;
+D = K *0.01;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Allocate memory
 dim_system = length(M);

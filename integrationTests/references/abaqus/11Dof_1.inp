@@ -44,6 +44,7 @@ r_Wheel_fl = 0.3
 r_Wheel_fr = r_Wheel_fl
 r_Wheel_rl = r_Wheel_fl
 r_Wheel_rr = r_Wheel_fl
+d_coeff=0
 ** Dependant paramters---------------------------------------------
 l_lat_fr_neg=-l_lat_fr
 l_lat_rr_neg=-l_lat_rr
@@ -71,6 +72,14 @@ pos_road_fl = l_CoGspring_fl_neg+l_bodywheel_fl_neg+r_Wheel_fl_neg
 pos_road_fr = l_CoGspring_fr_neg+l_bodywheel_fr_neg+r_Wheel_fr_neg
 pos_road_rl = l_CoGspring_rl_neg+l_bodywheel_rl_neg+r_Wheel_rl_neg
 pos_road_rr = l_CoGspring_rr_neg+l_bodywheel_rr_neg+r_Wheel_rr_neg
+d_body_fl=k_body_fl*d_coeff;
+d_tyre_fl=k_tyre_fl*d_coeff;
+d_body_fr=k_body_fr*d_coeff;
+d_tyre_fr=k_tyre_fr*d_coeff;
+d_body_rl=k_body_rl*d_coeff;
+d_tyre_rl=k_tyre_rl*d_coeff;
+d_body_rr=k_body_rr*d_coeff;
+d_tyre_rr=k_tyre_rr*d_coeff;
 ** ----------------------------------------------------------------
 *Node
       1,           		0.,         	  			0.,           				0.
@@ -181,27 +190,43 @@ axial
 *Connector behavior, name=body_fl-spring-beh
 *Connector elasticity, component=1
 <k_body_fl>
+*Connector damping, component=1
+<d_body_fl>
 *Connector behavior, name=tyre_fl-spring-beh
 *Connector elasticity, component=1
 <k_tyre_fl>
+*Connector damping, component=1
+<d_tyre_fl>
 *Connector behavior, name=body_fr-spring-beh
 *Connector elasticity, component=1
 <k_body_fr>
+*Connector damping, component=1
+<d_body_fr>
 *Connector behavior, name=tyre_fr-spring-beh
 *Connector elasticity, component=1
 <k_tyre_fr>
+*Connector damping, component=1
+<d_tyre_fr>
 *Connector behavior, name=body_rl-spring-beh
 *Connector elasticity, component=1
 <k_body_rl>
+*Connector damping, component=1
+<d_body_rl>
 *Connector behavior, name=tyre_rl-spring-beh
 *Connector elasticity, component=1
 <k_tyre_rl>
+*Connector damping, component=1
+<d_tyre_rl>
 *Connector behavior, name=body_rr-spring-beh
 *Connector elasticity, component=1
 <k_body_rr>
+*Connector damping, component=1
+<d_body_rr>
 *Connector behavior, name=tyre_rr-spring-beh
 *Connector elasticity, component=1
 <k_tyre_rr>
+*Connector damping, component=1
+<d_tyre_rr>
 *Mass, elset=cog-mass
 <mass_Body>
 *Mass, elset=wheel_fl-mass
