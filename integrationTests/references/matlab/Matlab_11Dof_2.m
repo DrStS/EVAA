@@ -37,14 +37,14 @@
 %%
 clear; 
 % % clc; 
-close all;
+% close all;
 %% make lookup table
 ak = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3];
 b=0;
 c=0;
 
 %damping
-ad = ak*0;
+ad = ak*0.01;
 % ad=ak*0;
 b_d=0;
 c_d=0;
@@ -109,7 +109,7 @@ d_spline8 = spline(X,d_grid(7*size_grid+1:8*size_grid));
 d_der8 = fnder(d_spline8,1);
 
 %% parameters
-global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr
+% global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr
 global l1 l2 l3 l4 l5 l6 l7 l8
 % global p f
 global K dKdxx
@@ -120,6 +120,8 @@ delta_t = 1/num_timesteps;
 
 tol = 1e-7;
 
+k_stab_f=20e3;
+k_stab_r=4e3;
 l_long_fl=1.395;
 l_long_fr=1.395;
 l_long_rl=1.596;
@@ -148,6 +150,7 @@ L = 0.3;
 %interpolation type in lookup table (linear/spline)
 type='linear';
 
+
 %% symbolic derivative
 
 % syms l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr
@@ -170,6 +173,21 @@ K = [k1+k3+k5+k7, -k1*l_lat_fl+k3*l_lat_fr-k5*l_lat_rl+k7*l_lat_rr, -k1*l_long_f
    0, 0, 0, 0, 0, 0, 0, 0, k6, 0, 0;
    0, 0, 0, 0, 0, 0, 0, 0, 0, k7+k8, -k8;
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, k8];
+
+K_stab=[0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 -k_stab_f 0 k_stab_f 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 -k_stab_f 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 0 0 -k_stab_r 0 k_stab_r 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 -k_stab_r 0;
+    0 0 0 0 0 0 0 0 0 0 0];
+
+K=K+K_stab;
+
 K=K+K.'-diag(diag(K));
    
 x=[x1;x2;x3;x4;x5;x6;x7;x8;x9;x10;x11];
@@ -358,7 +376,7 @@ function K1 = kfunc(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,type)
     
     global X k_grid size_grid
     global K
-    global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
+%     global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
     global l1 l2 l3 l4 l5 l6 l7 l8
     global k_spline1 k_spline2 k_spline3 k_spline4 k_spline5 k_spline6 k_spline7 k_spline8;
     
@@ -391,7 +409,7 @@ function K2 = kderivfunc(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,type)
     
     global X k_grid size_grid
     global dKdxx
-    global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
+%     global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
     global l1 l2 l3 l4 l5 l6 l7 l8
     global k_der1 k_der2 k_der3 k_der4 k_der5 k_der6 k_der7 k_der8; 
     
@@ -453,7 +471,7 @@ function D1 = dfunc(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,type)
     
     global X d_grid size_grid
     global D
-    global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
+%     global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
     global l1 l2 l3 l4 l5 l6 l7 l8
     global d_spline1 d_spline2 d_spline3 d_spline4 d_spline5 d_spline6 d_spline7 d_spline8;
     
@@ -487,7 +505,7 @@ function D2 = dderivfunc(u_n_p_1,u_n,delta_t,type)
     
     global X d_grid size_grid
     global dDdxv
-    global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
+%     global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
     global l1 l2 l3 l4 l5 l6 l7 l8
     global d_der1 d_der2 d_der3 d_der4 d_der5 d_der6 d_der7 d_der8; 
     

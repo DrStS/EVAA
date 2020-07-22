@@ -72,6 +72,10 @@ with open(name_inputfile_old, 'r') as file:
 				idx=6	
 			elif re.split(',',line)[1] == ' name=tyre_rr-spring-beh\n':
 				idx=7
+			else:
+				newline = line
+				newfile = newfile+newline
+				continue
 			newline = line
 			line2 = file.readline() 
 			newline = newline + re.split('\n',line2)[0] + ', nonlinear\n'	

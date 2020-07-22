@@ -11,6 +11,8 @@ k_body_rl=16e3*0.82
 k_tyre_rl=260e3
 k_body_rr=16e3*0.82
 k_tyre_rr=260e3
+k_stab_f=20e3
+k_stab_r=4e3
 mass_Body=1936
 mass_wheel_fl=145*0.5
 mass_tyre_fl=0
@@ -44,7 +46,7 @@ r_Wheel_fl = 0.3
 r_Wheel_fr = r_Wheel_fl
 r_Wheel_rl = r_Wheel_fl
 r_Wheel_rr = r_Wheel_fl
-d_coeff=0
+d_coeff=0.01
 ** Dependant paramters---------------------------------------------
 l_lat_fr_neg=-l_lat_fr
 l_lat_rr_neg=-l_lat_rr
@@ -149,6 +151,10 @@ slaveNodes, 1.
 7, 5, 9
 *Element, type=CONN3D2, elset=tyre_rr-spring
 8, 9, 13
+*Element, type=CONN3D2, elset=stab_f
+19, 6, 7
+*Element, type=CONN3D2, elset=stab_r
+20, 8, 9
 *Element, type=MASS, elset=cog-mass
 9, 1
 *Element, type=ROTARYI, elset=cog-roti
@@ -187,6 +193,10 @@ axial
 axial
 *Connector Section, elset=tyre_rr-spring, behavior=tyre_rr-spring-beh
 axial
+*Connector Section, elset=stab_f, behavior=stab_f-beh
+cartesian
+*Connector Section, elset=stab_r, behavior=stab_r-beh
+cartesian
 *Connector behavior, name=body_fl-spring-beh
 *Connector elasticity, component=1
 <k_body_fl>
@@ -227,6 +237,12 @@ axial
 <k_tyre_rr>
 *Connector damping, component=1
 <d_tyre_rr>
+*Connector behavior, name=stab_f-beh
+*Connector elasticity, component=3
+<k_stab_f>
+*Connector behavior, name=stab_r-beh
+*Connector elasticity, component=3
+<k_stab_r>
 *Mass, elset=cog-mass
 <mass_Body>
 *Mass, elset=wheel_fl-mass
@@ -302,6 +318,8 @@ U,
 U1, U2, U3, UR1, UR2, UR3
 *Element Output, elset=body_fl-spring
 CEF1
+*Element Output, elset=stab_f
+CEF
 *Node Print, nset=CoG, summary=no
 U1, U2, U3, UR1, UR2, UR3
 *End Step

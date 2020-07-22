@@ -49,6 +49,8 @@ k_body_rl=16e3*0.82;
 k_tyre_rl=260e3;
 k_body_rr=16e3*0.82;
 k_tyre_rr=260e3;
+k_stab_f=20e3;
+k_stab_r=4e3;
 l_long_fl=1.395;
 l_long_fr=1.395;
 l_long_rl=1.596;
@@ -87,6 +89,18 @@ K=[k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_f
    0 0 0 0 0 0 0 0 k_tyre_rl 0 0;
    0 0 0 0 0 0 0 0 0 k_body_rr+k_tyre_rr -k_tyre_rr;
    0 0 0 0 0 0 0 0 0 0 k_tyre_rr];
+K_stab=[0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 -k_stab_f 0 k_stab_f 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 -k_stab_f 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 0 0 -k_stab_r 0 k_stab_r 0;
+    0 0 0 0 0 0 0 0 0 0 0;
+    0 0 0 0 0 0 0 0 0 -k_stab_r 0;
+    0 0 0 0 0 0 0 0 0 0 0];
+K=K+K_stab;
 K=K+K'-diag(diag(K));
 D = K *0.01;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -120,10 +134,15 @@ toc
 final_displacement = u_n_p_1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Some plots
-figure();
-plot(t,u_sol(:,1)); grid on;
-%plot(t,u_sol_red(:,1)); grid on;
-% legend;
+figure;
+subplot(1,3,1);
+plot(t,u_sol(:,1)); grid on; legend('z_{CG}'); 
+subplot(1,3,2); 
+plot(t,u_sol(:,2)); grid on; legend('r_x');
+subplot(1,3,3);
+plot(t,u_sol(:,3)); grid on; legend('r_y');
+
 disp(u_sol(end,1:3))
 
+%%
 writematrix([t,u_sol],'Matlab_11Dof_1.dat','Delimiter',',');
