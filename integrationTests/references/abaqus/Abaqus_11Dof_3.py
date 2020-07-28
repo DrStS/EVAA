@@ -1,11 +1,14 @@
+#from job import *
 import re
+# import numpy as np
 from odbAccess import openOdb
-from abaqusConstants import DOUBLE
 
-#names
+# # # START PARAM INPUT
+
+#name of input file
 name_inputfile_old='11Dof_1.inp'
 name_inputfile_new='11Dof_3.inp' 
-name_outputfile='Abaqus_11Dof_3.dat'
+name_outputfile='Abaqus_11Dof_3dn.dat'
 name_job='Job3'
 
 print('script started')
@@ -23,22 +26,38 @@ a=[k_body_fl,k_tyre_fl,k_body_fr,k_tyre_fr,k_body_rl,k_tyre_rl,k_body_rr,k_tyre_
 b=20000
 c=30000
 
+d=0.01
+ad=[k_body_fl*d,k_tyre_fl*d,k_body_fr*d,k_tyre_fr*d,k_body_rl*d,k_tyre_rl*d,k_body_rr*d,k_tyre_rr*d]
+bd=b*d
+cd=c*d
+
+size_grid = 1000;
+
 l_min = 0.05;
 l_max = 0.8;
-size_grid = 1001;
-dl=(l_max-l_min)/(size_grid-1);
-
 L_init=0.3
+
+v_min=-1.0
+v_max=1.0
+
+dl=(l_max-l_min)/(size_grid-1);
+dv=(v_max-v_min)/(size_grid-1);
 
 X=[]
 k_grid=[]
+V=[]
+d_grid=[]
+
+
 
 for i in range(size_grid):
 	X.append(l_min+i*dl)
+	V.append(v_min+i*dv)
 
 for i in range(8):
 	for j in range(size_grid):
 		k_grid.append(a[i]+b*X[j]+c*X[j]*X[j])
+		d_grid.append(ad[i]+bd*V[j]+cd*V[j]*V[j])
 
 with open(name_inputfile_old, 'r') as file:
 	nooflines=len(file.readlines())
@@ -52,7 +71,7 @@ with open(name_inputfile_old, 'r') as file:
 	for i in range(nooflines):
 		line=file.readline()		
 		if re.split(',',line)[0] == '*Connector behavior':				
-			#find k_index
+			#find index
 			if re.split(',',line)[1] == ' name=body_fl-spring-beh\n':
 				idx=0
 			elif re.split(',',line)[1] == ' name=tyre_fl-spring-beh\n':
@@ -69,7 +88,7 @@ with open(name_inputfile_old, 'r') as file:
 				idx=6	
 			elif re.split(',',line)[1] == ' name=tyre_rr-spring-beh\n':
 				idx=7
-			else:
+			else: #stabilisator with elastic connector behavior
 				newline = line
 				newfile = newfile+newline
 				continue
@@ -79,7 +98,12 @@ with open(name_inputfile_old, 'r') as file:
 			#write k_grid
 			for j in range(size_grid):
 				newline=newline + '%.6f,%.6f\n' %(k_grid[idx*size_grid+j]*(X[j]-L_init),X[j]-L_init)				
-			count=2 #skip the next two lines	
+			line3=file.readline()
+			line4=file.readline()
+			newline = newline + re.split('\n',line4)[0] + ', nonlinear\n'
+			for j in range(size_grid):
+				newline=newline + '%.6f,%.6f\n' %(d_grid[idx*size_grid+j]*V[j],V[j])
+			count=2 #skip the next line	
 		elif count>1:
 			newline=''
 			count = count - 1
@@ -93,7 +117,7 @@ with open(name_inputfile_new, 'w') as file:
 	file.write(newfile)	
 
 
-job=mdb.JobFromInputFile(name_job,name_inputfile_new,explicitPrecision=DOUBLE)
+job=mdb.JobFromInputFile(name_job,name_inputfile_new)
 job.submit()
 job.waitForCompletion()
 
