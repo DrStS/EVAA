@@ -10,26 +10,29 @@ clear;
 clc;
 
 size_grid = 1000;
+make_lookup_stiff=1;
+make_lookup_damp=1;
 
 %params for stiffness lookup table:
-stiff_name='U_Fk_lookup2.dat';
-make_lookup_stiff=1;
+stiff_name='U_Fk_lookup3b.dat';
 ak = [19.32e3; 260e3; 19.32e3; 260e3; 13.12e3; 260e3; 13.12e3; 260e3];
-b=0;
-c=0;
-l_min = 0.05;
-l_max = 0.8;
+b=20000;
+c=30000;
+u_min = -0.01;
+u_max = 0.03;
 L = 0.3; %initial length of spring
+l_min= u_min +L;
+l_max= u_max +L;
+
 
 %params for damping lookup table:
-damp_name='V_Fd_lookup2.dat';
-d=0.01;
-make_lookup_damp=1;
-ad = d* ak;
-b_d=d*b;
-c_d=d*c;
-v_min=-1;
-v_max=1;
+damp_name='V_Fd_lookup3b.dat';
+d_coeff=0.01;
+ad = d_coeff* ak;
+b_d = d_coeff*b;
+c_d = d_coeff*c;
+v_min = -0.07;
+v_max = 0.08;
 
 
 if make_lookup_stiff

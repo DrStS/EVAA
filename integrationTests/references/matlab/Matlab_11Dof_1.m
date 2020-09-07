@@ -78,8 +78,8 @@ du_init=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % System Mono
 M=diag([mass_Body, I_body_xx, I_body_yy, mass_wheel_fl, mass_tyre_fl, mass_wheel_fr, mass_tyre_fr, mass_wheel_rl, mass_tyre_rl, mass_wheel_rr, mass_tyre_rr]);
-K=[k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_fr+k_body_rl*l_lat_rl-k_body_rr*l_lat_rr, -k_body_fl*l_long_fl-k_body_fr*l_long_fr+k_body_rl*l_long_rl+k_body_rr*l_long_rr,  -k_body_fl, 0, -k_body_fr, 0, -k_body_rl, 0, -k_body_rr, 0;
-   0  l_lat_fl*l_lat_fl*k_body_fl+l_lat_fr*l_lat_fr*k_body_fr+l_lat_rl*l_lat_rl*k_body_rl+l_lat_rr*l_lat_rr*k_body_rr, -l_long_fl*l_lat_fl*k_body_fl+l_lat_fr*l_long_fr*k_body_fr+l_long_rl*l_lat_rl*k_body_rl-l_long_rr*l_lat_rr*k_body_rr, -l_lat_fl*k_body_fl, 0, l_lat_fr*k_body_fr, 0, -l_lat_rl*k_body_rl, 0, l_lat_rr*k_body_rr, 0;
+K=[k_body_fl+k_body_fr+k_body_rl+k_body_rr, -k_body_fl*l_lat_fl+k_body_fr*l_lat_fr-k_body_rl*l_lat_rl+k_body_rr*l_lat_rr, -k_body_fl*l_long_fl-k_body_fr*l_long_fr+k_body_rl*l_long_rl+k_body_rr*l_long_rr,  -k_body_fl, 0, -k_body_fr, 0, -k_body_rl, 0, -k_body_rr, 0;
+   0  l_lat_fl*l_lat_fl*k_body_fl+l_lat_fr*l_lat_fr*k_body_fr+l_lat_rl*l_lat_rl*k_body_rl+l_lat_rr*l_lat_rr*k_body_rr, +l_long_fl*l_lat_fl*k_body_fl-l_lat_fr*l_long_fr*k_body_fr-l_long_rl*l_lat_rl*k_body_rl+l_long_rr*l_lat_rr*k_body_rr, +l_lat_fl*k_body_fl, 0, -l_lat_fr*k_body_fr, 0, +l_lat_rl*k_body_rl, 0, -l_lat_rr*k_body_rr, 0;
    0 0 l_long_fl*l_long_fl*k_body_fl+l_long_fr*l_long_fr*k_body_fr+l_long_rl*l_long_rl*k_body_rl+l_long_rr*l_long_rr*k_body_rr, l_long_fl*k_body_fl, 0 l_long_fr*k_body_fr 0 -l_long_rl*k_body_rl 0 -l_long_rr*k_body_rr 0; 
    0 0 0 k_body_fl+k_tyre_fl -k_tyre_fl 0 0 0 0 0 0;
    0 0 0 0 k_tyre_fl 0 0 0 0 0 0;
@@ -92,57 +92,78 @@ K=[k_body_fl+k_body_fr+k_body_rl+k_body_rr, k_body_fl*l_lat_fl-k_body_fr*l_lat_f
 K_stab=[0 0 0 0 0 0 0 0 0 0 0;
     0 0 0 0 0 0 0 0 0 0 0;
     0 0 0 0 0 0 0 0 0 0 0;
-    0 0 0 -k_stab_f 0 k_stab_f 0 0 0 0 0;
+    0 0 0 +k_stab_f 0 -k_stab_f 0 0 0 0 0;
     0 0 0 0 0 0 0 0 0 0 0;
-    0 0 0 0 0 -k_stab_f 0 0 0 0 0;
+    0 0 0 0 0 +k_stab_f 0 0 0 0 0;
     0 0 0 0 0 0 0 0 0 0 0;
-    0 0 0 0 0 0 0 -k_stab_r 0 k_stab_r 0;
+    0 0 0 0 0 0 0 +k_stab_r 0 -k_stab_r 0;
     0 0 0 0 0 0 0 0 0 0 0;
-    0 0 0 0 0 0 0 0 0 -k_stab_r 0;
+    0 0 0 0 0 0 0 0 0 +k_stab_r 0;
     0 0 0 0 0 0 0 0 0 0 0];
 K=K+K_stab;
 K=K+K'-diag(diag(K));
 D = K *0.01;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+h=tend/no_timesteps;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Allocate memory
 dim_system = length(M);
-t=zeros(no_timesteps+1,1);
+% t=zeros(no_timesteps+1,1);
 u_sol=zeros(1000+1,dim_system);
 u_n_p_1=zeros(dim_system,1);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-h=1/no_timesteps;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 u_n=[u_init; zeros(dim_system-1,1)];
 u_n_m_1=u_n-h*[du_init; zeros(dim_system-1,1)];
 A=((1/(h*h))*M+(1/h)*D+K);
 B=((2/(h*h))*M+(1/h)*D);
 f_n_p_1=[1.1e3; zeros(dim_system-1,1)];
+t = 0:h:(no_timesteps)*h;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%displacement boundary condition
+u_f=zeros(11,no_timesteps+1);
+u_idx=[5, 7, 9, 11];
+% u_idx=[];
+% u_f(u_idx,:)=0.1*ones(4,1)*sin(t);
+u_f(u_idx,:)=0.01*ones(length(u_idx),1)*t;
+% u_f(u_idx,:)=0.0*ones(4,length(t));
+
+
+%%
 % Time loop
-j=2;
+% j=2;
 tic
-for i = h:h:tend
-    rhs = (B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1);
-    u_n_p_1 = A\rhs;
-    t(j)=i;   
+for j = 2:length(t)
+    rhs = (B*u_n-((1/(h*h))*M)*u_n_m_1+f_n_p_1-A*u_f(:,j));
+    A_m=A;
+    A_m(u_idx,:)=zeros(length(u_idx),11);
+    A_m(:,u_idx)=zeros(11,length(u_idx));
+    A_m(u_idx,u_idx)=eye(length(u_idx));
+    rhs(u_idx)=zeros(length(u_idx),1);
+    rhs=rhs+u_f(:,j);
+    u_n_p_1 = A_m\rhs;
+%     t(j)=i;   
     u_sol(j,:) = u_n_p_1;
     u_n_m_1 = u_n;
     u_n = u_n_p_1;
-    j = j+1;
+%     j = j+1;
 end
 toc
 final_displacement = u_n_p_1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Some plots
 figure;
-subplot(1,3,1);
+subplot(1,5,1);
 plot(t,u_sol(:,1)); grid on; legend('z_{CG}'); 
-subplot(1,3,2); 
+subplot(1,5,2); 
 plot(t,u_sol(:,2)); grid on; legend('r_x');
-subplot(1,3,3);
+subplot(1,5,3);
 plot(t,u_sol(:,3)); grid on; legend('r_y');
+subplot(1,5,4);
+plot(t,u_sol(:,4)); grid on; legend('z_2');
+subplot(1,5,5);
+plot(t,u_sol(:,end)); grid on; legend('z_9');
 
 disp(u_sol(end,1:3))
 
 %%
-writematrix([t,u_sol],'Matlab_11Dof_1.dat','Delimiter',',');
+writematrix([t',u_sol],'Matlab_11Dof_1u.dat','Delimiter',',');

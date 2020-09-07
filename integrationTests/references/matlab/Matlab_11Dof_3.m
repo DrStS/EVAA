@@ -33,24 +33,25 @@
 % for nonlinear spring and damping
 % stiffness & damping values (and derivatives) are obtained from lookup table
 % lookup table gives displ/vel & force pairs (precomputed)
+% with linear or spline interpolation
 
 %%
 clear; 
 % % clc; 
-% close all;
+close all;
 
 %% parameters
-% global l1 l2 l3 l4 l5 l6 l7 l8
-% global K dKdxx
-% global D dDdxv
 
-num_timesteps = 1000;
-delta_t = 1/num_timesteps; 
+t_end=1;
+num_timesteps = 1;
+delta_t = t_end/num_timesteps; 
 
 tol = 1e-7;
 
 k_stab_f=20e3;
 k_stab_r=4e3;
+% k_stab_f=0;
+% k_stab_r=0;
 l_long_fl=1.395;
 l_long_fr=1.395;
 l_long_rl=1.596;
@@ -73,12 +74,23 @@ mass_tyre_rr=0;
 
 u_n = [0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 
+L = 0.3;
+
+%Neumann boundary condition
 f =[1.1e3; 0; 0; 0; 0; 0; 0; 0; 0; 0; 0];
 
-L = 0.3;
+%Dirichlet boundary condition
+% u_f=zeros(11,num_timesteps+1);
+u_idx=[5, 7, 9, 11];
+% u_idx=[];
+
 %interpolation type in lookup table (linear/spline)
 type='spline';
 
+k_grid=readmatrix('U_Fk_lookup3.dat');
+d_grid=readmatrix('V_Fd_lookup3.dat');
+
+outputname='Matlab_11Dof_3t3.dat';
 
 %% symbolic derivative
 
@@ -105,13 +117,13 @@ K = [k1+k3+k5+k7, -k1*l_lat_fl+k3*l_lat_fr-k5*l_lat_rl+k7*l_lat_rr, -k1*l_long_f
 K_stab=[0 0 0 0 0 0 0 0 0 0 0;
     0 0 0 0 0 0 0 0 0 0 0;
     0 0 0 0 0 0 0 0 0 0 0;
-    0 0 0 -k_stab_f 0 k_stab_f 0 0 0 0 0;
+    0 0 0 +k_stab_f 0 -k_stab_f 0 0 0 0 0;
     0 0 0 0 0 0 0 0 0 0 0;
-    0 0 0 0 0 -k_stab_f 0 0 0 0 0;
+    0 0 0 0 0 +k_stab_f 0 0 0 0 0;
     0 0 0 0 0 0 0 0 0 0 0;
-    0 0 0 0 0 0 0 -k_stab_r 0 k_stab_r 0;
+    0 0 0 0 0 0 0 +k_stab_r 0 -k_stab_r 0;
     0 0 0 0 0 0 0 0 0 0 0;
-    0 0 0 0 0 0 0 0 0 -k_stab_r 0;
+    0 0 0 0 0 0 0 0 0 +k_stab_r 0;
     0 0 0 0 0 0 0 0 0 0 0];
 
 K=K+K_stab;
@@ -199,10 +211,14 @@ residfunc = @(y_p1,y,y_m1,K,D,f)( ( M_div_h2 + D/delta_t + K ) * y_p1 - (2 * M_d
 
 %% Time Loop
 
+
 t = 0:delta_t:(num_timesteps)*delta_t;
 
+% u_f(u_idx,:)=0.0*ones(length(u_idx),1)*t;
+
 u_n_m_1 = u_n;
-u_n_p_1=u_n;
+u_n_p_1 = u_n;
+
 
 sol_mat = zeros(length(t),11);
 newt_order_vec = zeros(length(t),1);
@@ -212,45 +228,97 @@ iterat_mat=zeros(length(t),1);
 
 sol_mat(1,:)=u_n;
 
-for i = 2: length(t)
-    K1=kfunc(u_n,type);
-    D1=dfunc(u_n_p_1,u_n,delta_t,type);
-    u_n_p_1 = ( M_div_h2 + D1/delta_t + K1 )\ ((2 * M_div_h2 + D1/delta_t) * u_n - M_div_h2 * u_n_m_1 + f);
-    
+du_minmax=zeros(length(t),2);
+dv_minmax=zeros(length(t),2);
 
-    K1=kfunc(u_n_p_1,type);
-    D1=dfunc(u_n_p_1,u_n,delta_t,type);
-    r=residfunc(u_n_p_1,u_n,u_n_m_1,K1,D1,f);
+for i = 2: length(t)
     
+    K1=kfunc(u_n_p_1,type,k_grid);
+    D1=dfunc(u_n_p_1,u_n,delta_t,type,d_grid);
+    
+    rhs = (2 * M_div_h2 + D1/delta_t) * u_n - M_div_h2 * u_n_m_1 + f;
+    S = M_div_h2 + D1/delta_t + K1;
+    
+    %apply boundary conditions
+%     rhs = rhs - S*u_f(:,i);
+    S(u_idx,:)=zeros(length(u_idx),11);
+    S(:,u_idx)=zeros(11,length(u_idx));
+    S(u_idx,u_idx)=eye(length(u_idx));
+    rhs(u_idx)=zeros(length(u_idx),1);
+%     rhs=rhs+u_f(:,i);
+    
+    u_n_p_1 = S\rhs;
+   
+
+    K1=kfunc(u_n_p_1,type,k_grid);
+    D1=dfunc(u_n_p_1,u_n,delta_t,type,d_grid);
+    
+    rhs = (2 * M_div_h2 + D1/delta_t) * u_n - M_div_h2 * u_n_m_1 + f;
+    S=M_div_h2 + D1/delta_t + K1;
+%     rhs = rhs - S*u_f(:,i);
+    S(u_idx,:)=zeros(length(u_idx),11);
+    S(:,u_idx)=zeros(11,length(u_idx));
+    S(u_idx,u_idx)=eye(length(u_idx));
+    rhs(u_idx)=zeros(length(u_idx),1);
+%     rhs=rhs+u_f(:,i);
+    
+%     r=residfunc(u_n_p_1,u_n,u_n_m_1,K1,D1,f);
+    r=S*u_n_p_1-rhs;
+
     err = [];
     delta = [];
         
     for iter=1:10
 
-        K2 = kderivfunc(u_n_p_1,type);        
-        D2 = dderivfunc(u_n_p_1,u_n,delta_t,type);
+        K2 = kderivfunc(u_n_p_1,type,k_grid);        
+        D2 = dderivfunc(u_n_p_1,u_n,delta_t,type,d_grid);
         J = M_div_h2 + K1 + K2 + D1/delta_t + D2;
-%         r=residfunc(u_n,u_n_p_1,u_n_m_1,K1,f);       
-        Delta = -J\r;
+        J_m=J;
+        J_m(u_idx,:)=zeros(length(u_idx),11);
+        J_m(:,u_idx)=zeros(11,length(u_idx));
+        J_m(u_idx,u_idx)=eye(length(u_idx));
+                
+        Delta=-J_m\r;
+
         u_n_p_1 = Delta + u_n_p_1; 
 
-        K1=kfunc(u_n_p_1,type);
-        D1=dfunc(u_n_p_1,u_n,delta_t,type);
-        r=residfunc(u_n_p_1,u_n,u_n_m_1,K1,D1,f);
+        K1=kfunc(u_n_p_1,type,k_grid);
+        D1=dfunc(u_n_p_1,u_n,delta_t,type,d_grid);
+        
+        rhs = (2 * M_div_h2 + D1/delta_t) * u_n - M_div_h2 * u_n_m_1 + f;
+        S=M_div_h2 + D1/delta_t + K1;
+%         rhs = rhs - S*u_f(:,i);
+        S(u_idx,:)=zeros(length(u_idx),11);
+        S(:,u_idx)=zeros(11,length(u_idx));
+        S(u_idx,u_idx)=eye(length(u_idx));
+        rhs(u_idx)=zeros(length(u_idx),1);
+%         rhs=rhs+u_f(:,i);
+    
+        r=S*u_n_p_1-rhs;      
+%         r=residfunc(u_n_p_1,u_n,u_n_m_1,K1,D1,f);
         
         err(iter)=norm(r);
-        if (err(iter) < tol || norm(J\r) > norm(Delta))
+%         if (err(iter) < tol || norm(J\r) > norm(Delta))
+        if err(iter) < tol
             err_vec(i)=norm(r);
             break;
         end       
     end
     
     if iter>3
-        newt_order_vec(i) = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))));
+        newt_order_vec(i) = log(abs((err(end)-err(end-1))/(err(end-1)-err(end-2))))/...
+            log(abs((err(end-1)-err(end-2))/(err(end-2)-err(end-3))));
     end
     iterat_mat(i) = iter;
     condition(i) =  cond(J);
     
+    du=dufunc(u_n_p_1);
+    dv=dufunc(1/delta_t*(u_n_p_1-u_n));
+    du_minmax(i,1)=min(du);
+    du_minmax(i,2)=max(du);
+    dv_minmax(i,1)=min(dv);
+    dv_minmax(i,2)=max(dv);
+        
     u_n_m_1 = u_n;
     u_n = u_n_p_1;
     sol_mat(i,:) = u_n_p_1;
@@ -260,28 +328,37 @@ for i = 2: length(t)
 %     end
 end
 
-disp(sol_mat(1001,1:3))
+u_extr=[min(du_minmax(:,1)), max(du_minmax(:,2))];
+v_extr=[min(dv_minmax(:,1)), max(dv_minmax(:,2))];
+
+disp(sol_mat(end,1:3))
 
 figure;
-subplot(1,3,1);
+subplot(1,5,1);
 plot(t,sol_mat(:,1)); grid on; legend('z_{CG}'); 
-subplot(1,3,2); 
+subplot(1,5,2); 
 plot(t,sol_mat(:,2)); grid on; legend('r_x');
-subplot(1,3,3);
+subplot(1,5,3);
 plot(t,sol_mat(:,3)); grid on; legend('r_y');
+subplot(1,5,4); 
+plot(t,sol_mat(:,4)); grid on; legend('z_2');
+subplot(1,5,5);
+plot(t,sol_mat(:,11)); grid on; legend('z_9');
 
-figure; plot(err_vec); title('error'); grid on;
-figure; plot(iterat_mat); title('newton iterations'); grid on;
+figure; 
+subplot(1,3,1); plot(err_vec); title('error'); grid on;
+subplot(1,3,2); plot(iterat_mat); title('newton iterations'); grid on;
+subplot(1,3,3); plot(newt_order_vec); title('newton order'); grid on;
 
 %% write to textfile
-writematrix([t',sol_mat],'Matlab_11Dof_3dn.dat','Delimiter',',');
+writematrix([t',sol_mat],outputname,'Delimiter',',');
 
 %%
-function K1 = kfunc(u,type)      
+function K1 = kfunc(u,type,tmp)      
 
     l=dufunc(u);
     
-    tmp=readmatrix('U_fk_lookup3.dat');
+%     tmp=readmatrix('U_fk_lookup3.dat');
     tmp(tmp(:,1)==0,:)=[];
     u_vec=tmp(:,1);
     k_mat=tmp(:,2:end)./u_vec;
@@ -297,11 +374,6 @@ function K1 = kfunc(u,type)
     k_spline7 = spline(l_vec,k_mat(:,7));
     k_spline8 = spline(l_vec,k_mat(:,8));
 
-%     global X k_grid size_grid
-%     global K
-%     global l1 l2 l3 l4 l5 l6 l7 l8
-%     global k_spline1 k_spline2 k_spline3 k_spline4 k_spline5 k_spline6 k_spline7 k_spline8;
-    
     switch type
         case 'linear'
             k1=interp1(u_vec,k_mat(:,1),l(1),'linear',k_mat(end,1));
@@ -328,7 +400,7 @@ function K1 = kfunc(u,type)
     K1=fct_K(k1,k2,k3,k4,k5,k6,k7,k8);
 end
 
-function K2 = kderivfunc(u,type)      
+function K2 = kderivfunc(u,type,tmp)      
     
     x1=u(1);
     x2=u(2);
@@ -344,7 +416,7 @@ function K2 = kderivfunc(u,type)
     
     l=dufunc(u);
 
-    tmp=readmatrix('U_fk_lookup3.dat');
+%     tmp=readmatrix('U_fk_lookup3.dat');
     tmp(tmp(:,1)==0,:)=[];
     u_vec=tmp(:,1);
     k_mat=tmp(:,2:end)./u_vec;
@@ -367,12 +439,6 @@ function K2 = kderivfunc(u,type)
     k_der6=fnder(k_spline6,1);
     k_der7=fnder(k_spline7,1);
     k_der8=fnder(k_spline8,1);
-
-%     global X k_grid size_grid
-%     global dKdxx
-%     global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
-%     global l1 l2 l3 l4 l5 l6 l7 l8
-%     global k_der1 k_der2 k_der3 k_der4 k_der5 k_der6 k_der7 k_der8; 
     
     switch type
         case 'linear'
@@ -384,14 +450,14 @@ function K2 = kderivfunc(u,type)
             k6=interp1(u_vec,k_mat(:,6),l(6),'linear',k_mat(end,6));
             k7=interp1(u_vec,k_mat(:,7),l(7),'linear',k_mat(end,7));
             k8=interp1(u_vec,k_mat(:,8),l(8),'linear',k_mat(end,8));
-            d_k1=kderivfun(k1,l(1),1);
-            d_k2=kderivfun(k2,l(2),2);
-            d_k3=kderivfun(k3,l(3),3);
-            d_k4=kderivfun(k4,l(4),4);
-            d_k5=kderivfun(k5,l(5),5);
-            d_k6=kderivfun(k6,l(6),6);
-            d_k7=kderivfun(k7,l(7),7);
-            d_k8=kderivfun(k8,l(8),8);
+            d_k1=kderivfun(k1,l(1),1,tmp);
+            d_k2=kderivfun(k2,l(2),2,tmp);
+            d_k3=kderivfun(k3,l(3),3,tmp);
+            d_k4=kderivfun(k4,l(4),4,tmp);
+            d_k5=kderivfun(k5,l(5),5,tmp);
+            d_k6=kderivfun(k6,l(6),6,tmp);
+            d_k7=kderivfun(k7,l(7),7,tmp);
+            d_k8=kderivfun(k8,l(8),8,tmp);
             
         case 'spline'
             d_k1=ppval(k_der1,l(1));
@@ -407,15 +473,13 @@ function K2 = kderivfunc(u,type)
     K2=fct_dK(d_k1,d_k2,d_k3,d_k4,d_k5,d_k6,d_k7,d_k8,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11); 
 end
 
-function dk_du = kderivfun(k,l,idx)
+function dk_du = kderivfun(k,l,idx,tmp)
     
-    tmp=readmatrix('U_fk_lookup3.dat');
+%     tmp=readmatrix('U_fk_lookup3.dat');
     tmp(tmp(:,1)==0,:)=[];
     u_vec=tmp(:,1);
     k_mat=tmp(:,2:end)./u_vec;
     clear tmp;
-
-% global X k_grid size_grid 
 
     k_mat_tmp=k_mat(:,idx);
     knext=interp1(u_vec,k_mat_tmp,l,'next',k_mat_tmp(end));
@@ -435,13 +499,13 @@ function dk_du = kderivfun(k,l,idx)
    
 end
 
-function D1 = dfunc(u_n_p_1,u_n,delta_t,type)      
+function D1 = dfunc(u_n_p_1,u_n,delta_t,type,tmp)      
     
     v=1/delta_t.*(u_n_p_1-u_n);
     
     dv=dufunc(v);
     
-    tmp=readmatrix('V_Fd_lookup3.dat');
+%     tmp=readmatrix('V_Fd_lookup3.dat');
     tmp(tmp(:,1)==0,:)=[];
     v_vec=tmp(:,1);
     d_mat=tmp(:,2:end)./v_vec;
@@ -456,12 +520,6 @@ function D1 = dfunc(u_n_p_1,u_n,delta_t,type)
     d_spline7 = spline(v_vec,d_mat(:,7));
     d_spline8 = spline(v_vec,d_mat(:,8));
 
-%     global X d_grid size_grid
-%     global D
-%     global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
-%     global l1 l2 l3 l4 l5 l6 l7 l8
-%     global d_spline1 d_spline2 d_spline3 d_spline4 d_spline5 d_spline6 d_spline7 d_spline8;
-    
     switch type
         case 'linear'
             d1=interp1(v_vec,d_mat(:,1),dv(1),'linear',d_mat(end,1));
@@ -487,7 +545,7 @@ function D1 = dfunc(u_n_p_1,u_n,delta_t,type)
     D1=fct_D(d1,d2,d3,d4,d5,d6,d7,d8);
 end
 
-function D2 = dderivfunc(u_n_p_1,u_n,delta_t,type)      
+function D2 = dderivfunc(u_n_p_1,u_n,delta_t,type,tmp)      
     v=1/delta_t.*(u_n_p_1-u_n);
     v1=v(1);
     v2=v(2);
@@ -503,11 +561,11 @@ function D2 = dderivfunc(u_n_p_1,u_n,delta_t,type)
     
     dv=dufunc(v);
 
-    tmp=readmatrix('V_Fd_lookup3.dat');
+%     tmp=readmatrix('V_Fd_lookup3.dat');
     tmp(tmp(:,1)==0,:)=[];
     v_vec=tmp(:,1);
     d_mat=tmp(:,2:end)./v_vec;
-    clear tmp;
+%     clear tmp;
        
     d_spline1 = spline(v_vec,d_mat(:,1));
     d_spline2 = spline(v_vec,d_mat(:,2));
@@ -526,13 +584,6 @@ function D2 = dderivfunc(u_n_p_1,u_n,delta_t,type)
     d_der7=fnder(d_spline7,1);
     d_der8=fnder(d_spline8,1);
 
-    
-%     global X d_grid size_grid
-%     global dDdxv
-%     global l_long_fl l_long_fr l_long_rl l_long_rr l_lat_fl l_lat_fr l_lat_rl l_lat_rr 
-%     global l1 l2 l3 l4 l5 l6 l7 l8
-%     global d_der1 d_der2 d_der3 d_der4 d_der5 d_der6 d_der7 d_der8; 
-    
     switch type
         case 'linear'
             d1=interp1(v_vec,d_mat(:,1),dv(1),'linear',d_mat(end,1));
@@ -543,14 +594,14 @@ function D2 = dderivfunc(u_n_p_1,u_n,delta_t,type)
             d6=interp1(v_vec,d_mat(:,6),dv(6),'linear',d_mat(end,6));
             d7=interp1(v_vec,d_mat(:,7),dv(7),'linear',d_mat(end,7));
             d8=interp1(v_vec,d_mat(:,8),dv(8),'linear',d_mat(end,8));
-            d_d1=dderivfun(d1,dv(1),1);
-            d_d2=dderivfun(d2,dv(2),2);
-            d_d3=dderivfun(d3,dv(3),3);
-            d_d4=dderivfun(d4,dv(4),4);
-            d_d5=dderivfun(d5,dv(5),5);
-            d_d6=dderivfun(d6,dv(6),6);
-            d_d7=dderivfun(d7,dv(7),7);
-            d_d8=dderivfun(d8,dv(8),8);
+            d_d1=dderivfun(d1,dv(1),1,tmp);
+            d_d2=dderivfun(d2,dv(2),2,tmp);
+            d_d3=dderivfun(d3,dv(3),3,tmp);
+            d_d4=dderivfun(d4,dv(4),4,tmp);
+            d_d5=dderivfun(d5,dv(5),5,tmp);
+            d_d6=dderivfun(d6,dv(6),6,tmp);
+            d_d7=dderivfun(d7,dv(7),7,tmp);
+            d_d8=dderivfun(d8,dv(8),8,tmp);
             
         case 'spline'
             d_d1=ppval(d_der1,dv(1));
@@ -567,10 +618,9 @@ function D2 = dderivfunc(u_n_p_1,u_n,delta_t,type)
     D2=fct_dD(d_d1,d_d2,d_d3,d_d4,d_d5,d_d6,d_d7,d_d8,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11); 
 end
 
-function dd_du = dderivfun(d,l,idx)
-%     global X d_grid size_grid 
+function dd_du = dderivfun(d,l,idx,tmp)
 
-    tmp=readmatrix('V_Fd_lookup3.dat');
+%     tmp=readmatrix('V_Fd_lookup3.dat');
     tmp(tmp(:,1)==0,:)=[];
     v_vec=tmp(:,1);
     d_mat=tmp(:,2:end)./v_vec;
@@ -616,4 +666,3 @@ function l=dufunc(x)
     l=[l1,l2,l3,l4,l5,l6,l7,l8];
     
 end
-

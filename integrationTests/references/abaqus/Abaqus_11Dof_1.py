@@ -2,9 +2,9 @@ import re
 from odbAccess import openOdb
 
 #names
-name_inputfile='11Dof_1.inp' 
-name_outputfile='Abaqus_11Dof_1.dat'
-name_job='Job1'
+name_inputfile='11Dof_3cm.inp' 
+name_outputfile='Abaqus_11Dof_3cm.dat'
+name_job='Job3cm'
 
 print('script started')
 
@@ -33,14 +33,14 @@ with open(name_outputfile,'w') as file:
 		file.write('%.6f, ' %t)
 		file.write('%.12f, %.12f, %.12f, ' %(z[i][1],rx[i][1],ry[i][1]))
 		for j in range(noofnodes):
-			if j<5: 
+			if j<1 or j>8: 
 				continue
 			else:
 				val=frame.fieldOutputs['U'].values[j].data[2]
-				if j==(noofnodes-1):
+				if j==8:
 					file.write('%.12f ' %val)
 				else:
-					file.write('%.12f, ' %val)			
+					file.write('%.12f, ' %val)
 		file.write('\n')
 
 odb.close()

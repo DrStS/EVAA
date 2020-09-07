@@ -6,10 +6,10 @@ from odbAccess import openOdb
 # # # START PARAM INPUT
 
 #name of input file
-name_inputfile_old='11Dof_1.inp'
+name_inputfile_old='11Dof_1t.inp'
 name_inputfile_new='11Dof_2.inp' 
-name_outputfile='Abaqus_11Dof_2d.dat'
-name_job='Job2'
+name_outputfile='Abaqus_11Dof_2b.dat'
+name_job='Job2b'
 
 print('script started')
 
@@ -29,16 +29,18 @@ c=0
 d=0.01
 ad=[k_body_fl*d,k_tyre_fl*d,k_body_fr*d,k_tyre_fr*d,k_body_rl*d,k_tyre_rl*d,k_body_rr*d,k_tyre_rr*d]
 bd=b*d
-cd=b*d
+cd=c*d
 
-size_grid = 11;
+size_grid = 10
 
-l_min = 0.05;
-l_max = 0.8;
-L_init=0.3
+u_min = -0.1
+u_max = 0.1
+L_init = 0.3
+l_min = u_min + L_init
+l_max = u_max + L_init
 
-v_min=-1.0
-v_max=1.0
+v_min = -1.0
+v_max = 1.0
 
 dl=(l_max-l_min)/(size_grid-1);
 dv=(v_max-v_min)/(size_grid-1);
@@ -134,7 +136,7 @@ ry=step.historyRegions['Node PART-1-1.1'].historyOutputs['UR2'].data
 z=step.historyRegions['Node PART-1-1.1'].historyOutputs['U3'].data
 
 with open(name_outputfile,'w') as file: 		
-	file.write('t, z_1, r_x, r_y, z_6, z_7, z_8, z_9, z_10, z_11, z_12, z_13\n')
+	file.write('t, z_1, r_x, r_y, z_2, z_3, z_4, z_5, z_6, z_7, z_8, z_9\n')
 	frame=step.frames[0]
 	for i in range(noofframes):
 		frame=step.frames[i]
@@ -142,11 +144,11 @@ with open(name_outputfile,'w') as file:
 		file.write('%.6f, ' %t)
 		file.write('%.12f, %.12f, %.12f, ' %(z[i][1],rx[i][1],ry[i][1]))
 		for j in range(noofnodes):
-			if j<5: 
+			if j<1 or j>8: 
 				continue
 			else:
 				val=frame.fieldOutputs['U'].values[j].data[2]
-				if j==(noofnodes-1):
+				if j==8:
 					file.write('%.12f ' %val)
 				else:
 					file.write('%.12f, ' %val)

@@ -48,32 +48,20 @@ r_Wheel_rl = r_Wheel_fl
 r_Wheel_rr = r_Wheel_fl
 d_coeff=0.01
 ** Dependant paramters---------------------------------------------
-l_lat_fr_neg=-l_lat_fr
-l_lat_rr_neg=-l_lat_rr
+l_lat_fl_neg=-l_lat_fl
+l_lat_rl_neg=-l_lat_rl
 l_long_rl_neg=-l_long_rl
 l_long_rr_neg=-l_long_rr
 l_CoGspring_fr=l_CoGspring_fl
 l_CoGspring_rr=l_CoGspring_rl
-l_CoGspring_fl_neg=-l_CoGspring_fl
-l_CoGspring_fr_neg=-l_CoGspring_fr
-l_CoGspring_rl_neg=-l_CoGspring_rl
-l_CoGspring_rr_neg=-l_CoGspring_rr
-l_bodywheel_fl_neg=-l_bodywheel_fl
-l_bodywheel_fr_neg=-l_bodywheel_fr
-l_bodywheel_rl_neg=-l_bodywheel_rl
-l_bodywheel_rr_neg=-l_bodywheel_rr
-r_Wheel_fl_neg = -r_Wheel_fl
-r_Wheel_fr_neg = -r_Wheel_fr
-r_Wheel_rl_neg = -r_Wheel_rl
-r_Wheel_rr_neg = -r_Wheel_rr
-pos_wheel_fl = l_CoGspring_fl_neg+l_bodywheel_fl_neg
-pos_wheel_fr = l_CoGspring_fr_neg+l_bodywheel_fr_neg
-pos_wheel_rl = l_CoGspring_rl_neg+l_bodywheel_rl_neg
-pos_wheel_rr = l_CoGspring_rr_neg+l_bodywheel_rr_neg
-pos_road_fl = l_CoGspring_fl_neg+l_bodywheel_fl_neg+r_Wheel_fl_neg
-pos_road_fr = l_CoGspring_fr_neg+l_bodywheel_fr_neg+r_Wheel_fr_neg
-pos_road_rl = l_CoGspring_rl_neg+l_bodywheel_rl_neg+r_Wheel_rl_neg
-pos_road_rr = l_CoGspring_rr_neg+l_bodywheel_rr_neg+r_Wheel_rr_neg
+pos_wheel_fl = l_CoGspring_fl+l_bodywheel_fl
+pos_wheel_fr = l_CoGspring_fr+l_bodywheel_fr
+pos_wheel_rl = l_CoGspring_rl+l_bodywheel_rl
+pos_wheel_rr = l_CoGspring_rr+l_bodywheel_rr
+pos_road_fl = l_CoGspring_fl+l_bodywheel_fl+r_Wheel_fl
+pos_road_fr = l_CoGspring_fr+l_bodywheel_fr+r_Wheel_fr
+pos_road_rl = l_CoGspring_rl+l_bodywheel_rl+r_Wheel_rl
+pos_road_rr = l_CoGspring_rr+l_bodywheel_rr+r_Wheel_rr
 d_body_fl=k_body_fl*d_coeff;
 d_tyre_fl=k_tyre_fl*d_coeff;
 d_body_fr=k_body_fr*d_coeff;
@@ -86,95 +74,95 @@ d_tyre_rr=k_tyre_rr*d_coeff;
 *Node
       1,           		0.,         	  			0.,           				0.
 *Node
-      2,          <l_long_fl>,  			<l_lat_fl>,    		<l_CoGspring_fl_neg>
+      10,          <l_long_fl>,  			<l_lat_fl_neg>,    		<l_CoGspring_fl>
 *Node
-      3,          <l_long_fr>,  			<l_lat_fr_neg>,    		<l_CoGspring_fr_neg>
+      11,          <l_long_fr>,  			<l_lat_fr>,    		<l_CoGspring_fr>
 *Node
-      4,          <l_long_rl_neg>,  		<l_lat_rl>,    		<l_CoGspring_rl_neg>
+      12,          <l_long_rl_neg>,  		<l_lat_rl_neg>,    		<l_CoGspring_rl>
 *Node
-      5,          <l_long_rr_neg>,  		<l_lat_rr_neg>,    		<l_CoGspring_rr_neg>
+      13,          <l_long_rr_neg>,  		<l_lat_rr>,    		<l_CoGspring_rr>
 *Node
-      6,          <l_long_fl>,  			<l_lat_fl>,    			<pos_wheel_fl>
+      2,          <l_long_fl>,  			<l_lat_fl_neg>,    			<pos_wheel_fl>
 *Node
-      7,          <l_long_fr>,  			<l_lat_fr_neg>,    			<pos_wheel_fr>
+      4,          <l_long_fr>,  			<l_lat_fr>,    			<pos_wheel_fr>
 *Node
-      8,          <l_long_rl_neg>,  		<l_lat_rl>,    			<pos_wheel_rl>
+      6,          <l_long_rl_neg>,  		<l_lat_rl_neg>,    			<pos_wheel_rl>
 *Node
-      9,          <l_long_rr_neg>,  		<l_lat_rr_neg>,    			<pos_wheel_rr>
+      8,          <l_long_rr_neg>,  		<l_lat_rr>,    			<pos_wheel_rr>
 *Node
-      10,         <l_long_fl>,  			<l_lat_fl>,    			<pos_road_fl>
+      3,         <l_long_fl>,  			<l_lat_fl_neg>,    			<pos_road_fl>
 *Node
-      11,         <l_long_fr>,  			<l_lat_fr_neg>,    			<pos_road_fr>
+      5,         <l_long_fr>,  			<l_lat_fr>,    			<pos_road_fr>
 *Node
-      12,         <l_long_rl_neg>,  		<l_lat_rl>,    			<pos_road_rl>
+      7,         <l_long_rl_neg>,  		<l_lat_rl_neg>,    			<pos_road_rl>
 *Node
-      13,         <l_long_rr_neg>,  		<l_lat_rr_neg>,    			<pos_road_rr>
+      9,         <l_long_rr_neg>,  		<l_lat_rr>,    			<pos_road_rr>
 *Nset, nset=CoG
  1,
 *Nset, nset=wheel_fl
- 6,
+ 2,
 *Nset, nset=wheel_fr
- 7,
+ 4,
 *Nset, nset=wheel_rl
- 8,
+ 6,
 *Nset, nset=wheel_rr
- 9,
+ 8,
 *Nset, nset=road_fl
- 10,
+ 3,
 *Nset, nset=road_fr
- 11,
+ 5,
 *Nset, nset=road_rl
- 12,
+ 7,
 *Nset, nset=road_rr
- 13,
-*Nset, nset=allRoadNodes, generate
- 10,  13,   1
-*Nset, nset=onlyZMotion, generate
- 6,  13,  1
+ 9,
+*Nset, nset=allRoadNodes
+road_fl, road_fr, road_rl, road_rr
+*Nset, nset=onlyZMotion
+allRoadNodes, wheel_fl, wheel_fr, wheel_rl, wheel_rr 
 *Nset, nset=slaveNodes, generate
- 2,  5,  1
+ 10,  13,  1
 *Surface, type=NODE, name=slaveSurface
 slaveNodes, 1.
 *Element, type=CONN3D2, elset=body_fl-spring
-1, 2, 6
+1, 10, 2
 *Element, type=CONN3D2, elset=tyre_fl-spring
-2, 6, 10
+2, 2, 3
 *Element, type=CONN3D2, elset=body_fr-spring
-3, 3, 7
+3, 11, 4
 *Element, type=CONN3D2, elset=tyre_fr-spring
-4, 7, 11
+4, 4, 5
 *Element, type=CONN3D2, elset=body_rl-spring
-5, 4, 8
+5, 12, 6
 *Element, type=CONN3D2, elset=tyre_rl-spring
-6, 8, 12
+6, 6, 7
 *Element, type=CONN3D2, elset=body_rr-spring
-7, 5, 9
+7, 13, 8
 *Element, type=CONN3D2, elset=tyre_rr-spring
-8, 9, 13
+8, 8, 9
 *Element, type=CONN3D2, elset=stab_f
-19, 6, 7
+19, 2, 4
 *Element, type=CONN3D2, elset=stab_r
-20, 8, 9
+20, 6, 8
 *Element, type=MASS, elset=cog-mass
 9, 1
 *Element, type=ROTARYI, elset=cog-roti
 10, 1
 *Element, type=MASS, elset=wheel_fl-mass
-11, 6
+11, 2
 *Element, type=MASS, elset=tyre_fl-mass
-12, 10
+12, 3
 *Element, type=MASS, elset=wheel_fr-mass
-13, 7
+13, 4
 *Element, type=MASS, elset=tyre_fr-mass
-14, 11
+14, 5
 *Element, type=MASS, elset=wheel_rl-mass
-15, 8
+15, 6
 *Element, type=MASS, elset=tyre_rl-mass
-16, 12
+16, 7
 *Element, type=MASS, elset=wheel_rr-mass
-17, 9
+17, 8
 *Element, type=MASS, elset=tyre_rr-mass
-18, 13
+18, 9
 *Coupling, constraint name=Constraint-1, ref node=CoG, surface=slaveSurface
 *Kinematic
 *Connector Section, elset=body_fl-spring, behavior=body_fl-spring-beh
@@ -266,43 +254,20 @@ cartesian
 ** ----------------------------------------------------------------
 *Amplitude, name=stepFunc
 0.,1.,10.,1.
+*Amplitude, name=BEampl
+0, 0
+10, 10
 *Boundary
 onlyZMotion, 1, 1
 onlyZMotion, 2, 2
 CoG, 1, 1
 CoG, 2, 2
 CoG, 6, 6
-** ----------------------------------------------------------------
-*Step, name=Freq, perturbation
-*Frequency
-7
-*Boundary
-allRoadNodes, 3, 3
-*Output, field
-*Node Output
-U,
-*End Step
-** ----------------------------------------------------------------
-*Step, name=Static, perturbation
-*Static
-*Boundary
-allRoadNodes, 3, 3
-*Cload
-CoG, 3, 1100.
-*Output, field
-*Node Output
-U, 
-*Output, history
-*Node Output, nset=CoG
-U1, U2, U3, UR1, UR2, UR3
-*Node Print, nset=CoG, summary=no
-U1, U2, U3, UR1, UR2, UR3
-*End Step
 ** ---------------------------------------------------------------- 
 *Step, name=BE, nlgeom=NO, amplitude=STEP, inc=100000000
 *Dynamic,application=QUASI-STATIC,direct,initial=NO
-0.001,1.,
-*Boundary, Op=NEW
+0.01,10.,
+*Boundary, Op=new
 onlyZMotion, 1, 1
 onlyZMotion, 2, 2
 CoG, 1, 1
@@ -316,10 +281,6 @@ U,
 *Output, history, number interval=1000
 *Node Output, nset=CoG
 U1, U2, U3, UR1, UR2, UR3
-*Element Output, elset=body_fl-spring
-CEF1
-*Element Output, elset=stab_f
-CEF
 *Node Print, nset=CoG, summary=no
 U1, U2, U3, UR1, UR2, UR3
 *End Step
