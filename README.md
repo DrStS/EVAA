@@ -4,10 +4,9 @@ EVAA: Efficient Vehicle dynAmics simulAtor
 high performance vehicle dynamics model and simulation for applications 
 w.r.t. autonomous driving
 ***
-# Coding style  
-The current version is deployed via Travis to releases. 
-
-[![Build Status](https://travis-ci.com/DrStS/EVAA.svg?branch=refactoring/codeStripping)](https://travis-ci.com/DrStS/EVAA)
+# Status: C++ Continuous Integration   
+The status of continuous integration: 
+![Build Status](https://github.com/DrStS/EVAA/workflows/C++%20CI/CD/badge.svg)
 ***
 # Build EVAA  
 Use cmake to configure EVAA  
