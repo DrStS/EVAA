@@ -26,7 +26,7 @@
  */
 
 #pragma once
-#include <string>;
+#include <string>
 namespace EVAA {
 /**
  * \brief Class ComputeEngine the core of EVAA
