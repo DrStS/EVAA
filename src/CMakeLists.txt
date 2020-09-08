@@ -22,6 +22,8 @@ add_library(EVAALibStatic STATIC ${EVAA_SOURCES})
 IF (CMAKE_SYSTEM_NAME MATCHES "Windows") 
    #WIN32
    add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp winResources.rc)
+ELSE()
+   add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 ENDIF()
 #------------------------------------------------------------------------------------#
 target_link_libraries(EVAA EVAALibStatic)
