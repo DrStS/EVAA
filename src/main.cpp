@@ -48,121 +48,22 @@
  * \file main.cpp
  * This file holds the main function of EVAA.
  * \author Stefan Sicklinger
- * \date 6/11/2019
- * \version alpha
+ * \date 09/08/2020
+ * \version 1.0
  */
-
-#ifdef EVAA_COMMANDLINE_ON
 #include <iostream>
-#include <string>
 #include <vector>
 
 #include "AuxiliaryParameters.h"
 #include "EVAAComputeEngine.h"
-#include "Timer.h"
-#endif  // EVAA_COMMANDLINE_ON
 
-#ifndef EVAA_COMMANDLINE_ON
-#include "EVAAMainWindow.h"
-#endif  // EVAA_COMMANDLINE_ON
 
 int main(int argc, char **argv) {
-#ifdef EVAA_COMMANDLINE_ON
     std::cout << "Hello EVAA is fired up!" << std::endl;
     std::cout << "GIT: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
     std::vector<std::string> allArgs(argv, argv + argc);
     for (std::vector<std::string>::iterator it = allArgs.begin(); it != allArgs.end(); ++it) {
         std::cout << *it << std::endl;
     }
-
-    /** Define the paths to xml configuration files */
-    std::string simulationParametersFileNameXML;
-    std::string carSettingsFileNameXML;
-    std::string loadProfileFileNameXML;
-
-    if (allArgs.size() > 3) {
-        /** Take arguments from command line */
-        simulationParametersFileNameXML = allArgs[1];
-        carSettingsFileNameXML = allArgs[2];
-        loadProfileFileNameXML = allArgs[3];
-    }
-    else {
-        /** Hardcoded paths*/
-
-        /** Hardcoded paths for car settings */
-        const std::string carWithInterpolationFileNameXML =
-            "C:\\software\\repos\\EVAA\\inputFiles\\CarWithInterpolation.xml";
-        const std::string carConstantStiffnessFileNameXML =
-            "C:\\software\\repos\\EVAA\\inputFiles\\CarConstantStiffness.xml";
-#ifdef INTERPOLATION
-        carSettingsFileNameXML = carWithInterpolationFileNameXML;
-#else
-        carSettingsFileNameXML = carConstantStiffnessFileNameXML;
-#endif
-        /** Hardcoded path for simulation parameters*/
-        simulationParametersFileNameXML =
-            "C:\\software\\repos\\EVAA\\inputFiles\\SimulationParameters.xml";
-        /** Hardcoded paths for load profiles*/
-        const std::string loadArbitraryFileNameXML =
-            "C:\\software\\repos\\EVAA\\inputFiles\\LoadArbitraryCar.xml";
-        const std::string loadCircularFileNameXML =
-            "C:\\software\\repos\\EVAA\\inputFiles\\LoadCircularCar.xml";
-        const std::string loadStraightFileNameXML =
-            "C:\\software\\repos\\EVAA\\inputFiles\\LoadStraightCar.xml";
-        loadProfileFileNameXML = loadStraightFileNameXML;
-    }
-
-    /** Construct the car*/
-    EVAA::EVAAComputeEngine *myComputeEngine = new EVAA::EVAAComputeEngine(
-        simulationParametersFileNameXML, carSettingsFileNameXML, loadProfileFileNameXML);
-    myComputeEngine->printInfo();
-
-    auto &timer1 = EVAA::anaysisTimer01;
-    constexpr size_t numIterations = 1;
-
-    std::cout << std::defaultfloat;
-    unsigned long timeMBD = 0.;    
-    for (auto i = 0; i < numIterations; ++i) {
-        timer1.start();
-        myComputeEngine->computeMBD();
-        timer1.stop();
-        timeMBD += timer1.getDurationMilliSec();
-    }
-    std::cout << "It took " << std::defaultfloat << timeMBD / numIterations << " ms to run the solver(computeMBD).\n\n\n" << std::endl;
-    
-    unsigned long time11DOF = 0.;
-    for (auto i = 0; i < numIterations; ++i) {
-        timer1.start();
-        myComputeEngine->computeMKLTwoTrackModelBE();
-        timer1.stop();
-        time11DOF += timer1.getDurationMilliSec();
-    }
-    std::cout << "It took " << std::defaultfloat << time11DOF / numIterations << " ms to run the solver 11dofBE.\n\n\n" << std::endl;
-
-    unsigned long timeALE = 0.;
-    for (auto i = 0; i < numIterations; ++i) {
-        timer1.start();
-        myComputeEngine->computeALE();
-        timer1.stop();
-        timeALE += timer1.getDurationMilliSec();
-    }
-    std::cout << "It took " << std::defaultfloat << timeALE / numIterations << " ms to run the solver(computeALE).\n\n\n" << std::endl;
-
-    delete myComputeEngine;
-
-    std::cout << "\nWe did a great job! Awesome!" << std::endl;
-
-#endif  // EVAA_COMMANDLINE_ON
-
-#ifndef EVAA_COMMANDLINE_ON
-#ifdef __linux
-    putenv((char *)"MESA_GL_VERSION_OVERRIDE=3.2");
-    // Fixes decimal point issue in vtkSTLReader
-    putenv((char *)"LC_NUMERIC=C");
-#endif  // LINUX
-
-    EVAAMainWindow(argc, argv);
-#endif  // EVAA_COMMANDLINE_ON
-
     return 0;
 }

@@ -5,7 +5,9 @@ high performance vehicle dynamics model and simulation for applications
 w.r.t. autonomous driving
 ***
 # Coding style  
-Use naming from [google c++ style guide](https://google.github.io/styleguide/cppguide.html#Naming)
+The current version is deployed via Travis to releases. 
+
+[![Build Status](https://travis-ci.com/DrStS/EVAA.svg?branch=refactoring/codeStripping)](https://travis-ci.com/DrStS/EVAA)
 ***
 # Build EVAA  
 Use cmake to configure EVAA  

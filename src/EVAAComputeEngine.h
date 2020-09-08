@@ -26,44 +26,10 @@
  */
 
 #pragma once
-
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <limits>
-#include <string>
-#include <vector>
-
-#include "11DOF.h"
-#include "ALE.h"
-#include "Car.h"
-#include "Constants.h"
-#include "LoadModule.h"
-#include "MBDMethod.h"
-#include "MathLibrary.h"
-#include "MetaDatabase.h"
-#include "Output.h"
-
-#ifdef USE_EIGEN
-#include <Eigen/Dense>
-using Eigen::IOFormat;
-using Eigen::Matrix3d;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-#endif
-
-#ifdef USE_BLAZE
-#include <blaze/Math.h>
-#endif
-
-#ifdef USE_HDF5
-#include <IO/OutputHDF5.h>
-#endif
-
+#include <string>;
 namespace EVAA {
-
 /**
- * \brief Class ComputeEngine the core of STACCATO
+ * \brief Class ComputeEngine the core of EVAA
  */
 class EVAAComputeEngine {
 public:
@@ -72,49 +38,8 @@ public:
      * \param[in] file name of xml file to call singelton constructor of
      * metadatabase \author Stefan Sicklinger
      */
-    EVAAComputeEngine(std::string xmlSimulationFileName, std::string xmlCarFileName, std::string xmlLoadFileName);
+    EVAAComputeEngine(std::string inputFileName);
 
-    /**
-     * \brief print info
-     * \author Stefan Sicklinger
-     */
-    void printInfo(void);
-
-    // EIGEN
-    /**
-     * \brief compute engine
-     * \author Stefan Sicklinger
-     */
-    void computeEigen11DOF(void);
-
-    // BLAZE
-    /**
-     * \brief compute engine
-     * \author Stefan Sicklinger
-     */
-    void computeBlaze11DOF(void);
-
-    // MKL
-    /**
-     * \brief compute engine
-     * \author Stefan Sicklinger
-     */
-    void computeMKL11DOF(void);
-
-    /**
-     * \brief compute 11Dof system with BE to prove correctness
-     */
-    void computeMKLTwoTrackModelBE();
-
-    /**
-     * Solve the MBD system
-     */
-    void computeMBD(void);
-
-    /**
-     * Fancy solver ALE
-     */
-	void computeALE(void);
 };
 
 }  // namespace EVAA

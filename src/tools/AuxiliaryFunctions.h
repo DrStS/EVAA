@@ -26,35 +26,22 @@
  */
 
 #pragma once
-
-#include <string>
-#include <vector>
-
 #include "AuxiliaryParameters.h"
-
 namespace EVAA {
 
 class AuxiliaryFunctions {
 public:
     /**
      * \brief Constructor
-     * \author Harikrishnan Sreekumar
+     * \author Stefan Sicklinger 
      */
     AuxiliaryFunctions();
 
     /**
      * \brief Destructor
-     * \author Harikrishnan Sreekumar
+     * \author Stefan Sicklinger 
      */
     ~AuxiliaryFunctions();
-
-    /**
-     * \brief Write a double vector to the DAT file with format: <value>
-     * \param[in] _fileName
-     * \param[in] _vector::double
-     * \author Stefan Sicklinger
-     */
-    static void dummy(std::string _fileName, std::vector<double> &_vector);
 };
 
 }  // namespace EVAA

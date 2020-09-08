@@ -21,10 +21,6 @@
 
 #include <AuxiliaryFunctions.h>
 
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <limits>
 
 namespace EVAA {
 
@@ -32,18 +28,5 @@ AuxiliaryFunctions::AuxiliaryFunctions() {}
 
 AuxiliaryFunctions::~AuxiliaryFunctions() {}
 
-void AuxiliaryFunctions::dummy(std::string _fileName, std::vector<double> &_vector) {
-    std::cout << ">> Writing " << _fileName << "#" << _vector.size() << "..." << std::endl;
-    size_t ii_couter;
-    std::ofstream myfile;
-    myfile.open(_fileName);
-    myfile.precision(std::numeric_limits<double>::digits10 + 1);
-    myfile << std::scientific;
-    for (ii_couter = 0; ii_couter < _vector.size(); ii_couter++) {
-        myfile << _vector[ii_couter] << std::endl;
-    }
-    myfile << std::endl;
-    myfile.close();
-}
 
 }  // namespace EVAA
