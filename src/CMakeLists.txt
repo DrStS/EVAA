@@ -24,8 +24,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Windows")
    add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp winResources.rc)
 ENDIF()
 #------------------------------------------------------------------------------------#
-target_link_libraries(EVAA PRIVATE EVAALibStatic)
-add_dependencies(EVAA EVAALibStatic)
+target_link_libraries(EVAA EVAALibStatic)
 #------------------------------------------------------------------------------------#
 IF(CMAKE_OUTPUT_VERBOSE)
 MESSAGE("==== Executable ====")
