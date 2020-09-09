@@ -57,6 +57,7 @@ jobs:
       if: success()
       uses: benc-uk/workflow-dispatch@v1
       with:
+        repo: DrStS/EVAA@refactoring/codeStripping  
         workflow: Build documentation
         token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
 
