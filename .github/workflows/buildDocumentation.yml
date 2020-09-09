@@ -1,7 +1,6 @@
+name: Build documentation
 
-name: Build doc
-
-on: [workflow_dispatch]
+on: [workflow_dispatch, push]
 jobs:
   buildDocumentation:
     runs-on: ubuntu-latest
