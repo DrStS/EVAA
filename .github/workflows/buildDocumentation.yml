@@ -1,0 +1,5 @@
+name: Build documentation
+
+on:
+  repository_dispatch:
+    types: [trigger-workflow-2]
