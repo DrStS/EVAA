@@ -1,4 +1,4 @@
-name: C++ CI/CD
+name: Configure, Build and UnitTest
 
 on: [push]
 
