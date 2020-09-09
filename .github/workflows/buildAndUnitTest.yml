@@ -18,7 +18,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Checkout Repo
     - uses: actions/checkout@v2
       with:
           # The branch, tag or SHA to checkout. When checking out the repository that
