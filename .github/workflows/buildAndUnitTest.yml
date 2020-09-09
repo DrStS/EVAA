@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: DrStS/EVAA
+    - uses: DrStS/EVAA@refactoring/codeStripping
       with:
           # The branch, tag or SHA to checkout. When checking out the repository that
           # triggered a workflow, this defaults to the reference or SHA for that event.
