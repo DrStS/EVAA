@@ -1,5 +1,5 @@
 
-name: Build documentation
+name: Build doc
 
 on: [workflow_dispatch]
 jobs:
