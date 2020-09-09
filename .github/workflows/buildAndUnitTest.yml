@@ -57,7 +57,7 @@ jobs:
       if: success()
       uses: actions/checkout@v2
       with:
-        token: ${{ secrets.REPO_GHA_PAT }}
+        token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
         repository: ${{ github.repository }}
         event-type: trigger-workflow-2
         client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
