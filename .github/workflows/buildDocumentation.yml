@@ -3,3 +3,12 @@ name: Build documentation
 on:
   repository_dispatch:
     types: [trigger-workflow-2]
+
+jobs:
+  buildDocumentation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Those steps are executed directly on the VM
+    - name: Run LaTeX in Docker
+      run: exec docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data blang/latex:ctanfull "$@"
