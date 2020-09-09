@@ -19,8 +19,7 @@ include_directories(${EVAA_INCLUDES})
 LIST(REMOVE_ITEM EVAA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 add_library(EVAALibStatic STATIC ${EVAA_SOURCES})
 #------------------------------------------------------------------------------------#
-IF (CMAKE_SYSTEM_NAME MATCHES "Windows") 
-   #WIN32
+IF(OS_WIN_X86_64) 
    add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp winResources.rc)
 ELSE()
    add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
