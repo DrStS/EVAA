@@ -1,0 +1,12 @@
+name: Build Doxygen documentation
+
+on: [workflow_dispatch,push]
+jobs:
+  buildDoxygenDocumentation:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: mattnotmitt/doxygen-action@v1
+      with:
+        doxyfile-path: ./doc/Doxygen
+    
+      

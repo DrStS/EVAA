@@ -2,7 +2,7 @@ name: Build LaTeX documentation
 
 on: [workflow_dispatch,push]
 jobs:
-  buildDocumentation:
+  buildLaTeXDocumentation:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
