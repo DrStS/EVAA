@@ -1,6 +1,6 @@
 name: Configure, Build and UnitTest
 
-on: [push]
+on: push
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -52,14 +52,6 @@ jobs:
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C $BUILD_TYPE
-      
-    - name: Trigger LaTeX documentation
-      if: ${{ success() && runner.os == 'Linux' }}
-      uses: benc-uk/workflow-dispatch@v1
-      with:   
-        workflow: Build LaTeX documentation
-        ref: refactoring/codeStripping  
-        token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
         
     - name: Trigger Build Doxygen documentation
       if: ${{ success() && runner.os == 'Linux' }}
