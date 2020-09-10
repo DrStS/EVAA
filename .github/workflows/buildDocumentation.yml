@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: LS
-      run : ls -a
+      run : echo ls -a
       shell: bash
     - name: Run LaTeX in Docker
       run: exec docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data blang/latex:ctanfull "latexmk -pdf -interaction=nonstopmode -halt-on-error EVAADocumentation.tex"
