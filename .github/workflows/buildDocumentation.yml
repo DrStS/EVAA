@@ -12,7 +12,6 @@ jobs:
       run : chmod +x rundocker.sh
       working-directory: ./doc/LaTeX
     - name: Run LaTeX in Docker
-      run: ls -a
       run: ./rundocker.sh latexmk -pdf -interaction=nonstopmode -halt-on-error EVAADocumentation.tex
       working-directory: ./doc/LaTeX
       shell: bash
