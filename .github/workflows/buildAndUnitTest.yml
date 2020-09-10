@@ -57,7 +57,7 @@ jobs:
       if: ${{ success() && runner.os == 'Linux' }}
       uses: benc-uk/workflow-dispatch@v1
       with:   
-        workflow: Build Doxygen documentation
+        workflow: Build Doxygen doc
         ref: refactoring/codeStripping  
         token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
 

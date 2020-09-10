@@ -1,4 +1,4 @@
-name: Build Doxygen documentation
+name: Build Doxygen doc
 
 on: workflow_dispatch
 jobs:
@@ -22,9 +22,9 @@ jobs:
         publish_dir: ./html
         
     - name: Trigger LaTeX documentation
-      if: ${{ success() && runner.os == 'Linux' }}
+      if: ${{ success()}}
       uses: benc-uk/workflow-dispatch@v1
       with:   
-        workflow: Build LaTeX documentation
+        workflow: Build LaTeX doc
         ref: refactoring/codeStripping  
         token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
