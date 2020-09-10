@@ -8,9 +8,12 @@ jobs:
     - uses: actions/checkout@v2
       with:
           ref: 'refactoring/codeStripping'
+    - name: Run ls
+      run : ls -a 
+      working-directory: ./doc
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
       with:
-        doxyfile-path: ./doc/Doxygen
+        doxyfile-path: ./doc
     
       
