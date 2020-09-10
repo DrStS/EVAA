@@ -1,11 +1,13 @@
 name: Build documentation
 
-on: [workflow_dispatch, push]
+on: [workflow_dispatch]
 jobs:
   buildDocumentation:
     runs-on: ubuntu-latest
     steps:
     - name: LS
       run : ls -a
+      shell: bash
     - name: Run LaTeX in Docker
-      run: exec docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data blang/latex:ctanfull "$@"
+      run: exec docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data blang/latex:ctanfull "latexmk -pdf -interaction=nonstopmode -halt-on-error EVAADocumentation.tex"
+      working-directory: EVAA/doc/LaTeX
