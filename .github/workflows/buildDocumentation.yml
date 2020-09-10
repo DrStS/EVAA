@@ -1,4 +1,4 @@
-name: Build documentation
+name: Build LaTeX documentation
 
 on: [workflow_dispatch,push]
 jobs:
