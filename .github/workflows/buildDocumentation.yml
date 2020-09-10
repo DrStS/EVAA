@@ -8,8 +8,10 @@ jobs:
     - uses: actions/checkout@v2
       with:
           ref: 'refactoring/codeStripping'
-    - name: LS
-      run : ls -a
-    - name: Run LaTeX in Docker
-      run: exec docker run --rm -i --user="$(id -u):$(id -g)" --net=none -v "$PWD":/data blang/latex:ctanfull latexmk -pdf -interaction=nonstopmode -halt-on-error EVAADocumentation.tex
+    - name: Add exec bit
+      run : chmod +x rundocker.sh
       working-directory: ./doc/LaTeX
+    - name: Run LaTeX in Docker
+      run: rundocker.sh latexmk -pdf -interaction=nonstopmode -halt-on-error EVAADocumentation.tex
+      working-directory: ./doc/LaTeX
+      shell: bash
