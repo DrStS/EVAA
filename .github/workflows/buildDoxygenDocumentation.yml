@@ -1,6 +1,6 @@
 name: Build Doxygen doc
 
-on: [push, workflow_dispatch]
+on: [workflow_dispatch]
 jobs:
   buildDoxygenDocumentation:
     runs-on: ubuntu-latest
