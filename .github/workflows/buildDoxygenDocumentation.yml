@@ -11,7 +11,7 @@ jobs:
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
       with:
-        doxyfile-path: ./doc
+        doxyfile-path: ./doc/Doxyfile
     - name: Run ls
       run : ls -a 
       working-directory: ./doc
@@ -19,6 +19,6 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
-        publish_dir: ./public
+        publish_dir: ./html
     
       
