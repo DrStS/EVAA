@@ -15,7 +15,7 @@ jobs:
       run: ./rundocker.sh latexmk -pdf -interaction=nonstopmode -halt-on-error EVAADocumentation.tex
       working-directory: ./doc/LaTeX
       shell: bash
-    - name: Upload and publish pdf
+      
     - uses: actions/upload-artifact@v2
       with:
         name: EVAADocumentation.pdf
