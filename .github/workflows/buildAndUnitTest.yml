@@ -57,7 +57,7 @@ jobs:
       if: ${{ success() && runner.os == 'Linux' }}
       uses: benc-uk/workflow-dispatch@v1
       with:   
-        workflow: Build documentation
+        workflow: Build LaTeX documentation
         ref: refactoring/codeStripping  
         token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
 
