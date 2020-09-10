@@ -1,6 +1,6 @@
 name: Build documentation
 
-on: [workflow_dispatch]
+on: [workflow_dispatch,push]
 jobs:
   buildDocumentation:
     runs-on: ubuntu-latest
@@ -15,9 +15,11 @@ jobs:
       run: ./rundocker.sh latexmk -pdf -interaction=nonstopmode -halt-on-error EVAADocumentation.tex
       working-directory: ./doc/LaTeX
       shell: bash
-      
-    - uses: actions/upload-artifact@v2
+    - name: Upload artifacts 
+      uses: actions/upload-artifact@v2
       with:
         name: EVAADocumentation.pdf
         path: ./doc/LaTeX/EVAADocumentation.pdf
+      
+    
       
