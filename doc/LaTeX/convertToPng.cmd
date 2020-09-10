@@ -1,0 +1,1 @@
+convert -density 300 graphOnly.pdf -quality 100 graph.png

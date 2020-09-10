@@ -1,0 +1,28 @@
+\cleardoublepage   % korrekter Name für Symbolverzeichnis in der Kopfzeile
+\markboth{\nomname}{\nomname}
+\addcontentsline{toc}{chapter}{\nomname}
+\printnomenclature[1.2cm]
+
+%%%%% Überschriften im Symbolverzeichnis
+\nomenclature[a$\a_$]{\textbf{Greek letters}}{\nomnorefpage}
+\nomenclature[a$_$]{\textbf{Mathematical symbols}}{\nomnorefpage}
+\nomenclature[a$#$]{\textbf{Calligraphic letters}}{\nomnorefpage}
+\nomenclature[a$`$]{\textbf{Latin letters}}{\nomnorefpage}
+\nomenclature[a+]{\textbf{Abbreviations:}}{\nomnorefpage}
+
+%%%%%% Def. von Einträgen in das Symbolverz. ohne Seitenangabe %%%%%%%%
+%% Latin
+\nomenclature[a$I$]{$\vectorsym{I}$}{identity matrix\nomnorefpage}
+
+%%Calligraphic
+\nomenclature[a$#E$]{$\mathcal E()$}{extrapolation operator for next time step\nomnorefpage}
+
+%% GREEK
+\nomenclature[a$\pi$]{$\pi$}{$\approx \numprint{3.141592653589793}$\nomnorefpage}
+
+%% Math
+\nomenclature[a$_aa$]{$\partial$}{operator for partial derivative\nomnorefpage}
+
+%%Abkürzungen
+\nomenclature{VW}{Volkswagen\nomnorefpage}
+\nomenclature{ADAS}{Advanced Driver Assistance Systems\nomnorefpage}

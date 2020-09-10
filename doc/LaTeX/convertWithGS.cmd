@@ -1,0 +1,1 @@
+gswin64 -dSAFER -dBATCH -dNOPAUSE  -sDEVICE=pdfwrite -sOutputFile=phd_thesis_sts_gs.pdf phd_thesis_sts.pdf

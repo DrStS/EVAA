@@ -1,0 +1,57 @@
+\input{EVAADocumentation_preamble}
+%%%%%%%%%%%%%%%%%%%%%%%%%%% S T A R T I N G %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%  D O K U M E N T  %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\includeonly{basic/basic}
+\begin{document}
+%\\%%%%%%%%%%%%%%%%%% TITLEPAGE %%%%%%%%%%%%%%%%%%%%%
+\frontmatter% numbering a, b, c
+\selectlanguage{english}
+\input{input/titlepage}
+%//%%%%%%%%%%%%%%%%%% TITLEPAGE %%%%%%%%%%%%%%%%%%%%%
+%\\%%%%%%%% Acknowledgments & ABSTRACT %%%%%%%%%%%%%%
+%\input{input/abstract}
+%//%%%%%%%% Acknowledgments & ABSTRACT %%%%%%%%%%%%%%
+%\\%%%%%%%%%%%%%%%%%% NOM %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{input/abbreviation}
+\cleardoublepage
+%//%%%%%%%%%%%%%%%%%% NOM %%%%%%%%%%%%%%%%%%%%%%%%%%%  
+%\\%%%%%%%%%%%%%%%%%% TOC %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\microtypesetup{protrusion=false} % disables protrusion locally in the document
+\tableofcontents % prints Table of Contents
+\microtypesetup{protrusion=true}  % enables protrusion
+\mainmatter% numbering arabic 
+\selectlanguage{english}
+%//%%%%%%%%%%%%%%%%%% TOC %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\\%%%%%%%%%%%%%%%%%% CHAPTER 1 %%%%%%%%%%%%%%%%%%%%%
+\include{formulation/formulation}
+%\\%%%%%%%%%%%%%%%%%% CHAPTER 2 %%%%%%%%%%%%%%%%%%%%%
+\include{unittests/unittests}
+%//%%%%%%%%%%%%%%%%%% CHAPTER 2 %%%%%%%%%%%%%%%%%%%%%
+%\\%%%%%%%%%%%%%%%%%% APPENDIX %%%%%%%%%%%%%%%%%%%%%%
+\appendix
+\begingroup
+\makeatletter
+\let\ps@plain\ps@empty
+\appendixpage*
+\makeatother
+\endgroup
+%\\%%%%%%%%%%%%%%%%%% APPENDIX %%%%%%%%%%%%%%%%%%%%%%
+\include{appendix/appendix}
+%//%%%%%%%%%%%%%%%%%% APPENDIX %%%%%%%%%%%%%%%%%%%%%%
+\backmatter % no chapter numbering
+%\\%%%%%%%%%%%%%%%%% VERZEICHNISSE %%%%%%%%%%%%%%%%%%
+%\listoffigures
+%\listoftables
+%\listofalgorithms
+%//%%%%%%%%%%%%%%%% VERZEICHNISSE %%%%%%%%%%%%%%%%%%%
+%\\%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%%%%
+\nocite{*} %Even non-cited BibTeX-Entries will be shown.
+\printbibliography[heading=bibintoc]
+%//%%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%   E N D I N G   %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%  D O K U M E N T  %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

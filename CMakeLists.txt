@@ -39,7 +39,7 @@ ELSE()
    MESSAGE(FATAL_ERROR "EVAA is supported on Linux x86_64 and Windows x64 and Mac x86_64 only")   
 ENDIF()
 IF(CMAKE_OUTPUT_VERBOSE)
-MESSAGE("Current source dir is " ${EVAA_SOURCE_DIR})
+   MESSAGE("Current source dir is " ${EVAA_SOURCE_DIR})
 ENDIF()
 #------------------------------------------------------------------------------------#
 # 1. Options

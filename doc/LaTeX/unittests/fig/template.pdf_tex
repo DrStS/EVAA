@@ -1,0 +1,128 @@
+%% Creator: Inkscape 1.0beta2 (0b0ed59, 2020-01-19), www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'template.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{67.5bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.68888889)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{template.pdf}}%
+    \put(0.32356192,0.153227){\color[rgb]{1,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$F$\end{tabular}}}}%
+    \put(0.28052568,0.5033099){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$m$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{template.pdf}}%
+    \put(0.11395551,0.47914444){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(Beam 2)\end{tabular}}}}%
+    \put(0.11395551,0.25692221){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(Beam 1)\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{template.pdf}}%
+    \put(0.72466764,0.21119469){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$B$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{template.pdf}}%
+    \put(0.72703755,0.26163677){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$b$\end{tabular}}}}%
+    \put(0.95524344,0.40049246){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$H$\end{tabular}}}}%
+    \put(0.90377895,0.40125891){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$h$\end{tabular}}}}%
+    \put(0.68916937,0.48892111){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$t$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{template.pdf}}%
+    \put(0.18539998,0.41545744){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$u_2$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{template.pdf}}%
+    \put(0.18540145,0.19211874){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$u_1$\end{tabular}}}}%
+    \put(0.32581733,0.34121487){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$k_u$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{template.pdf}}%
+    \put(-0.17059795,0.50911283){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Feder\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{template.pdf}}%
+    \put(-0.17059795,0.45607093){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Dämpfer\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{template.pdf}}%
+    \put(-0.17059795,0.41628954){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Masse\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{template.pdf}}%
+    \put(-0.25079661,0.35274714){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}mm\end{tabular}}}}%
+    \put(-0.17059795,0.35844111){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Bemaßung\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{template.pdf}}%
+    \put(-0.16982457,0.31694125){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}festes Auflager\end{tabular}}}}%
+    \put(-0.17021126,0.28238871){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Streckenlast\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{template.pdf}}%
+    \put(-0.22047404,0.20757117){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$x$\end{tabular}}}}%
+    \put(-0.27639493,0.24789412){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$y$\end{tabular}}}}%
+    \put(-0.17062725,0.22346014){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Koordinatensystem\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{template.pdf}}%
+    \put(-0.21794402,0.51806639){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(4)\end{tabular}}}}%
+    \put(-0.22674723,0.46255798){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(4)\end{tabular}}}}%
+    \put(-0.25683512,0.42283362){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(4)\end{tabular}}}}%
+    \put(-0.27610488,0.36861134){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(1)\end{tabular}}}}%
+    \put(-0.25311639,0.34570462){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(2)\end{tabular}}}}%
+    \put(-0.2270853,0.30656022){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(1)\end{tabular}}}}%
+    \put(-0.24432667,0.31438907){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(2)\end{tabular}}}}%
+    \put(-0.27813328,0.28626309){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(2)\end{tabular}}}}%
+    \put(-0.27582091,0.23059104){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}(2)\end{tabular}}}}%
+    \put(-0.17059795,0.1700311){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Einspannung\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{template.pdf}}%
+    \put(-0.23983012,0.12101207){\color[rgb]{1,1,1}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$Z$\end{tabular}}}}%
+    \put(-0.16131422,0.1245591){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Impedanz\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{template.pdf}}%
+    \put(-0.16032996,0.07639888){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Kraft\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{template.pdf}}%
+    \put(-0.17210163,0.05560465){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Freiheitsgrad\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{template.pdf}}%
+    \put(-0.16718918,0.00796383){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Winkel\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{template.pdf}}%
+    \put(-0.16716306,-0.018654){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Konnektor\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{template.pdf}}%
+    \put(0.16255363,0.54985162){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$x$\end{tabular}}}}%
+    \put(0.03726893,0.66220041){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$z$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{template.pdf}}%
+    \put(0.79400202,0.54786547){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$y$\end{tabular}}}}%
+    \put(0.66970941,0.65922219){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}$z$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{template.pdf}}%
+    \put(-0.17715527,0.64030954){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}Strichstärke\end{tabular}}}}%
+    \put(-0.17716806,0.62696662){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}0.15mm (1)\end{tabular}}}}%
+    \put(-0.17716806,0.61136494){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}0.20mm (2)\end{tabular}}}}%
+    \put(-0.17716806,0.59576495){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}0.30mm (3)\end{tabular}}}}%
+    \put(-0.17716806,0.5801669){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}0.50mm (4)\end{tabular}}}}%
+    \put(-0.17716806,0.56456699){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}0.70mm (5)\end{tabular}}}}%
+    \put(-0.17776886,0.54896704){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{0}\smash{\begin{tabular}[t]{l}1.50mm (6)\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=22]{template.pdf}}%
+  \end{picture}%
+\endgroup%

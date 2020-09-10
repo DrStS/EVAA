@@ -1,0 +1,481 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%% S T A R T I N G %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%  P R E A M B L E  %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Usefull documents
+% http://tug.org/pracjourn/2008-1/mori/mori.pdf
+% The overall rule is that symbols representing physical quantities (or variables) are italic, but symbols representing units, or labels, are roman.
+%• Symbols for vectors and matrices are bold italic, symbols for tensors are sansserif bold italic.
+%• The above rules apply equally to letter symbols from the Greek and the Latin alphabet.
+% \mathbfit   -->  boldface italic       --> vector and matrix symbols
+% \mathsfbfit --> sans-serif bold italic --> tensor symbols
+\documentclass [10pt, twoside, openright, a4paper, final %showtrims
+]{memoir}
+\overfullrule=20mm
+%\trimFrame
+%\isopage[12]
+%\isopage
+% Din-A5 148mmx210mm
+%\setlrmarginsandblock{20mm}{27mm}{*}
+%\setulmarginsandblock{25mm}{19mm}{*}
+\setlrmarginsandblock{24mm}{33mm}{*}
+\setulmarginsandblock{30mm}{23mm}{*}
+\checkandfixthelayout
+\fixpdflayout
+\raggedbottom
+%\\%%%%%%%%%%%%%%%%%% LOAD PACKAGES %%%%%%%%%%%%%%%%%%%%%
+%Get Umlaut support
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{float}
+%Get Support for US english
+\usepackage[ngerman,english]{babel}
+% Rotate pages part wise
+\usepackage{pdflscape}
+%Setting a date
+\usepackage{datetime}
+%Support for Graphics 
+\usepackage{graphicx}
+	\graphicspath{{gnuplot/basic/}{input/fig/}{unittests/fig/}{formulation/fig/}}%Set global search path
+\usepackage{transparent}
+\usepackage[utopia,cal=cmcal]{mathdesign} % --> Adobe Utopia for the whole document http://www.latex-community.org/forum/viewtopic.php?f=48&t=6989
+%http://tex.stackexchange.com/questions/30550/force-upright-greek-letters-with-isomath
+\usepackage[OMLmathrm,OMLmathbf]{isomath} % options define which alphabets will be loaded, i.e. if bold face font is not necessary, `OMLmathbf` can be ommitted.
+\DeclareMathAlphabet\mathbfcal{OMS}{cmsy}{b}{n}
+% activate={true,nocompatibility} - activate protrusion and expansion
+% final - enable microtype; use "draft" to disable
+% tracking=true, kerning=true, spacing=true - activate these techniques
+% factor=1100 - add 10% to the protrusion amount (default is 1000)
+% stretch=10, shrink=10 - reduce stretchability/shrinkability (default is 20/20)
+\usepackage[activate={true,nocompatibility},final,tracking=true,kerning=true,spacing=true,factor=1000,stretch=20,shrink=20]{microtype}
+\DeclareMicrotypeSet*[tracking]{my}% 
+  { font = */*/*/sc/* }% 
+\SetTracking{ encoding = *, shape = sc }{ 45 }
+%erweiterter Mathemodus
+\usepackage[fleqn]{amsmath}
+\allowdisplaybreaks[1]
+\renewcommand{\arraystretch}{1.5}
+\setlength{\mathindent}{1.2\parindent}
+% fleqn envirnoment
+%\usepackage{nccmath}
+% Porper differentials
+\usepackage{commath}
+% Copyright symbols
+\usepackage{textcomp}
+%Customizing lists
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{wasysym} % defines  \Box
+%cancel equations
+\usepackage{cancel}
+%Units
+\usepackage{units}
+\let\endleftbar\relax
+\let\leftbar\relax
+%Theorems
+\usepackage[most]{tcolorbox}
+\tcbset{listing engine=listings}
+%Pseudo code
+\usepackage[ruled,vlined,linesnumberedhidden,scleft,algochapter]{algorithm2e}
+%\SetAlFnt{\small}
+\newcommand\mycommfont[1]{\footnotesize\ttfamily\textcolor{gray50}{#1}}
+\SetCommentSty{mycommfont}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+%Fancyref
+\let\figref\fref % use \figref for memoir's \fref
+\let\fref\relax  % "undefine" \fref
+%referencing
+\usepackage[german,plain]{fancyref} 
+%% START Eigene fancyrefs
+%Theorem
+\newcommand*{\fancyrefthmeoremlabelprefix}{thm}
+%\frefformat{vario}{\fancyrefthmeoremlabelprefix}{\frefthmeoremname\fancyrefdefaultspacing#1#3}
+%\Frefformat{vario}{\fancyrefthmeoremlabelprefix}{\Frefthmeoremname\fancyrefdefaultspacing#1#3}
+%% END Eigene fancyrefs
+%Inputdecks
+\usepackage{listings}
+%use coloring
+\usepackage{xcolor}
+%Changing Layout
+%nomenclature
+\usepackage[]{nomencl} 
+\makenomenclature 
+\renewcommand{\nomname}{List of Symbols and Abbreviations}
+% rotate
+\usepackage{rotating}
+%% BibLaTeX
+\usepackage{etoolbox}
+\usepackage{enumitem}
+\usepackage[autostyle,german=guillemets]{csquotes}
+\renewcommand{\mkcitation}[1]{\footnote{#1}}
+\renewcommand{\mktextquote}[6]{#1#2#4#3#5#6}
+\usepackage[natbib=false,citestyle=numeric-comp,bibstyle=numeric-comp,sortcites=true,firstinits=true,backend=biber,maxbibnames=10,maxcitenames=1,url=false,defernumbers=true 
+%,block=nbpar
+]{biblatex}
+\let\cite\textcite
+\AtBeginBibliography{\raggedright}
+\AtEveryBibitem{\clearfield{issn}}
+\AtEveryCitekey{\clearfield{issn}}
+%Break links in biblio
+\appto{\bibsetup}{\emergencystretch=5em}
+\bibliography{EVAADocumentation}
+%Longtable
+\usepackage{longtable}
+\newcounter{magicrownumbers}
+\newcommand\rownumber{\stepcounter{magicrownumbers}\arabic{magicrownumbers}}
+\usepackage{colortbl}
+%//%%%%%%%%%%%%%%%%%% LOAD PACKAGES %%%%%%%%%%%%%%%%%%%%%
+%\\%%%%%%%%%%%%%%%%%% SETTINGS %%%%%%%%%%%%%%%%%%%%%
+%% START MICROTYPE
+%% Keine "Schusterjungen"
+\clubpenalty = 10000
+%% Keine "Hurenkinder"
+\widowpenalty = 10000
+\displaywidowpenalty = 10000
+%% END MICROTYPE
+%% START NUMPRINT
+% Print numbers \numprint{123456.134e123}’
+\usepackage[]{numprint}
+\npthousandsep{\,}
+\npdecimalsign{.}
+\npproductsign{\cdot}
+\npunitseparator{\,}
+%% END NUMPRINT
+%% START TABULAR
+%% Tabellen Anpassung nach Axel Reichert
+\makeatletter
+\newcolumntype{H}{>{\scriptsize\raggedright\arraybackslash}l}
+\newcolumntype{G}[1]{%
+>{\scriptsize\raggedright\hspace{0pt}}p{#1}%
+}
+\newcolumntype{C}{>{\scriptsize\raggedright\arraybackslash}l}
+\newcolumntype{V}[1]{%
+>{\scriptsize\raggedright\hspace{0pt}}p{#1}%
+}
+\makeatother
+%% END TABULAR
+%% START TITLE
+\newcommand*{\DocumentTitle}[1]{\def\DocumentTitle{#1}}
+\DocumentTitle{EVAA: Efficient Vehicle dynAmics simulAtor}
+%% END TITLE
+%\setlength{\parindent}{0mm}%no paragraph indentation
+%% START define colors
+\definecolor{shadecolor}{rgb}{0.7,0.8,0.9}
+\definecolor{TUMhellblau}{HTML}{0073CF}
+\definecolor{TUMhellhellhellblau}{HTML}{98C6EA}
+\definecolor{Weiss}{HTML}{FFFFFF}
+\definecolor{gray05}{gray}{0.95}
+\definecolor{gray20}{gray}{0.80}
+\definecolor{gray50}{gray}{0.50}
+\definecolor{gray80}{gray}{0.20}
+\definecolor{gray90}{gray}{0.10}
+%% END define colors
+
+%% START Kopf- und Fußzeilenanpassung
+% The following code have been found in Peter Wilsons Memoir manual in chapter 7 (page127)
+\makepagestyle{YourPagestyleName} % Create a new pagestyle
+% Following code to edit the pagestyle
+\makepsmarks{YourPagestyleName}{%
+\nouppercaseheads
+% This is where we specify what \leftmark and \rightmark contains
+\createmark{chapter}{both}{shownumber}{}{\space}
+\createmark{section}{right}{shownumber}{}{\space}
+% Change "shownumber" to "nonumber" if you don't want
+%   the chapter/section number displayed at the header.
+\createplainmark{toc}{both}{\contentsname}
+\createplainmark{lof}{both}{\listfigurename}
+\createplainmark{lot}{both}{\listtablename}
+\createplainmark{bib}{both}{\bibname}
+\createplainmark{index}{both}{\indexname}
+\createplainmark{glossary}{both}{\glossaryname}}
+% Might want to keep those, see the manual for further information.
+
+% The following is where you tweek your header
+\makeevenhead{YourPagestyleName}    {\normalfont\leftmark}{}{}
+\makeoddhead{YourPagestyleName}{}{}{\normalfont\rightmark}
+\makeevenfoot{YourPagestyleName}{%      % For verso pages
+\normalfont\thepage}{}{}
+\makeoddfoot{YourPagestyleName}{%       % For recto pages
+}{}{\normalfont\thepage}
+
+% Activate your new pagestyle
+\pagestyle{YourPagestyleName}
+%% END Kopf- und Fußzeilenanpassung
+
+%% START Caption
+\changecaptionwidth
+\captionwidth{0.8\linewidth}
+\setfloatadjustment{figure}{\centering}
+\setfloatadjustment{table}{\footnotesize\centering}
+\captionnamefont{\bfseries\footnotesize} %caption label
+\captiontitlefont{\footnotesize}
+\captionstyle{\centering}
+\subcaptionstyle{\centering}
+\newfixedcaption{\figcaption}{figure}
+%% END Caption
+
+%% START set depth of TOC
+\renewcommand{\cftsectiondotsep}{\cftnodots}
+\maxtocdepth{subsection}
+\setsecnumdepth{subsubsection}
+\maxsecnumdepth{subsubsection}
+\makeatletter
+\renewcommand{\@pnumwidth}{3em} 
+\renewcommand{\@tocrmarg}{4em}
+\makeatother
+%% END set depth of TOC
+
+%% START SOURCE CODE QUOTING SETTINGS
+\renewcommand{\lstlistlistingname}{List of Source Code Snippets}
+\renewcommand{\lstlistingname}{Source Code Snippet}
+\lstset{ %
+%classoffset=0,
+basicstyle=\tiny\ttfamily,
+keywordstyle=\color{TUMhellhellhellblau}\ttfamily,
+stringstyle=\color{violet}\ttfamily,
+commentstyle=\color{gray50},
+identifierstyle=\color{black},
+numbers=left,                   % where to put the line-numbers
+numberstyle=\tiny,              % the size of the fonts that are used for the line-numbers
+stepnumber=2,                   % the step between two line-numbers. If it's 1 each line 
+                                % will be numbered
+firstline=2,
+numberfirstline=false,
+firstnumber=2,                                
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{gray05}, % choose the background color. You must add \usepackage{color}
+rulecolor=\color{gray80},
+rulesepcolor=\color{gray80},
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=none,                     % adds a frame around the code
+framerule=0pt,                  % remove box
+tabsize=2,	                    % sets default tabsize to 2 spaces
+captionpos=t,                   % sets the caption-position to bottom
+breaklines=true,                % sets automatic line breaking
+extendedchars=true,
+breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+title=\lstname,                 % show the filename of files included with \lstinputlisting;
+                                % also try caption instead of title
+escapeinside={\%*}{*)},         % if you want to add a comment within your code
+morekeywords={*,...}            % if you want to add more keywords to the set
+}
+\lstloadlanguages{% Check documentation for further languages ...
+		 C
+ }
+%% END SOURCE CODE QUOTING SETTINGS 
+
+%% START Tabellen Anpassung nach Axel Reichert
+%  not needed anymore use numprint macros n and N
+%% END Tabellen Anpassung nach Axel Reichert
+
+%% START Anpassung der Kapitelüberschriften
+\usepackage{calc,soul}
+\makeatletter
+\newlength\dlf@normtxtw
+\setlength\dlf@normtxtw{\textwidth}
+\def\myhelvetfont{\def\sfdefault{mdput}}
+\newsavebox{\feline@chapter}
+\newcommand\feline@chapter@marker[1][4cm]{%
+\sbox\feline@chapter{%
+\resizebox{!}{#1}{\fboxsep=1pt%
+\colorbox{TUMhellblau}{\color{white}\bfseries\scshape\thechapter}%
+}}%
+\rotatebox{90}{%
+\resizebox{%
+\heightof{\usebox{\feline@chapter}}+\depthof{\usebox{\feline@chapter}}}%
+{!}{\scshape\so\@chapapp}}\quad%
+\raisebox{\depthof{\usebox{\feline@chapter}}}{\usebox{\feline@chapter}}%
+}
+\newcommand\feline@chm[1][4cm]{%
+\sbox\feline@chapter{\feline@chapter@marker[#1]}%
+\makebox[0pt][l]{% aka \rlap
+\makebox[1cm][r]{\usebox\feline@chapter}%
+}}
+\makechapterstyle{daleif1}{
+\renewcommand\chapnamefont{\normalfont\Large\scshape\raggedleft\so}
+\renewcommand\chaptitlefont{\normalfont\huge\bfseries\scshape\color{TUMhellblau}}
+\renewcommand\chapternamenum{}
+\renewcommand\printchaptername{}
+\renewcommand\printchapternum{\null\hfill\feline@chm[2.5cm]\par}
+\renewcommand\afterchapternum{\par\vskip\midchapskip}
+\renewcommand\printchaptertitle[1]{\chaptitlefont\raggedleft ##1\par}
+\makeoddfoot{plain}{}{}{\thepage}
+\makeevenfoot{plain}{}{}{\thepage}
+}
+\makeatother
+\chapterstyle{daleif1}
+
+\epigraphposition{flushleft}
+% Change footer in combination with epigraphhead
+\makeatletter
+\renewcommand{\epigraphhead}[2][95]{%
+   \def\@epitemp{\begin{minipage}{\epigraphwidth}#2\end{minipage}}
+   \def\ps@epigraph{\ps@plain
+     \let\@mkboth\@gobbletwo
+     \@epipos
+     \if@epirhs
+       \def\@oddhead{\hfil\begin{picture}(0,0)
+                          \put(0,-#1){\makebox(0,0)[r]{\@epitemp}}
+                          \end{picture}}
+     \else
+       \if@epicenter
+         \def\@oddhead{\hfil\begin{picture}(0,0)
+                            \put(0,-#1){\makebox(0,0)[b]{\@epitemp}}
+                            \end{picture}\hfil}
+       \else
+         \def\@oddhead{\begin{picture}(0,0)
+                            \put(0,-#1){\makebox(0,0)[l]{\@epitemp}}
+                            \end{picture}\hfil}
+       \fi
+     \fi
+     \let\@evenhead\@oddhead}
+   \thispagestyle{epigraph}}
+\makeatother
+%% END Anpassung der Kapitelüberschriften
+
+%% START Anpassung der Theoreme
+\newtcbtheorem[auto counter,number within=chapter,list inside=exam]{myExample}{Example}{
+    %float=!htb,
+	breakable,
+	enhanced,
+	arc=0pt,
+	outer arc=0pt,
+	coltitle=black,
+	fonttitle=\footnotesize\bfseries,
+	fontupper=\noindent\tiny,
+	colback=gray05,
+	colframe=gray20,
+	left=7pt,
+	lefttitle=7pt,
+	boxsep=2pt,
+	right=7pt,
+}{eg}
+\newtcbtheorem[auto counter,number within=chapter,list inside=theo]{myTheorem}{Theorem}{
+	unbreakable,
+	enhanced,
+	arc=0pt,
+	outer arc=0pt,
+	coltitle=black,
+	fonttitle=\small\bfseries,
+	fontupper=\noindent,
+	colback=gray05,
+	colframe=gray20,
+	left=7pt,
+	lefttitle=7pt,
+	boxsep=2pt,
+	right=7pt,
+}{thm}
+\newtcbtheorem[auto counter,number within=chapter,list inside=defi]{myDefinition}{Definition}{
+	breakable,
+	enhanced,
+	arc=0pt,
+	outer arc=0pt,
+	coltitle=black,
+	fonttitle=\small\bfseries,
+	fontupper=\noindent,
+	colback=gray05,
+	colframe=gray20,
+	left=7pt,
+	lefttitle=7pt,
+	boxsep=2pt,
+	right=7pt,
+}{def}
+\makeatletter
+\newcommand\notefont{\normalfont}
+\def\tcb@theo@title#1#2#3{%
+  \ifdefempty{#2}{\setbox\z@=\hbox{#1}}{\setbox\z@=\tcb@theo@form{#1}{#2}}%
+  \def\temp@a{#3}%
+  \ifx\temp@a\@empty\relax%
+    \unhbox\z@\kvtcb@terminatorsign%
+  \else%
+    \setbox\z@=\hbox{\unhbox\z@\kvtcb@separatorsign\ }%
+    \hangindent\wd\z@%
+    \hangafter=1%
+    \mbox{\unhbox\z@}\kvtcb@desc@delim@left\notefont#3\kvtcb@desc@delim@right\kvtcb@terminatorsign%
+  \fi%
+}
+\makeatother
+
+\newtcbinputlisting[auto counter,number within=chapter]{\mylisting}[2][]{%
+	listing file={#2},
+	title=\textbf{\thetcbcounter~Listing:} {#2},
+	enhanced,
+	arc=0pt,
+	outer arc=0pt,
+	coltitle=black,
+	fonttitle=\small,
+	fontupper=\noindent,
+	colback=gray05,
+	colframe=gray20,
+	left=0pt,
+	lefttitle=7pt,
+	boxsep=2pt,
+	right=7pt,
+	listing only,
+	breakable,
+	listing options={language=C},
+	#1}
+%% END Anpassung der Theoreme
+
+%% START Eigene Math macros
+\newcommand\leftidx[3]{%
+{\vphantom{#2}}#1#2#3%
+}
+\makeatletter
+\g@addto@macro\footnotesize{%
+  \setlength\abovedisplayskip{2pt}
+  \setlength\belowdisplayskip{2pt}
+  \setlength\abovedisplayshortskip{2pt}
+  \setlength\belowdisplayshortskip{2pt}
+}
+\makeatother
+%% END Eigene Math macros
+
+%% START HYPERREF
+%Links
+\usepackage[plainpages=false,pdfpagelabels,pdfview=Fit,pdftex,hypertexnames=false]{hyperref} 
+\newsubfloat{figure}% Allow subfloats in figure environment
+\hypersetup{   
+	bookmarksopen=false,    % expand tree
+	unicode=false,          % non-Latin characters in Acrobat’s bookmarks
+	pdftoolbar=false,       % show Acrobat’s toolbar?
+	pdfmenubar=true,        % show Acrobat’s menu?
+	pdffitwindow=false,     % window fit to page when opened
+	pdfstartview={FitH},    % fits the width of the page to the window
+	pdftitle={\DocumentTitle},   % title
+	pdfauthor={Stefan Sicklinger}, % author
+	pdfsubject={Projektdokumentation},       % subject of the document
+	pdfkeywords={Körperschall; Vibroakustik;},         % list of keywords
+	pdfnewwindow=true,      % links in new window
+	colorlinks=true,        % false: boxed links; true: colored links
+	linkcolor=black,        % color of internal links
+	citecolor=black,        % color of links to bibliography
+	filecolor=black,        % color of file links
+	urlcolor=black          % color of external links
+}
+%% END HYPERREF
+%//%%%%%%%%%%%%%%%%%% SETTINGS %%%%%%%%%%%%%%%%%%%%%
+
+%\\%%%%%%%%%%%%%%%%%% OWN COMMANDS %%%%%%%%%%%%%%%%%%%%%
+\newcommand{\itab}[1]{\hspace{0em}\rlap{#1}}
+\newcommand{\tab}[1]{\hspace{.35\textwidth}\rlap{#1}}
+\newcommand{\Reyn}{\operatorname{\mathit{Re}}}
+\newcommand{\Strn}{\operatorname{\mathit{Sr}}}
+\DeclareMathOperator{\colspan}{colspan}
+\DeclareMathOperator{\diag}{diag}
+%//%%%%%%%%%%%%%%%%%% OWN COMMANDS %%%%%%%%%%%%%%%%%%%%%
+\hyphenation{}
+%//%%%%%%%%%%%%%%%%%% OWN COMMANDS %%%%%%%%%%%%%%%%%%%%%
+\newcommand{\FLpar}[2] { % a simple partial derivation - F. L.
+	\frac{\partial #1}{\partial #2}
+}
+\newcommand{\FLexpr}[3] {
+	\FLpar{#1}{#2}\FLpar{#2}{#3}+\FLpar{#1}{#3}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%   E N D I N G   %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%  P R E A M B L E  %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
