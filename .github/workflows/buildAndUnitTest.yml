@@ -54,7 +54,7 @@ jobs:
       run: ctest -C $BUILD_TYPE
       
     - name: Trigger next workflow
-      if: success()
+      if: ${{ success() && runner.os == 'Linux' }}
       uses: benc-uk/workflow-dispatch@v1
       with:   
         workflow: Build documentation
