@@ -52,7 +52,7 @@ ENDIF()
 #1. Option
 ######################################################################################
 option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
-option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output" OFF)
+option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output" ON)
 ######################################################################################
 #2. Macros
 ######################################################################################
@@ -86,6 +86,7 @@ Please run CMake from your build directory. You may want to remove CMakeCache.tx
 IF (${BUILD_UNITTESTS}) 
    MESSAGE("Using Catch2 for unit tests and micro benchmarks")
    conan_cmake_run(REQUIRES catch2/2.13.0 BASIC_SETUP CMAKE_TARGETS)
+   include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 ENDIF()
 #------------------------------------------------------------------------------------#
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
@@ -100,6 +101,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin64 )
 SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin64 )
 #------------------------------------------------------------------------------------#
+MESSAGE("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 # INCLUDE dirs
 add_subdirectory(src)
 IF(${BUILD_UNITTESTS})
