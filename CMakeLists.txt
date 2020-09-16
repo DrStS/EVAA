@@ -105,5 +105,6 @@ MESSAGE("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 # INCLUDE dirs
 add_subdirectory(src)
 IF(${BUILD_UNITTESTS})
+enable_testing()
 add_subdirectory(unitTests)
 ENDIF()

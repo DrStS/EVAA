@@ -17,11 +17,10 @@ get_property(EVAA_UnitTest_INCLUDES GLOBAL PROPERTY EVAA_UnitTest_INCLUDES)
 get_property(EVAA_UnitTest_SOURCES GLOBAL PROPERTY EVAA_UnitTest_SOURCES)
 #------------------------------------------------------------------------------------#
 #Catch 2
-enable_testing()
-include_directories(${EVAA_INCLUDES})
-include_directories(${EVAA_UnitTest_INCLUDES})
 include(CTest)
 include(${CONAN_BUILD_DIRS_CATCH2}/Catch.cmake)
+include_directories(${EVAA_INCLUDES})
+include_directories(${EVAA_UnitTest_INCLUDES})
 #------------------------------------------------------------------------------------#
 IF(OS_WIN_X86_64) 
    add_executable(EVAATest ${EVAA_UnitTest_SOURCES}  winResourcesUnitTest.rc)
