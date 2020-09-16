@@ -51,7 +51,7 @@ ENDIF()
 ######################################################################################
 #1. Option
 ######################################################################################
-option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" OFF)
+option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
 option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output" OFF)
 ######################################################################################
 #2. Macros
@@ -61,6 +61,13 @@ SET(CMAKE_MODULE_PATH ${EVAA_SOURCE_DIR}/cmake/modules)
 include(MacroOutOfSourceBuild)
 include(MacroAppendGlobalVariable)
 include(GetGitRevisionDescription)
+# Download automatically, you can also just copy the conan.cmake file
+if(NOT EXISTS "${CMAKE_MODULE_PATH}/conan.cmake")
+   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+   file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
+                  "${CMAKE_MODULE_PATH}/conan.cmake")
+endif()
+include(conan)
 ######################################################################################
 #3. Compiler
 ######################################################################################
@@ -77,8 +84,8 @@ Please run CMake from your build directory. You may want to remove CMakeCache.tx
 #------------------------------------------------------------------------------------#
 # Build unit test and micro benchmarks
 IF (${BUILD_UNITTESTS}) 
-   MESSAGE("Writing to HDF5 at checkpoints")
-   add_definitions(-DUSE_CHECKPOINTS)
+   MESSAGE("Using Catch2 for unit tests and micro benchmarks")
+   conan_cmake_run(REQUIRES catch2/2.13.0 BASIC_SETUP CMAKE_TARGETS)
 ENDIF()
 #------------------------------------------------------------------------------------#
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
