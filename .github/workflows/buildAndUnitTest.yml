@@ -24,6 +24,15 @@ jobs:
           # triggered a workflow, this defaults to the reference or SHA for that event.
           # Otherwise, uses the default branch.
           ref: 'refactoring/codeStripping'
+  
+    - name: Install Conan Package Manager (Linux & macOS)
+      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+      run: sudo pip install conan --quiet
+      shell: bash
+      
+    - name: Install Conan Package Manager (Windows)
+      if: ${{ runner.os == 'Windows' }}
+      run: pip install conan --quiet
       
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
