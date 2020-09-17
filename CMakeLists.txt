@@ -53,7 +53,7 @@ ENDIF()
 ######################################################################################
 option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
 option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output" ON)
-option(USE_HDF5                  "Use HDF5"  OFF)
+option(USE_HDF5                  "Use HDF5"  ON)
 ######################################################################################
 #2. Macros
 ######################################################################################
@@ -92,10 +92,9 @@ ENDIF()
 #------------------------------------------------------------------------------------#
 # Try to find HDF5
 IF (${USE_HDF5})
+   MESSAGE("Using Catch2 HDF5")
    add_definitions(-DUSE_HDF5)
    conan_cmake_run(REQUIRES hdf5/1.10.6 BASIC_SETUP CMAKE_TARGETS)
-   MESSAGE("HDF5 status: ${HDF5_FOUND}")
-   include_directories(${HDF5_INCLUDE_DIR})
 ENDIF()
 #------------------------------------------------------------------------------------#
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)

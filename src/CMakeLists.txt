@@ -25,6 +25,7 @@ ELSE()
    add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 ENDIF()
 #------------------------------------------------------------------------------------#
+target_link_libraries(EVAALibStatic CONAN_PKG::hdf5)
 target_link_libraries(EVAA EVAALibStatic)
 #------------------------------------------------------------------------------------#
 IF(CMAKE_OUTPUT_VERBOSE)

@@ -58,6 +58,7 @@
 #include "EVAAComputeEngine.h"
 
 
+
 int main(int argc, char **argv) {
     std::cout << "Hello EVAA is fired up!" << std::endl;
     std::cout << "GIT: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
@@ -65,5 +66,7 @@ int main(int argc, char **argv) {
     for (std::vector<std::string>::iterator it = allArgs.begin(); it != allArgs.end(); ++it) {
         std::cout << *it << std::endl;
     }
+    EVAA::EVAAComputeEngine myComputeEngine("test.xml");
+    myComputeEngine.testHDF5("testOutput.h5");
     return 0;
 }

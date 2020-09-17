@@ -39,6 +39,12 @@ public:
      * metadatabase \author Stefan Sicklinger
      */
     EVAAComputeEngine(std::string inputFileName);
+    /**
+    * \brief Test hdf5 output demo write
+    * \param[in] file name of hdf5 file
+    * metadatabase \author Stefan Sicklinger
+    */
+    void testHDF5(std::string outputFileName);
 
 };
 
