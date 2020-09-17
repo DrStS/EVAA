@@ -22,7 +22,7 @@
 cmake_minimum_required (VERSION 3.14)
 #------------------------------------------------------------------------------------#
 project (EVAA VERSION 1.0 LANGUAGES CXX)
-set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo")
+set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
 #------------------------------------------------------------------------------------#)
 #------------------------------------------------------------------------------------#)
 # Check OS and host system
@@ -95,6 +95,9 @@ IF (${USE_HDF5})
    MESSAGE("Using Catch2 HDF5")
    add_definitions(-DUSE_HDF5)
    conan_cmake_run(REQUIRES hdf5/1.10.6 BASIC_SETUP CMAKE_TARGETS)
+   IF(OS_WIN_X86_64) 
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4099")
+   ENDIF()
 ENDIF()
 #------------------------------------------------------------------------------------#
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
