@@ -53,6 +53,7 @@ ENDIF()
 ######################################################################################
 option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
 option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output" ON)
+option(USE_HDF5                  "Use HDF5"  OFF)
 ######################################################################################
 #2. Macros
 ######################################################################################
@@ -89,6 +90,14 @@ IF (${BUILD_UNITTESTS})
    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 ENDIF()
 #------------------------------------------------------------------------------------#
+# Try to find HDF5
+IF (${USE_HDF5})
+   add_definitions(-DUSE_HDF5)
+   conan_cmake_run(REQUIRES hdf5/1.10.6 BASIC_SETUP CMAKE_TARGETS)
+   MESSAGE("HDF5 status: ${HDF5_FOUND}")
+   include_directories(${HDF5_INCLUDE_DIR})
+ENDIF()
+#------------------------------------------------------------------------------------#
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(GIT_TAG --tags)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in" 
@@ -98,8 +107,8 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in
 ######################################################################################
 #------------------------------------------------------------------------------------#
 # Where to put EXECUTABLE
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin64 )
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin64 )
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
+SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
 #------------------------------------------------------------------------------------#
 MESSAGE("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 # INCLUDE dirs
