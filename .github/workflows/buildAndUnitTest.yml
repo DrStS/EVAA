@@ -2,12 +2,9 @@ name: Configure, Build and UnitTest
 
 on: push
 
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
-
 jobs:
-  build:
+  ## Build and UnitTest
+  buildCode:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -48,26 +45,65 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build}} 
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config $BUILD_TYPE
+      run: cmake --build . --config ${{matrix.build}} 
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C $BUILD_TYPE
+      run: ctest -C ${{ matrix.build }}
         
-    - name: Trigger Build Doxygen documentation
-      if: ${{ success() && runner.os == 'Linux' }}
-      uses: benc-uk/workflow-dispatch@v1
-      with:   
-        workflow: Build Doxygen doc
-        ref: refactoring/codeStripping  
-        token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
+  ## Build Doxygen Documentation    
+  buildDoxygenDocumentation:
+    needs: buildCode
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+          ref: 'refactoring/codeStripping'
+    - name: Run Doxygen
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        doxyfile-path: ./doc/Doxyfile
+    - name: Run ls
+      run : ls -a 
+      working-directory: ./doc
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
+        publish_dir: ./html
+        
+  ## Build LaTeX Documentation         
+  buildLaTeXDocumentation:
+    needs: buildDoxygenDocumentation
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+          ref: 'refactoring/codeStripping'
+    - name: Add exec bit
+      run : chmod +x rundocker.sh
+      working-directory: ./doc/LaTeX
+    - name: Run LaTeX in Docker
+      run: ./rundocker.sh latexmk -pdf -interaction=nonstopmode -halt-on-error EVAADocumentation.tex
+      working-directory: ./doc/LaTeX
+      shell: bash
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: EVAADocumentation.pdf
+        path: ./doc/LaTeX/EVAADocumentation.pdf
+        
+        
+  
+  
+    
 
