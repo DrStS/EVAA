@@ -1,4 +1,4 @@
-name: Configure, Build and UnitTest
+name: Configure, Build, UnitTest and Build Doc
 
 on: push
 
