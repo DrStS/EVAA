@@ -21,7 +21,3 @@ cmake -G "Visual Studio 16 2019" ..
 cmake --build . --config Release
 ctest
 ```
-## QT 5 QML deployment  
-```
-C:\software\libs\QT\Qt5123\5.12.3\msvc2017_64\bin\windeployqt.exe --release --qmldir C:\software\libs\QT\Qt5123\5.12.3\msvc2017_64\qml EVAA.exe
-```
