@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['machineepsilon_16',['machineEpsilon',['../class_e_v_a_a_1_1_auxiliary_parameters.html#a6976542c6b14812034697e952722bdb1',1,'EVAA::AuxiliaryParameters']]],
-  ['main_17',['main',['../main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main.cpp']]],
-  ['main_2ecpp_18',['main.cpp',['../main_8cpp.html',1,'']]]
+  ['init_17',['init',['../class_e_v_a_a_1_1_message.html#a29d03e9abfef13d54e285cdc12f7bf37',1,'EVAA::Message']]]
 ];
