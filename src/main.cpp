@@ -57,13 +57,20 @@
 #include "AuxiliaryParameters.h"
 #include "EVAAComputeEngine.h"
 
+static void showHelp(std::string name){
+    std::cerr << "Usage: " << name << " <option(s)> SOURCES"
+    << "Options:\n"
+    << "\t-h,--help\t\tShow this help message\n"
+    << "\t-d,--destination DESTINATION\tSpecify the destination path"
+    << std::endl;
+}
 
 
 int main(int argc, char **argv) {
     std::cout << "Hello EVAA is fired up!" << std::endl;
     std::cout << "GIT: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
     std::vector<std::string> allArgs(argv, argv + argc);
-    for (std::vector<std::string>::iterator it = allArgs.begin(); it != allArgs.end(); ++it) {
+    for (std::vector<std::string>::iterator it = allArgs.begin()+1; it != allArgs.end(); ++it) {
         std::cout << *it << std::endl;
     }
     EVAA::EVAAComputeEngine myComputeEngine("test.xml");
