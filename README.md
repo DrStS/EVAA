@@ -30,13 +30,13 @@ ctest
 
 # Naming conventions C++: CamelCase
 A snippet taken from this [source](https://lefticus.gitbooks.io/cpp-best-practices/content/03-Style.html) mainly.   
-* Types start with upper case: <mark>MyClass</mark>  
-* Files start with upper case: <mark>MyFile</mark>  
-* Functions and variables start with lower case: <mark>myMethod</mark>   
-* Constants are all upper case: <mark>const double PI=3.14159265358979323;</mark>  
-* Macro names use upper case with underscores: <mark>INT_MAX</mark>  
-* Template parameter names use camel case: <mark>InputIterator</mark>  
-* All other names use snake case: <mark>unordered_map</mark>   
+* Types start with upper case: <code>MyClass</code>  
+* Files start with upper case: <code>MyFile</code>  
+* Functions and variables start with lower case: <code>myMethod</code>   
+* Constants are all upper case: <code>const double PI=3.14159265358979323;</code>  
+* Macro names use upper case with underscores: <code>INT_MAX</code>  
+* Template parameter names use camel case: <code>InputIterator</code>  
+* All other names use snake case: <code>unordered_map</code>   
 Distinguish Private Object Data   
 * Name private data with a m_ prefix to distinguish it from public data. m_ stands for "member" data.  
 Distinguish Function Parameters   
