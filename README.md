@@ -37,37 +37,34 @@ A snippet taken from this [source](https://lefticus.gitbooks.io/cpp-best-practic
 * Macro names use upper case with underscores: <code>INT_MAX</code>  
 * Template parameter names use camel case: <code>InputIterator</code>  
 * All other names use snake case: <code>unordered_map</code>   
-Distinguish Private Object Data   
-* Name private data with a m_ prefix to distinguish it from public data. m_ stands for "member" data.  
-Distinguish Function Parameters   
-* Name function parameters with an t_ prefix. t_ can be thought of as "the", but the meaning is arbitrary.  
+* Distinguish Private Object Data: Name private data with a m_ prefix to distinguish it from public data. m_ stands for "member" data.  
+* Distinguish Function Parameters: Name function parameters with an t_ prefix. t_ can be thought of as "the", but the meaning is arbitrary.  
 ## Example
 Header file MyClass.h    
 ```cpp
+#pragma once
+/********//**
+* \brief Class MyOtherClass which holds the main implementation...
+***********/
+class MyOtherClass;
 class MyClass
 {
 public:
-  MyClass(MyOtherClass t_myOtherClass)
-    : m_myOtherClass(t_myOtherClass)
-  {
-  }
-
+  /***********************************************************************************************
+  * \brief Constructor
+  * \param[in] instance of MyOtherClass
+  * \author Your Name
+  ***********/
+  MyClass(MyOtherClass t_myOtherClass);
 private:
+  /// Instance of the MyOtherClass which holds the...
   MyOtherClass m_myOtherClass;
 };
 ```
 Implementation file MyClass.cpp    
 ```cpp
-class MyClass
+void MyClass::MyClass(MyOtherClass t_myOtherClass) : m_myOtherClass(t_myOtherClass)
 {
-public:
-  MyClass(MyOtherClass t_myOtherClass)
-    : m_myOtherClass(t_myOtherClass)
-  {
-  }
-
-private:
-  MyOtherClass m_myOtherClass;
-};
+}
 ```
   
