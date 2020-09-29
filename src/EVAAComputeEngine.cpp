@@ -23,17 +23,17 @@
 #include "H5Cpp.h"
 namespace EVAA {
 /** Constructor to instantiate the singleton and create the engine.*/
-	EVAAComputeEngine::EVAAComputeEngine(std::string inputFileName) {
+	EVAAComputeEngine::EVAAComputeEngine(std::string t_inputFileName) {
 	}
 
-	void EVAAComputeEngine::testHDF5(std::string outputFileName) {
+	void EVAAComputeEngine::testHDF5(std::string t_outputFileName) {
 		try
 		{
 			// Turn off the auto-printing when failure occurs so that we can
 			// handle the errors appropriately.
 			H5::Exception::dontPrint();
 			// Create a new file using default properties.
-			H5::H5File file(outputFileName, H5F_ACC_TRUNC);
+			H5::H5File file(t_outputFileName, H5F_ACC_TRUNC);
 			// Create group "MyGroup" in the root group using an absolute name.
 			H5::Group group1(file.createGroup("/MyGroup"));
 			// Create group "Group_A" in group "MyGroup" using an
@@ -47,14 +47,12 @@ namespace EVAA {
 			group2.close();
 			group3.close();
 			file.close();
-		} // end of try block
-
+		} 
 		// catch failure caused by the File operations
 		catch (H5::FileIException error)
 		{
 			error.printErrorStack();
 		}
-
 		// catch failure caused by the Group operations
 		catch (H5::GroupIException error)
 		{

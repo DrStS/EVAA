@@ -1,5 +1,5 @@
 /*
- * Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+ * Copyright &copy; 2020, Dr. Stefan Sicklinger, Munich \n
  *
  *  All rights reserved.
  *
@@ -19,19 +19,13 @@
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
 
-/**
- * \file EVAAComputeEngine.h
- * This file holds the class of ComputeEngine.
- * \date 6/13/2019
- */
-
 #pragma once
 #include <string>
 namespace EVAA {
 /**
- * \brief Class ComputeEngine the core of EVAA
+ * \brief Class wrapper to boost logging
  */
-class EVAAComputeEngine {
+class Logger {
 public:
     /**
      * \brief Reads parameters from XML files.

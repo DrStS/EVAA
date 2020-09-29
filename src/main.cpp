@@ -44,36 +44,57 @@
  * VEREBOSE=1</EM>
  */
 
-/**
- * \file main.cpp
- * This file holds the main function of EVAA.
- * \author Stefan Sicklinger
- * \date 09/08/2020
- * \version 1.0
- */
+ /**
+  * \file main.cpp
+  * This file holds the main function of EVAA.
+  * \author Stefan Sicklinger
+  * \date 09/08/2020
+  * \version 1.0
+  */
 #include <iostream>
 #include <vector>
 
 #include "AuxiliaryParameters.h"
 #include "EVAAComputeEngine.h"
 
-static void showHelp(std::string name){
-    std::cerr << "Usage: " << name << " <option(s)> SOURCES"
-    << "Options:\n"
-    << "\t-h,--help\t\tShow this help message\n"
-    << "\t-d,--destination DESTINATION\tSpecify the destination path"
-    << std::endl;
+static void showHelp(void) {
+	std::cerr
+		<< "Valid command line options:\n"
+		<< "\t-h,--help\t\t\tShow this help message\n"
+		<< "\t-i,--inputfile INPUT_FILE\tSpecify the file name to the input file for the run."
+		<< std::endl;
 }
 
 
-int main(int argc, char **argv) {
-    std::cout << "Hello EVAA is fired up!" << std::endl;
-    std::cout << "GIT: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
-    std::vector<std::string> allArgs(argv, argv + argc);
-    for (std::vector<std::string>::iterator it = allArgs.begin()+1; it != allArgs.end(); ++it) {
-        std::cout << *it << std::endl;
-    }
-    EVAA::EVAAComputeEngine myComputeEngine("test.xml");
-    myComputeEngine.testHDF5("testOutput.h5");
-    return 0;
+int main(int argc, char** argv) {
+	std::cout << "GIT: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
+	std::vector<std::string> allArgs(argv, argv + argc);
+	std::string inputFile;
+	for (std::vector<std::string>::iterator itArg = allArgs.begin() + 1; itArg != allArgs.end(); ++itArg) {
+		if ((*itArg == "-h") || (*itArg == "--help")) {
+			showHelp();
+			return 0;
+		}
+		else if ((*itArg == "-i") || (*itArg == "--inputfile")) {
+			if ((itArg - allArgs.begin() + 1) < allArgs.size()) {
+				inputFile = *(itArg + 1);
+			}
+			else {
+				std::cerr << "ERROR: no iput file selected: use --help for more details." << std::endl;
+				return 1;
+			}
+		}
+		else {
+			std::cout << "WARNING: unknown option "<< *itArg <<": use --help for more details." << std::endl;
+		}
+	}
+	if (!inputFile.empty()) {
+		std::cout << "Hello EVAA is fired up with input file: " << inputFile << " !" << std::endl;
+	}
+	else{
+		std::cerr << "ERROR: no iput file selected: use --help for more details." << std::endl;
+	}
+	EVAA::EVAAComputeEngine myComputeEngine(inputFile);
+	myComputeEngine.testHDF5("testOutput.h5");
+	return 0;
 }
