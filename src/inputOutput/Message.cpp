@@ -1,5 +1,5 @@
 /*
- * Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+ * Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \\n
  *
  *  All rights reserved.
  *
@@ -19,10 +19,73 @@
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
 
-#include "Logging.h"
+#include "Message.h"
+#include <boost/log/utility/setup/console.hpp>
+#include <boost/log/support/date_time.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/phoenix/core/expression.hpp>
+#include <boost/phoenix/bind/bind_function.hpp>
+
+
+
 namespace EVAA {
 
-}  // namespace EVAA
+	std::string_view formatMessage(
+		boost::log::value_ref< std::string, boost::log::expressions::tag::smessage > const& message)
+	{
+		// Check to see if the attribute value has been found
+		if (message)
+		{
+			std::string_view msg = message.get();
+			if (!msg.empty() && msg.back() == '\n')
+				msg = std::string_view(msg.data(), msg.size() - 1);
+			return msg;
+		}
+
+		return std::string_view();
+	}
+
+	void Message::init(void) {
+		boost::log::add_console_log
+		(
+			std::clog,
+			boost::log::keywords::format =
+			(
+				boost::log::expressions::stream
+				<< boost::log::expressions::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
+				<< " [" << boost::log::expressions::attr< boost::log::trivial::severity_level >("Severity") << "]: "
+				<< boost::phoenix::bind(&formatMessage, boost::log::expressions::smessage.or_none())
+				)
+		);
+		boost::log::add_common_attributes();
+	}
+
+	void Message::writeASCIIArt() {
+		LOG_INFO << "#            _____                    _____                    _____                    _____                              " << std::endl;
+		LOG_INFO << "#           /\\    \\                  /\\    \\                  /\\    \\                  /\\    \\                     " << std::endl;
+		LOG_INFO << "#          /::\\    \\                /::\\____\\                /::\\    \\                /::\\    \\                    " << std::endl;
+		LOG_INFO << "#         /::::\\    \\              /:::/    /               /::::\\    \\              /::::\\    \\                     " << std::endl;
+		LOG_INFO << "#        /::::::\\    \\            /:::/    /               /::::::\\    \\            /::::::\\    \\                    " << std::endl;
+		LOG_INFO << "#       /:::/\\:::\\    \\          /:::/    /               /:::/\\:::\\    \\          /:::/\\:::\\    \\                " << std::endl;
+		LOG_INFO << "#      /:::/__\\:::\\    \\        /:::/____/               /:::/__\\:::\\    \\        /:::/__\\:::\\    \\               " << std::endl;
+		LOG_INFO << "#     /::::\\   \\:::\\    \\       |::|    |               /::::\\   \\:::\\    \\      /::::\\   \\:::\\    \\           " << std::endl;
+		LOG_INFO << "#    /::::::\\   \\:::\\    \\      |::|    |     _____    /::::::\\   \\:::\\    \\    /::::::\\   \\:::\\    \\          " << std::endl;
+		LOG_INFO << "#   /:::/\\:::\\   \\:::\\    \\     |::|    |    /\\    \\  /:::/\\:::\\   \\:::\\    \\  /:::/\\:::\\   \\:::\\    \\    " << std::endl;
+		LOG_INFO << "#  /:::/__\\:::\\   \\:::\\____\\    |::|    |   /::\\____\\/:::/  \\:::\\   \\:::\\____\\/:::/  \\:::\\   \\:::\\____\\   " << std::endl;
+		LOG_INFO << "#  \\:::\\   \\:::\\   \\::/    /    |::|    |  /:::/    /\\::/    \\:::\\  /:::/    /\\::/    \\:::\\  /:::/    /         " << std::endl;
+		LOG_INFO << "#   \\:::\\   \\:::\\   \\/____/     |::|    | /:::/    /  \\/____/ \\:::\\/:::/    /  \\/____/ \\:::\\/:::/    /          " << std::endl;
+		LOG_INFO << "#    \\:::\\   \\:::\\    \\         |::|____|/:::/    /            \\::::::/    /            \\::::::/    /               " << std::endl;
+		LOG_INFO << "#     \\:::\\   \\:::\\____\\        |:::::::::::/    /              \\::::/    /              \\::::/    /                " << std::endl;
+		LOG_INFO << "#      \\:::\\   \\::/    /        \\::::::::::/____/               /:::/    /               /:::/    /                    " << std::endl;
+		LOG_INFO << "#       \\:::\\   \\/____/          ~~~~~~~~~~                    /:::/    /               /:::/    /                      " << std::endl;
+		LOG_INFO << "#        \\:::\\    \\                                           /:::/    /               /:::/    /                       " << std::endl;
+		LOG_INFO << "#         \\:::\\____\\                                         /:::/    /               /:::/    /                        " << std::endl;
+		LOG_INFO << "#          \\::/    /                                         \\::/    /                \\::/    /                         " << std::endl;
+		LOG_INFO << "#           \\/____/                                           \\/____/                  \\/____/                          " << std::endl;
+		LOG_INFO << "#                                                                                                                          " << std::endl;
+	};
+
+}  // namespace EVAA             
 
 
 

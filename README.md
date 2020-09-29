@@ -1,5 +1,29 @@
 ***
-# EVAA  
+# EVAA
+```
+#            _____                    _____                    _____                    _____           
+#           /\    \                  /\    \                  /\    \                  /\    \          
+#          /::\    \                /::\____\                /::\    \                /::\    \         
+#         /::::\    \              /:::/    /               /::::\    \              /::::\    \        
+#        /::::::\    \            /:::/    /               /::::::\    \            /::::::\    \       
+#       /:::/\:::\    \          /:::/    /               /:::/\:::\    \          /:::/\:::\    \      
+#      /:::/__\:::\    \        /:::/____/               /:::/__\:::\    \        /:::/__\:::\    \     
+#     /::::\   \:::\    \       |::|    |               /::::\   \:::\    \      /::::\   \:::\    \    
+#    /::::::\   \:::\    \      |::|    |     _____    /::::::\   \:::\    \    /::::::\   \:::\    \   
+#   /:::/\:::\   \:::\    \     |::|    |    /\    \  /:::/\:::\   \:::\    \  /:::/\:::\   \:::\    \  
+#  /:::/__\:::\   \:::\____\    |::|    |   /::\____\/:::/  \:::\   \:::\____\/:::/  \:::\   \:::\____\ 
+#  \:::\   \:::\   \::/    /    |::|    |  /:::/    /\::/    \:::\  /:::/    /\::/    \:::\  /:::/    / 
+#   \:::\   \:::\   \/____/     |::|    | /:::/    /  \/____/ \:::\/:::/    /  \/____/ \:::\/:::/    /  
+#    \:::\   \:::\    \         |::|____|/:::/    /            \::::::/    /            \::::::/    /   
+#     \:::\   \:::\____\        |:::::::::::/    /              \::::/    /              \::::/    /    
+#      \:::\   \::/    /        \::::::::::/____/               /:::/    /               /:::/    /     
+#       \:::\   \/____/          ~~~~~~~~~~                    /:::/    /               /:::/    /      
+#        \:::\    \                                           /:::/    /               /:::/    /       
+#         \:::\____\                                         /:::/    /               /:::/    /        
+#          \::/    /                                         \::/    /                \::/    /         
+#           \/____/                                           \/____/                  \/____/          
+#                                                                                                       
+```
 EVAA: Efficient Vehicle dynAmics simulAtor
 high performance vehicle dynamics model and simulation for applications 
 w.r.t. autonomous driving
@@ -14,21 +38,21 @@ Use cmake to configure EVAA.
 Windows  
 ```console
 cd bin
-cmake -G "Visual Studio 16 2019" ..
+cmake -G "Visual Studio 16 2019" -A x64 ..
 cmake --build . --config Release
 ctest
 ```
 Mac  
 ```console
 cd bin
-cmake -G "Xcode" ..
+cmake -G "Xcode" -A x64 ..
 cmake --build . --config Release
 ctest
 ```
 # Developer Doc
 [https://drsts.github.io/EVAA](https://drsts.github.io/EVAA)
 
-# Naming conventions C++: CamelCase
+# Naming conventions C++ for EVAA
 A snippet taken from this [source](https://lefticus.gitbooks.io/cpp-best-practices/content/03-Style.html) mainly.   
 * Types start with upper case: <code>MyClass</code>  
 * Files start with upper case: <code>MyFile</code>  
@@ -43,18 +67,18 @@ A snippet taken from this [source](https://lefticus.gitbooks.io/cpp-best-practic
 Header file MyClass.h    
 ```cpp
 #pragma once
-/********//**
+/**
 * \brief Class MyOtherClass which holds the main implementation...
-***********/
+**/
 class MyOtherClass;
 class MyClass
 {
 public:
-  /***********************************************************************************************
+  /**
   * \brief Constructor
   * \param[in] instance of MyOtherClass
   * \author Your Name
-  ***********/
+  **/
   MyClass(MyOtherClass t_myOtherClass);
 private:
   /// Instance of the MyOtherClass which holds the...

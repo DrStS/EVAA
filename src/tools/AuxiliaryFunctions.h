@@ -19,29 +19,29 @@
  *  along with EVAA.  If not, see http://www.gnu.org/licenses/.
  */
 
-/**
- * \file AuxiliaryFunctions.h
- * This file holds the class of AuxiliaryFunctions.
- * \date 19/4/2018
+ /**
+  * \file AuxiliaryFunctions.h
+  * This file holds the class of AuxiliaryFunctions.
+  * \date 19/4/2018
  */
 
 #pragma once
 #include "AuxiliaryParameters.h"
 namespace EVAA {
 
-class AuxiliaryFunctions {
-public:
-    /**
-     * \brief Constructor
-     * \author Stefan Sicklinger 
-     */
-    AuxiliaryFunctions();
+	class AuxiliaryFunctions {
+	public:
+		/**
+		 * \brief Constructor
+		 * \author Stefan Sicklinger
+		*/
+		AuxiliaryFunctions();
 
-    /**
-     * \brief Destructor
-     * \author Stefan Sicklinger 
-     */
-    ~AuxiliaryFunctions();
-};
+		/**
+		 * \brief Destructor
+		 * \author Stefan Sicklinger
+		*/
+		~AuxiliaryFunctions();
+	};
 
 }  // namespace EVAA

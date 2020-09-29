@@ -22,7 +22,7 @@
 #include "EVAAComputeEngine.h"
 #include "H5Cpp.h"
 namespace EVAA {
-/** Constructor to instantiate the singleton and create the engine.*/
+	/** Constructor to instantiate the singleton and create the engine.*/
 	EVAAComputeEngine::EVAAComputeEngine(std::string t_inputFileName) {
 	}
 
@@ -47,7 +47,7 @@ namespace EVAA {
 			group2.close();
 			group3.close();
 			file.close();
-		} 
+		}
 		// catch failure caused by the File operations
 		catch (H5::FileIException error)
 		{

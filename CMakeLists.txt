@@ -52,8 +52,9 @@ ENDIF()
 #1. Option
 ######################################################################################
 option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
-option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output" ON)
-option(USE_HDF5                  "Use HDF5"  ON)
+option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
+option(USE_HDF5                  "Use HDF5"                             ON)
+option(USE_BOOST                 "Use BOOST"                            ON)
 ######################################################################################
 #2. Macros
 ######################################################################################
@@ -90,11 +91,17 @@ IF (${BUILD_UNITTESTS})
    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 ENDIF()
 #------------------------------------------------------------------------------------#
+# Try to find Boost
+IF (${USE_BOOST})
+   MESSAGE("Using Boost")
+   conan_cmake_run(REQUIRES boost/1.74.0 OPTIONS boost:zlib=False boost:bzip2=False boost:lzma=False boost:zstd=False BASIC_SETUP CMAKE_TARGETS BUILD missing)
+ENDIF()
+#------------------------------------------------------------------------------------#
 # Try to find HDF5
 IF (${USE_HDF5})
-   MESSAGE("Using Catch2 HDF5")
+   MESSAGE("Using HDF5")
    add_definitions(-DUSE_HDF5)
-   conan_cmake_run(REQUIRES hdf5/1.10.6 BASIC_SETUP CMAKE_TARGETS)
+   conan_cmake_run(REQUIRES hdf5/1.10.6  BASIC_SETUP CMAKE_TARGETS BUILD missing)
    IF(OS_WIN_X86_64) 
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4099")
    ENDIF()

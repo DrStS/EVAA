@@ -50,24 +50,25 @@
   * \author Stefan Sicklinger
   * \date 09/08/2020
   * \version 1.0
-  */
+ **/
 #include <iostream>
 #include <vector>
 
 #include "AuxiliaryParameters.h"
 #include "EVAAComputeEngine.h"
+#include "Message.h"
+
 
 static void showHelp(void) {
-	std::cerr
-		<< "Valid command line options:\n"
-		<< "\t-h,--help\t\t\tShow this help message\n"
-		<< "\t-i,--inputfile INPUT_FILE\tSpecify the file name to the input file for the run."
-		<< std::endl;
+	LOG_INFO << "Valid command line options:" << std::endl;
+	LOG_INFO << "\t-h,--help\t\t\tShow this help message." << std::endl;
+	LOG_INFO << "\t-i,--inputfile INPUT_FILE\tSpecify the file name to the input file for the run." << std::endl;
 }
 
-
 int main(int argc, char** argv) {
-	std::cout << "GIT: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
+	EVAA::Message myMessage;
+	myMessage.init();
+	LOG_INFO << "EVAA version hash: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
 	std::vector<std::string> allArgs(argv, argv + argc);
 	std::string inputFile;
 	for (std::vector<std::string>::iterator itArg = allArgs.begin() + 1; itArg != allArgs.end(); ++itArg) {
@@ -80,21 +81,25 @@ int main(int argc, char** argv) {
 				inputFile = *(itArg + 1);
 			}
 			else {
-				std::cerr << "ERROR: no iput file selected: use --help for more details." << std::endl;
+				LOG_ERROR << "No iput file selected: use --help for more details." << std::endl;
 				return 1;
 			}
 		}
 		else {
-			std::cout << "WARNING: unknown option "<< *itArg <<": use --help for more details." << std::endl;
+			if (!((*(itArg-1) == "-i") || (*(itArg-1) == "--inputfile")))
+			LOG_WARNING << "Unknown option "<< *itArg <<": use --help for more details." << std::endl;
 		}
 	}
 	if (!inputFile.empty()) {
-		std::cout << "Hello EVAA is fired up with input file: " << inputFile << " !" << std::endl;
+		LOG_INFO << "Hello EVAA is fired up with input file: " << inputFile << " !" << std::endl;
 	}
 	else{
-		std::cerr << "ERROR: no iput file selected: use --help for more details." << std::endl;
+		LOG_ERROR << "No iput file selected: use --help for more details." << std::endl;
 	}
 	EVAA::EVAAComputeEngine myComputeEngine(inputFile);
+
+	myMessage.writeASCIIArt();
+
 	myComputeEngine.testHDF5("testOutput.h5");
 	return 0;
 }

@@ -23,10 +23,6 @@
 
 
 namespace EVAA {
-
-AuxiliaryFunctions::AuxiliaryFunctions() {}
-
-AuxiliaryFunctions::~AuxiliaryFunctions() {}
-
-
+	AuxiliaryFunctions::AuxiliaryFunctions() {}
+	AuxiliaryFunctions::~AuxiliaryFunctions() {}
 }  // namespace EVAA
