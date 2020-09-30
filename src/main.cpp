@@ -67,7 +67,7 @@ static void showHelp(void) {
 
 int main(int argc, char** argv) {
 	EVAA::Message myMessage;
-	myMessage.init();
+	myMessage.initLogging();
 	LOG_INFO << "EVAA version hash: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
 	std::vector<std::string> allArgs(argv, argv + argc);
 	std::string inputFile;
@@ -97,9 +97,8 @@ int main(int argc, char** argv) {
 		LOG_ERROR << "No iput file selected: use --help for more details." << std::endl;
 	}
 	EVAA::EVAAComputeEngine myComputeEngine(inputFile);
-
 	myMessage.writeASCIIArt();
-
+	LOG_DEBUG << "Start HDF5 test" << std::endl;
 	myComputeEngine.testHDF5("testOutput.h5");
 	return 0;
 }

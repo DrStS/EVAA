@@ -24,6 +24,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
+
 namespace EVAA {
 	/**
 	 * \brief Class wrapper to boost logging
@@ -42,13 +43,21 @@ namespace EVAA {
 		**/
 	    void writeASCIIArt(void);
 		/**
+         * \brief init logger
+         * \author Stefan Sicklinger
+        **/
+		void initLogging(void);
+		/**
          * \brief Constructor
          * \author Stefan Sicklinger
         **/
-		void init(void);
+		
+	private:
+		
 		///This variable is shared between all objects of type message
 	};
-
+	std::string_view formatMessage(boost::log::value_ref< std::string, boost::log::expressions::tag::smessage > const& t_message);
+	
 
 #define LOG_DEBUG \
     BOOST_LOG_STREAM_WITH_PARAMS(::boost::log::trivial::logger::get(),\

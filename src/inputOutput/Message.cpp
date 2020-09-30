@@ -25,18 +25,17 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/phoenix/core/expression.hpp>
 #include <boost/phoenix/bind/bind_function.hpp>
-
+#include <boost/log/utility/setup/file.hpp>
 
 
 namespace EVAA {
 
-	std::string_view formatMessage(
-		boost::log::value_ref< std::string, boost::log::expressions::tag::smessage > const& message)
+	std::string_view formatMessage(boost::log::value_ref< std::string, boost::log::expressions::tag::smessage > const& t_message)
 	{
 		// Check to see if the attribute value has been found
-		if (message)
+		if (t_message)
 		{
-			std::string_view msg = message.get();
+			std::string_view msg = t_message.get();
 			if (!msg.empty() && msg.back() == '\n')
 				msg = std::string_view(msg.data(), msg.size() - 1);
 			return msg;
@@ -45,19 +44,29 @@ namespace EVAA {
 		return std::string_view();
 	}
 
-	void Message::init(void) {
+	void Message::initLogging(void) {
+
+		boost::log::add_file_log(
+			boost::log::keywords::file_name = "EVAA.log",
+			boost::log::keywords::target_file_name = "EVAA.log"
+			);
+		
 		boost::log::add_console_log
 		(
-			std::clog,
-			boost::log::keywords::format =
+			std::clog, boost::log::keywords::format =
 			(
 				boost::log::expressions::stream
 				<< boost::log::expressions::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
 				<< " [" << boost::log::expressions::attr< boost::log::trivial::severity_level >("Severity") << "]: "
-				<< boost::phoenix::bind(&formatMessage, boost::log::expressions::smessage.or_none())
+				<< boost::phoenix::bind(&formatMessage,   boost::log::expressions::smessage.or_none())
 				)
 		);
 		boost::log::add_common_attributes();
+		// Set filter based on XML input
+		boost::log::core::get()->set_filter
+		(
+			boost::log::trivial::severity >= boost::log::trivial::debug
+		);
 	}
 
 	void Message::writeASCIIArt() {
