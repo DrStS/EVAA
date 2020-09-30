@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['init_52',['init',['../class_e_v_a_a_1_1_message.html#a29d03e9abfef13d54e285cdc12f7bf37',1,'EVAA::Message']]]
+  ['initlogging_52',['initLogging',['../class_e_v_a_a_1_1_message.html#a07beaa84345d14c3d4ba4c5a21ef1263',1,'EVAA::Message']]]
 ];
