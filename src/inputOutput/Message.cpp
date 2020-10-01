@@ -49,8 +49,7 @@ namespace EVAA {
 		boost::log::add_file_log(
 			boost::log::keywords::file_name = "EVAA.log",
 			boost::log::keywords::target_file_name = "EVAA.log"
-			);
-		
+		);
 		boost::log::add_console_log
 		(
 			std::clog, boost::log::keywords::format =
@@ -58,15 +57,12 @@ namespace EVAA {
 				boost::log::expressions::stream
 				<< boost::log::expressions::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S")
 				<< " [" << boost::log::expressions::attr< boost::log::trivial::severity_level >("Severity") << "]: "
-				<< boost::phoenix::bind(&formatMessage,   boost::log::expressions::smessage.or_none())
+				<< boost::phoenix::bind(&formatMessage, boost::log::expressions::smessage.or_none())
 				)
 		);
 		boost::log::add_common_attributes();
 		// Set filter based on XML input
-		boost::log::core::get()->set_filter
-		(
-			boost::log::trivial::severity >= boost::log::trivial::debug
-		);
+		boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::debug);
 	}
 
 	void Message::writeASCIIArt() {

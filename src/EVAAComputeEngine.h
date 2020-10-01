@@ -45,7 +45,6 @@ namespace EVAA {
 		 * \author Stefan Sicklinger
 		**/
 		void testHDF5(std::string t_outputFileName);
-
 	};
 
 }  // namespace EVAA

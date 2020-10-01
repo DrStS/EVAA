@@ -84,29 +84,38 @@ set(CMAKE_CXX_EXTENSIONS NO)
 macro_ensure_out_of_source_build("In source build is not allowed for ${PROJECT_NAME}.\
 Please run CMake from your build directory. You may want to remove CMakeCache.txt.")
 #------------------------------------------------------------------------------------#
-# Build unit test and micro benchmarks
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
+#------------------------------------------------------------------------------------#
+# Build list of conan packages
+IF (${BUILD_UNITTESTS})
+   LIST(APPEND CONAN_PACKAGES "catch2/2.13.0")
+ENDIF()
+IF (${USE_BOOST})
+   LIST(APPEND CONAN_PACKAGES "boost/1.74.0")
+ENDIF()
+IF (${USE_HDF5})
+   LIST(APPEND CONAN_PACKAGES "hdf5/1.10.6")
+ENDIF()
+#------------------------------------------------------------------------------------#
+conan_cmake_run(REQUIRES ${CONAN_PACKAGES} BASIC_SETUP CMAKE_TARGETS BUILD missing)
+#------------------------------------------------------------------------------------#
+# Configure options
 IF (${BUILD_UNITTESTS}) 
    MESSAGE("Using Catch2 for unit tests and micro benchmarks")
-   conan_cmake_run(REQUIRES catch2/2.13.0 BASIC_SETUP CMAKE_TARGETS)
    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 ENDIF()
-#------------------------------------------------------------------------------------#
-# Try to find Boost
 IF (${USE_BOOST})
    MESSAGE("Using Boost")
-   conan_cmake_run(REQUIRES boost/1.74.0 OPTIONS boost:zlib=False boost:bzip2=False boost:lzma=False boost:zstd=False BASIC_SETUP CMAKE_TARGETS BUILD missing)
 ENDIF()
-#------------------------------------------------------------------------------------#
-# Try to find HDF5
 IF (${USE_HDF5})
    MESSAGE("Using HDF5")
    add_definitions(-DUSE_HDF5)
-   conan_cmake_run(REQUIRES hdf5/1.10.6  BASIC_SETUP CMAKE_TARGETS BUILD missing)
-   IF(OS_WIN_X86_64) 
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4099")
+   IF(OS_WIN_X86_64)
+	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4099")
    ENDIF()
 ENDIF()
 #------------------------------------------------------------------------------------#
+# Configure files
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(GIT_TAG --tags)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in" 

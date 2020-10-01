@@ -1,7 +1,7 @@
 /**
  * \mainpage
  * \section LICENSE
- *  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+ *  Copyright &copy; 2020, Dr. Stefan Sicklinger, Munich \n
  *  All rights reserved. \n
  *
  *  This file is part of EVAA.
@@ -32,16 +32,9 @@
  *  This is the main file of EVAA
  *  EVAA: Efficient Vehicle dynAmics simulAtor
  *
- *
- *
  * \section HOWTO
  * Please find all further information on
  * <a href="https://github.com/DrStS/EVAA">EVAA Project</a>
- *
- *
- * <EM> Note: The Makefile suppresses per default all compile and linking
- * command output to the terminal. You may enable this information by make
- * VEREBOSE=1</EM>
  */
 
  /**
@@ -85,16 +78,16 @@ int main(int argc, char** argv) {
 				return 1;
 			}
 		}
-		else {
-			if (!((*(itArg-1) == "-i") || (*(itArg-1) == "--inputfile")))
-			LOG_WARNING << "Unknown option "<< *itArg <<": use --help for more details." << std::endl;
+		else if (!((*(itArg - 1) == "-i") || (*(itArg - 1) == "--inputfile"))){
+				LOG_WARNING << "Unknown option " << *itArg << ": use --help for more details." << std::endl;
 		}
 	}
 	if (!inputFile.empty()) {
-		LOG_INFO << "Hello EVAA is fired up with input file: " << inputFile << " !" << std::endl;
+		LOG_INFO << "Hello EVAA is fired up with input file: " << inputFile  << std::endl;
 	}
-	else{
+	else {
 		LOG_ERROR << "No iput file selected: use --help for more details." << std::endl;
+		return 1;
 	}
 	EVAA::EVAAComputeEngine myComputeEngine(inputFile);
 	myMessage.writeASCIIArt();
