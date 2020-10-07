@@ -74,7 +74,7 @@ include(conan)
 ######################################################################################
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS NO)
+set(CMAKE_CXX_EXTENSIONS YES)
 ######################################################################################
 #4. Configure
 ######################################################################################
@@ -143,7 +143,7 @@ IF(CMAKE_OUTPUT_VERBOSE)
 ENDIF()
 #https://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml
 EXECUTE_PROCESS(  
-	COMMAND ${XSD_EXE} cxx-tree --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/IP_EVAA_XML.xsd
+	COMMAND ${XSD_EXE} cxx-tree --std c++11 --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/IP_EVAA_XML.xsd
 	WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
    )
 SET(CODESYNTHESIS_INCLUDE_DIR "${EVAA_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}/libxsd")
