@@ -19,7 +19,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with EVAA. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------------#
-cmake_minimum_required (VERSION 3.14)
+cmake_minimum_required (VERSION 3.18)
 #------------------------------------------------------------------------------------#
 project (EVAA VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
@@ -87,10 +87,6 @@ Please run CMake from your build directory. You may want to remove CMakeCache.tx
 #------------------------------------------------------------------------------------#
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
 #------------------------------------------------------------------------------------#
-conan_add_remote(NAME bincrafters 
-                 INDEX 1
-                 URL https://api.bintray.com/conan/bincrafters/public-conan
-                 VERIFY_SSL True)
 # Build list of conan packages
 IF (${BUILD_UNITTESTS})
    LIST(APPEND CONAN_PACKAGES "catch2/2.13.0")
