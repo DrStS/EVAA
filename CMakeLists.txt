@@ -19,7 +19,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with EVAA. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------------#
-cmake_minimum_required (VERSION 3.18)
+cmake_minimum_required (VERSION 3.16)
 #------------------------------------------------------------------------------------#
 project (EVAA VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
