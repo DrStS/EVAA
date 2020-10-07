@@ -20,12 +20,12 @@ LIST(REMOVE_ITEM EVAA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 add_library(EVAALibStatic STATIC ${EVAA_SOURCES})
 #------------------------------------------------------------------------------------#
 IF(OS_WIN_X86_64) 
-   add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp winResources.rc)
+   ADD_EXECUTABLE(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp winResources.rc)
 ELSE()
-   add_executable(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+   ADD_EXECUTABLE(EVAA ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 ENDIF()
 #------------------------------------------------------------------------------------#
-target_link_libraries(EVAALibStatic CONAN_PKG::hdf5 CONAN_PKG::boost)
+target_link_libraries(EVAALibStatic CONAN_PKG::hdf5 CONAN_PKG::boost CONAN_PKG::xerces-c)
 target_link_libraries(EVAA EVAALibStatic)
 #------------------------------------------------------------------------------------#
 IF(CMAKE_OUTPUT_VERBOSE)

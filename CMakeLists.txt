@@ -52,9 +52,10 @@ ENDIF()
 #1. Option
 ######################################################################################
 option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
-option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
 option(USE_HDF5                  "Use HDF5"                             ON)
-option(USE_BOOST                 "Use BOOST"                            ON)
+option(USE_XSD                   "Use XSD"                              ON)
+option(USE_XSD                   "Use XSD"                              ON)
+option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
 ######################################################################################
 #2. Macros
 ######################################################################################
@@ -86,16 +87,19 @@ Please run CMake from your build directory. You may want to remove CMakeCache.tx
 #------------------------------------------------------------------------------------#
 SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
 #------------------------------------------------------------------------------------#
+conan_add_remote(NAME bincrafters 
+                 INDEX 1
+                 URL https://api.bintray.com/conan/bincrafters/public-conan
+                 VERIFY_SSL True)
 # Build list of conan packages
 IF (${BUILD_UNITTESTS})
    LIST(APPEND CONAN_PACKAGES "catch2/2.13.0")
 ENDIF()
-IF (${USE_BOOST})
-   LIST(APPEND CONAN_PACKAGES "boost/1.74.0")
-ENDIF()
 IF (${USE_HDF5})
    LIST(APPEND CONAN_PACKAGES "hdf5/1.10.6")
 ENDIF()
+   LIST(APPEND CONAN_PACKAGES "xerces-c/3.2.2")
+   LIST(APPEND CONAN_PACKAGES "boost/1.74.0")
 #------------------------------------------------------------------------------------#
 conan_cmake_run(REQUIRES ${CONAN_PACKAGES} BASIC_SETUP CMAKE_TARGETS BUILD missing)
 #------------------------------------------------------------------------------------#
@@ -103,9 +107,6 @@ conan_cmake_run(REQUIRES ${CONAN_PACKAGES} BASIC_SETUP CMAKE_TARGETS BUILD missi
 IF (${BUILD_UNITTESTS}) 
    MESSAGE("Using Catch2 for unit tests and micro benchmarks")
    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-ENDIF()
-IF (${USE_BOOST})
-   MESSAGE("Using Boost")
 ENDIF()
 IF (${USE_HDF5})
    MESSAGE("Using HDF5")
@@ -130,6 +131,9 @@ SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
 #------------------------------------------------------------------------------------#
 MESSAGE("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 # INCLUDE dirs
+IF(${USE_XSD})
+add_subdirectory(xsd)
+ENDIF()
 add_subdirectory(src)
 IF(${BUILD_UNITTESTS})
 enable_testing()

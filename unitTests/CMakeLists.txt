@@ -23,9 +23,9 @@ include_directories(${EVAA_INCLUDES})
 include_directories(${EVAA_UnitTest_INCLUDES})
 #------------------------------------------------------------------------------------#
 IF(OS_WIN_X86_64) 
-   add_executable(EVAATest ${EVAA_UnitTest_SOURCES}  winResourcesUnitTest.rc)
+   ADD_EXECUTABLE(EVAATest ${EVAA_UnitTest_SOURCES} winResourcesUnitTest.rc)
 ELSE()
-   add_executable(EVAATest ${EVAA_UnitTest_SOURCES}  )
+   ADD_EXECUTABLE(EVAATest ${EVAA_UnitTest_SOURCES})
 ENDIF()
 #------------------------------------------------------------------------------------#
 target_link_libraries(EVAATest EVAALibStatic CONAN_PKG::catch2)
