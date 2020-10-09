@@ -17,14 +17,14 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with EVAA. If not, see http://www.gnu.org/licenses/.
+#  along with EVAA. If not, see http://www.gnu.org/licenses/
 #------------------------------------------------------------------------------------#
 cmake_minimum_required (VERSION 3.18)
 #------------------------------------------------------------------------------------#
 project (EVAA VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
-#------------------------------------------------------------------------------------#)
-#------------------------------------------------------------------------------------#)
+#------------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------------#
 # Check OS and host system
 IF((${CMAKE_SYSTEM_NAME} MATCHES "Linux" AND ${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")) 
    SET(OS_LINUX_X86_64 TRUE)
@@ -143,7 +143,7 @@ IF(CMAKE_OUTPUT_VERBOSE)
 ENDIF()
 #https://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml
 EXECUTE_PROCESS(  
-	COMMAND ${XSD_EXE} cxx-tree --std c++11 --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/IP_EVAA_XML.xsd
+	COMMAND ${XSD_EXE} cxx-tree --std c++11 --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/InputSchemaEVAA.xsd
 	WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
    )
 SET(CODESYNTHESIS_INCLUDE_DIR "${EVAA_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}/libxsd")

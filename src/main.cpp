@@ -50,6 +50,8 @@
 #include "AuxiliaryParameters.h"
 #include "EVAAComputeEngine.h"
 #include "Message.h"
+#include "InputSchemaEVAA.h"
+
 
 
 static void showHelp(void) {
@@ -93,5 +95,15 @@ int main(int argc, char** argv) {
 	myMessage.writeASCIIArt();
 	LOG_DEBUG << "Start HDF5 test" << std::endl;
 	myComputeEngine.testHDF5("testOutput.h5");
+
+	try
+	{
+		const auto parsedInputFile = InputFileEVAA("inputFileLinear.xml");
+	}
+	catch (const xml_schema::exception& e)
+	{
+		std::cerr << e << std::endl;
+	}
+
 	return 0;
 }

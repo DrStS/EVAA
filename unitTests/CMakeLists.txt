@@ -30,6 +30,14 @@ ENDIF()
 #------------------------------------------------------------------------------------#
 target_link_libraries(EVAATest EVAALibStatic CONAN_PKG::catch2)
 catch_discover_tests(EVAATest)
+ADD_CUSTOM_COMMAND(TARGET EVAATest POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/inputFiles/inputFileLinear.xml"
+        $<TARGET_FILE_DIR:EVAATest>)
+ADD_CUSTOM_COMMAND(TARGET EVAATest POST_BUILD		
+COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/xsd/InputSchemaEVAA.xsd"
+        $<TARGET_FILE_DIR:EVAATest>)
 #------------------------------------------------------------------------------------#
 IF(CMAKE_OUTPUT_VERBOSE)
 MESSAGE("==== Unit Test Executable ====")
