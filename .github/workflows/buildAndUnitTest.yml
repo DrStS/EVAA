@@ -11,7 +11,8 @@ jobs:
     # See: https://docs.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+      #, 'macos-latest'
+        os: ['ubuntu-latest', 'windows-latest']
         build: [Debug, Release]
     runs-on: ${{ matrix.os }}
 
