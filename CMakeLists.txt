@@ -158,14 +158,11 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in
 ######################################################################################
 #------------------------------------------------------------------------------------#
 # Where to put EXECUTABLE
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY         ${EVAA_SOURCE_DIR}/bin )
+SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY         ${EVAA_SOURCE_DIR}/bin )
 #------------------------------------------------------------------------------------#
 MESSAGE("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 # INCLUDE dirs
-IF(${USE_XSD})
-add_subdirectory(xsd)
-ENDIF()
 add_subdirectory(src)
 IF(${BUILD_UNITTESTS})
 enable_testing()
