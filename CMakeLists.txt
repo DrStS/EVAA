@@ -146,6 +146,9 @@ EXECUTE_PROCESS(
 	COMMAND ${XSD_EXE} cxx-tree --std c++11 --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/InputSchemaEVAA.xsd
 	WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
    )
+IF(NOT EXISTS ${EVAA_SOURCE_DIR}/src/database/InputSchemaEVAA.h )
+     MESSAGE(FATAL_ERROR  "XSD has not generated ${EVAA_SOURCE_DIR}/src/database/InputSchemaEVAA.h")
+ENDIF()
 SET(CODESYNTHESIS_INCLUDE_DIR "${EVAA_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}/libxsd")
 #------------------------------------------------------------------------------------#
 # Configure files
