@@ -37,18 +37,26 @@ Install cmake and conan.
 Use cmake to configure EVAA.   
 Windows  
 ```console
-cd bin
+cd build
 cmake -G "Visual Studio 16 2019" -A x64 ..
 cmake --build . --config Release
 ctest
 ```
 Mac  
 ```console
-cd bin
+cd build
 cmake -G "Xcode" -A x64 ..
 cmake --build . --config Release
 ctest
 ```
+Linux  
+```console
+cd build
+cmake -G "Unix Makefiles" ..
+cmake --build . --config Release
+ctest
+```
+
 # Developer Doc
 [https://drsts.github.io/EVAA](https://drsts.github.io/EVAA)
 
