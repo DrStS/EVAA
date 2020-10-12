@@ -39,7 +39,7 @@ ELSE()
    MESSAGE(FATAL_ERROR "EVAA is supported on Linux x86_64 and Windows x64 and Mac x86_64 only")   
 ENDIF()
 IF(CMAKE_OUTPUT_VERBOSE)
-   MESSAGE("Current source dir is " ${EVAA_SOURCE_DIR})
+   MESSAGE("Current source dir is " ${PROJECT_SOURCE_DIR})
 ENDIF()
 #------------------------------------------------------------------------------------#
 # 1. Options
@@ -58,7 +58,7 @@ option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
 #2. Macros
 ######################################################################################
 # Add EVAA cmake modules
-SET(CMAKE_MODULE_PATH ${EVAA_SOURCE_DIR}/cmake/modules)
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 include(MacroOutOfSourceBuild)
 include(MacroAppendGlobalVariable)
 include(GetGitRevisionDescription)
@@ -83,7 +83,9 @@ set(CMAKE_CXX_EXTENSIONS YES)
 macro_ensure_out_of_source_build("In source build is not allowed for ${PROJECT_NAME}.\
 Please run CMake from your build directory. You may want to remove CMakeCache.txt.")
 #------------------------------------------------------------------------------------#
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin )
+# Where to put EXECUTABLE
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 #------------------------------------------------------------------------------------#
 # Build list of conan packages
 IF (${BUILD_UNITTESTS})
@@ -130,26 +132,26 @@ ELSE()
    MESSAGE(FATAL_ERROR "EVAA is supported on Linux x86_64 and Windows x64 and Mac x86_64 only")   
 ENDIF()
 
-IF(NOT EXISTS ${EVAA_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END})
-FILE(DOWNLOAD ${CODESYNTHESIS_PATH} ${EVAA_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END}
+IF(NOT EXISTS ${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END})
+FILE(DOWNLOAD ${CODESYNTHESIS_PATH} ${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END}
 	TIMEOUT 60
 	EXPECTED_HASH SHA1=${CODESYNTHESIS_FILE_HASH}
 	TLS_VERIFY ON)
 ENDIF()
-FILE(ARCHIVE_EXTRACT INPUT ${EVAA_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END} DESTINATION ${EVAA_SOURCE_DIR}/xsd)
-FIND_PROGRAM(XSD_EXE xsd PATHS ${EVAA_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}/bin REQUIRED NO_DEFAULT_PATH)
+FILE(ARCHIVE_EXTRACT INPUT ${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END} DESTINATION ${PROJECT_SOURCE_DIR}/xsd)
+FIND_PROGRAM(XSD_EXE xsd PATHS ${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}/bin REQUIRED NO_DEFAULT_PATH)
 IF(CMAKE_OUTPUT_VERBOSE)
 	MESSAGE("XSD_EXE ${XSD_EXE}")
 ENDIF()
 #https://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml
 EXECUTE_PROCESS(  
-	COMMAND ${XSD_EXE} cxx-tree --std c++11 --hxx-suffix .h --cxx-suffix .cpp ${EVAA_SOURCE_DIR}/xsd/InputSchemaEVAA.xsd
-	WORKING_DIRECTORY ${EVAA_SOURCE_DIR}/src/database
+	COMMAND ${XSD_EXE} cxx-tree --std c++11 --hxx-suffix .h --cxx-suffix .cpp ${PROJECT_SOURCE_DIR}/xsd/InputSchemaEVAA.xsd
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src/database
    )
-IF(NOT EXISTS ${EVAA_SOURCE_DIR}/src/database/InputSchemaEVAA.h )
-     MESSAGE(FATAL_ERROR  "XSD has not generated ${EVAA_SOURCE_DIR}/src/database/InputSchemaEVAA.h")
+IF(NOT EXISTS ${PROJECT_SOURCE_DIR}/src/database/InputSchemaEVAA.h )
+     MESSAGE(FATAL_ERROR  "XSD has not generated ${PROJECT_SOURCE_DIR}/src/database/InputSchemaEVAA.h")
 ENDIF()
-SET(CODESYNTHESIS_INCLUDE_DIR "${EVAA_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}/libxsd")
+SET(CODESYNTHESIS_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}/libxsd")
 #------------------------------------------------------------------------------------#
 # Configure files
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
@@ -159,10 +161,6 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in
 ######################################################################################
 #5. Subdirectories THE ORDER IS IMPORTANT, BECAUSE THEY ARE COMPILED IN THAT ORDER
 ######################################################################################
-#------------------------------------------------------------------------------------#
-# Where to put EXECUTABLE
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY         ${EVAA_SOURCE_DIR}/bin)
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY         ${EVAA_SOURCE_DIR}/bin)
 #------------------------------------------------------------------------------------#
 MESSAGE("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 # INCLUDE dirs
