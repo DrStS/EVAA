@@ -25,6 +25,22 @@ project (EVAA VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
 #------------------------------------------------------------------------------------#
 #------------------------------------------------------------------------------------#
+# 1. Options
+# 2. Macros and Checks
+# 3. Compiler
+# 5. Configure
+# 4. Subdirectories
+#------------------------------------------------------------------------------------#
+######################################################################################
+#1. Option
+######################################################################################
+option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
+option(USE_HDF5                  "Use HDF5"                             ON)
+option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
+######################################################################################
+#2. Macros and Checks
+######################################################################################
+#------------------------------------------------------------------------------------#
 # Check OS and host system
 IF((${CMAKE_SYSTEM_NAME} MATCHES "Linux" AND ${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")) 
    SET(OS_LINUX_X86_64 TRUE)
@@ -42,21 +58,6 @@ IF(CMAKE_OUTPUT_VERBOSE)
    MESSAGE("Current source dir is " ${PROJECT_SOURCE_DIR})
 ENDIF()
 #------------------------------------------------------------------------------------#
-# 1. Options
-# 2. Macros
-# 3. Compiler
-# 5. Configure
-# 4. Subdirectories
-#------------------------------------------------------------------------------------#
-######################################################################################
-#1. Option
-######################################################################################
-option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
-option(USE_HDF5                  "Use HDF5"                             ON)
-option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
-######################################################################################
-#2. Macros
-######################################################################################
 # Add EVAA cmake modules
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 include(MacroOutOfSourceBuild)
@@ -69,6 +70,7 @@ if(NOT EXISTS "${CMAKE_MODULE_PATH}/conan.cmake")
                   "${CMAKE_MODULE_PATH}/conan.cmake")
 endif()
 include(conan)
+#------------------------------------------------------------------------------------#
 ######################################################################################
 #3. Compiler
 ######################################################################################
