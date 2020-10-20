@@ -26,7 +26,10 @@ ELSE()
 ENDIF()
 #------------------------------------------------------------------------------------#
 target_include_directories(EVAALibStatic PUBLIC ${CODESYNTHESIS_INCLUDE_DIR})
-target_link_libraries(EVAALibStatic CONAN_PKG::hdf5 CONAN_PKG::boost CONAN_PKG::xerces-c)
+target_link_libraries(EVAALibStatic CONAN_PKG::boost CONAN_PKG::xerces-c)
+IF (${USE_HDF5})
+   target_link_libraries(EVAALibStatic CONAN_PKG::hdf5)
+ENDIF()
 target_link_libraries(EVAA EVAALibStatic)
 #------------------------------------------------------------------------------------#
 IF(CMAKE_OUTPUT_VERBOSE)

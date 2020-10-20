@@ -35,7 +35,7 @@ set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
 #1. Option
 ######################################################################################
 option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
-option(USE_HDF5                  "Use HDF5"                             ON)
+option(USE_HDF5                  "Use HDF5"                             OFF)
 option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
 ######################################################################################
 #2. Macros and Checks
@@ -126,10 +126,10 @@ ELSEIF(OS_LINUX_X86_64)
 	SET(CODESYNTHESIS_FILE_END ".tar.bz2")
 	SET(CODESYNTHESIS_FILE_HASH "5eeb2eeca0d893949e3677bb374e7b96f19770d6")
 ELSEIF(OS_MAC_X86_64)
-	SET(CODESYNTHESIS_PATH "https://codesynthesis.com/download/xsd/4.0/macosx/i686/xsd-4.0.0-i686-macosx.tar.bz2")
+	SET(CODESYNTHESIS_PATH "https://sicklinger.com/xsd/xsd-4.0.0-i686-macosx.tar.bz2")
 	SET(CODESYNTHESIS_FILE "xsd-4.0.0-i686-macosx")
 	SET(CODESYNTHESIS_FILE_END ".tar.bz2")
-	SET(CODESYNTHESIS_FILE_HASH "bb96454da6acafb93180368220d555e2b9747023")
+	SET(CODESYNTHESIS_FILE_HASH "5060778b8bde5f38dfd6045eff43a8ffecb15541")
 ELSE() 
    MESSAGE(FATAL_ERROR "EVAA is supported on Linux x86_64 and Windows x64 and Mac x86_64 only")   
 ENDIF()
