@@ -35,7 +35,7 @@ set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
 #1. Option
 ######################################################################################
 option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
-option(USE_HDF5                  "Use HDF5"                             OFF)
+option(USE_HDF5                  "Use HDF5"                             ON)
 option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
 ######################################################################################
 #2. Macros and Checks
