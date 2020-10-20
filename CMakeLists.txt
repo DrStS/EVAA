@@ -76,7 +76,7 @@ include(conan)
 ######################################################################################
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS YES)
+set(CMAKE_CXX_EXTENSIONS OFF)
 ######################################################################################
 #4. Configure
 ######################################################################################
@@ -115,6 +115,7 @@ IF (${USE_HDF5})
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Install and run CODESYNTHESIS XSD
+add_definitions(-DXSD_CXX11)
 IF(OS_WIN_X86_64)
 	SET(CODESYNTHESIS_PATH "https://codesynthesis.com/download/xsd/4.0/windows/i686/xsd-4.0.0-i686-windows.zip")
 	SET(CODESYNTHESIS_FILE "xsd-4.0.0-i686-windows")
@@ -129,7 +130,7 @@ ELSEIF(OS_MAC_X86_64)
 	SET(CODESYNTHESIS_PATH "https://sicklinger.com/xsd/xsd-4.0.0-i686-macosx.tar.bz2")
 	SET(CODESYNTHESIS_FILE "xsd-4.0.0-i686-macosx")
 	SET(CODESYNTHESIS_FILE_END ".tar.bz2")
-	SET(CODESYNTHESIS_FILE_HASH "5060778b8bde5f38dfd6045eff43a8ffecb15541")
+	SET(CODESYNTHESIS_FILE_HASH "f3f850e4c335f375ddda07c75902c439b0d6b0cc")
 ELSE() 
    MESSAGE(FATAL_ERROR "EVAA is supported on Linux x86_64 and Windows x64 and Mac x86_64 only")   
 ENDIF()

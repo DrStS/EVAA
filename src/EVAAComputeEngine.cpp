@@ -20,12 +20,14 @@
  */
 
 #include "EVAAComputeEngine.h"
-#include "H5Cpp.h"
+#ifdef USE_HDF5
+ #include "H5Cpp.h"
+#endif
 namespace EVAA {
 	/** Constructor to instantiate the singleton and create the engine.*/
 	EVAAComputeEngine::EVAAComputeEngine(std::string t_inputFileName) {
 	}
-
+#ifdef USE_HDF5
 	void EVAAComputeEngine::testHDF5(std::string t_outputFileName) {
 		try
 		{
@@ -59,6 +61,7 @@ namespace EVAA {
 			error.printErrorStack();
 		}
 	}
+#endif
 }  // namespace EVAA
 
 
