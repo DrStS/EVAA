@@ -94,7 +94,9 @@ int main(int argc, char** argv) {
 	EVAA::EVAAComputeEngine myComputeEngine(inputFile);
 	myMessage.writeASCIIArt();
 	LOG_DEBUG << "Start HDF5 test" << std::endl;
+	#ifdef USE_HDF5
 	myComputeEngine.testHDF5("testOutput.h5");
+	#endif
 
 	try
 	{

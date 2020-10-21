@@ -35,7 +35,7 @@ set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
 #1. Option
 ######################################################################################
 option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
-option(USE_HDF5                  "Use HDF5"                             ON)
+option(USE_HDF5                  "Use HDF5"                             OFF)
 option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
 ######################################################################################
 #2. Macros and Checks
@@ -115,7 +115,6 @@ IF (${USE_HDF5})
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Install and run CODESYNTHESIS XSD
-add_definitions(-DXSD_CXX11)
 IF(OS_WIN_X86_64)
 	SET(CODESYNTHESIS_PATH "https://codesynthesis.com/download/xsd/4.0/windows/i686/xsd-4.0.0-i686-windows.zip")
 	SET(CODESYNTHESIS_FILE "xsd-4.0.0-i686-windows")
@@ -130,7 +129,10 @@ ELSEIF(OS_MAC_X86_64)
 	SET(CODESYNTHESIS_PATH "https://sicklinger.com/xsd/xsd-4.0.0-i686-macosx.tar.bz2")
 	SET(CODESYNTHESIS_FILE "xsd-4.0.0-i686-macosx")
 	SET(CODESYNTHESIS_FILE_END ".tar.bz2")
-	SET(CODESYNTHESIS_FILE_HASH "f3f850e4c335f375ddda07c75902c439b0d6b0cc")
+   SET(CODESYNTHESIS_FILE_HASH "f3f850e4c335f375ddda07c75902c439b0d6b0cc")
+   add_definitions(-DXSD_CXX11)
+   add_definitions(-DXSD_CXX11_TEMPLATE_ALIAS)
+   add_definitions(-DXSD_CXX11_NULLPTR)
 ELSE() 
    MESSAGE(FATAL_ERROR "EVAA is supported on Linux x86_64 and Windows x64 and Mac x86_64 only")   
 ENDIF()
