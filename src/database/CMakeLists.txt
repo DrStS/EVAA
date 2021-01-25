@@ -1,8 +1,8 @@
 #------------------------------------------------------------------------------------#
-file(GLOB SOURCES *.cpp *.c)
-MACRO_APPEND_GLOBAL_VARIABLE(EVAA_SOURCES "${SOURCES}")
+file(GLOB SOURCES *.cpp)
+MACRO_APPEND_GLOBAL_VARIABLE(EVAA_SOURCES_AUTOGEN "${SOURCES}")
 #------------------------------------------------------------------------------------#
-MACRO_APPEND_GLOBAL_VARIABLE(EVAA_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_CURRENT_BINARY_DIR}")
+MACRO_APPEND_GLOBAL_VARIABLE(EVAA_INCLUDE_DIRS_AUTOGEN "${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_CURRENT_BINARY_DIR}")
 #------------------------------------------------------------------------------------#
 
 #------------------------------------------------------------------------------------#

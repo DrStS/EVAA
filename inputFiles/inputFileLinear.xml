@@ -5,40 +5,40 @@
 		<TwoTrackModel>
 			<Geometry referenceCoordinateSystem="CoG">
 				<LateralReferenceToWheel>
-					<ReerRight>1.68</ReerRight> 
-					<ReerLeft>1.68</ReerLeft> 
+					<RearRight>1.68</RearRight> 
+					<RearLeft>1.68</RearLeft> 
 					<FrontLeft>1.68</FrontLeft>
 					<FrontRight>1.68</FrontRight>
 				</LateralReferenceToWheel>
 				<LongitudinalReferenceToWheel>
-					<ReerRight>1.596</ReerRight> 
-					<ReerLeft>1.596</ReerLeft> 
+					<RearRight>1.596</RearRight> 
+					<RearLeft>1.596</RearLeft> 
 					<FrontLeft>1.395</FrontLeft>
 					<FrontRight>1.395</FrontRight>
 				</LongitudinalReferenceToWheel>
 				<SuspensionSprings>
-					<ReerRight>0.2</ReerRight> 
-					<ReerLeft>0.2</ReerLeft> 
+					<RearRight>0.2</RearRight> 
+					<RearLeft>0.2</RearLeft> 
 					<FrontLeft>0.2</FrontLeft>
 					<FrontRight>0.2</FrontRight>
 				</SuspensionSprings>
         		<TireSprings>
-					<ReerRight>0.2</ReerRight> 
-					<ReerLeft>0.2</ReerLeft> 
+					<RearRight>0.2</RearRight> 
+					<RearLeft>0.2</RearLeft> 
 					<FrontLeft>0.2</FrontLeft>
 					<FrontRight>0.2</FrontRight>
 				</TireSprings>
 			</Geometry>
 			<Stiffness>
 				<Tyre>
-					<ReerRight>260000.</ReerRight> 
-					<ReerLeft>260000.</ReerLeft> 
+					<RearRight>260000.</RearRight> 
+					<RearLeft>260000.</RearLeft> 
 					<FrontLeft>260000.</FrontLeft>
 					<FrontRight>260000.</FrontRight>
 				</Tyre>
 				<Body>
-					<ReerRight>16000.</ReerRight> 
-					<ReerLeft>16000.</ReerLeft> 
+					<RearRight>16000.</RearRight> 
+					<RearLeft>16000.</RearLeft> 
 					<FrontLeft>16000.</FrontLeft>
 					<FrontRight>16000.</FrontRight>
 				</Body>
@@ -46,19 +46,19 @@
 			<Mass>
 				<Body mass="1936.0" />
 				<Tyre>
-					<ReerRight>30.</ReerRight> 
-					<ReerLeft>30.</ReerLeft> 
+					<RearRight>30.</RearRight> 
+					<RearLeft>30.</RearLeft> 
 					<FrontLeft>30.</FrontLeft>
 					<FrontRight>30.</FrontRight>
 				</Tyre>
 				<UnsprungMass>
-					<ReerRight>67.5</ReerRight> 
-					<ReerLeft>67.5</ReerLeft> 
+					<RearRight>67.5</RearRight> 
+					<RearLeft>67.5</RearLeft> 
 					<FrontLeft>72.5</FrontLeft>
 					<FrontRight>72.5</FrontRight>
 				</UnsprungMass>
 			</Mass>
-			<Interia>
+			<Inertia>
 				<Body referenceCoordinateSystem="CoG">
 					<XX>640.</XX>
 					<XY>0.</XY>
@@ -70,7 +70,7 @@
 					<ZY>0.</ZY>
 					<ZZ>4800.</ZZ>
 				</Body>
-			</Interia>
+			</Inertia>
 		</TwoTrackModel>
 	</Vehicle>
 </InputFileEVAA> 

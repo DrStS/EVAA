@@ -19,30 +19,32 @@
  *  along with STACCATO.  If not, see http://www.gnu.org/licenses/.
  */
 
- /**
-  * \file AuxiliaryParameters.h
-  * This file holds the class of AuxiliaryParameters.
-  * \date 4/2/2016
-  */
+/**
+ * \file AuxiliaryParameters.h
+ * This file holds the class of AuxiliaryParameters.
+ * \date 4/2/2016
+ */
 
 #pragma once
 #include <string>
 namespace EVAA {
-	/**
-	 * \brief Class AuxiliaryParameters provides a central place for EVAA wide parameters
-	**/
-	class AuxiliaryParameters {
-	public:
-		/// How many threads are used for linear solver part
-		static const unsigned int solverMKLThreads;
-		/// How many threads are used for the element loop
-		static const unsigned int denseVectorMatrixThreads;
-		/// Machine epsilon (the difference between 1 and the least value greater than 1 that is representable).
-		static const double machineEpsilon;
-		/// Git hash is determined during configure by cmake
-		static const std::string gitSHA1;
-		/// Git tag is determined during configure by cmake
-		static const std::string gitTAG;
-	};
+/**
+ * \brief Class AuxiliaryParameters provides a central place for EVAA wide
+ *parameters
+ **/
+class AuxiliaryParameters {
+public:
+  /// How many threads are used for linear solver part
+  static const unsigned int SOLVER_MKL_THREADS;
+  /// How many threads are used for the element loop
+  static const unsigned int DENSE_VECTOR_MATRIX_THREADS;
+  /// Machine epsilon (the difference between 1 and the least value greater than
+  /// 1 that is representable).
+  static const double MACHINE_EPSILON;
+  /// Git hash is determined during configure by cmake
+  static const std::string GIT_SHA1;
+  /// Git tag is determined during configure by cmake
+  static const std::string GIT_TAG;
+};
 
 } /* namespace EVAA */

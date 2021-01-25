@@ -21,8 +21,6 @@
 
 #include <AuxiliaryFunctions.h>
 
-
 namespace EVAA {
-	AuxiliaryFunctions::AuxiliaryFunctions() {}
-	AuxiliaryFunctions::~AuxiliaryFunctions() {}
-}  // namespace EVAA
+AuxiliaryFunctions::AuxiliaryFunctions() = default;
+} // namespace EVAA

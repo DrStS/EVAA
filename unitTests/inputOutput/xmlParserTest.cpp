@@ -2,7 +2,7 @@
 #include "InputSchemaEVAA.h"
 
 void parseFile(void) {
-		const auto parsedInputFile = InputFileEVAA("inputFileLinear.xml");
+	const auto parsedInputFile = InputFileEVAA("inputFileLinear.xml");
 }
 
 

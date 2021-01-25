@@ -19,13 +19,12 @@
  */
 #include "AuxiliaryParameters.h"
 #include <limits>
-#define GIT_SHA1 "@GIT_SHA1@" //Cmake will set this value
-#define GIT_TAG  "@GIT_TAG@"  //Cmake will set this value
-
+// clang-format off
 namespace EVAA {
-const unsigned int AuxiliaryParameters::solverMKLThreads= 1;
-const unsigned int AuxiliaryParameters::denseVectorMatrixThreads= 1;
-const double AuxiliaryParameters::machineEpsilon= std::numeric_limits<double>::epsilon();
-const std::string AuxiliaryParameters::gitSHA1(GIT_SHA1);
-const std::string AuxiliaryParameters::gitTAG(GIT_TAG);
+	const unsigned int AuxiliaryParameters::SOLVER_MKL_THREADS= 1;
+	const unsigned int AuxiliaryParameters::DENSE_VECTOR_MATRIX_THREADS= 1;
+	const double AuxiliaryParameters::MACHINE_EPSILON= std::numeric_limits<double>::epsilon();
+	const std::string AuxiliaryParameters::GIT_SHA1("@GIT_SHA1@"); //Cmake will set this value
+	const std::string AuxiliaryParameters::GIT_TAG("@GIT_TAG@");   //Cmake will set this value
 } /* namespace EVAA */
+// clang-format on

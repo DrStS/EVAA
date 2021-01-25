@@ -3,8 +3,8 @@
 
 	<xs:complexType name="setPerCorner_t">
 		<xs:sequence>
-			<xs:element name="ReerRight" type="xs:decimal" />
-			<xs:element name="ReerLeft" type="xs:decimal" />
+			<xs:element name="RearRight" type="xs:decimal" />
+			<xs:element name="RearLeft" type="xs:decimal" />
 			<xs:element name="FrontLeft" type="xs:decimal" />
 			<xs:element name="FrontRight" type="xs:decimal" />
 		</xs:sequence>
@@ -58,7 +58,7 @@
 											</xs:sequence>
 										</xs:complexType>
 									</xs:element>
-									<xs:element name="Interia">
+									<xs:element name="Inertia">
 										<xs:complexType>
 											<xs:sequence>
 												<xs:element name="Body">

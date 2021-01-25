@@ -37,12 +37,12 @@
  * <a href="https://github.com/DrStS/EVAA">EVAA Project</a>
  */
 
- /**
-  * \file main.cpp
-  * This file holds the main function of EVAA.
-  * \author Stefan Sicklinger
-  * \date 09/08/2020
-  * \version 1.0
+/**
+ * \file main.cpp
+ * This file holds the main function of EVAA.
+ * \author Stefan Sicklinger
+ * \date 09/08/2020
+ * \version 1.0
  **/
 #include <iostream>
 #include <vector>
@@ -52,60 +52,61 @@
 #include "Message.h"
 #include "InputSchemaEVAA.h"
 
-
-
-static void showHelp(void) {
-	LOG_INFO << "Valid command line options:" << std::endl;
-	LOG_INFO << "\t-h,--help\t\t\tShow this help message." << std::endl;
-	LOG_INFO << "\t-i,--inputfile INPUT_FILE\tSpecify the file name to the input file for the run." << std::endl;
+static void showHelp() {
+  LOG_INFO << "Valid command line options:" << std::endl;
+  LOG_INFO << "\t-h,--help\t\t\tShow this help message." << std::endl;
+  LOG_INFO << "\t-i,--inputfile INPUT_FILE\tSpecify the file name to the input "
+              "file for the run."
+           << std::endl;
 }
 
-int main(int argc, char** argv) {
-	EVAA::Message myMessage;
-	myMessage.initLogging();
-	LOG_INFO << "EVAA version hash: " << EVAA::AuxiliaryParameters::gitSHA1 << std::endl;
-	std::vector<std::string> allArgs(argv, argv + argc);
-	std::string inputFile;
-	for (std::vector<std::string>::iterator itArg = allArgs.begin() + 1; itArg != allArgs.end(); ++itArg) {
-		if ((*itArg == "-h") || (*itArg == "--help")) {
-			showHelp();
-			return 0;
-		}
-		else if ((*itArg == "-i") || (*itArg == "--inputfile")) {
-			if ((itArg - allArgs.begin() + 1) < allArgs.size()) {
-				inputFile = *(itArg + 1);
-			}
-			else {
-				LOG_ERROR << "No iput file selected: use --help for more details." << std::endl;
-				return 1;
-			}
-		}
-		else if (!((*(itArg - 1) == "-i") || (*(itArg - 1) == "--inputfile"))){
-				LOG_WARNING << "Unknown option " << *itArg << ": use --help for more details." << std::endl;
-		}
-	}
-	if (!inputFile.empty()) {
-		LOG_INFO << "Hello EVAA is fired up with input file: " << inputFile  << std::endl;
-	}
-	else {
-		LOG_ERROR << "No iput file selected: use --help for more details." << std::endl;
-		return 1;
-	}
-	EVAA::EVAAComputeEngine myComputeEngine(inputFile);
-	myMessage.writeASCIIArt();
-	LOG_DEBUG << "Start HDF5 test" << std::endl;
-	#ifdef USE_HDF5
-	myComputeEngine.testHDF5("testOutput.h5");
-	#endif
+int main(int argc, char **argv) {
+  EVAA::Message myMessage;
+  myMessage.initLogging();
+  LOG_INFO << "EVAA version hash: " << EVAA::AuxiliaryParameters::GIT_SHA1
+           << std::endl;
+  std::vector<std::string> allArgs(
+      argv,
+      argv + argc); // NOLINT (cppcoreguidelines-pro-bounds-pointer-arithmetic)
+  std::string inputFile;
+  for (auto itArg = allArgs.begin() + 1; itArg != allArgs.end(); ++itArg) {
+    if ((*itArg == "-h") || (*itArg == "--help")) {
+      showHelp();
+      return 0;
+    }
+    if ((*itArg == "-i") || (*itArg == "--inputfile")) {
+      if ((itArg - allArgs.begin() + 1) < allArgs.size()) {
+        inputFile = *(itArg + 1);
+      } else {
+        LOG_ERROR << "No iput file selected: use --help for more details."
+                  << std::endl;
+        return 1;
+      }
+    } else if (!((*(itArg - 1) == "-i") || (*(itArg - 1) == "--inputfile"))) {
+      LOG_WARNING << "Unknown option " << *itArg
+                  << ": use --help for more details." << std::endl;
+    }
+  }
+  if (!inputFile.empty()) {
+    LOG_INFO << "Hello EVAA is fired up with input file: " << inputFile
+             << std::endl;
+  } else {
+    LOG_ERROR << "No iput file selected: use --help for more details."
+              << std::endl;
+    return 1;
+  }
+  EVAA::EVAAComputeEngine myComputeEngine(inputFile);
+  myMessage.writeASCIIArt();
+  LOG_DEBUG << "Start HDF5 test" << std::endl;
+#ifdef USE_HDF5
+  myComputeEngine.testHDF5("testOutput.h5");
+#endif
 
-	try
-	{
-		const auto parsedInputFile = InputFileEVAA("inputFileLinear.xml");
-	}
-	catch (const xml_schema::exception& e)
-	{
-		std::cerr << e << std::endl;
-	}
+  try {
+    const auto parsedInputFile = InputFileEVAA("inputFileLinear.xml");
+  } catch (const xml_schema::exception &e) {
+    std::cerr << e << std::endl;
+  }
 
-	return 0;
+  return 0;
 }

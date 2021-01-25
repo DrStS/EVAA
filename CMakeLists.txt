@@ -19,10 +19,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with EVAA. If not, see http://www.gnu.org/licenses/
 #------------------------------------------------------------------------------------#
-cmake_minimum_required (VERSION 3.18)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.18)
 #------------------------------------------------------------------------------------#
-project (EVAA VERSION 1.0 LANGUAGES CXX)
-set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
+PROJECT(EVAA VERSION 1.0 LANGUAGES CXX)
+SET(CMAKE_CONFIGURATION_TYPES "Release;Debug")
 #------------------------------------------------------------------------------------#
 #------------------------------------------------------------------------------------#
 # 1. Options
@@ -34,9 +34,9 @@ set(CMAKE_CONFIGURATION_TYPES "Release;Debug")
 ######################################################################################
 #1. Option
 ######################################################################################
-option(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
-option(USE_HDF5                  "Use HDF5"                             ON)
-option(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
+OPTION(BUILD_UNITTESTS           "Build unit test and micro benchmarks" ON)
+OPTION(USE_HDF5                  "Use HDF5"                             ON)
+OPTION(CMAKE_OUTPUT_VERBOSE      "Add Cmake debug output"               ON)
 ######################################################################################
 #2. Macros and Checks
 ######################################################################################
@@ -59,17 +59,17 @@ IF(CMAKE_OUTPUT_VERBOSE)
 ENDIF()
 #------------------------------------------------------------------------------------#
 # Add EVAA cmake modules
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
-include(MacroOutOfSourceBuild)
-include(MacroAppendGlobalVariable)
-include(GetGitRevisionDescription)
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/helperScripts/cmake/modules)
+INCLUDE(MacroOutOfSourceBuild)
+INCLUDE(MacroAppendGlobalVariable)
+INCLUDE(GetGitRevisionDescription)
 # Download automatically, you can also just copy the conan.cmake file
-if(NOT EXISTS "${CMAKE_MODULE_PATH}/conan.cmake")
+IF(NOT EXISTS "${CMAKE_MODULE_PATH}/conan.cmake")
    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
    file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
                   "${CMAKE_MODULE_PATH}/conan.cmake")
-endif()
-include(conan)
+ENDIF()
+INCLUDE(conan)
 #------------------------------------------------------------------------------------#
 ######################################################################################
 #3. Compiler
@@ -90,78 +90,83 @@ SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 #------------------------------------------------------------------------------------#
 # Build list of conan packages
-IF (${BUILD_UNITTESTS})
+IF(${BUILD_UNITTESTS})
    LIST(APPEND CONAN_PACKAGES "catch2/2.13.0")
 ENDIF()
-IF (${USE_HDF5})
-   LIST(APPEND CONAN_PACKAGES "hdf5/1.10.6")
+IF(${USE_HDF5})
+   LIST(APPEND CONAN_PACKAGES "hdf5/1.12.0")
 ENDIF()
-   LIST(APPEND CONAN_PACKAGES "xerces-c/3.2.2")
-   LIST(APPEND CONAN_PACKAGES "boost/1.74.0")
+LIST(APPEND CONAN_PACKAGES "xerces-c/3.2.2")
+LIST(APPEND CONAN_PACKAGES "boost/1.74.0")
 #------------------------------------------------------------------------------------#
-conan_cmake_run(REQUIRES ${CONAN_PACKAGES} BASIC_SETUP CMAKE_TARGETS BUILD missing)
+IF(OS_MAC_X86_64)
+   # see https://github.com/conan-io/conan-center-index/issues/4097
+   conan_cmake_run(REQUIRES ${CONAN_PACKAGES} BASIC_SETUP CMAKE_TARGETS BUILD missing SETTINGS compiler.cppstd=14)
+ELSE()
+   conan_cmake_run(REQUIRES ${CONAN_PACKAGES} BASIC_SETUP CMAKE_TARGETS BUILD missing)
+ENDIF()
 #------------------------------------------------------------------------------------#
 # Configure options
-IF (${BUILD_UNITTESTS}) 
+IF(${BUILD_UNITTESTS}) 
    MESSAGE("Using Catch2 for unit tests and micro benchmarks")
-   include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
+   INCLUDE(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 ENDIF()
-IF (${USE_HDF5})
+IF(${USE_HDF5})
    MESSAGE("Using HDF5")
-   add_definitions(-DUSE_HDF5)
+   ADD_DEFINITIONS(-DUSE_HDF5)
    IF(OS_WIN_X86_64)
-	SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4099")
+      SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4099")
    ENDIF()
 ENDIF()
 #------------------------------------------------------------------------------------#
-# Install and run CODESYNTHESIS XSD
+# Install CODESYNTHESIS XSD
 IF(OS_WIN_X86_64)
-	SET(CODESYNTHESIS_PATH "https://codesynthesis.com/download/xsd/4.0/windows/i686/xsd-4.0.0-i686-windows.zip")
-	SET(CODESYNTHESIS_FILE "xsd-4.0.0-i686-windows")
-	SET(CODESYNTHESIS_FILE_END ".zip")
-	SET(CODESYNTHESIS_FILE_HASH "d129469e109784c663387ca8bee5ac627434cfca")
+   SET(CODESYNTHESIS_PATH "https://codesynthesis.com/download/xsd/4.0/windows/i686/xsd-4.0.0-i686-windows.zip")
+   SET(CODESYNTHESIS_FILE "xsd-4.0.0-i686-windows")
+   SET(CODESYNTHESIS_FILE_END ".zip")
+   SET(CODESYNTHESIS_FILE_HASH "d129469e109784c663387ca8bee5ac627434cfca")
 ELSEIF(OS_LINUX_X86_64)
-	SET(CODESYNTHESIS_PATH "https://codesynthesis.com/download/xsd/4.0/linux-gnu/x86_64/xsd-4.0.0-x86_64-linux-gnu.tar.bz2")
-	SET(CODESYNTHESIS_FILE "xsd-4.0.0-x86_64-linux-gnu")
-	SET(CODESYNTHESIS_FILE_END ".tar.bz2")
-	SET(CODESYNTHESIS_FILE_HASH "5eeb2eeca0d893949e3677bb374e7b96f19770d6")
+   SET(CODESYNTHESIS_PATH "https://codesynthesis.com/download/xsd/4.0/linux-gnu/x86_64/xsd-4.0.0-x86_64-linux-gnu.tar.bz2")
+   SET(CODESYNTHESIS_FILE "xsd-4.0.0-x86_64-linux-gnu")
+   SET(CODESYNTHESIS_FILE_END ".tar.bz2")
+   SET(CODESYNTHESIS_FILE_HASH "5eeb2eeca0d893949e3677bb374e7b96f19770d6")
 ELSEIF(OS_MAC_X86_64)
-	SET(CODESYNTHESIS_PATH "https://sicklinger.com/xsd/xsd-4.0.0-i686-macosx.tar.bz2")
-	SET(CODESYNTHESIS_FILE "xsd-4.0.0-i686-macosx")
-	SET(CODESYNTHESIS_FILE_END ".tar.bz2")
-   SET(CODESYNTHESIS_FILE_HASH "f3f850e4c335f375ddda07c75902c439b0d6b0cc")
-   add_definitions(-DXSD_CXX11)
-   add_definitions(-DXSD_CXX11_TEMPLATE_ALIAS)
-   add_definitions(-DXSD_CXX11_NULLPTR)
+   SET(CODESYNTHESIS_PATH "https://sicklinger.com/xsd/xsd-4.0.0-i686-macosx.tar.bz2")
+   SET(CODESYNTHESIS_FILE "xsd-4.0.0-i686-macosx")
+   SET(CODESYNTHESIS_FILE_END ".tar.bz2")
+   SET(CODESYNTHESIS_FILE_HASH "f3f850e4c335f375ddda07c75902c439b0d6b0cc")  
+   ADD_DEFINITIONS(-DXSD_CXX11)
+   ADD_DEFINITIONS(-DXSD_CXX11_TEMPLATE_ALIAS)
+   ADD_DEFINITIONS(-DXSD_CXX11_NULLPTR)
 ELSE() 
    MESSAGE(FATAL_ERROR "EVAA is supported on Linux x86_64 and Windows x64 and Mac x86_64 only")   
 ENDIF()
 
 IF(NOT EXISTS ${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END})
-FILE(DOWNLOAD ${CODESYNTHESIS_PATH} ${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END}
-	TIMEOUT 60
-	EXPECTED_HASH SHA1=${CODESYNTHESIS_FILE_HASH}
-	TLS_VERIFY ON)
+   FILE(DOWNLOAD ${CODESYNTHESIS_PATH} ${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END}
+      TIMEOUT 60
+      EXPECTED_HASH SHA1=${CODESYNTHESIS_FILE_HASH}
+      TLS_VERIFY ON)
 ENDIF()
 FILE(ARCHIVE_EXTRACT INPUT ${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}${CODESYNTHESIS_FILE_END} DESTINATION ${PROJECT_SOURCE_DIR}/xsd)
 FIND_PROGRAM(XSD_EXE xsd PATHS ${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}/bin REQUIRED NO_DEFAULT_PATH)
 IF(CMAKE_OUTPUT_VERBOSE)
-	MESSAGE("XSD_EXE ${XSD_EXE}")
+   MESSAGE("XSD_EXE ${XSD_EXE}")
 ENDIF()
+# Run CODESYNTHESIS XSD
 #https://www.codesynthesis.com/projects/xsd/documentation/xsd.xhtml
 EXECUTE_PROCESS(  
-	COMMAND ${XSD_EXE} cxx-tree --std c++11 --hxx-suffix .h --cxx-suffix .cpp ${PROJECT_SOURCE_DIR}/xsd/InputSchemaEVAA.xsd
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src/database
-   )
+   COMMAND ${XSD_EXE} cxx-tree --std c++11 --hxx-suffix .h --cxx-suffix .cpp "${PROJECT_SOURCE_DIR}/xsd/InputSchemaEVAA.xsd"
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src/database)
 IF(NOT EXISTS ${PROJECT_SOURCE_DIR}/src/database/InputSchemaEVAA.h )
-     MESSAGE(FATAL_ERROR  "XSD has not generated ${PROJECT_SOURCE_DIR}/src/database/InputSchemaEVAA.h")
+   MESSAGE(FATAL_ERROR  "XSD has not generated ${PROJECT_SOURCE_DIR}/src/database/InputSchemaEVAA.h")
 ENDIF()
 SET(CODESYNTHESIS_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/xsd/${CODESYNTHESIS_FILE}/libxsd")
 #------------------------------------------------------------------------------------#
 # Configure files
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(GIT_TAG --tags)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in" 
+CONFIGURE_FILE("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in" 
 "${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp" @ONLY)
 ######################################################################################
 #5. Subdirectories THE ORDER IS IMPORTANT, BECAUSE THEY ARE COMPILED IN THAT ORDER
@@ -169,8 +174,8 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/tools/AuxiliaryParameters.cpp.in
 #------------------------------------------------------------------------------------#
 MESSAGE("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 # INCLUDE dirs
-add_subdirectory(src)
+ADD_SUBDIRECTORY(src)
 IF(${BUILD_UNITTESTS})
-enable_testing()
-add_subdirectory(unitTests)
+   ENABLE_TESTING()
+   ADD_SUBDIRECTORY(unitTests)
 ENDIF()

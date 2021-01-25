@@ -26,53 +26,47 @@
 #include <boost/log/expressions.hpp>
 
 namespace EVAA {
-	/**
-	 * \brief Class wrapper to boost logging
-	**/
-	class Message {
-	public:
-		/**
-		 * \brief Constructor
-		 * \param[in] t_outputLevel type enum OutputLevel set by user
-		 * \author Stefan Sicklinger
-		**/
-		//Message(void);
-		/**
-         * \brief Constructor
-		 * \author Stefan Sicklinger
-		**/
-	    void writeASCIIArt(void);
-		/**
-         * \brief init logger
-         * \author Stefan Sicklinger
-        **/
-		void initLogging(void);
-		/**
-         * \brief Constructor
-         * \author Stefan Sicklinger
-        **/
-		
-	private:
-		
-		///This variable is shared between all objects of type message
-	};
-	std::string_view formatMessage(boost::log::value_ref< std::string, boost::log::expressions::tag::smessage > const& t_message);
-	
+/**
+ * \brief Class wrapper to boost logging
+ **/
+class Message {
+public:
+  /**
+   * \brief Write EVAA ASCII Art
+   * \author Stefan Sicklinger
+   **/
+  void writeASCIIArt();
+  /**
+   * \brief init logger
+   * \author Stefan Sicklinger
+   **/
+  void initLogging();
 
-#define LOG_DEBUG \
-    BOOST_LOG_STREAM_WITH_PARAMS(::boost::log::trivial::logger::get(),\
-        (::boost::log::keywords::severity = ::boost::log::trivial::debug))
+private:
+  /// This variable is shared between all objects of type message
+};
+std::string_view formatMessage(
+    boost::log::value_ref<
+        std::string, boost::log::expressions::tag::smessage> const &t_message);
 
-#define LOG_INFO \
-		BOOST_LOG_STREAM_WITH_PARAMS(::boost::log::trivial::logger::get(), \
-			(::boost::log::keywords::severity = ::boost::log::trivial::info))
+#define LOG_DEBUG                                                              \
+  BOOST_LOG_STREAM_WITH_PARAMS(                                                \
+      ::boost::log::trivial::logger::get(),                                    \
+      (::boost::log::keywords::severity = ::boost::log::trivial::debug))
 
-#define LOG_WARNING \
-			BOOST_LOG_STREAM_WITH_PARAMS(::boost::log::trivial::logger::get(), \
-				(::boost::log::keywords::severity = ::boost::log::trivial::warning))
+#define LOG_INFO                                                               \
+  BOOST_LOG_STREAM_WITH_PARAMS(                                                \
+      ::boost::log::trivial::logger::get(),                                    \
+      (::boost::log::keywords::severity = ::boost::log::trivial::info))
 
-#define LOG_ERROR \
-			BOOST_LOG_STREAM_WITH_PARAMS(::boost::log::trivial::logger::get(), \
-				(::boost::log::keywords::severity = ::boost::log::trivial::error))
+#define LOG_WARNING                                                            \
+  BOOST_LOG_STREAM_WITH_PARAMS(                                                \
+      ::boost::log::trivial::logger::get(),                                    \
+      (::boost::log::keywords::severity = ::boost::log::trivial::warning))
 
-}  // namespace EVAA
+#define LOG_ERROR                                                              \
+  BOOST_LOG_STREAM_WITH_PARAMS(                                                \
+      ::boost::log::trivial::logger::get(),                                    \
+      (::boost::log::keywords::severity = ::boost::log::trivial::error))
+
+} // namespace EVAA
