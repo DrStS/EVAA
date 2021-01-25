@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['densevectormatrixthreads_57',['denseVectorMatrixThreads',['../class_e_v_a_a_1_1_auxiliary_parameters.html#adc86b146cee35765df37c9d779ac3f2b',1,'EVAA::AuxiliaryParameters']]]
+  ['dense_5fvector_5fmatrix_5fthreads_52',['DENSE_VECTOR_MATRIX_THREADS',['../class_e_v_a_a_1_1_auxiliary_parameters.html#a77b58d9741e02d11f7ba2c1436694f54',1,'EVAA::AuxiliaryParameters']]]
 ];

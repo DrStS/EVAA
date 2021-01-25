@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['solvermklthreads_28',['solverMKLThreads',['../class_e_v_a_a_1_1_auxiliary_parameters.html#a314dd489775bb4eae0d5603fe6e7c8c7',1,'EVAA::AuxiliaryParameters']]]
+  ['solver_5fmkl_5fthreads_27',['SOLVER_MKL_THREADS',['../class_e_v_a_a_1_1_auxiliary_parameters.html#a6426eae9b2bf16d12d5f240bff19bcc6',1,'EVAA::AuxiliaryParameters']]]
 ];

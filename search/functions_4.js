@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['initlogging_52',['initLogging',['../class_e_v_a_a_1_1_message.html#a07beaa84345d14c3d4ba4c5a21ef1263',1,'EVAA::Message']]]
+  ['main_49',['main',['../main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main.cpp']]]
 ];

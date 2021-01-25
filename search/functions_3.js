@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['get_5fproperty_51',['get_property',['../_c_make_lists_8txt.html#a838594ad355a9c1d7a7172f1fa5b6828',1,'CMakeLists.txt']]]
+  ['initlogging_48',['initLogging',['../class_e_v_a_a_1_1_message.html#aa98d9739f1ef8e6fff46e179a1058cc6',1,'EVAA::Message']]]
 ];
