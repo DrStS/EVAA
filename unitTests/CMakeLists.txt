@@ -16,9 +16,9 @@ get_property(EVAA_INCLUDES GLOBAL PROPERTY EVAA_INCLUDES)
 get_property(EVAA_UnitTest_INCLUDES GLOBAL PROPERTY EVAA_UnitTest_INCLUDES)
 get_property(EVAA_UnitTest_SOURCES GLOBAL PROPERTY EVAA_UnitTest_SOURCES)
 #------------------------------------------------------------------------------------#
-#Catch 2
+#Gtest and GMock
 INCLUDE(CTest)
-INCLUDE(${CONAN_BUILD_DIRS_CATCH2}/Catch.cmake)
+INCLUDE(GoogleTest)# this provides gtest_discover_tests
 INCLUDE_DIRECTORIES(${EVAA_INCLUDES})
 INCLUDE_DIRECTORIES(${EVAA_UnitTest_INCLUDES})
 #------------------------------------------------------------------------------------#
@@ -28,8 +28,8 @@ ELSE()
    ADD_EXECUTABLE(EVAATest ${EVAA_UnitTest_SOURCES})
 ENDIF()
 #------------------------------------------------------------------------------------#
-TARGET_LINK_LIBRARIES(EVAATest EVAALibStatic CONAN_PKG::catch2)
-catch_discover_tests(EVAATest WORKING_DIRECTORY $<TARGET_FILE_DIR:EVAATest>)
+TARGET_LINK_LIBRARIES(EVAATest EVAALibStatic CONAN_PKG::gtest)
+gtest_discover_tests(EVAATest WORKING_DIRECTORY $<TARGET_FILE_DIR:EVAATest>)
 #------------------------------------------------------------------------------------#
 ADD_CUSTOM_COMMAND(TARGET EVAATest POST_BUILD
 COMMAND ${CMAKE_COMMAND} -E copy_if_different

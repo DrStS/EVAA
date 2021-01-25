@@ -91,7 +91,7 @@ SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 #------------------------------------------------------------------------------------#
 # Build list of conan packages
 IF(${BUILD_UNITTESTS})
-   LIST(APPEND CONAN_PACKAGES "catch2/2.13.0")
+   LIST(APPEND CONAN_PACKAGES "gtest/1.10.0")
 ENDIF()
 IF(${USE_HDF5})
    LIST(APPEND CONAN_PACKAGES "hdf5/1.12.0")
@@ -108,7 +108,7 @@ ENDIF()
 #------------------------------------------------------------------------------------#
 # Configure options
 IF(${BUILD_UNITTESTS}) 
-   MESSAGE("Using Catch2 for unit tests and micro benchmarks")
+   MESSAGE("Using GTest and GBench for unit tests and micro benchmarks")
    INCLUDE(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 ENDIF()
 IF(${USE_HDF5})

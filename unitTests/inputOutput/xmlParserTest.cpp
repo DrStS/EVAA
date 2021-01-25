@@ -1,11 +1,10 @@
-#include <catch2/catch.hpp>
+#include <gtest/gtest.h>
 #include "InputSchemaEVAA.h"
 
 void parseFile(void) {
 	const auto parsedInputFile = InputFileEVAA("inputFileLinear.xml");
 }
 
-
-TEST_CASE("Parse input file", "[xml]") {
-    REQUIRE_NOTHROW( parseFile() );
+TEST(xmlParser, testForNoException) {
+    EXPECT_NO_THROW( parseFile() );
 }

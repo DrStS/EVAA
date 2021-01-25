@@ -2,7 +2,7 @@
 /***********************************************************************************************//**
  * \mainpage
  * \section LICENSE
- *  Copyright &copy; 2019, Dr. Stefan Sicklinger, Munich \n
+ *  Copyright &copy; 2021, Dr. Stefan Sicklinger, Munich \n
  *  All rights reserved. \n
  *
  *  This file is part of EVAA.
@@ -29,19 +29,16 @@
  * \section DESCRIPTION
  *  This is the main file of EVAA unit test
  *
- *
- *
  * \section HOWTO
  * Please find all further information on
  * <a href="https://github.com/DrStS/EVAA">EVAA Project</a>
  *
  *
- * <EM> Note: The Makefile suppresses per default all compile and linking command output to the terminal.
- *       You may enable this information by make VEREBOSE=1</EM>
- *
- *
- *
  **************************************************************************************************/
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <gtest/gtest.h>
+
+int main(int argc, char **argv) {
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
+}
 
