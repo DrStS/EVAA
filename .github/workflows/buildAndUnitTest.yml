@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
       #
-        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+        os: ['ubuntu-latest', 'windows-latest'] #, 'macos-latest']
         build: [Debug, Release]
     runs-on: ${{ matrix.os }}
 
@@ -30,7 +30,7 @@ jobs:
       shell: bash
       
     - name: Setup CMake
-      uses: jwlawson/actions-setup-cmake@v1.3
+      uses: jwlawson/actions-setup-cmake@master
       with:
         cmake-version: '3.18.x'
         
