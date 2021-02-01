@@ -85,10 +85,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 macro_ensure_out_of_source_build("In source build is not allowed for ${PROJECT_NAME}.\
 Please run CMake from your build directory. You may want to remove CMakeCache.txt.")
 #------------------------------------------------------------------------------------#
-# Where to put EXECUTABLE
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-#------------------------------------------------------------------------------------#
 # Build list of conan packages
 IF(${BUILD_UNITTESTS})
    LIST(APPEND CONAN_PACKAGES "gtest/1.10.0")

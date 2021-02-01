@@ -46,8 +46,8 @@ ctest
 Mac  
 ```console
 cd build
-cmake -G "Xcode" ..
-cmake --build . --config Release
+cmake -G "Xcode" -DCMAKE_BUILD_TYPE=Release ..
+cmake --build .
 ctest
 ../bin/EVAABench.exe
 ```
