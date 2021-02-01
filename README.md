@@ -54,8 +54,8 @@ ctest
 Linux  
 ```console
 cd build
-cmake -G "Unix Makefiles" ..
-cmake --build . --config Release
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+cmake --build .
 ctest
 ../bin/EVAABench.exe
 ```
