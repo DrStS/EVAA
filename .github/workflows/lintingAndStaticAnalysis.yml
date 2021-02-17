@@ -72,9 +72,8 @@ jobs:
      
     - name: 'Upload JUnit file'
       uses: 'actions/upload-artifact@v2'
-      working-directory: ${{runner.workspace}}/build
       with:
         name: clang-tidy-junit
-        path: output-clang-tidy.txt
+        path: ${{runner.workspace}}/build/output-clang-tidy.txt
 
 
