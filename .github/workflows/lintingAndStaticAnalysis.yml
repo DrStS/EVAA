@@ -67,7 +67,7 @@ jobs:
     - name: Clang tidy
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: make clang-tidy-10 VERBOSE=1
+      run: make clang-tidy VERBOSE=1
       continue-on-error: true
 
 
