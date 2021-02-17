@@ -100,4 +100,4 @@ jobs:
       with:
         check_name: Static Code Analysis Results
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: *clang-tidy.junit.xml
+        files: '*clang-tidy.junit.xml'
