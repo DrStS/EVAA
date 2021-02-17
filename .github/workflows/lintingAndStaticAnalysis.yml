@@ -28,7 +28,7 @@ jobs:
       shell: bash
       
     - name: Install clang-tidy
-      run: sudo apt-get update -y && sudo apt-get install -y clang-tidy
+      run: sudo apt-get update -y && sudo apt-get install -y clang-tidy-13
       shell: bash
       
     - name: Setup CMake
@@ -54,7 +54,7 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-    - name: Clang Format
+    - name: Clang format
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: make clang-format-check VERBOSE=1
@@ -64,7 +64,7 @@ jobs:
       shell: bash
       run: clang-tidy --version
       
-    - name: Clang Tidy
+    - name: Clang tidy
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: make clang-tidy VERBOSE=1 > ${{runner.workspace}}/helperScripts/clang-tidy-to-junit/clang-tidy-output.txt
