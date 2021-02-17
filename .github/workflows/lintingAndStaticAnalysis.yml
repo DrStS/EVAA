@@ -73,13 +73,13 @@ jobs:
     - name: Output clang tidy
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}} ${{runner.workspace}}
+      run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}}/build ${{runner.workspace}}/build
       continue-on-error: true      
      
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
       with:
         name: clang-tidy-junit
-        path: ${{runner.workspace}}/build/output-clang-tidy.txt
+        path: ${{runner.workspace}}/build/'**clang-tidy.junit.xml'
 
 
