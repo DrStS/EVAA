@@ -5,6 +5,7 @@ on: push
 jobs:
   ## Build and UnitTest
   buildCode:
+    name: "Build and UnitTest"
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -71,6 +72,7 @@ jobs:
         
   ## Build Doxygen Documentation    
   buildDoxygenDocumentation:
+    name: "Build Doxygen Documentation"
     needs: buildCode
     runs-on: ubuntu-latest
     steps:
@@ -92,6 +94,7 @@ jobs:
         
   ## Build LaTeX Documentation         
   buildLaTeXDocumentation:
+    name: "Build LaTeX Documentation"
     needs: buildDoxygenDocumentation
     runs-on: ubuntu-latest
     steps:

@@ -5,6 +5,7 @@ on: push
 jobs:
   ## Do Linting and Static Code Analysis
   lintingAndStaticAnalysis:
+    name: "Do Linting and Static Code Analysis"
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -99,4 +100,4 @@ jobs:
       with:
         check_name: Static Code Analysis Results
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ${{runner.workspace}}/build/**clang-tidy.junit.xml
+        files: *clang-tidy.junit.xml
