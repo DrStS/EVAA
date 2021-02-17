@@ -4,7 +4,7 @@ on: push
 
 jobs:
   ## Do Linting and Static Code Analysis
-  lintingCode:
+  lintingAndStaticAnalysis:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -67,7 +67,19 @@ jobs:
     - name: Clang tidy
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: make clang-tidy VERBOSE=1
+      run: make clang-tidy VERBOSE=1 > output-clang-tidy.txt
       continue-on-error: true
+      
+    - name: Convert to JUnit
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cat  output-clang-tidy.txt | python3 ${{runner.workspace}}/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}} ${{runner.workspace}}
+      continue-on-error: true
+      
+    - name: 'Upload JUnit file'
+      uses: 'actions/upload-artifact@v2'
+      with:
+        name: my-artifact
+        path: '**clang-tidy.junit.xml'
 
 
