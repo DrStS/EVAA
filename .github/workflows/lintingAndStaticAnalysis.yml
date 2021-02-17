@@ -74,18 +74,29 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}}/build ${{runner.workspace}}/build
-      continue-on-error: true      
-     
-    - name: Ls 
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: ls -lt
-      continue-on-error: true  
+      continue-on-error: true
      
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
       with:
-        name: clang-tidy-junit
+        name: Static Code Analysis Results
         path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
 
+  publish-test-results:
+    name: "Publish Static Code Analysis Results"
+    needs: lintingAndStaticAnalysis
+    runs-on: ubuntu-latest
 
+    if: success() || failure()
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        path: artifacts
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      with:
+        check_name: Static Code Analysis Results
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        files: ${{runner.workspace}}/build/**clang-tidy.junit.xml
