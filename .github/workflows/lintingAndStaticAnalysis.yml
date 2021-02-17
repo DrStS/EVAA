@@ -50,7 +50,8 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       # Note the current convention is to use the -S and -B options here to specify source 
-      # and build directories, but this is only available with CMake 3.13 and higher.  
+      # and build directories, but this is only available with CMake 3.13 and hig
+      her.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
@@ -79,7 +80,7 @@ jobs:
     - name: 'Upload JUnit file'
       uses: 'actions/upload-artifact@v2'
       with:
-        name: my-artifact
+        name: clang-tidy-junit
         path: '**clang-tidy.junit.xml'
 
 
