@@ -23,8 +23,8 @@ jobs:
           # Otherwise, uses the default branch.
           ref: 'refactoring/codeStripping'
   
-    - name: Install clang-format
-      run: sudo pip install clang-format --quiet
+    - name: Install Clang-Format and Conan Package Manager
+      run: sudo pip install conan clang-format --quiet
       shell: bash
       
     - name: Setup CMake
