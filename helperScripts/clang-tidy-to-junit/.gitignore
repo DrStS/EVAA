@@ -1,0 +1,5 @@
+# junit xml files
+*.junit.xml
+
+# clang-tidy output file
+clang-tidy-output.txt
