@@ -71,7 +71,7 @@ jobs:
       continue-on-error: true
       
     - name: Output clang tidy
-      working-directory: ${{runner.workspace}}
+      working-directory: ${{runner.workspace}}/build
       shell: bash
       run: ls -lt
       continue-on-error: true      
