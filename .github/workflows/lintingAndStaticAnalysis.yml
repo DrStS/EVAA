@@ -71,9 +71,9 @@ jobs:
       continue-on-error: true
       
     - name: Output clang tidy
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}
       shell: bash
-      run: cat ${{runner.workspace}}/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py
+      run: ls -lt
       continue-on-error: true      
      
     - name: Upload jUnit file
