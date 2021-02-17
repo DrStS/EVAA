@@ -97,6 +97,7 @@ jobs:
         
     - name: Run ls
       shell: bash
+      run: cd artifacts
       run: ls -lt
       
     - name: Publish Unit Test Results
@@ -104,4 +105,4 @@ jobs:
       with:
         check_name: StaticCodeAnalysisResults
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: artifacts/*clang-tidy.junit.xml
+        files: "**/*.xml"
