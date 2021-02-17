@@ -28,10 +28,10 @@ TARGET_LINK_LIBRARIES(EVAALibStaticGenerated CONAN_PKG::xerces-c)
 #------------------------------------------------------------------------------------#
 ADD_CUSTOM_TARGET(
    clang-tidy
-   COMMAND clang-tidy -p=${CMAKE_BINARY_DIR} ${EVAA_SOURCES})
+   COMMAND clang-tidy-10 -p=${CMAKE_BINARY_DIR} ${EVAA_SOURCES})
 FOREACH(src_file ${EVAA_INCLUDES})
-   get_filename_component(src_file_only "${src_file}" NAME)
-   list(APPEND HEADERS_FOR_CLANG_TIDY "${src_file_only}")
+   GET_FILENAME_COMPONENT(src_file_only "${src_file}" NAME)
+   LIST(APPEND HEADERS_FOR_CLANG_TIDY "${src_file_only}")
    MESSAGE("${src_file_only}")
 ENDFOREACH()
 STRING(REPLACE ";" "|" HEADERS_FOR_CLANG_TIDY "${HEADERS_FOR_CLANG_TIDY}")
@@ -50,7 +50,7 @@ ADD_CUSTOM_TARGET(
    COMMAND python3 ${PROJECT_SOURCE_DIR}/helperScripts/run-clang-format/run-clang-format.py -q --style=file  ${EVAA_SOURCES} ${EVAA_INCLUDES})
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
-    set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES} ${CONAN_INCLUDE_DIRS})
+    SET(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES} ${CONAN_INCLUDE_DIRS})
 endif()
 #------------------------------------------------------------------------------------#
 LIST(REMOVE_ITEM EVAA_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
