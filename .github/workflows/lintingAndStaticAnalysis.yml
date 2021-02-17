@@ -96,8 +96,8 @@ jobs:
         path: artifacts
         
     - name: Run ls
+      working-directory: artifacts
       shell: bash
-      run: cd artifacts
       run: ls -lt
       
     - name: Publish Unit Test Results
