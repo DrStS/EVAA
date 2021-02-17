@@ -86,6 +86,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: clang-tidy-junit
-        path: ${{runner.workspace}}/build/'**clang-tidy.junit.xml'
+        path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
 
 
