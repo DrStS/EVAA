@@ -98,11 +98,10 @@ jobs:
     - name: Run ls
       shell: bash
       run: ls -lt
-      continue-on-error: true
       
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1
       with:
         check_name: StaticCodeAnalysisResults
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: '**clang-tidy.junit.xml'
+        files: artifacts/*clang-tidy.junit.xml
