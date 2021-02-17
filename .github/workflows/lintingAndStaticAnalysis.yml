@@ -71,6 +71,7 @@ jobs:
       continue-on-error: true
       
     - name: Output clang tidy
+      working-directory: ${{runner.workspace}}/build
       shell: bash
       run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}} ${{runner.workspace}}
       continue-on-error: true      
