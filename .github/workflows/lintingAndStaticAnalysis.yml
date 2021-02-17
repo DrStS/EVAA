@@ -76,6 +76,12 @@ jobs:
       run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}}/build ${{runner.workspace}}/build
       continue-on-error: true      
      
+    - name: Ls 
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: ls -lt
+      continue-on-error: true  
+     
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
       with:
