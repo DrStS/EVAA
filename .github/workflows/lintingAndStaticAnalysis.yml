@@ -23,8 +23,12 @@ jobs:
           # Otherwise, uses the default branch.
           ref: 'refactoring/codeStripping'
   
-    - name: Install Clang-Format and Conan Package Manager
+    - name: Install clang-format and conan
       run: sudo pip install conan clang-format --quiet
+      shell: bash
+      
+    - name: Install clang-tidy
+      run: sudo apt-get update -y && sudo apt-get install -y clang-tidy
       shell: bash
       
     - name: Setup CMake
@@ -54,5 +58,11 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: make clang-format-check VERBOSE=1
+      
+    - name: Clang-Tidy
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: make clang-tidy VERBOSE=1 > ${{runner.workspace}}/helperScripts/clang-tidy-to-junit/clang-tidy-output.txt
+      continue-on-error: true
 
 
