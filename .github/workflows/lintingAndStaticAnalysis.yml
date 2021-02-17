@@ -80,7 +80,7 @@ jobs:
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
       with:
-        name: Static Code Analysis Results
+        name: StaticCodeAnalysisResults
         path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
 
   publish-test-results:
@@ -94,10 +94,15 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         path: artifacts
-
+        
+    - name: Run ls
+      shell: bash
+      run: ls -lt
+      continue-on-error: true
+      
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1
       with:
-        check_name: Static Code Analysis Results
+        check_name: StaticCodeAnalysisResults
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: '*clang-tidy.junit.xml'
+        files: '**clang-tidy.junit.xml'
