@@ -88,7 +88,6 @@ jobs:
       run: pwd    
     
     - name: XUnit Viewer
-      working-directory: ${{runner.workspace}}/build
       uses: AutoModality/action-xunit-viewer@v1  
       with:
          results: ${{runner.workspace}}/build/**clang-tidy.junit.xml
