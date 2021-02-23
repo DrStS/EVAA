@@ -98,12 +98,22 @@ jobs:
     - name: Download Artifacts
       uses: actions/download-artifact@v2
       with:
-        path: artifacts
+        path: test-reports
         
     - name: Run ls
-      working-directory: artifacts
+      working-directory: test-reports
       shell: bash
       run: ls -lt
+      
+    - name: XUnit Viewer
+      id: xunit-viewer
+      uses: AutoModality/action-xunit-viewer@v1  
+      
+    - name: Attach the report
+      uses: actions/upload-artifact@v1
+      with:
+         name: ${{ steps.xunit-viewer.outputs.report-name }}
+         path: ${{ steps.xunit-viewer.outputs.report-dir }}
       
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1
