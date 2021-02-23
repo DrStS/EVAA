@@ -90,7 +90,17 @@ jobs:
     - name: Run ls
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: ls -lt      
+      run: ls -lt   
+
+    - name: Run npm i -g xunit-viewer
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: npm i -g xunit-viewer      
+
+    - name: Run xunit-viewer --help
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: xunit-viewer --help         
     
     - name: XUnit Viewer
       uses: AutoModality/action-xunit-viewer@v1  
