@@ -107,8 +107,8 @@ jobs:
       
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1
-      report_individual_runs: true
       with:
         check_name: Clang Tidy Results
+        report_individual_runs: true
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: "**/*.xml"
