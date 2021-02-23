@@ -98,17 +98,19 @@ jobs:
     - name: Download Artifacts
       uses: actions/download-artifact@v2
       with:
-        path: test-reports
+        path: ${{runner.workspace}}/test-reports
         
     - name: Run ls
-      working-directory: test-reports
+      working-directory: ${{runner.workspace}}/test-reports
       shell: bash
       run: ls -lt
       
     - name: XUnit Viewer
       id: xunit-viewer
       uses: AutoModality/action-xunit-viewer@v1  
-      
+      with:
+         results: ${{runner.workspace}}/test-reports   
+         
     - name: Attach the report
       uses: actions/upload-artifact@v1
       with:
