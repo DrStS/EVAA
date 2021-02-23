@@ -95,7 +95,7 @@ jobs:
     - name: Run npm i -g xunit-viewer
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: npm i -g xunit-viewer      
+      run: sudo npm i -g xunit-viewer      
 
     - name: Run xunit-viewer --help
       working-directory: ${{runner.workspace}}/build
