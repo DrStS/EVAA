@@ -82,6 +82,12 @@ jobs:
       run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}}/build ${{runner.workspace}}/build
       continue-on-error: true
       
+    - name: XUnit Viewer
+      id: xunit-viewer
+      uses: AutoModality/action-xunit-viewer@v1  
+      with:
+         results: ${{runner.workspace}}/build  
+      
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
       with:
@@ -98,24 +104,12 @@ jobs:
     - name: Download Artifacts
       uses: actions/download-artifact@v2
       with:
-        path: ${{runner.workspace}}/test-reports
+        path: test-reports
         
     - name: Run ls
-      working-directory: ${{runner.workspace}}/test-reports
+      working-directory: test-reports
       shell: bash
       run: ls -lt
-      
-    - name: XUnit Viewer
-      id: xunit-viewer
-      uses: AutoModality/action-xunit-viewer@v1  
-      with:
-         results: ${{runner.workspace}}/test-reports   
-         
-    - name: Attach the report
-      uses: actions/upload-artifact@v1
-      with:
-         name: ${{ steps.xunit-viewer.outputs.report-name }}
-         path: ${{ steps.xunit-viewer.outputs.report-dir }}
       
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1
