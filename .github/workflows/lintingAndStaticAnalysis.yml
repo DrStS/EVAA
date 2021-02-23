@@ -54,16 +54,22 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-    - name: Clang format
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: make clang-format-check VERBOSE=1
-      
+   
     - name: Print clang tidy version
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: clang-tidy-10 --version
+
+    - name: Print clang format version
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: clang-format-10 --version
+
+    - name: Output clang format
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: make clang-format-check VERBOSE=1
+      continue-on-error: true
       
     - name: Run clang tidy
       working-directory: ${{runner.workspace}}/build
@@ -79,11 +85,11 @@ jobs:
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
       with:
-        name: StaticCodeAnalysisResults
+        name: Clang Tidy Results
         path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
 
   publish-test-results:
-    name: "Publish Static Code Analysis Results"
+    name: "Publish Clang Tidy Results"
     needs: lintingAndStaticAnalysis
     runs-on: ubuntu-latest
 
@@ -102,6 +108,6 @@ jobs:
     - name: Publish Unit Test Results
       uses: EnricoMi/publish-unit-test-result-action@v1
       with:
-        check_name: StaticCodeAnalysisResults
+        check_name: Clang Tidy Results
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: "**/*.xml"

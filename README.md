@@ -30,7 +30,8 @@ w.r.t. autonomous driving
 ***
 # Status: C++ Continuous Integration   
 The status of continuous integration:
-![Configure, Build, UnitTest and Build Doc](https://github.com/DrStS/EVAA/workflows/Configure,%20Build,%20UnitTest%20and%20Build%20Doc/badge.svg)  
+[![Configure, Build, UnitTest and Build Doc](https://github.com/DrStS/EVAA/actions/workflows/buildAndUnitTest.yml/badge.svg)](https://github.com/DrStS/EVAA/actions/workflows/buildAndUnitTest.yml)    
+[![Linting and Static Code Anylsis](https://github.com/DrStS/EVAA/actions/workflows/lintingAndStaticAnalysis.yml/badge.svg)](https://github.com/DrStS/EVAA/actions/workflows/lintingAndStaticAnalysis.yml)    
 ***
 # Build EVAA  
 Install cmake and conan.    
