@@ -85,12 +85,17 @@ jobs:
     - name: Run pwd
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: pwd    
+      run: pwd  
+      
+    - name: Run ls
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: ls -lt      
     
     - name: XUnit Viewer
       uses: AutoModality/action-xunit-viewer@v1  
       with:
-         results: ${{runner.workspace}}/build/**clang-tidy.junit.xml
+         results: ${{runner.workspace}}/build
       
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
