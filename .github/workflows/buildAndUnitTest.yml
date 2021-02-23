@@ -30,6 +30,10 @@ jobs:
       run: sudo pip install conan --quiet
       shell: bash
       
+    - name: Install Conan Package Manager (Windows)
+      if: ${{ runner.os == 'Windows' }}
+      run: pip install conan --quiet    
+      
     - name: Setup CMake
       uses: jwlawson/actions-setup-cmake@master
       with:
@@ -37,10 +41,6 @@ jobs:
         
     - name: Check CMake version
       run: cmake --version
-      
-    - name: Install Conan Package Manager (Windows)
-      if: ${{ runner.os == 'Windows' }}
-      run: pip install conan --quiet
       
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
