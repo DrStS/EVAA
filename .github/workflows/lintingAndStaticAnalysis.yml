@@ -82,11 +82,16 @@ jobs:
       run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}}/build ${{runner.workspace}}/build
       continue-on-error: true
       
+    - name: Run pwd
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: pwd    
+    
     - name: XUnit Viewer
-      id: xunit-viewer
+      working-directory: ${{runner.workspace}}/build
       uses: AutoModality/action-xunit-viewer@v1  
       with:
-         results: ${{runner.workspace}}/build  
+         results: ${{runner.workspace}}/build/**clang-tidy.junit.xml
       
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
