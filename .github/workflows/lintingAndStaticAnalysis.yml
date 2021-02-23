@@ -63,7 +63,7 @@ jobs:
     - name: Print clang format version
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: clang-format-10 --version
+      run: clang-format --version
 
     - name: Output clang format
       working-directory: ${{runner.workspace}}/build

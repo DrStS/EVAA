@@ -49,7 +49,6 @@ IF(CMAKE_OUTPUT_VERBOSE)
    MESSAGE("EVAA_INCLUDES: ${EVAA_INCLUDES}")
    MESSAGE("EVAA_UnitTest_INCLUDES: ${EVAA_UnitTest_INCLUDES}")
    MESSAGE("EVAA_UnitTest_SOURCES: ${EVAA_UnitTest_SOURCES}")
-   MESSAGE("MKL_LIBRARIES: ${MKL_LIBRARIES}")
 ENDIF()
 #------------------------------------------------------------------------------------#
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
