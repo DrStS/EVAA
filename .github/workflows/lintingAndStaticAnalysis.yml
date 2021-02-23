@@ -95,7 +95,7 @@ jobs:
     - name: XUnit Viewer
       uses: AutoModality/action-xunit-viewer@v1  
       with:
-         results: ${{runner.workspace}}/build
+         results: ${{runner.workspace}}/build/EVAAComputeEngine.cpp.clang-tidy.junit.xml
       
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
