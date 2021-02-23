@@ -29,8 +29,9 @@ high performance vehicle dynamics model and simulation for applications
 w.r.t. autonomous driving
 ***
 # Status: C++ Continuous Integration   
-The status of continuous integration:
+The status of continuous integration:    
 [![Configure, Build, UnitTest and Build Doc](https://github.com/DrStS/EVAA/actions/workflows/buildAndUnitTest.yml/badge.svg)](https://github.com/DrStS/EVAA/actions/workflows/buildAndUnitTest.yml)    
+
 [![Linting and Static Code Anylsis](https://github.com/DrStS/EVAA/actions/workflows/lintingAndStaticAnalysis.yml/badge.svg)](https://github.com/DrStS/EVAA/actions/workflows/lintingAndStaticAnalysis.yml)    
 ***
 # Build EVAA  
