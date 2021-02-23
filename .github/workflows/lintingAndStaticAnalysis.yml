@@ -32,6 +32,10 @@ jobs:
       run: sudo apt-get update -y && sudo apt-get install -y clang-tidy-10
       shell: bash
       
+    - name: Install xunit-viewer
+      shell: bash
+      run: sudo npm i -g xunit-viewer  
+      
     - name: Setup CMake
       uses: jwlawson/actions-setup-cmake@master
       with:
@@ -80,32 +84,12 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}}/build ${{runner.workspace}}/build
-      continue-on-error: true
-      
-    - name: Run pwd
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: pwd  
-      
-    - name: Run ls
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: ls -lt   
-
-    - name: Run npm i -g xunit-viewer
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: sudo npm i -g xunit-viewer      
+      continue-on-error: true     
 
     - name: Run xunit-viewer --help
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: xunit-viewer --help         
-    
-    - name: XUnit Viewer
-      uses: AutoModality/action-xunit-viewer@v1  
-      with:
-         results: ${{runner.workspace}}/build/EVAAComputeEngine.cpp.clang-tidy.junit.xml
+      run: xunit-viewer -r .        
       
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
@@ -123,10 +107,10 @@ jobs:
     - name: Download Artifacts
       uses: actions/download-artifact@v2
       with:
-        path: test-reports
+        path: artifacts
         
     - name: Run ls
-      working-directory: test-reports
+      working-directory: artifacts
       shell: bash
       run: ls -lt
       
