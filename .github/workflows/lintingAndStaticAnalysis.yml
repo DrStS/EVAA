@@ -109,7 +109,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Report
-        path: ${{runner.workspace}}/build/ClangTidyReport.html
+        path: ${{runner.workspace}}/build/ClangTidyReport
 
     - name: Deploy report
       uses: peaceiris/actions-gh-pages@v3
