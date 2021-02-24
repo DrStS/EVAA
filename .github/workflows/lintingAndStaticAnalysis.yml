@@ -109,11 +109,11 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Report
-        path: ${{runner.workspace}}/build/ClangTidyReport
+        path: ${{runner.workspace}}/build/ClangTidyReport/ClangTidyReport.html
 
     - name: Deploy report
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
         destination_dir: ClangTidyReport
-        publish_dir: ${{runner.workspace}}/build/ClangTidyReport.html 
+        publish_dir: ${{runner.workspace}}/build/ClangTidyReport 
