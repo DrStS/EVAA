@@ -89,35 +89,22 @@ jobs:
     - name: Run xunit-viewer --help
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: xunit-viewer -r .        
+      run: xunit-viewer -r .  -o ClangTidyReport.html 
       
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Results
         path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
-
-  publish-test-results:
-    name: "Publish Clang Tidy Results"
-    needs: lintingAndStaticAnalysis
-    runs-on: ubuntu-latest
-
-    if: success() || failure()
-    steps:
-    - name: Download Artifacts
-      uses: actions/download-artifact@v2
-      with:
-        path: artifacts
         
-    - name: Run ls
-      working-directory: artifacts
-      shell: bash
-      run: ls -lt
-      
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v1
+    - name: Upload jUnit report
+      uses: actions/upload-artifact@v2
       with:
-        check_name: Clang Tidy Results
-        report_individual_runs: true
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: "**/*.xml"
+        name: Clang Tidy Report
+        path: ${{runner.workspace}}/build/ClangTidyReport.html
+
+    - name: Deploy report
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
+        publish_dir: ${{runner.workspace}}/build/ClangTidyReport.html 
