@@ -89,13 +89,21 @@ jobs:
     - name: Run xunit-viewer --help
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: xunit-viewer -r .  -o ClangTidyReport.html 
+      run: xunit-viewer -r . -o ClangTidyReport.html 
       
     - name: Upload jUnit file
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Results
         path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
+        
+    - name: Make dir
+      shell: bash
+      run:  mkdir ${{runner.workspace}}/build/ClangTidyReport
+      
+    - name: Move ClangTidyReport.html
+      shell: bash
+      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/build/ClangTidyReport/ClangTidyReport.html      
         
     - name: Upload jUnit report
       uses: actions/upload-artifact@v2
