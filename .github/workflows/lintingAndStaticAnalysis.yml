@@ -60,12 +60,10 @@ jobs:
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
    
     - name: Print clang tidy version
-      working-directory: ${{runner.workspace}}/build
       shell: bash
       run: clang-tidy-10 --version
 
     - name: Print clang format version
-      working-directory: ${{runner.workspace}}/build
       shell: bash
       run: clang-format --version
 
@@ -111,11 +109,13 @@ jobs:
         name: Clang Tidy Report
         path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/ClangTidyReport/ClangTidyReport.html
 
+    - name: Run ls
+      run : ls -a 
+      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
+
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
       with:
-        working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
-        enable-latex: true
         doxyfile-path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/Doxyfile
 
     - name: Run ls
