@@ -94,20 +94,6 @@ jobs:
       with:
         name: Clang Tidy Results
         path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
-        
-    - name: Make dir
-      shell: bash
-      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/doc/ClangTidyReport
-      
-    - name: Move ClangTidyReport.html
-      shell: bash
-      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/doc/ClangTidyReport/ClangTidyReport.html      
-        
-    - name: Upload jUnit report
-      uses: actions/upload-artifact@v2
-      with:
-        name: Clang Tidy Report
-        path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/ClangTidyReport/ClangTidyReport.html
 
     - name: Run ls
       run : ls -lt 
@@ -119,11 +105,25 @@ jobs:
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
       with:
-        doxyfile-path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/Doxyfile
+        doxyfile-path: ./doc/Doxyfile
 
     - name: Run ls
       run : ls -lt 
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
+      
+    - name: Make dir
+      shell: bash
+      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/doc/html/ClangTidyReport
+      
+    - name: Move ClangTidyReport.html
+      shell: bash
+      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/doc/html/ClangTidyReport/ClangTidyReport.html      
+        
+    - name: Upload jUnit report
+      uses: actions/upload-artifact@v2
+      with:
+        name: Clang Tidy Report
+        path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/html/ClangTidyReport/ClangTidyReport.html
       
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
