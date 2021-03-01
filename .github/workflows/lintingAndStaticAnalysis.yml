@@ -99,28 +99,29 @@ jobs:
         
     - name: Make dir
       shell: bash
-      run:  mkdir ${{runner.workspace}}/doc/ClangTidyReport
+      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/doc/ClangTidyReport
       
     - name: Move ClangTidyReport.html
       shell: bash
-      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/doc/ClangTidyReport/ClangTidyReport.html      
+      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/doc/ClangTidyReport/ClangTidyReport.html      
         
     - name: Upload jUnit report
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Report
-        path: ${{runner.workspace}}/build/ClangTidyReport/ClangTidyReport.html
+        path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/ClangTidyReport/ClangTidyReport.html
 
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
       with:
-        working-directory: ${{runner.workspace}}/doc
+        working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
         enable-latex: true
-        doxyfile-path: ./doc/Doxyfile
+        doxyfile-path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/Doxyfile
 
     - name: Run ls
       run : ls -a 
-      working-directory: ./doc
+      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
+      
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
