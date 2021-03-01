@@ -84,7 +84,7 @@ jobs:
       run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}}/build ${{runner.workspace}}/build
       continue-on-error: true     
 
-    - name: Run xunit-viewer --help
+    - name: Run xunit-viewer
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: xunit-viewer -r . -o ClangTidyReport.html 
@@ -110,8 +110,11 @@ jobs:
         path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/ClangTidyReport/ClangTidyReport.html
 
     - name: Run ls
-      run : ls -a 
+      run : ls -lt 
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
+      
+    - name: Run cat
+      run : cat ${{runner.workspace}}/${{github.event.repository.name}}/doc/Doxyfile
 
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
@@ -119,7 +122,7 @@ jobs:
         doxyfile-path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/Doxyfile
 
     - name: Run ls
-      run : ls -a 
+      run : ls -lt 
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
       
     - name: Deploy
