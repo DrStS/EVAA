@@ -1,4 +1,4 @@
-name: Linting and Static Code Anylsis
+name: Linting, Static Code Anylsis and Build Doc
 
 on: push
 
@@ -99,17 +99,33 @@ jobs:
         
     - name: Make dir
       shell: bash
-      run:  mkdir ${{runner.workspace}}/build/ClangTidyReport
+      run:  mkdir ${{runner.workspace}}/doc/ClangTidyReport
       
     - name: Move ClangTidyReport.html
       shell: bash
-      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/build/ClangTidyReport/ClangTidyReport.html      
+      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/doc/ClangTidyReport/ClangTidyReport.html      
         
     - name: Upload jUnit report
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Report
         path: ${{runner.workspace}}/build/ClangTidyReport/ClangTidyReport.html
+
+    - name: Run Doxygen
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        working-directory: ${{runner.workspace}}/doc
+        enable-latex: true
+        doxyfile-path: ./doc/Doxyfile
+
+    - name: Run ls
+      run : ls -a 
+      working-directory: ./doc
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
+        publish_dir: ./html
 
     - name: Deploy report
       uses: peaceiris/actions-gh-pages@v3
