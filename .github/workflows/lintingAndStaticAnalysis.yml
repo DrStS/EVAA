@@ -121,11 +121,9 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: Clang Tidy Report
-        path: ${{runner.workspace}}/${{github.event.repository.name}}/html  
       
-    - name: Run ls
-      run : ls -a 
-      working-directory: ./html
+    - name: Move ClangTidyReport.html
+      run : sudo mv ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/html  
       
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
