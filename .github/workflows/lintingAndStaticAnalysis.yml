@@ -120,8 +120,8 @@ jobs:
     - name: Download Clang Tidy report    
       uses: actions/download-artifact@v2
       with:
-      name: Clang Tidy Report
-      path: ${{runner.workspace}}/${{github.event.repository.name}}/html  
+        name: Clang Tidy Report
+        path: ${{runner.workspace}}/${{github.event.repository.name}}/html  
       
     - name: Run ls
       run : ls -a 
