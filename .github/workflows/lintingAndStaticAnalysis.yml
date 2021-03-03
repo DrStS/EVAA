@@ -44,7 +44,7 @@ jobs:
     - name: Check CMake version
       run: cmake --version
       
-    - name: Create Build Environment
+    - name: Create build environment
       # Some projects don't allow in-source building, so create a separate build directory
       # We'll use this as our working directory for all subsequent commands
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -97,40 +97,32 @@ jobs:
 
     - name: Run ls
       run : ls -lt 
-      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
-
-    - name: Run pwd 
-      run : pwd 
-      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
+      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}
 
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
       with:
         doxyfile-path: ./doc/Doxyfile
 
-    - name: Run pwd
-      run : pwd 
-      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
-      
     - name: Run ls
       run : ls -lt 
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}
       
     - name: Make dir
       shell: bash
-      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/doc/html/ClangTidyReport
+      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport
       
     - name: Move ClangTidyReport.html
       shell: bash
-      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/doc/html/ClangTidyReport/ClangTidyReport.html      
+      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport/ClangTidyReport.html      
         
     - name: Upload jUnit report
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Report
-        path: ${{runner.workspace}}/${{github.event.repository.name}}/doc/html/ClangTidyReport/ClangTidyReport.html
+        path: ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport/ClangTidyReport.html
       
-    - name: Deploy
+    - name: Deploy to github pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
