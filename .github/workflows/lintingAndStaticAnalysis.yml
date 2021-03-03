@@ -97,8 +97,9 @@ jobs:
 
     - name: Make dir
       shell: bash
-      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html
-      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport
+      run: |
+        mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html
+        mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport
 
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
