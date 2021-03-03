@@ -99,14 +99,17 @@ jobs:
       run : ls -lt 
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
 
+    - name: Run pwd 
+      run : pwd 
+      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
+
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
       with:
-        working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
-        doxyfile-path: ./Doxyfile
+        doxyfile-path: ./doc/Doxyfile
 
-    - name: Run ls
-      run : ls -lt 
+    - name: Run pwd
+      run : pwd 
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}/doc
       
     - name: Run ls
