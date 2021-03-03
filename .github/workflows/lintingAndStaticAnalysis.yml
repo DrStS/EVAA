@@ -67,7 +67,7 @@ jobs:
       shell: bash
       run: clang-format --version
 
-    - name: Output clang format
+    - name: Run clang format
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: make clang-format-check VERBOSE=1
@@ -78,7 +78,7 @@ jobs:
       shell: bash
       run: make clang-tidy VERBOSE=1 > output-clang-tidy.txt
       
-    - name: Output clang tidy
+    - name: Output clang tidy to shell
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: cat output-clang-tidy.txt | python3 ${{runner.workspace}}/EVAA/helperScripts/clang-tidy-to-junit/clang-tidy-to-junit.py ${{runner.workspace}}/build ${{runner.workspace}}/build
@@ -95,7 +95,7 @@ jobs:
         name: Clang Tidy Results
         path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
 
-    - name: Make dir
+    - name: Make dir for ClangTidyReport
       shell: bash
       run: |
         mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html
@@ -109,13 +109,31 @@ jobs:
     - name: Move ClangTidyReport.html
       shell: bash
       run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport/ClangTidyReport.html      
-        
+
+    - name: Debug
+      shell: bash
+      run: |
+        cd ${{runner.workspace}}/${{github.event.repository.name}}/html
+        pwd
+        ls -lt
+        cd ClangTidyReport
+        ls -lt 
+ 
     - name: Upload jUnit report
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Report
         path: ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport/ClangTidyReport.html
-      
+  
+    - name: Debug
+      shell: bash
+      run: |
+        cd ${{runner.workspace}}/${{github.event.repository.name}}/html
+        pwd
+        ls -lt
+        cd ClangTidyReport
+        ls -lt
+    
     - name: Deploy to github pages
       uses: peaceiris/actions-gh-pages@v3
       with:
