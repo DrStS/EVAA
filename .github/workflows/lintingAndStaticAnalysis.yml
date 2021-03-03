@@ -106,9 +106,9 @@ jobs:
       with:
         doxyfile-path: ./doc/Doxyfile
             
-    - name: Move ClangTidyReport.html
+    - name: Copy ClangTidyReport.html
       shell: bash
-      run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport/ClangTidyReport.html      
+      run:  sudo cp ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport.html      
 
     - name: Debug
       shell: bash
@@ -116,23 +116,12 @@ jobs:
         cd ${{runner.workspace}}/${{github.event.repository.name}}/html
         pwd
         ls -lt
-        cd ClangTidyReport
-        ls -lt 
  
     - name: Upload jUnit report
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Report
-        path: ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport/ClangTidyReport.html
-  
-    - name: Debug
-      shell: bash
-      run: |
-        cd ${{runner.workspace}}/${{github.event.repository.name}}/html
-        pwd
-        ls -lt
-        cd ClangTidyReport
-        ls -lt
+        path: ${{runner.workspace}}/build/ClangTidyReport.html
     
     - name: Deploy to github pages
       uses: peaceiris/actions-gh-pages@v3
