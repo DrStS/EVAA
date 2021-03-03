@@ -101,21 +101,21 @@ jobs:
         mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html
         mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport
 
-    - name: Run Doxygen
-      uses: mattnotmitt/doxygen-action@v1
-      with:
-        doxyfile-path: ./doc/Doxyfile
+#    - name: Run Doxygen
+#      uses: mattnotmitt/doxygen-action@v1
+#      with:
+#        doxyfile-path: ./doc/Doxyfile
             
     - name: Copy ClangTidyReport.html
       shell: bash
       run:  sudo cp ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport.html      
 
-    - name: Debug
-      shell: bash
-      run: |
-        cd ${{runner.workspace}}/${{github.event.repository.name}}/html
-        pwd
-        ls -lt
+#   - name: Debug
+#      shell: bash
+#      run: |
+#        cd ${{runner.workspace}}/${{github.event.repository.name}}/html
+#        pwd
+#        ls -lt
  
     - name: Upload jUnit report
       uses: actions/upload-artifact@v2
