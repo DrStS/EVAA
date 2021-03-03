@@ -95,9 +95,13 @@ jobs:
         name: Clang Tidy Results
         path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
 
-    - name: Run ls
-      run : ls -lt 
-      working-directory: ${{runner.workspace}}/${{github.event.repository.name}}
+    - name: Make dir
+      shell: bash
+      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html
+
+    - name: Make dir
+      shell: bash
+      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport
 
     - name: Run Doxygen
       uses: mattnotmitt/doxygen-action@v1
@@ -107,11 +111,7 @@ jobs:
     - name: Run ls
       run : ls -lt 
       working-directory: ${{runner.workspace}}/${{github.event.repository.name}}
-      
-    - name: Make dir
-      shell: bash
-      run:  mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport
-      
+            
     - name: Move ClangTidyReport.html
       shell: bash
       run:  mv ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport/ClangTidyReport.html      
