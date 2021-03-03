@@ -89,43 +89,54 @@ jobs:
       shell: bash
       run: xunit-viewer -r . -o ClangTidyReport.html 
       
-    - name: Upload jUnit file
+    - name: Upload Clang Tidy jUnit file
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Results
-        path: ${{runner.workspace}}/build/**clang-tidy.junit.xml
-
-    - name: Make dir for ClangTidyReport
-      shell: bash
-      run: |
-        mkdir ${{runner.workspace}}/${{github.event.repository.name}}/html
-
-    - name: Run Doxygen
-      uses: mattnotmitt/doxygen-action@v1
-      with:
-        doxyfile-path: ./doc/Doxyfile
-            
-    - name: Copy ClangTidyReport.html
-      shell: bash
-      run:  sudo cp ${{runner.workspace}}/build/ClangTidyReport.html ${{runner.workspace}}/${{github.event.repository.name}}/html/ClangTidyReport.html      
+        path: ${{runner.workspace}}/build/**clang-tidy.junit.xml     
  
-    - name: Upload jUnit report
+    - name: Upload Clang Tidy report 
       uses: actions/upload-artifact@v2
       with:
         name: Clang Tidy Report
         path: ${{runner.workspace}}/build/ClangTidyReport.html
     
-    - name: Deploy to github pages
+  
+  ## Build Doxygen Documentation    
+  buildDoxygenDocumentation:
+    name: "Build Doxygen Documentation"
+    needs: lintingAndStaticAnalysis
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+          ref: 'refactoring/codeStripping'
+          
+    - name: Run Doxygen
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        doxyfile-path: ./doc/Doxyfile
+        
+    - name: Download Clang Tidy report    
+      uses: actions/download-artifact@v2
+      with:
+      name: Clang Tidy Report
+      path: ${{runner.workspace}}/${{github.event.repository.name}}/html  
+      
+    - name: Run ls
+      run : ls -a 
+      working-directory: ./html
+      
+    - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.PERSONAL_TOKEN_EVAA }}
-        publish_dir: ./html
-        
+        publish_dir: ./html   
 
   ## Build LaTeX Documentation         
   buildLaTeXDocumentation:
     name: "Build LaTeX Documentation"
-    needs: lintingAndStaticAnalysis
+    needs: buildDoxygenDocumentation
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
