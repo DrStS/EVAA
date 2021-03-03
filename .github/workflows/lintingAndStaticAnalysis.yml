@@ -125,7 +125,7 @@ jobs:
   ## Build LaTeX Documentation         
   buildLaTeXDocumentation:
     name: "Build LaTeX Documentation"
-    needs: buildDoxygenDocumentation
+    needs: lintingAndStaticAnalysis
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
