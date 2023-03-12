@@ -1,8 +1,12 @@
 name: Configure, Build and UnitTest
 
 on: 
-  push:
   workflow_dispatch:
+    inputs:
+       name:
+         description: "Who to greet"
+         default: "World"
+  push:
 
 jobs:
   ## Build and UnitTest
