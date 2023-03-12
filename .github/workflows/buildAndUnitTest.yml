@@ -1,6 +1,8 @@
 name: Configure, Build and UnitTest
 
-on: push
+on: 
+  push:
+  workflow_dispatch:
 
 jobs:
   ## Build and UnitTest
