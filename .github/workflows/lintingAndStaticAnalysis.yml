@@ -1,6 +1,8 @@
 name: Linting, Static Code Anylsis and Build Doc
 
-on: push
+on: 
+  push:
+  workflow_dispatch:
 
 jobs:
   ## Do Linting and Static Code Analysis
